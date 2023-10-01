@@ -1,15 +1,13 @@
 import { initAssets } from "./core/assets";
-import { clockedNextWake, ClockState, delayUntilTickMs, nowTicks, WakeTime } from './core/clock';
-import { Action, Effect, GameState, mkState, SceneState, State } from "./core/model";
+import { WakeTime } from './core/clock';
+import { Action, Effect, mkState, SceneState, State } from "./core/model";
 import { reduce } from './core/reduce';
+import { eph_canvas_from_world_of_state } from "./core/view_helpers";
 import { key } from './ui/key';
 import { logger } from './util/debug';
 import { produce } from './util/produce';
-import { inverse } from "./util/se2";
 import { apply_to_rect } from "./util/se2-extra";
 import { Rect } from "./util/types";
-
-
 
 // return whether a evaluated at t-1 is equal to b at time t, sort of?
 function equalWake(a: WakeTime, b: WakeTime): boolean {
@@ -30,7 +28,8 @@ class RenderPane {
   draw(state: SceneState) {
     const { c, d } = this;
     const rect_in_world: Rect = { p: { x: 0, y: 0 }, sz: { x: 1, y: 1 } };
-    const rect_in_canvas = apply_to_rect(state.gameState.canvas_of_world, rect_in_world);
+    const eph_canvas_from_world = eph_canvas_from_world_of_state(state.gameState);
+    const rect_in_canvas = apply_to_rect(eph_canvas_from_world, rect_in_world);
     d.fillStyle = 'white';
     d.fillRect(0, 0, 640, 480);
     d.fillStyle = 'black';
@@ -48,7 +47,22 @@ async function go() {
 
   let prevSceneState: SceneState | null = null; // think about optimizing rendering
 
+  function mouseDownListener(e: MouseEvent) {
+    dispatch({ t: 'mouseDown', p: { x: e.clientX, y: e.clientY } })
+    document.addEventListener('mouseup', mouseUpListener);
+    document.addEventListener('mousemove', mouseMoveListener);
+  }
+  function mouseUpListener(e: MouseEvent) {
+    dispatch({ t: 'mouseUp', p: { x: e.clientX, y: e.clientY } })
+    document.removeEventListener('mouseup', mouseUpListener);
+    document.removeEventListener('mousemove', mouseMoveListener);
+  }
+  function mouseMoveListener(e: MouseEvent) {
+    dispatch({ t: 'mouseMove', p: { x: e.clientX, y: e.clientY } })
+  }
+
   const c = document.getElementById('c') as HTMLCanvasElement;
+  c.addEventListener('mousedown', mouseDownListener);
   const pane = await make_pane(c);
   const state: State[] = [mkState()];
 
@@ -58,22 +72,9 @@ async function go() {
     // }
   }
 
-  function maybeRescheduleGame(priorState: GameState, state: GameState): GameState {
-    return state;
-  }
-
-  function maybeReschedule(priorState: SceneState, state: SceneState): SceneState {
-    if (state.t == 'game' && priorState.t == 'game') {
-      return { t: 'game', gameState: maybeRescheduleGame(priorState.gameState, state.gameState), revision: state.revision };
-    }
-    else return state;
-  }
-
   function dispatch(action: Action): void {
     let [sceneState, effects] = reduce(state[0].sceneState, action);
-
-    sceneState = maybeReschedule(state[0].sceneState, sceneState);
-
+    console.log('hi');
     effects.forEach(e => {
       sceneState = handleEffect(sceneState, e);
     });

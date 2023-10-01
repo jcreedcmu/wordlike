@@ -12,6 +12,9 @@ export type GameAction =
 // I think I want to migrate some of these up to GameAction
 export type UiAction =
   | { t: 'key', code: string }
+  | { t: 'mouseDown', p: Point }
+  | { t: 'mouseUp', p: Point }
+  | { t: 'mouseMove', p: Point }
   ;
 
 export type Action =
@@ -22,12 +25,16 @@ export type Effect =
   | { t: 'none' }
   ;
 
+export type MouseState =
+  | { t: 'up' }
+  | { t: 'down', orig_p: Point, p: Point }
+  ;
+
 // If I need to add more state around settings, menus, saving, etc.,
 // it might go here.
 export type SceneState =
   | {
     t: 'game', gameState: GameState,
-
     // NOTE: this is sort of unused for now, but I'm leaving it here
     // in case I need a finer-grained equality check on SceneState.
     // It's updated in reduce.ts.
@@ -39,7 +46,8 @@ export type State = {
 };
 
 export type GameState = {
-  canvas_of_world: SE2,
+  canvas_from_world: SE2,
+  mouseState: MouseState,
 };
 
 export function mkState(): State {
@@ -50,11 +58,13 @@ export function mkState(): State {
 
 export function mkGameState(): SceneState {
   return {
-    t: 'game', gameState: {
-      canvas_of_world: {
+    t: 'game',
+    gameState: {
+      canvas_from_world: {
         scale: { x: 32, y: 32 },
         translate: { x: 320, y: 240 }
-      }
+      },
+      mouseState: { t: 'up' },
     }, revision: 0
   };
 }
