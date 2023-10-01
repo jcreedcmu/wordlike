@@ -24,7 +24,12 @@ class RenderPane {
   }
   draw(state: SceneState) {
     const { c, d } = this;
+    c.width = 640;
+    c.height = 480;
+    d.fillStyle = 'white';
     d.fillRect(0, 0, c.width, c.height);
+    d.fillStyle = 'black';
+    d.fillRect(320, 240, 1, 1);
   }
 }
 

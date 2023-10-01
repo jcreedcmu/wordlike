@@ -34,12 +34,16 @@ export function vequal(a: Point, b: Point): boolean {
   return a.x == b.x && a.y == b.y;
 }
 
-export function vplus(a: Point, b: Point): Point {
+export function vadd(a: Point, b: Point): Point {
   return { x: a.x + b.x, y: a.y + b.y };
 }
 
-export function vminus(a: Point, b: Point): Point {
+export function vsub(a: Point, b: Point): Point {
   return { x: a.x - b.x, y: a.y - b.y };
+}
+
+export function vmul(a: Point, b: Point): Point {
+  return { x: a.x * b.x, y: a.y * b.y };
 }
 
 export function vscale(b: Point, s: number): Point {

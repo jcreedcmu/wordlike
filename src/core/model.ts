@@ -1,9 +1,5 @@
+import { SE2 } from '../util/se2';
 import { Point } from '../util/types';
-
-export type SE2 = {
-  scale: Point,
-  translate: Point,
-}
 
 // There are UiActions, which might have different behavior depending
 // on view state, and other GameActions, which should be treated
