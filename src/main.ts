@@ -5,6 +5,9 @@ import { reduce } from './core/reduce';
 import { key } from './ui/key';
 import { logger } from './util/debug';
 import { produce } from './util/produce';
+import { inverse } from "./util/se2";
+import { apply_to_rect } from "./util/se2-extra";
+import { Rect } from "./util/types";
 
 
 
@@ -21,15 +24,17 @@ class RenderPane {
   d: CanvasRenderingContext2D;
   constructor(public c: HTMLCanvasElement) {
     this.d = c.getContext('2d')!;
+    c.width = 640;
+    c.height = 480;
   }
   draw(state: SceneState) {
     const { c, d } = this;
-    c.width = 640;
-    c.height = 480;
+    const rect_in_world: Rect = { p: { x: 0, y: 0 }, sz: { x: 1, y: 1 } };
+    const rect_in_canvas = apply_to_rect(state.gameState.canvas_of_world, rect_in_world);
     d.fillStyle = 'white';
-    d.fillRect(0, 0, c.width, c.height);
+    d.fillRect(0, 0, 640, 480);
     d.fillStyle = 'black';
-    d.fillRect(320, 240, 1, 1);
+    d.fillRect(rect_in_canvas.p.x, rect_in_canvas.p.y, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
   }
 }
 

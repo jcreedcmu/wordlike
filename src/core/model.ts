@@ -39,7 +39,7 @@ export type State = {
 };
 
 export type GameState = {
-  world_of_canvas: SE2,
+  canvas_of_world: SE2,
 };
 
 export function mkState(): State {
@@ -49,5 +49,12 @@ export function mkState(): State {
 }
 
 export function mkGameState(): SceneState {
-  return { t: 'game', gameState: { world_of_canvas: { scale: { x: 1, y: 1 }, translate: { x: 0, y: 0 } } }, revision: 0 };
+  return {
+    t: 'game', gameState: {
+      canvas_of_world: {
+        scale: { x: 32, y: 32 },
+        translate: { x: 320, y: 240 }
+      }
+    }, revision: 0
+  };
 }
