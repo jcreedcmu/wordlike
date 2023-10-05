@@ -3,6 +3,7 @@ import { apply, compose, ident, inverse, SE2, translate } from '../util/se2';
 import { vequal, vm, vsub } from '../util/vutil';
 import { Action, Effect, GameState, MouseState, SceneState } from './model';
 import { eph_canvas_from_canvas_of_mouse_state, eph_tile_canvas_from_tile_canvas_of_mouse_state } from '../ui/view_helpers';
+import { is_occupied } from './model_helpers';
 
 
 function resolveDrag(state: GameState): GameState {
@@ -22,7 +23,10 @@ function resolveDrag(state: GameState): GameState {
         );
         const new_tile_in_world_int =
           vm(apply(new_tile_world_from_old_tile_world, s.tiles[ms.ix].p_in_world_int), Math.round);
-        s.tiles[ms.ix].p_in_world_int = new_tile_in_world_int;
+
+        if (!is_occupied(state, new_tile_in_world_int)) {
+          s.tiles[ms.ix].p_in_world_int = new_tile_in_world_int;
+        }
         s.mouseState = { t: 'up' };
       } break;
       case 'up': {
