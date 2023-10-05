@@ -29,15 +29,14 @@ async function go() {
 
   let prevSceneState: SceneState | null = null; // think about optimizing rendering
 
+  document.addEventListener('mouseup', mouseUpListener);
+  document.addEventListener('mousemove', mouseMoveListener);
+
   function mouseDownListener(e: MouseEvent) {
     dispatch({ t: 'mouseDown', p: relpos(e, c) })
-    document.addEventListener('mouseup', mouseUpListener);
-    document.addEventListener('mousemove', mouseMoveListener);
   }
   function mouseUpListener(e: MouseEvent) {
     dispatch({ t: 'mouseUp', p: relpos(e, c) })
-    document.removeEventListener('mouseup', mouseUpListener);
-    document.removeEventListener('mousemove', mouseMoveListener);
   }
   function mouseMoveListener(e: MouseEvent) {
     dispatch({ t: 'mouseMove', p: relpos(e, c) })

@@ -26,7 +26,7 @@ export type Effect =
   ;
 
 export type MouseState =
-  | { t: 'up' }
+  | { t: 'up', p: Point }
   | { t: 'drag_world', orig_p: Point, p: Point }
   | { t: 'drag_tile', orig_p: Point, p: Point, ix: number }
   ;
@@ -72,7 +72,7 @@ export function mkGameState(): SceneState {
         scale: { x: 48, y: 48 },
         translate: { x: 320, y: 240 }
       },
-      mouseState: { t: 'up' },
+      mouseState: { t: 'up', p: { x: 0, y: 0 } },
     }, revision: 0
   };
 }

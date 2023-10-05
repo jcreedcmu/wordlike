@@ -3,7 +3,7 @@ import { apply, compose, ident, inverse, SE2, translate } from '../util/se2';
 import { vequal, vm, vsub } from '../util/vutil';
 import { Action, Effect, GameState, MouseState, SceneState } from './model';
 import { eph_canvas_from_canvas_of_mouse_state, eph_tile_canvas_from_tile_canvas_of_mouse_state } from '../ui/view_helpers';
-import { is_occupied } from './model_helpers';
+import { is_occupied, peelOfState } from './model_helpers';
 
 
 function resolveDrag(state: GameState): GameState {
@@ -12,7 +12,7 @@ function resolveDrag(state: GameState): GameState {
     switch (ms.t) {
       case 'drag_world': {
         s.canvas_from_world = compose(eph_canvas_from_canvas_of_mouse_state(s.mouseState), s.canvas_from_world);
-        s.mouseState = { t: 'up' };
+        s.mouseState = { t: 'up', p: ms.p };
       } break;
       case 'drag_tile': {
         const new_tile_world_from_old_tile_world = compose(
@@ -27,7 +27,7 @@ function resolveDrag(state: GameState): GameState {
         if (!is_occupied(state, new_tile_in_world_int)) {
           s.tiles[ms.ix].p_in_world_int = new_tile_in_world_int;
         }
-        s.mouseState = { t: 'up' };
+        s.mouseState = { t: 'up', p: ms.p };
       } break;
       case 'up': {
         throw new Error(`unexpected resolveDrag with up mouse button`);
@@ -38,7 +38,12 @@ function resolveDrag(state: GameState): GameState {
 
 export function reduceGameAction(state: GameState, action: Action): [GameState, Effect[]] {
   switch (action.t) {
-    case 'key': return [state, []];
+    case 'key': {
+      if (action.code == '<space>') {
+        return [peelOfState(state), []];
+      }
+      return [state, []];
+    }
     case 'none': return [state, []];
     case 'mouseDown': {
       const p_in_world_int = vm(apply(inverse(state.canvas_from_world), action.p), Math.floor);
@@ -55,12 +60,7 @@ export function reduceGameAction(state: GameState, action: Action): [GameState, 
     }
     case 'mouseUp': return [resolveDrag(state), []];
     case 'mouseMove': return [produce(state, s => {
-      if (s.mouseState.t == 'drag_world') {
-        s.mouseState.p = action.p;
-      }
-      if (s.mouseState.t == 'drag_tile') {
-        s.mouseState.p = action.p;
-      }
+      s.mouseState.p = action.p;
     }), []];
   }
 }
