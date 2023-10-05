@@ -7,7 +7,8 @@ import { eph_canvas_from_canvas_of_mouse_state, eph_tile_canvas_from_tile_canvas
 
 function resolveDrag(state: GameState): GameState {
   return produce(state, s => {
-    switch (s.mouseState.t) {
+    const ms = s.mouseState;
+    switch (ms.t) {
       case 'drag_world': {
         s.canvas_from_world = compose(eph_canvas_from_canvas_of_mouse_state(s.mouseState), s.canvas_from_world);
         s.mouseState = { t: 'up' };
@@ -20,8 +21,8 @@ function resolveDrag(state: GameState): GameState {
             s.canvas_from_world)
         );
         const new_tile_in_world_int =
-          vm(apply(new_tile_world_from_old_tile_world, s.tile_in_world_int), Math.round);
-        s.tile_in_world_int = new_tile_in_world_int;
+          vm(apply(new_tile_world_from_old_tile_world, s.tiles[ms.ix].p_in_world_int), Math.round);
+        s.tiles[ms.ix].p_in_world_int = new_tile_in_world_int;
         s.mouseState = { t: 'up' };
       } break;
       case 'up': {
@@ -37,11 +38,16 @@ export function reduceGameAction(state: GameState, action: Action): [GameState, 
     case 'none': return [state, []];
     case 'mouseDown': {
       const p_in_world_int = vm(apply(inverse(state.canvas_from_world), action.p), Math.floor);
-      if (vequal(p_in_world_int, state.tile_in_world_int)) {
-        return [produce(state, s => { s.mouseState = { t: 'drag_tile', orig_p: action.p, p: action.p } }), []];
+
+      let i = 0;
+      for (const tile of state.tiles) {
+        if (vequal(p_in_world_int, tile.p_in_world_int)) {
+          return [produce(state, s => { s.mouseState = { t: 'drag_tile', ix: i, orig_p: action.p, p: action.p } }), []];
+        }
+        i++;
       }
-      else
-        return [produce(state, s => { s.mouseState = { t: 'drag_world', orig_p: action.p, p: action.p } }), []];
+
+      return [produce(state, s => { s.mouseState = { t: 'drag_world', orig_p: action.p, p: action.p } }), []];
     }
     case 'mouseUp': return [resolveDrag(state), []];
     case 'mouseMove': return [produce(state, s => {

@@ -28,7 +28,7 @@ export type Effect =
 export type MouseState =
   | { t: 'up' }
   | { t: 'drag_world', orig_p: Point, p: Point }
-  | { t: 'drag_tile', orig_p: Point, p: Point }
+  | { t: 'drag_tile', orig_p: Point, p: Point, ix: number }
   ;
 
 // If I need to add more state around settings, menus, saving, etc.,
@@ -46,8 +46,13 @@ export type State = {
   sceneState: SceneState,
 };
 
+export type Tile = {
+  p_in_world_int: Point,
+  letter: string,
+}
+
 export type GameState = {
-  tile_in_world_int: Point,
+  tiles: Tile[],
   canvas_from_world: SE2,
   mouseState: MouseState,
 };
@@ -62,7 +67,7 @@ export function mkGameState(): SceneState {
   return {
     t: 'game',
     gameState: {
-      tile_in_world_int: { x: 0, y: 0 },
+      tiles: 'STEEB'.split('').map((x, i) => ({ letter: x, p_in_world_int: { x: i, y: 0 } })),
       canvas_from_world: {
         scale: { x: 48, y: 48 },
         translate: { x: 320, y: 240 }

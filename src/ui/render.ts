@@ -16,15 +16,8 @@ export class RenderPane {
   }
   draw(state: SceneState) {
     const { c, d } = this;
-
-
-    const rect_in_world: Rect = { p: state.gameState.tile_in_world_int, sz: { x: 1, y: 1 } };
-
-    const eph_tile_canvas_from_tile_canvas = eph_tile_canvas_from_tile_canvas_of_mouse_state(state.gameState.mouseState);
-
+    const ms = state.gameState.mouseState;
     const eph_canvas_from_world = eph_canvas_from_world_of_state(state.gameState);
-
-    const rect_in_canvas = apply_to_rect(compose(eph_tile_canvas_from_tile_canvas, eph_canvas_from_world), rect_in_world);
 
     d.fillStyle = 'white';
     d.fillRect(0, 0, PANE.x, PANE.y);
@@ -51,15 +44,27 @@ export class RenderPane {
       }
     }
 
-    d.fillStyle = '#c9b451';
-    d.fillRect(rect_in_canvas.p.x, rect_in_canvas.p.y, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
+    // draw tiles
+    state.gameState.tiles.forEach((tile, ix) => {
 
-    d.fillStyle = '#3a320e';
-    d.textBaseline = 'middle';
-    d.textAlign = 'center';
-    d.font = '24px sans-serif';
-    d.fillText('S', rect_in_canvas.p.x + rect_in_canvas.sz.x / 2,
-      rect_in_canvas.p.y + rect_in_canvas.sz.y / 2);
+      const rect_in_world: Rect = { p: tile.p_in_world_int, sz: { x: 1, y: 1 } };
+      let rect_in_canvas = apply_to_rect(eph_canvas_from_world, rect_in_world);
+      if (ms.t == 'drag_tile' && ms.ix == ix) {
+        const eph_tile_canvas_from_tile_canvas = eph_tile_canvas_from_tile_canvas_of_mouse_state(state.gameState.mouseState);
+        rect_in_canvas = apply_to_rect(eph_tile_canvas_from_tile_canvas, rect_in_canvas);
+      }
+
+      d.fillStyle = '#c9b451';
+      d.fillRect(rect_in_canvas.p.x, rect_in_canvas.p.y, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
+
+      d.fillStyle = '#3a320e';
+      d.textBaseline = 'middle';
+      d.textAlign = 'center';
+      d.font = '24px sans-serif';
+      d.fillText(tile.letter, rect_in_canvas.p.x + rect_in_canvas.sz.x / 2,
+        rect_in_canvas.p.y + rect_in_canvas.sz.y / 2);
+
+    });
 
   }
 }
