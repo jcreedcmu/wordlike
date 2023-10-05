@@ -28,8 +28,6 @@ export class RenderPane {
 
     d.fillStyle = 'white';
     d.fillRect(0, 0, PANE.x, PANE.y);
-    d.fillStyle = 'black';
-    d.fillRect(rect_in_canvas.p.x, rect_in_canvas.p.y, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
 
     const top_left_in_world = vm(apply(inverse(eph_canvas_from_world), { x: 0, y: 0 }), Math.floor);
     const bot_right_in_world = vm(apply(inverse(eph_canvas_from_world), PANE), Math.ceil);
@@ -39,7 +37,7 @@ export class RenderPane {
 
         const pt_in_canvas = apply(eph_canvas_from_world, { x: i, y: j });
 
-        d.strokeStyle = 'black';
+        d.strokeStyle = '#0f73a2';
         d.lineWidth = 1;
 
         const CROSS_SIZE = 2;
@@ -52,6 +50,17 @@ export class RenderPane {
         d.stroke();
       }
     }
+
+    d.fillStyle = '#c9b451';
+    d.fillRect(rect_in_canvas.p.x, rect_in_canvas.p.y, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
+
+    d.fillStyle = '#3a320e';
+    d.textBaseline = 'middle';
+    d.textAlign = 'center';
+    d.font = '24px sans-serif';
+    d.fillText('S', rect_in_canvas.p.x + rect_in_canvas.sz.x / 2,
+      rect_in_canvas.p.y + rect_in_canvas.sz.y / 2);
+
   }
 }
 

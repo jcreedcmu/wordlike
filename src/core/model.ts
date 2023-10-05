@@ -64,7 +64,7 @@ export function mkGameState(): SceneState {
     gameState: {
       tile_in_world_int: { x: 0, y: 0 },
       canvas_from_world: {
-        scale: { x: 32, y: 32 },
+        scale: { x: 48, y: 48 },
         translate: { x: 320, y: 240 }
       },
       mouseState: { t: 'up' },
