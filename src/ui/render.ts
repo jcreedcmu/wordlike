@@ -1,6 +1,6 @@
-import { SceneState } from "../core/model";
+import { SceneState, Tile } from "../core/model";
 import { eph_canvas_from_world_of_state, eph_tile_canvas_from_tile_canvas_of_mouse_state } from "./view_helpers";
-import { apply, compose, inverse } from '../util/se2';
+import { apply, compose, inverse, SE2 } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
 import { Rect } from "../util/types";
 import { vm } from "../util/vutil";
@@ -46,27 +46,35 @@ export class RenderPane {
 
     // draw tiles
     state.gameState.tiles.forEach((tile, ix) => {
-
-      const rect_in_world: Rect = { p: tile.p_in_world_int, sz: { x: 1, y: 1 } };
-      let rect_in_canvas = apply_to_rect(eph_canvas_from_world, rect_in_world);
-      if (ms.t == 'drag_tile' && ms.ix == ix) {
-        const eph_tile_canvas_from_tile_canvas = eph_tile_canvas_from_tile_canvas_of_mouse_state(state.gameState.mouseState);
-        rect_in_canvas = apply_to_rect(eph_tile_canvas_from_tile_canvas, rect_in_canvas);
+      if (!(ms.t == 'drag_tile' && ms.ix == ix)) {
+        drawTile(d, eph_canvas_from_world, tile);
       }
-
-      d.fillStyle = '#c9b451';
-      d.fillRect(rect_in_canvas.p.x, rect_in_canvas.p.y, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
-
-      d.fillStyle = '#3a320e';
-      d.textBaseline = 'middle';
-      d.textAlign = 'center';
-      d.font = '24px sans-serif';
-      d.fillText(tile.letter, rect_in_canvas.p.x + rect_in_canvas.sz.x / 2,
-        rect_in_canvas.p.y + rect_in_canvas.sz.y / 2);
-
     });
 
+    if (ms.t == 'drag_tile') {
+      const tile = state.gameState.tiles[ms.ix];
+      drawTile(d, compose(eph_tile_canvas_from_tile_canvas_of_mouse_state(state.gameState.mouseState), eph_canvas_from_world), tile);
+    }
+
   }
+}
+
+function drawTile(d: CanvasRenderingContext2D, canvas_from_world: SE2, tile: Tile) {
+  const rect_in_world: Rect = { p: tile.p_in_world_int, sz: { x: 1, y: 1 } };
+  const rect_in_canvas = apply_to_rect(canvas_from_world, rect_in_world);
+
+  d.fillStyle = '#c9b451';
+  d.fillRect(rect_in_canvas.p.x + 0.5, rect_in_canvas.p.y + 0.5, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
+  d.strokeStyle = '#3a320e';
+  d.lineWidth = 1;
+  d.strokeRect(rect_in_canvas.p.x + 0.5, rect_in_canvas.p.y + 0.5, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
+
+  d.fillStyle = '#3a320e';
+  d.textBaseline = 'middle';
+  d.textAlign = 'center';
+  d.font = 'bold 30px  sans-serif';
+  d.fillText(tile.letter, rect_in_canvas.p.x + rect_in_canvas.sz.x / 2 + 0.5,
+    rect_in_canvas.p.y + rect_in_canvas.sz.y / 2 + 1.5);
 }
 
 export function make_pane(c: HTMLCanvasElement): RenderPane {
