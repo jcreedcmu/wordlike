@@ -1,4 +1,5 @@
 import { Color, Point } from './types';
+import { vm, vsub } from './vutil';
 
 export type Buffer = {
   c: HTMLCanvasElement,
@@ -45,4 +46,10 @@ export function buffer(sz: Point): Buffer {
     throw "couldn't create canvas rendering context for buffer";
   }
   return { c, d };
+}
+
+export function relpos(e: MouseEvent, c: HTMLElement): Point {
+  const r = c.getBoundingClientRect();
+  const or = vm({ x: r.left, y: r.top }, Math.floor);
+  return vsub({ x: e.pageX, y: e.pageY }, or);
 }

@@ -2,12 +2,16 @@ import { initAssets } from "./core/assets";
 import { WakeTime } from './core/clock';
 import { Action, Effect, mkState, SceneState, State } from "./core/model";
 import { reduce } from './core/reduce';
-import { eph_canvas_from_world_of_state } from "./core/view_helpers";
+import { eph_canvas_from_world_of_state } from "./ui/view_helpers";
 import { key } from './ui/key';
 import { logger } from './util/debug';
 import { produce } from './util/produce';
 import { apply_to_rect } from "./util/se2-extra";
 import { Rect } from "./util/types";
+import { apply, inverse } from './util/se2';
+import { vm } from "./util/vutil";
+import { relpos } from "./util/dutil";
+import { make_pane } from "./ui/render";
 
 // return whether a evaluated at t-1 is equal to b at time t, sort of?
 function equalWake(a: WakeTime, b: WakeTime): boolean {
@@ -18,28 +22,6 @@ function equalWake(a: WakeTime, b: WakeTime): boolean {
   }
 }
 
-class RenderPane {
-  d: CanvasRenderingContext2D;
-  constructor(public c: HTMLCanvasElement) {
-    this.d = c.getContext('2d')!;
-    c.width = 640;
-    c.height = 480;
-  }
-  draw(state: SceneState) {
-    const { c, d } = this;
-    const rect_in_world: Rect = { p: { x: 0, y: 0 }, sz: { x: 1, y: 1 } };
-    const eph_canvas_from_world = eph_canvas_from_world_of_state(state.gameState);
-    const rect_in_canvas = apply_to_rect(eph_canvas_from_world, rect_in_world);
-    d.fillStyle = 'white';
-    d.fillRect(0, 0, 640, 480);
-    d.fillStyle = 'black';
-    d.fillRect(rect_in_canvas.p.x, rect_in_canvas.p.y, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
-  }
-}
-
-function make_pane(c: HTMLCanvasElement): RenderPane {
-  return new RenderPane(c);
-}
 
 async function go() {
 
@@ -48,17 +30,17 @@ async function go() {
   let prevSceneState: SceneState | null = null; // think about optimizing rendering
 
   function mouseDownListener(e: MouseEvent) {
-    dispatch({ t: 'mouseDown', p: { x: e.clientX, y: e.clientY } })
+    dispatch({ t: 'mouseDown', p: relpos(e, c) })
     document.addEventListener('mouseup', mouseUpListener);
     document.addEventListener('mousemove', mouseMoveListener);
   }
   function mouseUpListener(e: MouseEvent) {
-    dispatch({ t: 'mouseUp', p: { x: e.clientX, y: e.clientY } })
+    dispatch({ t: 'mouseUp', p: relpos(e, c) })
     document.removeEventListener('mouseup', mouseUpListener);
     document.removeEventListener('mousemove', mouseMoveListener);
   }
   function mouseMoveListener(e: MouseEvent) {
-    dispatch({ t: 'mouseMove', p: { x: e.clientX, y: e.clientY } })
+    dispatch({ t: 'mouseMove', p: relpos(e, c) })
   }
 
   const c = document.getElementById('c') as HTMLCanvasElement;
@@ -74,7 +56,6 @@ async function go() {
 
   function dispatch(action: Action): void {
     let [sceneState, effects] = reduce(state[0].sceneState, action);
-    console.log('hi');
     effects.forEach(e => {
       sceneState = handleEffect(sceneState, e);
     });
@@ -99,8 +80,8 @@ async function go() {
     else {
       logger('rendering', `Rendering screen. This shouldn't be constant.`);
       prevSceneState = state[0].sceneState;
+      pane.draw(state[0].sceneState);
     }
-    pane.draw(state[0].sceneState);
 
     requestAnimationFrame(repaint);
   }
