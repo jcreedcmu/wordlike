@@ -1,7 +1,9 @@
 import { produce } from "../util/produce";
 import { apply, inverse } from "../util/se2";
 import { Point } from "../util/types";
+import { next_rand } from "../util/util";
 import { vequal, vm } from "../util/vutil";
+import { Energies, getLetterSample } from "./distribution";
 import { GameState } from "./model";
 
 export function is_occupied(state: GameState, p: Point): boolean {
@@ -10,11 +12,10 @@ export function is_occupied(state: GameState, p: Point): boolean {
 
 export function peelOfState(state: GameState): GameState {
   const p_in_world_int = vm(apply(inverse(state.canvas_from_world), state.mouseState.p), Math.floor);
+  const { letter, energies, seed } = getLetterSample(state.seed, state.energies);
   return produce(state, s => {
-    s.tiles.push({ letter: randomLetter(), p_in_world_int });
+    s.seed = seed;
+    s.energies = energies;
+    s.tiles.push({ letter, p_in_world_int });
   });
-}
-
-export function randomLetter(): string {
-  return 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random() * 26)];
 }

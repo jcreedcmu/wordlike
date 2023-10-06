@@ -73,7 +73,7 @@ function drawTile(d: CanvasRenderingContext2D, canvas_from_world: SE2, tile: Til
   d.textBaseline = 'middle';
   d.textAlign = 'center';
   d.font = 'bold 30px  sans-serif';
-  d.fillText(tile.letter, rect_in_canvas.p.x + rect_in_canvas.sz.x / 2 + 0.5,
+  d.fillText(tile.letter.toUpperCase(), rect_in_canvas.p.x + rect_in_canvas.sz.x / 2 + 0.5,
     rect_in_canvas.p.y + rect_in_canvas.sz.y / 2 + 1.5);
 }
 

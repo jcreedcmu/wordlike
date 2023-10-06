@@ -1,5 +1,6 @@
 import { SE2 } from '../util/se2';
 import { Point } from '../util/types';
+import { Energies, initialEnergies } from './distribution';
 
 // There are UiActions, which might have different behavior depending
 // on view state, and other GameActions, which should be treated
@@ -53,8 +54,10 @@ export type Tile = {
 
 export type GameState = {
   tiles: Tile[],
+  energies: Energies,
   canvas_from_world: SE2,
   mouseState: MouseState,
+  seed: number,
 };
 
 export function mkState(): State {
@@ -67,7 +70,9 @@ export function mkGameState(): SceneState {
   return {
     t: 'game',
     gameState: {
-      tiles: 'STEEB'.split('').map((x, i) => ({ letter: x, p_in_world_int: { x: i, y: 0 } })),
+      energies: initialEnergies(),
+      seed: 12345678,
+      tiles: 'steeb'.split('').map((x, i) => ({ letter: x, p_in_world_int: { x: i, y: 0 } })),
       canvas_from_world: {
         scale: { x: 48, y: 48 },
         translate: { x: 320, y: 240 }

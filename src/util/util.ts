@@ -53,3 +53,10 @@ export function filterKeys<T>(rec: Record<string, T>, pred: (x: string) => boole
       .filter(([k, v]) => pred(k))
   );
 }
+
+// RtlUniform from Native API[13] from
+// https://en.wikipedia.org/wiki/Linear_congruential_generator
+export function next_rand(seed: number): { seed: number, float: number } {
+  const next = (2147483629 * seed + 2147483587) % 2147483647;
+  return { seed: next, float: (next & 0xffff) / (1 << 16) };
+}
