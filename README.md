@@ -1,10 +1,14 @@
 bananagrams-tower-defense
 =========================
 
-This is a prototype of a game idea that mixes tile-laying
-word game elements with the purchase flow of tower defense
-games.
+![image](screenshot.png)
 
+This is a prototype of a game idea that is principally a tile-laying
+word game (like scrabble/bananagrams) with an extra layer involving
+getting bonuses that enable expansion across a large grid. Maybe
+purchasing bonuses with resources obtained by making words/layouts/etc.
+At some point there was some inspiration from tower defense games, but
+I'm not sure if that's survived.
 
 Development
 ----------
