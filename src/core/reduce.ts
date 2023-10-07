@@ -1,6 +1,6 @@
 import { produce } from '../util/produce';
-import { apply, compose, ident, inverse, SE2, translate } from '../util/se2';
-import { vequal, vm, vsub } from '../util/vutil';
+import { apply, compose, composen, ident, inverse, scale, SE2, translate } from '../util/se2';
+import { vequal, vm, vmul, vscale, vsub } from '../util/vutil';
 import { Action, Effect, GameState, MouseState, SceneState } from './state';
 import { eph_canvas_from_canvas_of_mouse_state, eph_tile_canvas_from_tile_canvas_of_mouse_state } from '../ui/view_helpers';
 import { checkAllWords, is_occupied, peelOfState } from './state-helpers';
@@ -42,10 +42,6 @@ function resolveDrag(state: GameState): GameState {
       throw new Error(`unexpected resolveDrag with up mouse button`);
     } break;
   }
-
-
-
-
 }
 
 export function reduceGameAction(state: GameState, action: Action): [GameState, Effect[]] {
@@ -57,6 +53,17 @@ export function reduceGameAction(state: GameState, action: Action): [GameState, 
       return [state, []];
     }
     case 'none': return [state, []];
+    case 'wheel': {
+      const sf = action.delta < 0 ? 1.1 : 1 / 1.1;
+      const zoomed_canvas_of_unzoomed_canvas = composen(
+        translate(action.p),
+        scale({ x: sf, y: sf }),
+        translate(vscale(action.p, -1)),
+      );
+      return [produce(state, s => {
+        s.canvas_from_world = compose(zoomed_canvas_of_unzoomed_canvas, s.canvas_from_world);
+      }), []];
+    }
     case 'mouseDown': {
       const p_in_world_int = vm(apply(inverse(state.canvas_from_world), action.p), Math.floor);
 

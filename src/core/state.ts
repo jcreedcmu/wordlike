@@ -16,6 +16,7 @@ export type UiAction =
   | { t: 'mouseDown', p: Point }
   | { t: 'mouseUp', p: Point }
   | { t: 'mouseMove', p: Point }
+  | { t: 'wheel', p: Point, delta: number }
   ;
 
 export type Action =

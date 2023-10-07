@@ -41,9 +41,14 @@ async function go() {
   function mouseMoveListener(e: MouseEvent) {
     dispatch({ t: 'mouseMove', p: relpos(e, c) })
   }
+  function wheelListener(e: WheelEvent) {
+    dispatch({ t: 'wheel', p: relpos(e, c), delta: e.deltaY })
+  }
 
   const c = document.getElementById('c') as HTMLCanvasElement;
   c.addEventListener('mousedown', mouseDownListener);
+  c.addEventListener('wheel', wheelListener);
+
   const pane = await make_pane(c);
   const state: State[] = [mkState()];
 

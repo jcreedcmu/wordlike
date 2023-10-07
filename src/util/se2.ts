@@ -17,6 +17,10 @@ export function compose(a: SE2, b: SE2): SE2 {
   }
 }
 
+export function composen(...xforms: SE2[]): SE2 {
+  return xforms.reduce(compose);
+}
+
 export function inverse(a: SE2): SE2 {
   return {
     scale: vm(a.scale, a => 1 / a),
