@@ -61,3 +61,7 @@ export function vint(v: Point): Point {
 export function vfpart(v: Point): Point {
   return { x: v.x - int(v.x), y: v.y - int(v.y) };
 }
+
+export function vtrans(v: Point): Point {
+  return { x: v.y, y: v.x };
+}

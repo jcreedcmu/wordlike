@@ -1,3 +1,6 @@
+import { Point, Rect } from "./types";
+import { vsub } from "./vutil";
+
 export function mapval<T, U>(m: { [k: string]: T }, f: (x: T, k?: string) => U): { [k: string]: U } {
   return Object.fromEntries(Object.entries(m).map(([k, v]) => [k, f(v, k)]));
 }
@@ -59,4 +62,12 @@ export function filterKeys<T>(rec: Record<string, T>, pred: (x: string) => boole
 export function next_rand(seed: number): { seed: number, float: number } {
   const next = (2147483629 * seed + 2147483587) % 2147483647;
   return { seed: next, float: (next & 0xffff) / (1 << 16) };
+}
+
+export function boundRect(points: Point[]): Rect {
+  const xs = points.map(p => p.x);
+  const ys = points.map(p => p.y);
+  const mins = { x: Math.min(...xs), y: Math.min(...ys) };
+  const maxs = { x: Math.max(...xs), y: Math.max(...ys) };
+  return { p: mins, sz: vsub(maxs, mins) };
 }

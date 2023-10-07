@@ -5,6 +5,7 @@ export const DEBUG = {
   rendering: false,
   produce: false,
   letterSample: false,
+  words: false,
 };
 
 export type DebugLevel = keyof (typeof DEBUG);

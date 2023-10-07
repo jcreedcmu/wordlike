@@ -1,4 +1,4 @@
-import { SceneState, Tile } from "../core/model";
+import { SceneState, Tile } from "../core/state";
 import { eph_canvas_from_world_of_state, eph_tile_canvas_from_tile_canvas_of_mouse_state } from "./view_helpers";
 import { apply, compose, inverse, SE2 } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
@@ -63,13 +63,15 @@ function drawTile(d: CanvasRenderingContext2D, canvas_from_world: SE2, tile: Til
   const rect_in_world: Rect = { p: tile.p_in_world_int, sz: { x: 1, y: 1 } };
   const rect_in_canvas = apply_to_rect(canvas_from_world, rect_in_world);
 
-  d.fillStyle = '#c9b451';
+  const bgColor = tile.used ? '#c9b451' : '#f97451';
+  const fgColor = tile.used ? '#3a320e' : '#5a220e';
+  d.fillStyle = bgColor;
   d.fillRect(rect_in_canvas.p.x + 0.5, rect_in_canvas.p.y + 0.5, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
-  d.strokeStyle = '#3a320e';
+  d.strokeStyle = fgColor;
   d.lineWidth = 1;
   d.strokeRect(rect_in_canvas.p.x + 0.5, rect_in_canvas.p.y + 0.5, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
 
-  d.fillStyle = '#3a320e';
+  d.fillStyle = fgColor;
   d.textBaseline = 'middle';
   d.textAlign = 'center';
   d.font = 'bold 30px  sans-serif';

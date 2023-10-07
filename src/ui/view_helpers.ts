@@ -1,6 +1,6 @@
 import { compose, ident, SE2, translate } from '../util/se2';
 import { vsub } from '../util/vutil';
-import { GameState, MouseState } from '../core/model';
+import { GameState, MouseState } from '../core/state';
 import { Point } from '../util/types';
 
 export function eph_canvas_from_canvas_of_mouse_state(state: MouseState): SE2 {

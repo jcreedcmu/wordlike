@@ -1,6 +1,6 @@
 import { initAssets } from "./core/assets";
 import { WakeTime } from './core/clock';
-import { Action, Effect, mkState, SceneState, State } from "./core/model";
+import { Action, Effect, mkState, SceneState, State } from "./core/state";
 import { reduce } from './core/reduce';
 import { eph_canvas_from_world_of_state } from "./ui/view_helpers";
 import { key } from './ui/key';

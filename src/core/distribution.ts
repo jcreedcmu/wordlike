@@ -1,7 +1,7 @@
 import { DEBUG } from "../util/debug";
 import { produce } from "../util/produce";
 import { next_rand } from "../util/util";
-import { GameState } from "./model";
+import { GameState } from "./state";
 
 // contains 26 values. The probability of a letter being picked next
 // is proportional to e^{-βE}

@@ -49,6 +49,7 @@ export type State = {
 
 export type Tile = {
   p_in_world_int: Point,
+  used: boolean,
   letter: string,
 }
 
@@ -72,7 +73,11 @@ export function mkGameState(): SceneState {
     gameState: {
       energies: initialEnergies(),
       seed: 12345678,
-      tiles: 'steeb'.split('').map((x, i) => ({ letter: x, p_in_world_int: { x: i, y: 0 } })),
+      tiles: 'steeb'.split('').map((x, i) => ({
+        letter: x,
+        p_in_world_int: { x: i, y: 0 },
+        used: false,
+      })),
       canvas_from_world: {
         scale: { x: 48, y: 48 },
         translate: { x: 320, y: 240 }
