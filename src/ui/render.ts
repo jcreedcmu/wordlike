@@ -3,8 +3,8 @@ import { eph_canvas_from_world_of_state, eph_tile_canvas_from_tile_canvas_of_mou
 import { apply, compose, inverse, SE2 } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
 import { Rect } from "../util/types";
-import { vm } from "../util/vutil";
-import { getGrid } from "../core/grid";
+import { vadd, vm, vscale, vtrans } from "../util/vutil";
+import { getGrid, LocatedWord } from "../core/grid";
 
 const PANE = { x: 640, y: 480 };
 
@@ -48,8 +48,7 @@ export class RenderPane {
     // draw tiles
     state.gameState.tiles.forEach((tile, ix) => {
       if (!(ms.t == 'drag_tile' && ms.ix == ix)) {
-        drawTile(d, eph_canvas_from_world, tile,
-          getGrid(state.gameState.validities, tile.p_in_world_int));
+        drawTile(d, eph_canvas_from_world, tile);
       }
     });
 
@@ -58,38 +57,46 @@ export class RenderPane {
       drawTile(d,
         compose(eph_tile_canvas_from_tile_canvas_of_mouse_state(state.gameState.mouseState),
           eph_canvas_from_world),
-        tile,
-        getGrid(state.gameState.validities, tile.p_in_world_int),
-      );
+        tile);
+    }
+
+    // draw invalid words
+    if (ms.t == 'up') {
+      state.gameState.invalidWords.forEach(lw => {
+        drawInvalidWord(d, eph_canvas_from_world, lw);
+      });
     }
 
   }
 }
 
-function colorsOfTile(tile: Tile, valid: boolean): { fg: string, bg: string } {
+function colorsOfTile(tile: Tile): { fg: string, bg: string } {
   if (tile.used) {
-    if (valid) {
-      return { fg: '#2a520e', bg: '#89c451' }
-    }
-    else {
-      return { fg: '#3a320e', bg: '#c9b451' };
-    }
+    return { fg: '#3a320e', bg: '#c9b451' };
   }
   else {
-    if (valid) {
-      return { fg: '#5a220e', bg: '#ffa441' }
-    }
-    else {
-      return { fg: '#5a220e', bg: '#f97451' }
-    }
+    return { fg: '#5a220e', bg: '#f97451' }
   }
 }
 
-function drawTile(d: CanvasRenderingContext2D, canvas_from_world: SE2, tile: Tile, valid: boolean) {
+function drawInvalidWord(d: CanvasRenderingContext2D, canvas_from_world: SE2, word: LocatedWord) {
+  const thickness = 0.1;
+  const along = word.orientation; // vector pointing along the length of the word
+  const perp = vtrans(along); // vector pointing perpendicular to it
+  const rect_in_world: Rect = {
+    p: word.p,
+    sz: vadd(vscale(perp, thickness), vscale(along, word.word.length)),
+  };
+  const rect_in_canvas = apply_to_rect(canvas_from_world, rect_in_world);
+  d.fillStyle = 'red';
+  d.fillRect(rect_in_canvas.p.x + 0.5, rect_in_canvas.p.y + 0.5, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
+}
+
+function drawTile(d: CanvasRenderingContext2D, canvas_from_world: SE2, tile: Tile) {
   const rect_in_world: Rect = { p: tile.p_in_world_int, sz: { x: 1, y: 1 } };
   const rect_in_canvas = apply_to_rect(canvas_from_world, rect_in_world);
 
-  const { fg, bg } = colorsOfTile(tile, valid);
+  const { fg, bg } = colorsOfTile(tile);
   d.fillStyle = bg;
   d.fillRect(rect_in_canvas.p.x + 0.5, rect_in_canvas.p.y + 0.5, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
   d.strokeStyle = fg;

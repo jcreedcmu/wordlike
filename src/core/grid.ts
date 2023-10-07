@@ -101,16 +101,22 @@ export function transpose<T>(grid: Grid<T>): Grid<T> {
   }
 }
 
-type ValidWord = {
+export type LocatedWord = {
   p: Point,
   orientation: Point, // {x:1,y:0} or {x:0,y:1}
   word: string,
 }
 
+export type CheckResult = {
+  validWords: LocatedWord[],
+  invalidWords: LocatedWord[]
+};
+
 // returns true if every horizontally-consecutive sequence of at least
 // 2 characters in grid is a word according to isWord.
-export function checkGridWordsHoriz(grid: Grid<string>, isWord: (x: string) => boolean): { validWords: ValidWord[], allValid: boolean } {
-  let validWords: ValidWord[] = [];
+export function checkGridWordsHoriz(grid: Grid<string>, isWord: (x: string) => boolean): CheckResult {
+  let validWords: LocatedWord[] = [];
+  let invalidWords: LocatedWord[] = [];
   let wordSoFar = '';
   let allValid = true;
   // returns false if we've discovered a non-word
@@ -118,7 +124,7 @@ export function checkGridWordsHoriz(grid: Grid<string>, isWord: (x: string) => b
     if (wordSoFar.length > 1 && !isWord(wordSoFar)) {
       if (DEBUG.words)
         console.log(`nonword: ${wordSoFar}`);
-      allValid = false;
+      invalidWords.push({ word: wordSoFar, orientation: { x: 1, y: 0 }, p });
       wordSoFar = '';
     }
     else {
@@ -142,28 +148,36 @@ export function checkGridWordsHoriz(grid: Grid<string>, isWord: (x: string) => b
     }
     endWord({ x: grid.rect.sz.x - wordSoFar.length, y });
   }
-  return { validWords, allValid };
+  return { validWords, invalidWords };
+}
+
+function transposeLocatedWord(lw: LocatedWord): LocatedWord {
+  return {
+    word: lw.word,
+    orientation: vtrans(lw.orientation),
+    p: vtrans(lw.p),
+  };
 }
 
 // returns true if every vertically-consecutive sequence of at least
 // 2 characters in grid is a word according to isWord.
-export function checkGridWordsVert(grid: Grid<string>, isWord: (x: string) => boolean): { validWords: ValidWord[], allValid: boolean } {
-  const { validWords, allValid } = checkGridWordsHoriz(transpose(grid), isWord);
+export function checkGridWordsVert(grid: Grid<string>, isWord: (x: string) => boolean): CheckResult {
+  const { validWords, invalidWords } = checkGridWordsHoriz(transpose(grid), isWord);
   return {
-    validWords: validWords.map(x => ({
-      word: x.word,
-      orientation: vtrans(x.orientation),
-      p: vtrans(x.p),
-    })), allValid
+    validWords: validWords.map(transposeLocatedWord),
+    invalidWords: invalidWords.map(transposeLocatedWord),
   };
 }
 
 // returns true if every horizontally- or vertically-consecutive
 // sequence of at least 2 tiles in grid is a word according to isWord.
-export function checkGridWords(grid: Grid<string>, isWord: (x: string) => boolean): { validWords: ValidWord[], allValid: boolean } {
-  const { validWords: validHorizWords, allValid: allHorizValid } = checkGridWordsHoriz(grid, isWord);
-  const { validWords: validVertWords, allValid: allVertValid } = checkGridWordsVert(grid, isWord);
-  return { validWords: [...validHorizWords, ...validVertWords], allValid: allHorizValid && allVertValid };
+export function checkGridWords(grid: Grid<string>, isWord: (x: string) => boolean): CheckResult {
+  const { validWords: validHorizWords, invalidWords: invalidHorizWords } = checkGridWordsHoriz(grid, isWord);
+  const { validWords: validVertWords, invalidWords: invalidVertWords } = checkGridWordsVert(grid, isWord);
+  return {
+    validWords: [...validHorizWords, ...validVertWords],
+    invalidWords: [...invalidHorizWords, ...invalidVertWords],
+  };
 }
 
 // returns true if all the elements of grid are orthogonally connected

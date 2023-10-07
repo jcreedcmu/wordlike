@@ -27,8 +27,8 @@ export function checkAllWords(state: GameState): GameState {
   const tiles = state.tiles;
   const grid = mkGrid(tiles);
 
-  const { allValid, validWords } = checkGridWords(grid, word => getAssets().dictionary[word]);
-  if (allValid && checkConnected(grid)) {
+  const { validWords, invalidWords } = checkGridWords(grid, word => getAssets().dictionary[word]);
+  if (invalidWords.length == 0 && checkConnected(grid)) {
     logger('words', 'grid valid');
     const newTiles = produce(tiles, ts => {
       ts.forEach(t => { t.used = true })
@@ -38,18 +38,7 @@ export function checkAllWords(state: GameState): GameState {
     });
   }
 
-  const validPoints: Point[] = validWords.flatMap(vw => {
-    let p = vw.p;
-    let rv: Point[] = [];
-    for (let i = 0; i < vw.word.length; i++) {
-      rv.push({ x: p.x, y: p.y });
-      p.x += vw.orientation.x;
-      p.y += vw.orientation.y;
-    }
-    return rv;
-  });
-  const newValidities: Grid<boolean> = mkGridOf(validPoints.map(p => ({ p, v: true })));
   return produce(state, s => {
-    s.validities = newValidities;
+    s.invalidWords = invalidWords;
   });
 }
