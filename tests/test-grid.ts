@@ -1,4 +1,4 @@
-import { checkGridHoriz, mkGrid, transpose } from '../src/core/grid';
+import { checkConnected, checkGridWordsHoriz, mkGrid, transpose } from '../src/core/grid';
 import { Tile } from '../src/core/state';
 
 function isWord(word: string): boolean {
@@ -14,7 +14,7 @@ function tilesOfString(x: string): Tile[] {
   }));
 }
 
-const tiles: Tile[] = tilesOfString(`
+const tiles1: Tile[] = tilesOfString(`
 .......t
 .......h
 ..fumble
@@ -22,17 +22,37 @@ const tiles: Tile[] = tilesOfString(`
 nib..z..
 `);
 
+const tiles2: Tile[] = tilesOfString(`
+.......t
+.......h
+..fumble
+..o..a..
+..o..z.q
+`);
+
 describe('mkGrid', () => {
   test('should work', () => {
-    expect(mkGrid(tiles).rect.sz).toEqual({ x: 7, y: 4 });
+    expect(mkGrid(tiles1).rect.sz).toEqual({ x: 7, y: 4 });
   });
 
 });
 
-describe('checkGridHoriz', () => {
+describe('checkGridWordsHoriz', () => {
   test('should work', () => {
-    expect(checkGridHoriz(mkGrid(tiles), isWord)).toEqual(true);
-    expect(checkGridHoriz(transpose(mkGrid(tiles)), isWord)).toEqual(false);
+    expect(checkGridWordsHoriz(mkGrid(tiles1), isWord)).toEqual(true);
+    expect(checkGridWordsHoriz(transpose(mkGrid(tiles1)), isWord)).toEqual(false);
+
+    // even though q is not a valid word, it's only length 1. The
+    // connectedness test is what invalidates it.
+    expect(checkGridWordsHoriz(mkGrid(tiles2), isWord)).toEqual(true);
+  });
+
+});
+
+describe('checkConnected', () => {
+  test('should work', () => {
+    expect(checkConnected(mkGrid(tiles1))).toEqual(true);
+    expect(checkConnected(mkGrid(tiles2))).toEqual(false);
   });
 
 });

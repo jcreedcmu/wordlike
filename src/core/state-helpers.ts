@@ -6,7 +6,7 @@ import { next_rand } from "../util/util";
 import { vequal, vm } from "../util/vutil";
 import { getAssets } from "./assets";
 import { Energies, getLetterSample } from "./distribution";
-import { checkGrid, mkGrid } from "./grid";
+import { checkConnected, checkGridWords, mkGrid } from "./grid";
 import { GameState } from "./state";
 
 export function is_occupied(state: GameState, p: Point): boolean {
@@ -27,9 +27,11 @@ export function checkAllWords(state: GameState): GameState {
   const tiles = state.tiles;
 
   let newTiles = tiles;
+  const grid = mkGrid(tiles);
 
-  if (checkGrid(mkGrid(tiles), word => getAssets().dictionary[word])) {
-    logger('words', 'no invalid words');
+  if (checkGridWords(grid, word => getAssets().dictionary[word]) &&
+    checkConnected(grid)) {
+    logger('words', 'grid valid');
     newTiles = produce(tiles, ts => {
       ts.forEach(t => { t.used = true })
     });
