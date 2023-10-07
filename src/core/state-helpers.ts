@@ -10,7 +10,7 @@ import { checkConnected, checkGridWords, Grid, mkGrid, mkGridOf } from "./grid";
 import { GameState } from "./state";
 
 export function is_occupied(state: GameState, p: Point): boolean {
-  return state.tiles.some(tile => vequal(tile.p_in_world_int, p));
+  return state.main_tiles.some(tile => vequal(tile.p_in_world_int, p));
 }
 
 export function peelOfState(state: GameState): GameState {
@@ -19,12 +19,12 @@ export function peelOfState(state: GameState): GameState {
   return produce(state, s => {
     s.seed = seed;
     s.energies = energies;
-    s.tiles.push({ letter, p_in_world_int, used: false });
+    s.main_tiles.push({ letter, p_in_world_int, used: false });
   });
 }
 
 export function checkAllWords(state: GameState): GameState {
-  const tiles = state.tiles;
+  const tiles = state.main_tiles;
   const grid = mkGrid(tiles);
 
   const { validWords, invalidWords } = checkGridWords(grid, word => getAssets().dictionary[word]);
@@ -34,7 +34,7 @@ export function checkAllWords(state: GameState): GameState {
       ts.forEach(t => { t.used = true })
     });
     state = produce(state, s => {
-      s.tiles = newTiles;
+      s.main_tiles = newTiles;
     });
   }
 

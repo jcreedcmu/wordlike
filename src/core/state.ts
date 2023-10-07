@@ -56,7 +56,8 @@ export type Tile = {
 }
 
 export type GameState = {
-  tiles: Tile[],
+  main_tiles: Tile[],
+  hand_tiles: Tile[],
   invalidWords: LocatedWord[],
   energies: Energies,
   canvas_from_world: SE2,
@@ -77,11 +78,15 @@ export function mkGameState(): SceneState {
       invalidWords: [],
       energies: initialEnergies(),
       seed: 12345678,
-      tiles: 'steeb'.split('').map((x, i) => ({
+      main_tiles: 'steeb'.split('').map((x, i) => ({
         letter: x,
         p_in_world_int: { x: i, y: 0 },
         used: false,
       })),
+      hand_tiles: [
+        { letter: 'x', p_in_world_int: { x: 0, y: 0 }, used: false },
+        { letter: 'e', p_in_world_int: { x: 0, y: 1 }, used: true }
+      ],
       canvas_from_world: {
         scale: { x: 48, y: 48 },
         translate: { x: 320, y: 240 }

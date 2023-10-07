@@ -27,11 +27,11 @@ function resolveDrag(state: GameState): GameState {
           state.canvas_from_world)
       );
       const new_tile_in_world_int =
-        vm(apply(new_tile_world_from_old_tile_world, state.tiles[ms.ix].p_in_world_int), Math.round);
+        vm(apply(new_tile_world_from_old_tile_world, state.main_tiles[ms.ix].p_in_world_int), Math.round);
 
       const afterDrop = produce(state, s => {
         if (!is_occupied(state, new_tile_in_world_int)) {
-          s.tiles[ms.ix].p_in_world_int = new_tile_in_world_int;
+          s.main_tiles[ms.ix].p_in_world_int = new_tile_in_world_int;
         }
         s.mouseState = { t: 'up', p: ms.p };
       });
@@ -68,7 +68,7 @@ export function reduceGameAction(state: GameState, action: Action): [GameState, 
       const p_in_world_int = vm(apply(inverse(state.canvas_from_world), action.p), Math.floor);
 
       let i = 0;
-      for (const tile of state.tiles) {
+      for (const tile of state.main_tiles) {
         if (vequal(p_in_world_int, tile.p_in_world_int)) {
           return [produce(state, s => { s.mouseState = { t: 'drag_tile', ix: i, orig_p: action.p, p: action.p } }), []];
         }

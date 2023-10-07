@@ -6,14 +6,29 @@ import { Rect } from "../util/types";
 import { vadd, vm, vscale, vtrans } from "../util/vutil";
 import { getGrid, LocatedWord } from "../core/grid";
 
-const PANE = { x: 640, y: 480 };
+const HAND_WIDTH = 100;
+const WHOLE_CANVAS_in_canvas: Rect = { p: { x: 0, y: 0 }, sz: { x: 640, y: 480 } };
+const HAND_in_canvas: Rect = {
+  p: { x: WHOLE_CANVAS_in_canvas.sz.x - HAND_WIDTH, y: 0 },
+  sz: { x: HAND_WIDTH, y: WHOLE_CANVAS_in_canvas.sz.y }
+};
+const MAIN_PANEL_in_canvas: Rect = {
+  p: { x: 0, y: 0 },
+  sz: { x: WHOLE_CANVAS_in_canvas.sz.x - HAND_WIDTH, y: WHOLE_CANVAS_in_canvas.sz.y }
+};
+
+const DEFAULT_TILE_SCALE = 48;
+const hand_canvas_from_world: SE2 = {
+  scale: { x: DEFAULT_TILE_SCALE, y: DEFAULT_TILE_SCALE },
+  translate: { x: HAND_in_canvas.p.x + (HAND_WIDTH - DEFAULT_TILE_SCALE) / 2, y: 0 }
+};
 
 export class RenderPane {
   d: CanvasRenderingContext2D;
   constructor(public c: HTMLCanvasElement) {
     this.d = c.getContext('2d')!;
-    c.width = PANE.x;
-    c.height = PANE.y;
+    c.width = WHOLE_CANVAS_in_canvas.sz.x;
+    c.height = WHOLE_CANVAS_in_canvas.sz.y;
   }
   draw(state: SceneState) {
     const { c, d } = this;
@@ -21,10 +36,10 @@ export class RenderPane {
     const eph_canvas_from_world = eph_canvas_from_world_of_state(state.gameState);
 
     d.fillStyle = 'white';
-    d.fillRect(0, 0, PANE.x, PANE.y);
+    d.fillRect(MAIN_PANEL_in_canvas.p.x, MAIN_PANEL_in_canvas.p.y, MAIN_PANEL_in_canvas.sz.x, MAIN_PANEL_in_canvas.sz.y);
 
     const top_left_in_world = vm(apply(inverse(eph_canvas_from_world), { x: 0, y: 0 }), Math.floor);
-    const bot_right_in_world = vm(apply(inverse(eph_canvas_from_world), PANE), Math.ceil);
+    const bot_right_in_world = vm(apply(inverse(eph_canvas_from_world), MAIN_PANEL_in_canvas.sz), Math.ceil);
 
     for (let i = top_left_in_world.x; i <= bot_right_in_world.x; i++) {
       for (let j = top_left_in_world.y; j <= bot_right_in_world.y; j++) {
@@ -46,19 +61,11 @@ export class RenderPane {
     }
 
     // draw tiles
-    state.gameState.tiles.forEach((tile, ix) => {
+    state.gameState.main_tiles.forEach((tile, ix) => {
       if (!(ms.t == 'drag_tile' && ms.ix == ix)) {
         drawTile(d, eph_canvas_from_world, tile);
       }
     });
-
-    if (ms.t == 'drag_tile') {
-      const tile = state.gameState.tiles[ms.ix];
-      drawTile(d,
-        compose(eph_tile_canvas_from_tile_canvas_of_mouse_state(state.gameState.mouseState),
-          eph_canvas_from_world),
-        tile);
-    }
 
     // draw invalid words
     if (ms.t == 'up') {
@@ -67,6 +74,22 @@ export class RenderPane {
       });
     }
 
+    // draw hand
+    d.fillStyle = '#eeeeee';
+    d.fillRect(HAND_in_canvas.p.x, HAND_in_canvas.p.y, HAND_in_canvas.sz.x, HAND_in_canvas.sz.y);
+
+    state.gameState.hand_tiles.forEach(tile => {
+      drawTile(d, hand_canvas_from_world, tile);
+    });
+
+    // draw dragged tile on the very top
+    if (ms.t == 'drag_tile') {
+      const tile = state.gameState.main_tiles[ms.ix];
+      drawTile(d,
+        compose(eph_tile_canvas_from_tile_canvas_of_mouse_state(state.gameState.mouseState),
+          eph_canvas_from_world),
+        tile);
+    }
   }
 }
 
