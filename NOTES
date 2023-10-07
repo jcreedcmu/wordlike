@@ -1,0 +1,39 @@
+=== 2023.10.07 META: (:id 1dcd39fc-1ae9-4830-ad81-ae9c00130252)
+
+special tile ideas:
+
+- blank, which can be any letter, even different letters in horiz vs. vert
+- "glue" tile which acts like the empty string when computing word-ness, so like
+```
+        A
+        B
+  B E A * C O N
+        L
+        E
+```
+is allowed.
+
+- multi-character tiles, e.g.
+```
+         A
+         G
+      M [IL] I T A R Y
+         E
+```
+
+bonus ideas:
+
+- temporarily slow down letter arrival
+- give 'bombs' to destroy obstacles
+- force next letter to be vowel/consonant/etc.
+- destroy letter
+- turn letter into vowel/consonant/etc.
+- increment/decrement letter in alphabet
+- duplicate letter
+
+constraints:
+
+- barriers that have to be bombed
+- you have to capture it with a vowel/consonant/etc.
+- you have to capture it with a sufficiently long word
+- you have to capture it with a sufficiently short word
