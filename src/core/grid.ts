@@ -18,7 +18,7 @@ function unparseCoord(p: Point): string {
   return `${p.x},${p.y}`;
 }
 
-function getGrid<T>(grid: Grid<T>, p: Point): T {
+export function getGrid<T>(grid: Grid<T>, p: Point): T {
   return grid.elems[unparseCoord(p)];
 }
 
@@ -59,6 +59,24 @@ function firstSet<T>(grid: Grid<T>): Point {
     }
   }
   throw new Error(`no values defined when trying to compute firstSet`);
+}
+
+export function emptyGrid<T>(): Grid<T> {
+  return {
+    rect: boundRect([]),
+    elems: {}
+  };
+}
+
+export function mkGridOf<T>(elms: { p: Point, v: T }[]): Grid<T> {
+  const elems: Record<string, T> = {};
+  elms.forEach(elm => {
+    elems[unparseCoord(elm.p)] = elm.v;
+  });
+  return {
+    rect: boundRect(elms.map(elm => elm.p)),
+    elems
+  };
 }
 
 export function mkGrid(tiles: Tile[]): Grid<string> {

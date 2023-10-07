@@ -1,6 +1,7 @@
 import { SE2 } from '../util/se2';
 import { Point } from '../util/types';
 import { Energies, initialEnergies } from './distribution';
+import { emptyGrid, Grid, mkGrid } from './grid';
 
 // There are UiActions, which might have different behavior depending
 // on view state, and other GameActions, which should be treated
@@ -56,6 +57,7 @@ export type Tile = {
 
 export type GameState = {
   tiles: Tile[],
+  validities: Grid<boolean>,
   energies: Energies,
   canvas_from_world: SE2,
   mouseState: MouseState,
@@ -72,6 +74,7 @@ export function mkGameState(): SceneState {
   return {
     t: 'game',
     gameState: {
+      validities: emptyGrid(),
       energies: initialEnergies(),
       seed: 12345678,
       tiles: 'steeb'.split('').map((x, i) => ({

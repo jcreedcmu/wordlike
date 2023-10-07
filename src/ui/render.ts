@@ -4,6 +4,7 @@ import { apply, compose, inverse, SE2 } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
 import { Rect } from "../util/types";
 import { vm } from "../util/vutil";
+import { getGrid } from "../core/grid";
 
 const PANE = { x: 640, y: 480 };
 
@@ -47,31 +48,55 @@ export class RenderPane {
     // draw tiles
     state.gameState.tiles.forEach((tile, ix) => {
       if (!(ms.t == 'drag_tile' && ms.ix == ix)) {
-        drawTile(d, eph_canvas_from_world, tile);
+        drawTile(d, eph_canvas_from_world, tile,
+          getGrid(state.gameState.validities, tile.p_in_world_int));
       }
     });
 
     if (ms.t == 'drag_tile') {
       const tile = state.gameState.tiles[ms.ix];
-      drawTile(d, compose(eph_tile_canvas_from_tile_canvas_of_mouse_state(state.gameState.mouseState), eph_canvas_from_world), tile);
+      drawTile(d,
+        compose(eph_tile_canvas_from_tile_canvas_of_mouse_state(state.gameState.mouseState),
+          eph_canvas_from_world),
+        tile,
+        getGrid(state.gameState.validities, tile.p_in_world_int),
+      );
     }
 
   }
 }
 
-function drawTile(d: CanvasRenderingContext2D, canvas_from_world: SE2, tile: Tile) {
+function colorsOfTile(tile: Tile, valid: boolean): { fg: string, bg: string } {
+  if (tile.used) {
+    if (valid) {
+      return { fg: '#2a520e', bg: '#89c451' }
+    }
+    else {
+      return { fg: '#3a320e', bg: '#c9b451' };
+    }
+  }
+  else {
+    if (valid) {
+      return { fg: '#5a220e', bg: '#ffa441' }
+    }
+    else {
+      return { fg: '#5a220e', bg: '#f97451' }
+    }
+  }
+}
+
+function drawTile(d: CanvasRenderingContext2D, canvas_from_world: SE2, tile: Tile, valid: boolean) {
   const rect_in_world: Rect = { p: tile.p_in_world_int, sz: { x: 1, y: 1 } };
   const rect_in_canvas = apply_to_rect(canvas_from_world, rect_in_world);
 
-  const bgColor = tile.used ? '#c9b451' : '#f97451';
-  const fgColor = tile.used ? '#3a320e' : '#5a220e';
-  d.fillStyle = bgColor;
+  const { fg, bg } = colorsOfTile(tile, valid);
+  d.fillStyle = bg;
   d.fillRect(rect_in_canvas.p.x + 0.5, rect_in_canvas.p.y + 0.5, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
-  d.strokeStyle = fgColor;
+  d.strokeStyle = fg;
   d.lineWidth = 1;
   d.strokeRect(rect_in_canvas.p.x + 0.5, rect_in_canvas.p.y + 0.5, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
 
-  d.fillStyle = fgColor;
+  d.fillStyle = fg;
   d.textBaseline = 'middle';
   d.textAlign = 'center';
   const fontSize = Math.round(0.6 * canvas_from_world.scale.x);
