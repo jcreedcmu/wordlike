@@ -1,4 +1,4 @@
-import { checkConnected, checkGridWordsHoriz, mkGrid, transpose } from '../src/core/grid';
+import { checkConnected, checkGridWordsHoriz, checkGridWordsVert, mkGrid, transpose } from '../src/core/grid';
 import { Tile } from '../src/core/state';
 
 function isWord(word: string): boolean {
@@ -37,14 +37,30 @@ describe('mkGrid', () => {
 
 });
 
-describe('checkGridWordsHoriz', () => {
-  test('should work', () => {
-    expect(checkGridWordsHoriz(mkGrid(tiles1), isWord)).toEqual(true);
-    expect(checkGridWordsHoriz(transpose(mkGrid(tiles1)), isWord)).toEqual(false);
+describe('checking words', () => {
 
+  test('works horizontally', () => {
+    const horizResults = checkGridWordsHoriz(mkGrid(tiles1), isWord);
+    expect(horizResults.allValid).toEqual(true);
+    expect(horizResults.validWords).toEqual([
+      { word: 'fumble', p: { x: 2, y: 2 }, orientation: { x: 1, y: 0 } },
+      { word: 'nib', p: { x: 0, y: 4 }, orientation: { x: 1, y: 0 } },
+    ]);
+  });
+
+  test('works vertically', () => {
+    const vertResults = checkGridWordsVert(mkGrid(tiles1), isWord);
+    expect(vertResults.allValid).toEqual(false);
+    expect(vertResults.validWords).toEqual([
+      { word: 'baz', p: { x: 5, y: 2 }, orientation: { x: 0, y: 1 } },
+      { word: 'the', p: { x: 7, y: 0 }, orientation: { x: 0, y: 1 } },
+    ]);
+  });
+
+  test('is not distracted by isolated single letters', () => {
     // even though q is not a valid word, it's only length 1. The
     // connectedness test is what invalidates it.
-    expect(checkGridWordsHoriz(mkGrid(tiles2), isWord)).toEqual(true);
+    expect(checkGridWordsHoriz(mkGrid(tiles2), isWord).allValid).toEqual(true);
   });
 
 });
