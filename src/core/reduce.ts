@@ -1,5 +1,5 @@
 import { canvas_from_drag_tile, pan_canvas_from_canvas_of_mouse_state } from '../ui/view-helpers';
-import { getWidgetPoint, WidgetPoint } from '../ui/widget-helpers';
+import { canvas_from_hand, getWidgetPoint, WidgetPoint } from '../ui/widget-helpers';
 import { produce } from '../util/produce';
 import { compose, composen, inverse, scale, translate } from '../util/se2';
 import { Point } from '../util/types';
@@ -23,20 +23,38 @@ function resolveDrag(state: GameState): GameState {
 
     case 'drag_main_tile': {
 
-      // effectively the same as the purely translational world_from_tile
-      const new_tile_in_world_int: Point = vm(compose(
-        inverse(state.canvas_from_world),
-        canvas_from_drag_tile(state)).translate,
-        Math.round);
+      const wp = getWidgetPoint(state, ms.p);
+      if (wp.t == 'world') {
+        // effectively the same as the purely translational world_from_tile
+        const new_tile_in_world_int: Point = vm(compose(
+          inverse(state.canvas_from_world),
+          canvas_from_drag_tile(state)).translate,
+          Math.round);
 
-      const afterDrop = produce(state, s => {
-        if (!is_occupied(state, new_tile_in_world_int)) {
-          s.main_tiles[ms.ix].p_in_world_int = new_tile_in_world_int;
-        }
-        s.mouseState = { t: 'up', p: ms.p };
-      });
+        const afterDrop = produce(state, s => {
+          if (!is_occupied(state, new_tile_in_world_int)) {
+            s.main_tiles[ms.ix].p_in_world_int = new_tile_in_world_int;
+          }
+          s.mouseState = { t: 'up', p: ms.p };
+        });
+        return checkAllWords(afterDrop);
+      }
+      else {
+        // effectively the same as the purely translational hand_from_tile
+        const new_tile_in_hand_int: Point = vm(compose(
+          inverse(canvas_from_hand()),
+          canvas_from_drag_tile(state)).translate,
+          Math.round);
 
-      return checkAllWords(afterDrop);
+        const tile = state.main_tiles[ms.ix];
+        const afterDrop = produce(state, s => {
+          s.main_tiles.splice(ms.ix, 1);
+          s.hand_tiles.splice(new_tile_in_hand_int.y, 0, tile);
+          s.mouseState = { t: 'up', p: ms.p };
+        });
+        return checkAllWords(afterDrop);
+      }
+
     } break;
     case 'up': {
       throw new Error(`unexpected resolveDrag with up mouse button`);

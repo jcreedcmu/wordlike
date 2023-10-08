@@ -66,8 +66,10 @@ export class RenderPane {
     d.fillRect(hand_bds_in_canvas.p.x, hand_bds_in_canvas.p.y, hand_bds_in_canvas.sz.x, hand_bds_in_canvas.sz.y);
 
     state.hand_tiles.forEach((tile, ix) => {
-      if (!(ms.t == 'drag_hand_tile' && ms.ix == ix))
-        drawTile(d, canvas_from_hand(), tile);
+      if (!(ms.t == 'drag_hand_tile' && ms.ix == ix)) {
+        const hand_from_tile = translate({ x: 0, y: ix });
+        drawTileIntrinsic(d, compose(canvas_from_hand(), hand_from_tile), tile);
+      }
     });
 
     // draw dragged tile on the very top
