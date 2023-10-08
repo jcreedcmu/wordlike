@@ -23,6 +23,16 @@ export function peelOfState(state: GameState): GameState {
   });
 }
 
+export function killTileOfState(state: GameState): GameState {
+  const p_in_world_int = vm(apply(inverse(state.canvas_from_world), state.mouseState.p), Math.floor);
+  const ix = state.main_tiles.findIndex(tile => vequal(tile.p_in_world_int, p_in_world_int));
+  if (ix == -1)
+    return state;
+  return checkAllWords(produce(state, s => {
+    s.main_tiles.splice(ix, 1);
+  }));
+}
+
 export function checkAllWords(state: GameState): GameState {
   const tiles = state.main_tiles;
   const grid = mkGrid(tiles);
