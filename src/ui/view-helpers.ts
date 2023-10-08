@@ -41,8 +41,6 @@ export function canvas_from_drag_tile(state: GameState): SE2 {
   const ms = state.mouseState;
   switch (ms.t) {
     case 'drag_main_tile':
-      return ident();
-      break;
     case 'drag_hand_tile':
       const wp0 = getWidgetPoint(state, ms.orig_p);
       const wp1 = getWidgetPoint(state, ms.p);

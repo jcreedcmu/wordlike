@@ -73,11 +73,8 @@ export class RenderPane {
     // draw dragged tile on the very top
     if (ms.t == 'drag_main_tile') {
       const tile = state.main_tiles[ms.ix];
-      const world_from_tile = translate(tile.p_in_world_int);
       drawTileIntrinsic(d,
-        composen(drag_canvas_from_canvas_of_mouse_state(ms),
-          pan_canvas_from_world,
-          world_from_tile),
+        canvas_from_drag_tile(state),
         tile);
     }
 
@@ -112,6 +109,7 @@ function drawInvalidWord(d: CanvasRenderingContext2D, canvas_from_world: SE2, wo
   d.fillRect(rect_in_canvas.p.x + 0.5, rect_in_canvas.p.y + 0.5, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
 }
 
+// DEPRECATED: in favor of drawTileIntrinsic
 function drawTile(d: CanvasRenderingContext2D, canvas_from_world: SE2, tile: Tile) {
   const rect_in_world: Rect = { p: tile.p_in_world_int, sz: { x: 1, y: 1 } };
   const rect_in_canvas = apply_to_rect(canvas_from_world, rect_in_world);
