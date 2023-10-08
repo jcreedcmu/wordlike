@@ -89,7 +89,7 @@ export function mkGameState(): SceneState {
       ],
       canvas_from_world: {
         scale: { x: 48, y: 48 },
-        translate: { x: 320, y: 240 }
+        translate: { x: 200, y: 240 }
       },
       mouseState: { t: 'up', p: { x: 0, y: 0 } },
     }, revision: 0
