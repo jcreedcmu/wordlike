@@ -2,7 +2,7 @@ import { produce } from '../util/produce';
 import { apply, compose, composen, ident, inverse, scale, SE2, translate } from '../util/se2';
 import { vequal, vm, vmul, vscale, vsub } from '../util/vutil';
 import { Action, Effect, GameState, MouseState, SceneState } from './state';
-import { eph_canvas_from_canvas_of_mouse_state, eph_tile_canvas_from_tile_canvas_of_mouse_state } from '../ui/view-helpers';
+import { pan_canvas_from_canvas_of_mouse_state, drag_canvas_from_canvas_of_mouse_state } from '../ui/view-helpers';
 import { checkAllWords, is_occupied, killTileOfState, peelOfState } from './state-helpers';
 import { getWidgetPoint, WidgetPoint } from '../ui/widget-helpers';
 import { Point } from '../util/types';
@@ -13,7 +13,7 @@ function resolveDrag(state: GameState): GameState {
   switch (ms.t) {
     case 'drag_world': {
 
-      const new_canvas_from_world = compose(eph_canvas_from_canvas_of_mouse_state(state.mouseState), state.canvas_from_world);
+      const new_canvas_from_world = compose(pan_canvas_from_canvas_of_mouse_state(state.mouseState), state.canvas_from_world);
 
       return produce(state, s => {
         s.canvas_from_world = new_canvas_from_world;
@@ -25,7 +25,7 @@ function resolveDrag(state: GameState): GameState {
       const new_tile_world_from_old_tile_world = compose(
         inverse(state.canvas_from_world),
         compose(
-          eph_tile_canvas_from_tile_canvas_of_mouse_state(state.mouseState),
+          drag_canvas_from_canvas_of_mouse_state(state.mouseState),
           state.canvas_from_world)
       );
       const new_tile_in_world_int =

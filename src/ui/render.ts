@@ -1,5 +1,5 @@
 import { SceneState, Tile } from "../core/state";
-import { eph_canvas_from_world_of_state, eph_tile_canvas_from_tile_canvas_of_mouse_state } from "./view-helpers";
+import { pan_canvas_from_world_of_state, drag_canvas_from_canvas_of_mouse_state } from "./view-helpers";
 import { apply, compose, inverse, SE2 } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
 import { Rect } from "../util/types";
@@ -18,7 +18,7 @@ export class RenderPane {
   draw(state: SceneState) {
     const { c, d } = this;
     const ms = state.gameState.mouseState;
-    const eph_canvas_from_world = eph_canvas_from_world_of_state(state.gameState);
+    const eph_canvas_from_world = pan_canvas_from_world_of_state(state.gameState);
 
     d.fillStyle = 'white';
     d.fillRect(world_bds_in_canvas.p.x, world_bds_in_canvas.p.y, world_bds_in_canvas.sz.x, world_bds_in_canvas.sz.y);
@@ -72,14 +72,14 @@ export class RenderPane {
     if (ms.t == 'drag_main_tile') {
       const tile = state.gameState.main_tiles[ms.ix];
       drawTile(d,
-        compose(eph_tile_canvas_from_tile_canvas_of_mouse_state(state.gameState.mouseState),
+        compose(drag_canvas_from_canvas_of_mouse_state(state.gameState.mouseState),
           eph_canvas_from_world),
         tile);
     }
     if (ms.t == 'drag_hand_tile') {
       const tile = state.gameState.hand_tiles[ms.ix];
       drawTile(d,
-        compose(eph_tile_canvas_from_tile_canvas_of_mouse_state(state.gameState.mouseState),
+        compose(drag_canvas_from_canvas_of_mouse_state(state.gameState.mouseState),
           eph_canvas_from_world),
         tile);
     }
