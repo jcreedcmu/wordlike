@@ -21,4 +21,4 @@ test:
 	npm test
 
 count:
-	ag -g 'cc$$|hh$$|ts$$|frag$$|vert$$' --ignore='tests' | xargs wc -l
+	ag -g 'cc$$|hh$$|tsx?$$|frag$$|vert$$' --ignore='tests' | xargs wc -l
