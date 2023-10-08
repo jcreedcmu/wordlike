@@ -2,7 +2,7 @@ import { produce } from '../util/produce';
 import { apply, compose, composen, ident, inverse, scale, SE2, translate } from '../util/se2';
 import { vequal, vm, vmul, vscale, vsub } from '../util/vutil';
 import { Action, Effect, GameState, MouseState, SceneState } from './state';
-import { eph_canvas_from_canvas_of_mouse_state, eph_tile_canvas_from_tile_canvas_of_mouse_state } from '../ui/view_helpers';
+import { eph_canvas_from_canvas_of_mouse_state, eph_tile_canvas_from_tile_canvas_of_mouse_state } from '../ui/view-helpers';
 import { checkAllWords, is_occupied, killTileOfState, peelOfState } from './state-helpers';
 
 
@@ -18,7 +18,7 @@ function resolveDrag(state: GameState): GameState {
         s.mouseState = { t: 'up', p: ms.p };
       });
     } break;
-    case 'drag_tile': {
+    case 'drag_main_tile': {
 
       const new_tile_world_from_old_tile_world = compose(
         inverse(state.canvas_from_world),
@@ -73,7 +73,7 @@ export function reduceGameAction(state: GameState, action: Action): [GameState, 
       let i = 0;
       for (const tile of state.main_tiles) {
         if (vequal(p_in_world_int, tile.p_in_world_int)) {
-          return [produce(state, s => { s.mouseState = { t: 'drag_tile', ix: i, orig_p: action.p, p: action.p } }), []];
+          return [produce(state, s => { s.mouseState = { t: 'drag_main_tile', ix: i, orig_p: action.p, p: action.p } }), []];
         }
         i++;
       }

@@ -1,5 +1,5 @@
 import { SceneState, Tile } from "../core/state";
-import { eph_canvas_from_world_of_state, eph_tile_canvas_from_tile_canvas_of_mouse_state } from "./view_helpers";
+import { eph_canvas_from_world_of_state, eph_tile_canvas_from_tile_canvas_of_mouse_state } from "./view-helpers";
 import { apply, compose, inverse, SE2 } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
 import { Rect } from "../util/types";
@@ -47,7 +47,7 @@ export class RenderPane {
 
     // draw tiles
     state.gameState.main_tiles.forEach((tile, ix) => {
-      if (!(ms.t == 'drag_tile' && ms.ix == ix)) {
+      if (!(ms.t == 'drag_main_tile' && ms.ix == ix)) {
         drawTile(d, eph_canvas_from_world, tile);
       }
     });
@@ -68,7 +68,7 @@ export class RenderPane {
     });
 
     // draw dragged tile on the very top
-    if (ms.t == 'drag_tile') {
+    if (ms.t == 'drag_main_tile') {
       const tile = state.gameState.main_tiles[ms.ix];
       drawTile(d,
         compose(eph_tile_canvas_from_tile_canvas_of_mouse_state(state.gameState.mouseState),

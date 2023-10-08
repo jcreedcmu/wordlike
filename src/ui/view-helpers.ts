@@ -18,5 +18,5 @@ export function eph_canvas_from_world_of_state(state: GameState): SE2 {
 }
 
 export function eph_tile_canvas_from_tile_canvas_of_mouse_state(state: MouseState): SE2 {
-  return state.t == 'drag_tile' ? translate(vsub(state.p, state.orig_p)) : ident();
+  return state.t == 'drag_main_tile' ? translate(vsub(state.p, state.orig_p)) : ident();
 }
