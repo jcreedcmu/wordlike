@@ -41,6 +41,11 @@ function resolveDrag(state: GameState): GameState {
     case 'up': {
       throw new Error(`unexpected resolveDrag with up mouse button`);
     } break;
+
+
+    case 'drag_hand_tile': {
+      return state;
+    }
   }
 }
 

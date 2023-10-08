@@ -32,6 +32,7 @@ export type MouseState =
   | { t: 'up', p: Point }
   | { t: 'drag_world', orig_p: Point, p: Point }
   | { t: 'drag_main_tile', orig_p: Point, p: Point, ix: number }
+  | { t: 'drag_hand_tile', orig_p: Point, p: Point, ix: number }
   ;
 
 // If I need to add more state around settings, menus, saving, etc.,
