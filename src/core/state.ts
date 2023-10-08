@@ -1,3 +1,4 @@
+import { ViewData } from '../app';
 import { SE2 } from '../util/se2';
 import { Point } from '../util/types';
 import { Energies, initialEnergies } from './distribution';
@@ -21,6 +22,7 @@ export type UiAction =
   ;
 
 export type Action =
+  | { t: 'resize', vd: ViewData }
   | GameAction
   ;
 

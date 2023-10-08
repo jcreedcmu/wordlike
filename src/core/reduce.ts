@@ -6,7 +6,7 @@ import { Point } from '../util/types';
 import { vequal, vm, vscale } from '../util/vutil';
 import { Action, Effect, GameState, SceneState } from './state';
 import { checkAllWords, is_occupied, killTileOfState, drawOfState } from './state-helpers';
-
+import * as effectful from '../ui/use-effectful-reducer';
 
 function resolveDrag(state: GameState): GameState {
   const ms = state.mouseState;
@@ -168,14 +168,15 @@ export function reduceGameAction(state: GameState, action: Action): [GameState, 
     case 'mouseMove': return [produce(state, s => {
       s.mouseState.p = action.p;
     }), []];
+    case 'resize': return [state, []]; // XXX maybe stash viewdata this in state somewhere?
   }
 }
 
-export function reduce(state: SceneState, action: Action): [SceneState, Effect[]] {
+export function reduce(state: SceneState, action: Action): effectful.Result<SceneState, Effect> {
   switch (state.t) {
     case 'game':
       const [gs, effects] = reduceGameAction(state.gameState, action);
-      return [produce(state, s => { s.gameState = gs; }), effects];
+      return { state: produce(state, s => { s.gameState = gs; }), effects };
   }
 
 }

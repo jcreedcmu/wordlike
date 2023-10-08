@@ -1,5 +1,5 @@
 import { Color, Point } from './types';
-import { vm, vsub } from './vutil';
+import { vint, vm, vsub } from './vutil';
 
 export type Buffer = {
   c: HTMLCanvasElement,
@@ -52,4 +52,9 @@ export function relpos(e: MouseEvent, c: HTMLElement): Point {
   const r = c.getBoundingClientRect();
   const or = vm({ x: r.left, y: r.top }, Math.floor);
   return vsub({ x: e.pageX, y: e.pageY }, or);
+}
+
+export function rrelpos(e: React.MouseEvent): Point {
+  const rect = e.currentTarget.getBoundingClientRect();
+  return vint({ x: e.clientX - rect.left, y: e.clientY - rect.top });
 }
