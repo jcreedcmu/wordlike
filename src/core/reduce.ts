@@ -1,11 +1,11 @@
-import { produce } from '../util/produce';
-import { apply, compose, composen, ident, inverse, scale, SE2, translate } from '../util/se2';
-import { vequal, vm, vmul, vscale, vsub } from '../util/vutil';
-import { Action, Effect, GameState, MouseState, SceneState } from './state';
-import { pan_canvas_from_canvas_of_mouse_state, drag_canvas_from_canvas_of_mouse_state } from '../ui/view-helpers';
-import { checkAllWords, is_occupied, killTileOfState, peelOfState } from './state-helpers';
+import { canvas_from_drag_tile, pan_canvas_from_canvas_of_mouse_state } from '../ui/view-helpers';
 import { getWidgetPoint, WidgetPoint } from '../ui/widget-helpers';
+import { produce } from '../util/produce';
+import { compose, composen, inverse, scale, translate } from '../util/se2';
 import { Point } from '../util/types';
+import { vequal, vm, vscale } from '../util/vutil';
+import { Action, Effect, GameState, SceneState } from './state';
+import { checkAllWords, is_occupied, killTileOfState, peelOfState } from './state-helpers';
 
 
 function resolveDrag(state: GameState): GameState {
@@ -20,16 +20,14 @@ function resolveDrag(state: GameState): GameState {
         s.mouseState = { t: 'up', p: ms.p };
       });
     } break;
+
     case 'drag_main_tile': {
 
-      const new_tile_world_from_old_tile_world = compose(
+      // effectively the same as the purely translational world_from_tile
+      const new_tile_in_world_int: Point = vm(compose(
         inverse(state.canvas_from_world),
-        compose(
-          drag_canvas_from_canvas_of_mouse_state(state.mouseState),
-          state.canvas_from_world)
-      );
-      const new_tile_in_world_int =
-        vm(apply(new_tile_world_from_old_tile_world, state.main_tiles[ms.ix].p_in_world_int), Math.round);
+        canvas_from_drag_tile(state)).translate,
+        Math.round);
 
       const afterDrop = produce(state, s => {
         if (!is_occupied(state, new_tile_in_world_int)) {
