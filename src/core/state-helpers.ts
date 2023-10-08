@@ -38,7 +38,7 @@ export function checkAllWords(state: GameState): GameState {
   const grid = mkGrid(tiles);
 
   const { validWords, invalidWords } = checkGridWords(grid, word => getAssets().dictionary[word]);
-  if (invalidWords.length == 0 && checkConnected(grid)) {
+  if (invalidWords.length == 0 && checkConnected(grid) && state.hand_tiles.length == 0) {
     logger('words', 'grid valid');
     const newTiles = produce(tiles, ts => {
       ts.forEach(t => { t.used = true })
