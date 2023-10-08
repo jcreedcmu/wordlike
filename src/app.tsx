@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useEffect } from 'react';
 import { reduce } from './core/reduce';
-import { Action, Effect, SceneState, mkGameState } from './core/state';
+import { Action, Effect, MouseState, SceneState, mkGameState } from './core/state';
 import { CanvasInfo, useCanvas } from './ui/use-canvas';
 import { useEffectfulReducer } from './ui/use-effectful-reducer';
 import { relpos, rrelpos } from './util/dutil';
@@ -71,14 +71,22 @@ export function App(props: AppProps): JSX.Element {
     dispatch({ t: 'mouseDown', p: rrelpos(e) });
   }
 
-  const callbacks = {
-    onMouseDown: mouseDown,
-  };
+  type CursorType = React.CSSProperties['cursor'];
+  function cursorOfMouseState(ms: MouseState): CursorType {
+    switch (ms.t) {
+      case 'up': return undefined;
+      case 'drag_world': return 'grab';
+      case 'drag_main_tile': return 'pointer';
+      case 'drag_hand_tile': return 'pointer';
+    }
+  }
 
+  const style: React.CSSProperties =
+    { cursor: cursorOfMouseState(state.gameState.mouseState) };
   return <div>
     <canvas
-      {...callbacks}
-      ref={cref} style={{}} />
+      style={style}
+      ref={cref} />
   </div>;
 }
 
