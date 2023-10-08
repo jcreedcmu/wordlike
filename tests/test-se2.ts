@@ -1,5 +1,7 @@
-import { apply, compose, ident, inverse, mkSE2, scale, translate } from '../src/util/se2';
+import { SE2, apply, compose, composen, ident, inverse, mkSE2, scale, translate } from '../src/util/se2';
+import { matchScale } from '../src/util/se2-extra';
 import { Point } from '../src/util/types';
+import { vadd, vmul } from '../src/util/vutil';
 
 const xform1 = translate({ x: 1, y: 5 });
 const xform2 = scale({ x: 2, y: 5 });
@@ -28,6 +30,25 @@ describe('inverse', () => {
     for (const xf of [xform1, xform2, xform3]) {
       expect(compose(xf, inverse(xf))).toEqual(ident());
     }
+  });
+
+});
+
+describe('match-scale', () => {
+
+  test(`should map desired points`, () => {
+    const p0: Point = { x: 10, y: 20 };
+    const p1: Point = { x: -300, y: -100 };
+    const scaleFactor: Point = { x: 2, y: 3 };
+    const diff: Point = { x: 15, y: 20 };
+    const t: SE2 = composen(
+      translate({ x: 100, y: 205 }),
+      scale(scaleFactor),
+      translate({ x: 19, y: 22 }),
+    );
+    const u = matchScale(t, p0, p1);
+    expect(apply(u, p0)).toEqual(p1);
+    expect(apply(u, vadd(p0, diff))).toEqual(vadd(p1, vmul(scaleFactor, diff)));
   });
 
 });
