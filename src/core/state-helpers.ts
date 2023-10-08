@@ -13,13 +13,13 @@ export function is_occupied(state: GameState, p: Point): boolean {
   return state.main_tiles.some(tile => vequal(tile.p_in_world_int, p));
 }
 
-export function peelOfState(state: GameState): GameState {
+export function drawOfState(state: GameState): GameState {
   const p_in_world_int = vm(apply(inverse(state.canvas_from_world), state.mouseState.p), Math.floor);
   const { letter, energies, seed } = getLetterSample(state.seed, state.energies);
   return produce(state, s => {
     s.seed = seed;
     s.energies = energies;
-    s.main_tiles.push({ letter, p_in_world_int, used: false });
+    s.hand_tiles.push({ letter, p_in_world_int, used: false });
   });
 }
 

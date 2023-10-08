@@ -5,7 +5,7 @@ import { compose, composen, inverse, scale, translate } from '../util/se2';
 import { Point } from '../util/types';
 import { vequal, vm, vscale } from '../util/vutil';
 import { Action, Effect, GameState, SceneState } from './state';
-import { checkAllWords, is_occupied, killTileOfState, peelOfState } from './state-helpers';
+import { checkAllWords, is_occupied, killTileOfState, drawOfState } from './state-helpers';
 
 
 function resolveDrag(state: GameState): GameState {
@@ -142,7 +142,7 @@ export function reduceGameAction(state: GameState, action: Action): [GameState, 
   switch (action.t) {
     case 'key': {
       if (action.code == '<space>') {
-        return [peelOfState(state), []];
+        return [drawOfState(state), []];
       }
       if (action.code == 'k') {
         return [killTileOfState(state), []];
