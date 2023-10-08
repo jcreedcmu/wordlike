@@ -59,17 +59,25 @@ export class RenderPane {
       });
     }
 
-    // draw hand
+    // draw hand tiles
     d.fillStyle = '#eeeeee';
     d.fillRect(hand_bds_in_canvas.p.x, hand_bds_in_canvas.p.y, hand_bds_in_canvas.sz.x, hand_bds_in_canvas.sz.y);
 
-    state.gameState.hand_tiles.forEach(tile => {
-      drawTile(d, canvas_from_hand(), tile);
+    state.gameState.hand_tiles.forEach((tile, ix) => {
+      if (!(ms.t == 'drag_hand_tile' && ms.ix == ix))
+        drawTile(d, canvas_from_hand(), tile);
     });
 
     // draw dragged tile on the very top
     if (ms.t == 'drag_main_tile') {
       const tile = state.gameState.main_tiles[ms.ix];
+      drawTile(d,
+        compose(eph_tile_canvas_from_tile_canvas_of_mouse_state(state.gameState.mouseState),
+          eph_canvas_from_world),
+        tile);
+    }
+    if (ms.t == 'drag_hand_tile') {
+      const tile = state.gameState.hand_tiles[ms.ix];
       drawTile(d,
         compose(eph_tile_canvas_from_tile_canvas_of_mouse_state(state.gameState.mouseState),
           eph_canvas_from_world),

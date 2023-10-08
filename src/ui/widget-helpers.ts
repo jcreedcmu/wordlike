@@ -1,5 +1,7 @@
 import { Point, Rect } from "../util/types";
-import { SE2 } from "../util/se2";
+import { SE2, apply, inverse } from "../util/se2";
+import { pointInRect } from "../util/util";
+import { GameState } from "../core/state";
 
 export const HAND_WIDTH = 100;
 
@@ -24,8 +26,23 @@ export function canvas_from_hand(): SE2 {
   };
 }
 
-// coordinate system of p is the local canvas
-type WidgetPoint =
+// p is in the local coordinate system, i.e. "world" or "hand"
+export type WidgetPoint =
   | { t: 'world', p: Point }
   | { t: 'hand', p: Point }
   ;
+
+export function getWidgetPoint(state: GameState, p_in_canvas: Point): WidgetPoint {
+  if (pointInRect(p_in_canvas, world_bds_in_canvas)) {
+    return {
+      t: 'world',
+      p: apply(inverse(state.canvas_from_world), p_in_canvas)
+    };
+  }
+  else {
+    return {
+      t: 'hand',
+      p: apply(inverse(canvas_from_hand()), p_in_canvas)
+    };
+  }
+}

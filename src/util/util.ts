@@ -71,3 +71,7 @@ export function boundRect(points: Point[]): Rect {
   const maxs = { x: Math.max(...xs), y: Math.max(...ys) };
   return { p: mins, sz: vsub(maxs, mins) };
 }
+
+export function pointInRect(p: Point, r: Rect): boolean {
+  return p.x >= r.p.x && p.y >= r.p.y && p.x <= r.p.x + r.sz.x && p.y <= r.p.y + r.sz.y;
+}

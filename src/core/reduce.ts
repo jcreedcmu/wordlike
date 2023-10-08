@@ -4,6 +4,8 @@ import { vequal, vm, vmul, vscale, vsub } from '../util/vutil';
 import { Action, Effect, GameState, MouseState, SceneState } from './state';
 import { eph_canvas_from_canvas_of_mouse_state, eph_tile_canvas_from_tile_canvas_of_mouse_state } from '../ui/view-helpers';
 import { checkAllWords, is_occupied, killTileOfState, peelOfState } from './state-helpers';
+import { getWidgetPoint, WidgetPoint } from '../ui/widget-helpers';
+import { Point } from '../util/types';
 
 
 function resolveDrag(state: GameState): GameState {
@@ -44,7 +46,57 @@ function resolveDrag(state: GameState): GameState {
 
 
     case 'drag_hand_tile': {
-      return state;
+      return produce(state, s => {
+        s.mouseState = { t: 'up', p: ms.p };
+      });
+    }
+  }
+}
+
+export function reduceMouseDown(state: GameState, wp: WidgetPoint, p_in_canvas: Point): GameState {
+  switch (wp.t) {
+    case 'world': {
+      const p_in_world_int = vm(wp.p, Math.floor);
+
+      let i = 0;
+      for (const tile of state.main_tiles) {
+        if (vequal(p_in_world_int, tile.p_in_world_int)) {
+          return produce(state, s => {
+            s.mouseState = {
+              t: 'drag_main_tile',
+              ix: i,
+              orig_p: p_in_canvas,
+              p: p_in_canvas,
+            }
+          });
+        }
+        i++;
+      }
+
+      return produce(state, s => {
+        s.mouseState = {
+          t: 'drag_world',
+          orig_p: p_in_canvas,
+          p: p_in_canvas,
+        }
+      });
+    } break;
+
+    case 'hand': {
+      const p_in_hand_int = vm(wp.p, Math.floor);
+
+      if (p_in_hand_int.x == 0 && p_in_hand_int.y >= 0 && p_in_hand_int.y < state.hand_tiles.length) {
+        return produce(state, s => {
+          s.mouseState = {
+            t: 'drag_hand_tile',
+            ix: p_in_hand_int.y,
+            orig_p: p_in_canvas,
+            p: p_in_canvas,
+          }
+        });
+      }
+      else
+        return state;
     }
   }
 }
@@ -73,17 +125,7 @@ export function reduceGameAction(state: GameState, action: Action): [GameState, 
       }), []];
     }
     case 'mouseDown': {
-      const p_in_world_int = vm(apply(inverse(state.canvas_from_world), action.p), Math.floor);
-
-      let i = 0;
-      for (const tile of state.main_tiles) {
-        if (vequal(p_in_world_int, tile.p_in_world_int)) {
-          return [produce(state, s => { s.mouseState = { t: 'drag_main_tile', ix: i, orig_p: action.p, p: action.p } }), []];
-        }
-        i++;
-      }
-
-      return [produce(state, s => { s.mouseState = { t: 'drag_world', orig_p: action.p, p: action.p } }), []];
+      return [reduceMouseDown(state, getWidgetPoint(state, action.p), action.p), []]
     }
     case 'mouseUp': return [resolveDrag(state), []];
     case 'mouseMove': return [produce(state, s => {
