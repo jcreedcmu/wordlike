@@ -5,23 +5,8 @@ import { apply_to_rect } from "../util/se2-extra";
 import { Rect } from "../util/types";
 import { vadd, vm, vscale, vtrans } from "../util/vutil";
 import { getGrid, LocatedWord } from "../core/grid";
-
-const HAND_WIDTH = 100;
-const WHOLE_CANVAS_in_canvas: Rect = { p: { x: 0, y: 0 }, sz: { x: 640, y: 480 } };
-const HAND_in_canvas: Rect = {
-  p: { x: WHOLE_CANVAS_in_canvas.sz.x - HAND_WIDTH, y: 0 },
-  sz: { x: HAND_WIDTH, y: WHOLE_CANVAS_in_canvas.sz.y }
-};
-const MAIN_PANEL_in_canvas: Rect = {
-  p: { x: 0, y: 0 },
-  sz: { x: WHOLE_CANVAS_in_canvas.sz.x - HAND_WIDTH, y: WHOLE_CANVAS_in_canvas.sz.y }
-};
-
-const DEFAULT_TILE_SCALE = 48;
-const hand_canvas_from_world: SE2 = {
-  scale: { x: DEFAULT_TILE_SCALE, y: DEFAULT_TILE_SCALE },
-  translate: { x: HAND_in_canvas.p.x + (HAND_WIDTH - DEFAULT_TILE_SCALE) / 2, y: 0 }
-};
+import { HAND_in_canvas, MAIN_PANEL_in_canvas, WHOLE_CANVAS_in_canvas } from "./render-constants";
+import { hand_canvas_from_world } from "../core/state-helpers";
 
 export class RenderPane {
   d: CanvasRenderingContext2D;
@@ -79,7 +64,7 @@ export class RenderPane {
     d.fillRect(HAND_in_canvas.p.x, HAND_in_canvas.p.y, HAND_in_canvas.sz.x, HAND_in_canvas.sz.y);
 
     state.gameState.hand_tiles.forEach(tile => {
-      drawTile(d, hand_canvas_from_world, tile);
+      drawTile(d, hand_canvas_from_world(), tile);
     });
 
     // draw dragged tile on the very top
