@@ -5,15 +5,15 @@ import { apply_to_rect } from "../util/se2-extra";
 import { Rect } from "../util/types";
 import { vadd, vm, vscale, vtrans } from "../util/vutil";
 import { getGrid, LocatedWord } from "../core/grid";
-import { HAND_in_canvas, MAIN_PANEL_in_canvas, WHOLE_CANVAS_in_canvas } from "./widget-helpers";
-import { hand_canvas_from_world } from "./widget-helpers";
+import { hand_bds_in_canvas, world_bds_in_canvas, canvas_bds_in_canvas } from "./widget-helpers";
+import { canvas_from_hand } from "./widget-helpers";
 
 export class RenderPane {
   d: CanvasRenderingContext2D;
   constructor(public c: HTMLCanvasElement) {
     this.d = c.getContext('2d')!;
-    c.width = WHOLE_CANVAS_in_canvas.sz.x;
-    c.height = WHOLE_CANVAS_in_canvas.sz.y;
+    c.width = canvas_bds_in_canvas.sz.x;
+    c.height = canvas_bds_in_canvas.sz.y;
   }
   draw(state: SceneState) {
     const { c, d } = this;
@@ -21,10 +21,10 @@ export class RenderPane {
     const eph_canvas_from_world = eph_canvas_from_world_of_state(state.gameState);
 
     d.fillStyle = 'white';
-    d.fillRect(MAIN_PANEL_in_canvas.p.x, MAIN_PANEL_in_canvas.p.y, MAIN_PANEL_in_canvas.sz.x, MAIN_PANEL_in_canvas.sz.y);
+    d.fillRect(world_bds_in_canvas.p.x, world_bds_in_canvas.p.y, world_bds_in_canvas.sz.x, world_bds_in_canvas.sz.y);
 
     const top_left_in_world = vm(apply(inverse(eph_canvas_from_world), { x: 0, y: 0 }), Math.floor);
-    const bot_right_in_world = vm(apply(inverse(eph_canvas_from_world), MAIN_PANEL_in_canvas.sz), Math.ceil);
+    const bot_right_in_world = vm(apply(inverse(eph_canvas_from_world), world_bds_in_canvas.sz), Math.ceil);
 
     for (let i = top_left_in_world.x; i <= bot_right_in_world.x; i++) {
       for (let j = top_left_in_world.y; j <= bot_right_in_world.y; j++) {
@@ -61,10 +61,10 @@ export class RenderPane {
 
     // draw hand
     d.fillStyle = '#eeeeee';
-    d.fillRect(HAND_in_canvas.p.x, HAND_in_canvas.p.y, HAND_in_canvas.sz.x, HAND_in_canvas.sz.y);
+    d.fillRect(hand_bds_in_canvas.p.x, hand_bds_in_canvas.p.y, hand_bds_in_canvas.sz.x, hand_bds_in_canvas.sz.y);
 
     state.gameState.hand_tiles.forEach(tile => {
-      drawTile(d, hand_canvas_from_world(), tile);
+      drawTile(d, canvas_from_hand(), tile);
     });
 
     // draw dragged tile on the very top
