@@ -1,6 +1,6 @@
 import { SceneState, Tile } from "../core/state";
-import { pan_canvas_from_world_of_state, drag_canvas_from_canvas_of_mouse_state } from "./view-helpers";
-import { apply, compose, inverse, SE2 } from '../util/se2';
+import { pan_canvas_from_world_of_state, drag_canvas_from_canvas_of_mouse_state, canvas_from_drag_tile } from "./view-helpers";
+import { apply, compose, composen, ident, inverse, SE2, translate } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
 import { Rect } from "../util/types";
 import { vadd, vm, vscale, vtrans } from "../util/vutil";
@@ -73,17 +73,18 @@ export class RenderPane {
     // draw dragged tile on the very top
     if (ms.t == 'drag_main_tile') {
       const tile = state.main_tiles[ms.ix];
-      drawTile(d,
-        compose(drag_canvas_from_canvas_of_mouse_state(ms),
-          pan_canvas_from_world),
+      const world_from_tile = translate(tile.p_in_world_int);
+      drawTileIntrinsic(d,
+        composen(drag_canvas_from_canvas_of_mouse_state(ms),
+          pan_canvas_from_world,
+          world_from_tile),
         tile);
     }
 
     if (ms.t == 'drag_hand_tile') {
       const tile = state.hand_tiles[ms.ix];
-      drawTile(d,
-        compose(drag_canvas_from_canvas_of_mouse_state(ms),
-          pan_canvas_from_world),
+      drawTileIntrinsic(d,
+        canvas_from_drag_tile(state),
         tile);
     }
   }
@@ -126,6 +127,26 @@ function drawTile(d: CanvasRenderingContext2D, canvas_from_world: SE2, tile: Til
   d.textBaseline = 'middle';
   d.textAlign = 'center';
   const fontSize = Math.round(0.6 * canvas_from_world.scale.x);
+  d.font = `bold ${fontSize}px sans-serif`;
+  d.fillText(tile.letter.toUpperCase(), rect_in_canvas.p.x + rect_in_canvas.sz.x / 2 + 0.5,
+    rect_in_canvas.p.y + rect_in_canvas.sz.y / 2 + 1.5);
+}
+
+function drawTileIntrinsic(d: CanvasRenderingContext2D, canvas_from_tile: SE2, tile: Tile) {
+  const rect_in_tile: Rect = { p: { x: 0, y: 0 }, sz: { x: 1, y: 1 } };
+  const rect_in_canvas = apply_to_rect(canvas_from_tile, rect_in_tile);
+
+  const { fg, bg } = colorsOfTile(tile);
+  d.fillStyle = bg;
+  d.fillRect(rect_in_canvas.p.x + 0.5, rect_in_canvas.p.y + 0.5, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
+  d.strokeStyle = fg;
+  d.lineWidth = 1;
+  d.strokeRect(rect_in_canvas.p.x + 0.5, rect_in_canvas.p.y + 0.5, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
+
+  d.fillStyle = fg;
+  d.textBaseline = 'middle';
+  d.textAlign = 'center';
+  const fontSize = Math.round(0.6 * canvas_from_tile.scale.x);
   d.font = `bold ${fontSize}px sans-serif`;
   d.fillText(tile.letter.toUpperCase(), rect_in_canvas.p.x + rect_in_canvas.sz.x / 2 + 0.5,
     rect_in_canvas.p.y + rect_in_canvas.sz.y / 2 + 1.5);
