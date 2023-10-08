@@ -1,17 +1,12 @@
 import { initAssets } from "./core/assets";
 import { WakeTime } from './core/clock';
-import { Action, Effect, mkState, SceneState, State } from "./core/state";
 import { reduce } from './core/reduce';
-import { pan_canvas_from_world_of_state } from "./ui/view-helpers";
+import { Action, Effect, mkState, SceneState, State } from "./core/state";
 import { key } from './ui/key';
-import { logger } from './util/debug';
-import { produce } from './util/produce';
-import { apply_to_rect } from "./util/se2-extra";
-import { Rect } from "./util/types";
-import { apply, inverse } from './util/se2';
-import { vm } from "./util/vutil";
-import { relpos } from "./util/dutil";
 import { make_pane } from "./ui/render";
+import { logger } from './util/debug';
+import { relpos } from "./util/dutil";
+import { produce } from './util/produce';
 
 // return whether a evaluated at t-1 is equal to b at time t, sort of?
 function equalWake(a: WakeTime, b: WakeTime): boolean {

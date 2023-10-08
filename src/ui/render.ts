@@ -15,21 +15,23 @@ export class RenderPane {
     c.width = canvas_bds_in_canvas.sz.x;
     c.height = canvas_bds_in_canvas.sz.y;
   }
-  draw(state: SceneState) {
+
+  draw(sceneState: SceneState) {
     const { c, d } = this;
-    const ms = state.gameState.mouseState;
-    const eph_canvas_from_world = pan_canvas_from_world_of_state(state.gameState);
+    const state = sceneState.gameState;
+    const ms = state.mouseState;
+    const pan_canvas_from_world = pan_canvas_from_world_of_state(state);
 
     d.fillStyle = 'white';
     d.fillRect(world_bds_in_canvas.p.x, world_bds_in_canvas.p.y, world_bds_in_canvas.sz.x, world_bds_in_canvas.sz.y);
 
-    const top_left_in_world = vm(apply(inverse(eph_canvas_from_world), { x: 0, y: 0 }), Math.floor);
-    const bot_right_in_world = vm(apply(inverse(eph_canvas_from_world), world_bds_in_canvas.sz), Math.ceil);
+    const top_left_in_world = vm(apply(inverse(pan_canvas_from_world), { x: 0, y: 0 }), Math.floor);
+    const bot_right_in_world = vm(apply(inverse(pan_canvas_from_world), world_bds_in_canvas.sz), Math.ceil);
 
     for (let i = top_left_in_world.x; i <= bot_right_in_world.x; i++) {
       for (let j = top_left_in_world.y; j <= bot_right_in_world.y; j++) {
 
-        const pt_in_canvas = apply(eph_canvas_from_world, { x: i, y: j });
+        const pt_in_canvas = apply(pan_canvas_from_world, { x: i, y: j });
 
         d.strokeStyle = '#0f73a2';
         d.lineWidth = 1;
@@ -46,16 +48,16 @@ export class RenderPane {
     }
 
     // draw tiles
-    state.gameState.main_tiles.forEach((tile, ix) => {
+    state.main_tiles.forEach((tile, ix) => {
       if (!(ms.t == 'drag_main_tile' && ms.ix == ix)) {
-        drawTile(d, eph_canvas_from_world, tile);
+        drawTile(d, pan_canvas_from_world, tile);
       }
     });
 
     // draw invalid words
     if (ms.t == 'up') {
-      state.gameState.invalidWords.forEach(lw => {
-        drawInvalidWord(d, eph_canvas_from_world, lw);
+      state.invalidWords.forEach(lw => {
+        drawInvalidWord(d, pan_canvas_from_world, lw);
       });
     }
 
@@ -63,24 +65,24 @@ export class RenderPane {
     d.fillStyle = '#eeeeee';
     d.fillRect(hand_bds_in_canvas.p.x, hand_bds_in_canvas.p.y, hand_bds_in_canvas.sz.x, hand_bds_in_canvas.sz.y);
 
-    state.gameState.hand_tiles.forEach((tile, ix) => {
+    state.hand_tiles.forEach((tile, ix) => {
       if (!(ms.t == 'drag_hand_tile' && ms.ix == ix))
         drawTile(d, canvas_from_hand(), tile);
     });
 
     // draw dragged tile on the very top
     if (ms.t == 'drag_main_tile') {
-      const tile = state.gameState.main_tiles[ms.ix];
+      const tile = state.main_tiles[ms.ix];
       drawTile(d,
-        compose(drag_canvas_from_canvas_of_mouse_state(state.gameState.mouseState),
-          eph_canvas_from_world),
+        compose(drag_canvas_from_canvas_of_mouse_state(ms),
+          pan_canvas_from_world),
         tile);
     }
     if (ms.t == 'drag_hand_tile') {
-      const tile = state.gameState.hand_tiles[ms.ix];
+      const tile = state.hand_tiles[ms.ix];
       drawTile(d,
-        compose(drag_canvas_from_canvas_of_mouse_state(state.gameState.mouseState),
-          eph_canvas_from_world),
+        compose(drag_canvas_from_canvas_of_mouse_state(ms),
+          pan_canvas_from_world),
         tile);
     }
   }
