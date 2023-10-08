@@ -53,10 +53,10 @@ function resolveDrag(state: GameState): GameState {
   }
 }
 
-export function reduceMouseDown(state: GameState, wp: WidgetPoint, p_in_canvas: Point): GameState {
+export function reduceMouseDown(state: GameState, wp: WidgetPoint): GameState {
   switch (wp.t) {
     case 'world': {
-      const p_in_world_int = vm(wp.p, Math.floor);
+      const p_in_world_int = vm(wp.p_in_local, Math.floor);
 
       let i = 0;
       for (const tile of state.main_tiles) {
@@ -65,8 +65,8 @@ export function reduceMouseDown(state: GameState, wp: WidgetPoint, p_in_canvas: 
             s.mouseState = {
               t: 'drag_main_tile',
               ix: i,
-              orig_p: p_in_canvas,
-              p: p_in_canvas,
+              orig_p: wp.p_in_canvas,
+              p: wp.p_in_canvas,
             }
           });
         }
@@ -76,22 +76,22 @@ export function reduceMouseDown(state: GameState, wp: WidgetPoint, p_in_canvas: 
       return produce(state, s => {
         s.mouseState = {
           t: 'drag_world',
-          orig_p: p_in_canvas,
-          p: p_in_canvas,
+          orig_p: wp.p_in_canvas,
+          p: wp.p_in_canvas,
         }
       });
     } break;
 
     case 'hand': {
-      const p_in_hand_int = vm(wp.p, Math.floor);
+      const p_in_hand_int = vm(wp.p_in_local, Math.floor);
 
       if (p_in_hand_int.x == 0 && p_in_hand_int.y >= 0 && p_in_hand_int.y < state.hand_tiles.length) {
         return produce(state, s => {
           s.mouseState = {
             t: 'drag_hand_tile',
             ix: p_in_hand_int.y,
-            orig_p: p_in_canvas,
-            p: p_in_canvas,
+            orig_p: wp.p_in_canvas,
+            p: wp.p_in_canvas,
           }
         });
       }
@@ -125,7 +125,7 @@ export function reduceGameAction(state: GameState, action: Action): [GameState, 
       }), []];
     }
     case 'mouseDown': {
-      return [reduceMouseDown(state, getWidgetPoint(state, action.p), action.p), []]
+      return [reduceMouseDown(state, getWidgetPoint(state, action.p)), []]
     }
     case 'mouseUp': return [resolveDrag(state), []];
     case 'mouseMove': return [produce(state, s => {

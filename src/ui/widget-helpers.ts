@@ -28,21 +28,25 @@ export function canvas_from_hand(): SE2 {
 
 // p is in the local coordinate system, i.e. "world" or "hand"
 export type WidgetPoint =
-  | { t: 'world', p: Point }
-  | { t: 'hand', p: Point }
+  | { t: 'world', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2 }
+  | { t: 'hand', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2 }
   ;
 
 export function getWidgetPoint(state: GameState, p_in_canvas: Point): WidgetPoint {
   if (pointInRect(p_in_canvas, world_bds_in_canvas)) {
     return {
       t: 'world',
-      p: apply(inverse(state.canvas_from_world), p_in_canvas)
+      p_in_local: apply(inverse(state.canvas_from_world), p_in_canvas),
+      p_in_canvas,
+      local_from_canvas: inverse(state.canvas_from_world),
     };
   }
   else {
     return {
       t: 'hand',
-      p: apply(inverse(canvas_from_hand()), p_in_canvas)
+      p_in_local: apply(inverse(canvas_from_hand()), p_in_canvas),
+      p_in_canvas,
+      local_from_canvas: inverse(canvas_from_hand()),
     };
   }
 }

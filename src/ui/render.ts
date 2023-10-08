@@ -78,6 +78,7 @@ export class RenderPane {
           pan_canvas_from_world),
         tile);
     }
+
     if (ms.t == 'drag_hand_tile') {
       const tile = state.hand_tiles[ms.ix];
       drawTile(d,
