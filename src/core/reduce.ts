@@ -62,9 +62,30 @@ function resolveDrag(state: GameState): GameState {
 
 
     case 'drag_hand_tile': {
-      return produce(state, s => {
-        s.mouseState = { t: 'up', p: ms.p };
-      });
+
+      const wp = getWidgetPoint(state, ms.p);
+      if (wp.t == 'world') {
+        // effectively the same as the purely translational world_from_tile
+        const new_tile_in_world_int: Point = vm(compose(
+          inverse(state.canvas_from_world),
+          canvas_from_drag_tile(state)).translate,
+          Math.round);
+
+        const tile = state.hand_tiles[ms.ix];
+        const afterDrop = produce(state, s => {
+          if (!is_occupied(state, new_tile_in_world_int)) {
+            s.hand_tiles.splice(ms.ix, 1);
+            s.main_tiles.push({ ...tile, p_in_world_int: new_tile_in_world_int })
+          }
+          s.mouseState = { t: 'up', p: ms.p };
+        });
+        return checkAllWords(afterDrop);
+      }
+      else {
+        return produce(state, s => {
+          s.mouseState = { t: 'up', p: ms.p };
+        });
+      }
     }
   }
 }
