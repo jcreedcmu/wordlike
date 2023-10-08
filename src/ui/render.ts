@@ -5,8 +5,8 @@ import { apply_to_rect } from "../util/se2-extra";
 import { Rect } from "../util/types";
 import { vadd, vm, vscale, vtrans } from "../util/vutil";
 import { getGrid, LocatedWord } from "../core/grid";
-import { HAND_in_canvas, MAIN_PANEL_in_canvas, WHOLE_CANVAS_in_canvas } from "./render-constants";
-import { hand_canvas_from_world } from "../core/state-helpers";
+import { HAND_in_canvas, MAIN_PANEL_in_canvas, WHOLE_CANVAS_in_canvas } from "./widget-helpers";
+import { hand_canvas_from_world } from "./widget-helpers";
 
 export class RenderPane {
   d: CanvasRenderingContext2D;

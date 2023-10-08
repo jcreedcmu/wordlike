@@ -1,7 +1,6 @@
-import { DEFAULT_TILE_SCALE, HAND_in_canvas, HAND_WIDTH } from "../ui/render-constants";
 import { DEBUG, logger } from "../util/debug";
 import { produce } from "../util/produce";
-import { apply, inverse, SE2 } from "../util/se2";
+import { apply, inverse } from "../util/se2";
 import { Point } from "../util/types";
 import { next_rand } from "../util/util";
 import { vequal, vm } from "../util/vutil";
@@ -52,11 +51,4 @@ export function checkAllWords(state: GameState): GameState {
   return produce(state, s => {
     s.invalidWords = invalidWords;
   });
-}
-
-export function hand_canvas_from_world(): SE2 {
-  return {
-    scale: { x: DEFAULT_TILE_SCALE, y: DEFAULT_TILE_SCALE },
-    translate: { x: HAND_in_canvas.p.x + (HAND_WIDTH - DEFAULT_TILE_SCALE) / 2, y: 0 }
-  };
 }
