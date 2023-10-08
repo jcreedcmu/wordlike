@@ -182,6 +182,13 @@ export function checkGridWords(grid: Grid<string>, isWord: (x: string) => boolea
 
 // returns true if all the elements of grid are orthogonally connected
 export function checkConnected<T>(grid: Grid<T>): boolean {
+  // Underpopulated grids are not considered connected. Even though
+  // mathematically it seems reasonable to consider them connected
+  // subsets of ℤ², for the purposes of the game, they shouldn't
+  // trigger "freshness clearing" of tiles.
+  if (Object.keys(grid.elems).length < 2)
+    return false;
+
   // We don't really need the bounding rect for the 'already seen' grid.
   const seen: Grid<boolean> = { elems: {}, rect: { p: { x: 0, y: 0 }, sz: { x: 0, y: 0 } } };
 

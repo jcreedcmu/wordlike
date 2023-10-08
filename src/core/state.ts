@@ -82,15 +82,12 @@ export function mkGameState(seed?: number): SceneState {
       invalidWords: [],
       energies: initialEnergies(),
       seed,
-      main_tiles: 'steeb'.split('').map((x, i) => ({
+      main_tiles: ''.split('').map((x, i) => ({
         letter: x,
         p_in_world_int: { x: i, y: 0 },
         used: false,
       })),
-      hand_tiles: [
-        { letter: 'x', p_in_world_int: { x: 0, y: 0 }, used: false },
-        { letter: 'e', p_in_world_int: { x: 0, y: 1 }, used: true }
-      ],
+      hand_tiles: [],
       canvas_from_world: {
         scale: { x: 48, y: 48 },
         translate: { x: 200, y: 240 }
