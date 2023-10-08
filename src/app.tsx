@@ -21,7 +21,7 @@ type CanvasProps = {
 
 export function App(props: AppProps): JSX.Element {
 
-  const [state, dispatch] = useEffectfulReducer<Action, SceneState, Effect>(mkGameState(), reduce, doEffect);
+  const [state, dispatch] = useEffectfulReducer<Action, SceneState, Effect>(mkGameState(Date.now()), reduce, doEffect);
   const [cref, mc] = useCanvas<CanvasProps>(
     { main: state }, render, [state], ci => {
       dispatch({ t: 'resize', vd: resizeView(ci.c) });

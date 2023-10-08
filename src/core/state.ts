@@ -74,13 +74,14 @@ export function mkState(): State {
   };
 }
 
-export function mkGameState(): SceneState {
+export function mkGameState(seed?: number): SceneState {
+  seed = seed ?? 12345678;
   return {
     t: 'game',
     gameState: {
       invalidWords: [],
       energies: initialEnergies(),
-      seed: 12345678,
+      seed,
       main_tiles: 'steeb'.split('').map((x, i) => ({
         letter: x,
         p_in_world_int: { x: i, y: 0 },
