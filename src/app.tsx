@@ -67,9 +67,6 @@ export function App(props: AppProps): JSX.Element {
 
     };
   }, []);
-  function mouseDown(e: React.MouseEvent<HTMLCanvasElement | HTMLImageElement>) {
-    dispatch({ t: 'mouseDown', p: rrelpos(e) });
-  }
 
   type CursorType = React.CSSProperties['cursor'];
   function cursorOfMouseState(ms: MouseState): CursorType {
