@@ -155,7 +155,7 @@ export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: numbe
         });
       }
       else
-        return vacuous_down();
+        return drawOfState(state);
     }
   }
 }
