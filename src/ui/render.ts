@@ -8,7 +8,7 @@ import { getGrid, LocatedWord } from "../core/grid";
 import { hand_bds_in_canvas, world_bds_in_canvas, canvas_bds_in_canvas } from "./widget-helpers";
 import { canvas_from_hand } from "./widget-helpers";
 import { CanvasInfo } from "./use-canvas";
-import { getLayer } from "../core/layer";
+import { getLayer, getOverlay } from "../core/layer";
 
 export function paint(ci: CanvasInfo, sceneState: SceneState) {
   const { d } = ci;
@@ -59,7 +59,7 @@ export function paint(ci: CanvasInfo, sceneState: SceneState) {
   for (let i = top_left_in_world.x; i <= bot_right_in_world.x; i++) {
     for (let j = top_left_in_world.y; j <= bot_right_in_world.y; j++) {
       const p: Point = { x: i, y: j };
-      if (getLayer(state.bonusLayer, p) == 'bonus') {
+      if (getOverlay(state.bonusOverlay, state.bonusLayer, p) == 'bonus') {
         const rect_in_canvas = apply_to_rect(pan_canvas_from_world, { p, sz: { x: 1, y: 1 } });
         d.strokeStyle = 'rgba(0,0,255,0.5)';
         d.lineWidth = 3;

@@ -4,7 +4,7 @@ import { Point } from '../util/types';
 import { Bonus, bonusGenerator } from './bonus';
 import { Energies, initialEnergies } from './distribution';
 import { emptyGrid, Grid, LocatedWord, mkGrid } from './grid';
-import { Layer, mkLayer } from './layer';
+import { Layer, Overlay, mkLayer, mkOverlay } from './layer';
 
 // There are UiActions, which might have different behavior depending
 // on view state, and other GameActions, which should be treated
@@ -69,6 +69,7 @@ export type GameState = {
   mouseState: MouseState,
   seed: number,
   bonusLayer: Layer<Bonus>,
+  bonusOverlay: Overlay<Bonus>,
   score: number,
 };
 
@@ -98,6 +99,7 @@ export function mkGameState(seed?: number): SceneState {
       },
       mouseState: { t: 'up', p: { x: 0, y: 0 } },
       bonusLayer: mkLayer(bonusGenerator),
+      bonusOverlay: mkOverlay<Bonus>(),
       score: 0,
     }, revision: 0
   };
