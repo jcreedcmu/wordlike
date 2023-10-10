@@ -32,8 +32,16 @@ export function App(props: AppProps): JSX.Element {
   }
 
   function mouseDownListener(e: MouseEvent) {
-    dispatch({ t: 'mouseDown', p: relpos(e, mc.current!.c) })
+    dispatch({ t: 'mouseDown', button: e.buttons, p: relpos(e, mc.current!.c) })
+    e.preventDefault();
+    e.stopPropagation();
   }
+
+  function contextMenuListener(e: MouseEvent) {
+    e.stopPropagation();
+    e.preventDefault();
+  }
+
   function mouseUpListener(e: MouseEvent) {
     dispatch({ t: 'mouseUp', p: relpos(e, mc.current!.c) })
   }
@@ -53,6 +61,7 @@ export function App(props: AppProps): JSX.Element {
     document.addEventListener('mouseup', mouseUpListener);
     document.addEventListener('mousemove', mouseMoveListener);
     document.addEventListener('mousedown', mouseDownListener);
+    document.addEventListener('contextmenu', contextMenuListener);
     document.addEventListener('wheel', wheelListener);
     document.addEventListener('keydown', keyListener);
     window.addEventListener('resize', handleResize);
@@ -61,6 +70,7 @@ export function App(props: AppProps): JSX.Element {
       document.removeEventListener('mouseup', mouseUpListener);
       document.removeEventListener('mousemove', mouseMoveListener);
       document.removeEventListener('mousedown', mouseDownListener);
+      document.removeEventListener('contextmenu', contextMenuListener);
       document.removeEventListener('wheel', wheelListener);
       document.removeEventListener('keydown', keyListener);
       window.removeEventListener('resize', handleResize);

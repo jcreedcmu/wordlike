@@ -56,10 +56,6 @@ function resolveDrag(state: GameState): GameState {
       }
 
     } break;
-    case 'up': {
-      throw new Error(`unexpected resolveDrag with up mouse button`);
-    } break;
-
 
     case 'drag_hand_tile': {
 
@@ -87,36 +83,58 @@ function resolveDrag(state: GameState): GameState {
         });
       }
     }
+
+    case 'up': {
+      console.warn(`unexpected resolveDrag with up mouse button`);
+      return produce(state, s => { s.mouseState = { t: 'up', p: ms.p }; });
+    } break;
+
+
+    case 'down': {
+      return produce(state, s => { s.mouseState = { t: 'up', p: ms.p }; });
+    } break;
+
   }
 }
 
-export function reduceMouseDown(state: GameState, wp: WidgetPoint): GameState {
+export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number): GameState {
+
+  function drag_world(): GameState {
+    return produce(state, s => {
+      s.mouseState = {
+        t: 'drag_world',
+        orig_p: wp.p_in_canvas,
+        p: wp.p_in_canvas,
+      }
+    });
+  }
+
   switch (wp.t) {
     case 'world': {
       const p_in_world_int = vm(wp.p_in_local, Math.floor);
-
-      let i = 0;
-      for (const tile of state.main_tiles) {
-        if (vequal(p_in_world_int, tile.p_in_world_int)) {
-          return produce(state, s => {
-            s.mouseState = {
-              t: 'drag_main_tile',
-              ix: i,
-              orig_p: wp.p_in_canvas,
-              p: wp.p_in_canvas,
-            }
-          });
+      if (button == 1) {
+        let i = 0;
+        for (const tile of state.main_tiles) {
+          if (vequal(p_in_world_int, tile.p_in_world_int)) {
+            return produce(state, s => {
+              s.mouseState = {
+                t: 'drag_main_tile',
+                ix: i,
+                orig_p: wp.p_in_canvas,
+                p: wp.p_in_canvas,
+              }
+            });
+          }
+          i++;
         }
-        i++;
+        return drag_world();
       }
-
-      return produce(state, s => {
-        s.mouseState = {
-          t: 'drag_world',
-          orig_p: wp.p_in_canvas,
-          p: wp.p_in_canvas,
-        }
-      });
+      else if (button == 2) {
+        return drag_world();
+      }
+      else {
+        return produce(state, s => { s.mouseState = { t: 'down', p: wp.p_in_canvas }; });
+      }
     } break;
 
     case 'hand': {
@@ -162,7 +180,7 @@ export function reduceGameAction(state: GameState, action: Action): [GameState, 
       }), []];
     }
     case 'mouseDown': {
-      return [reduceMouseDown(state, getWidgetPoint(state, action.p)), []]
+      return [reduceMouseDown(state, getWidgetPoint(state, action.p), action.button), []]
     }
     case 'mouseUp': return [resolveDrag(state), []];
     case 'mouseMove': return [produce(state, s => {

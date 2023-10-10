@@ -17,7 +17,7 @@ export type GameAction =
 // I think I want to migrate some of these up to GameAction
 export type UiAction =
   | { t: 'key', code: string }
-  | { t: 'mouseDown', p: Point }
+  | { t: 'mouseDown', button: number, p: Point }
   | { t: 'mouseUp', p: Point }
   | { t: 'mouseMove', p: Point }
   | { t: 'wheel', p: Point, delta: number }
@@ -34,6 +34,7 @@ export type Effect =
 
 export type MouseState =
   | { t: 'up', p: Point }
+  | { t: 'down', p: Point }
   | { t: 'drag_world', orig_p: Point, p: Point }
   | { t: 'drag_main_tile', orig_p: Point, p: Point, ix: number }
   | { t: 'drag_hand_tile', orig_p: Point, p: Point, ix: number }
