@@ -138,11 +138,14 @@ function drawInvalidWord(d: CanvasRenderingContext2D, canvas_from_world: SE2, wo
   const perp = vtrans(along); // vector pointing perpendicular to it
   const rect_in_world: Rect = {
     p: word.p,
-    sz: vadd(vscale(perp, thickness), vscale(along, word.word.length)),
+    sz: vadd(perp, vscale(along, word.word.length)),
   };
   const rect_in_canvas = apply_to_rect(canvas_from_world, rect_in_world);
-  d.fillStyle = 'red';
-  d.fillRect(rect_in_canvas.p.x + 0.5, rect_in_canvas.p.y + 0.5, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
+  d.strokeStyle = '#7f0000';
+  d.lineWidth = 3;
+  const OFF = 3;
+  d.strokeRect(rect_in_canvas.p.x + 0.5 + OFF, rect_in_canvas.p.y + 0.5 + OFF,
+    rect_in_canvas.sz.x - 2 * OFF, rect_in_canvas.sz.y - 2 * OFF);
 }
 
 // DEPRECATED: in favor of drawTileIntrinsic
