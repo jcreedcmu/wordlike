@@ -69,6 +69,7 @@ export type GameState = {
   mouseState: MouseState,
   seed: number,
   bonusLayer: Layer<Bonus>,
+  score: number,
 };
 
 export function mkState(): State {
@@ -97,6 +98,7 @@ export function mkGameState(seed?: number): SceneState {
       },
       mouseState: { t: 'up', p: { x: 0, y: 0 } },
       bonusLayer: mkLayer(bonusGenerator),
+      score: 0,
     }, revision: 0
   };
 }

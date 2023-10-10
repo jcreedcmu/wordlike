@@ -99,6 +99,18 @@ export function paint(ci: CanvasInfo, sceneState: SceneState) {
       canvas_from_drag_tile(state),
       tile);
   }
+
+  // draw score
+  const scoreLoc: Point = {
+    x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x - 30,
+    y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - 30
+  };
+  d.fillStyle = '#333';
+  d.textBaseline = 'middle';
+  d.textAlign = 'center';
+  const fontSize = 40;
+  d.font = `bold ${fontSize}px sans-serif`;
+  d.fillText(`${state.score}`, scoreLoc.x, scoreLoc.y);
 }
 export class RenderPane {
   d: CanvasRenderingContext2D;
