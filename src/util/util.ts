@@ -75,3 +75,16 @@ export function boundRect(points: Point[]): Rect {
 export function pointInRect(p: Point, r: Rect): boolean {
   return p.x >= r.p.x && p.y >= r.p.y && p.x <= r.p.x + r.sz.x && p.y <= r.p.y + r.sz.y;
 }
+
+export function point_hash(p: Point): number {
+  let c = 1000 * p.x + 3758 * p.y;
+
+  const z: () => number = () => {
+    const { seed, float } = next_rand(c);
+    c = seed;
+    return c;
+  };
+  for (let i = 0; i < 10; i++)
+    z();
+  return z();
+}

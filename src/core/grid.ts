@@ -4,6 +4,8 @@ import { boundRect } from "../util/util";
 import { vtrans } from "../util/vutil";
 import { Tile } from "./state";
 
+// Implements a spatially-bounded sparse map from coordinates to T
+
 export type Grid<T> = {
   rect: Rect,
   elems: Record<string, T>
