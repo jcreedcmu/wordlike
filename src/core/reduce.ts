@@ -5,7 +5,7 @@ import { compose, composen, inverse, scale, translate } from '../util/se2';
 import { Point } from '../util/types';
 import { vequal, vm, vscale } from '../util/vutil';
 import { Action, Effect, GameState, SceneState } from './state';
-import { checkAllWords, is_occupied, killTileOfState, drawOfState } from './state-helpers';
+import { checkValid, is_occupied, killTileOfState, drawOfState } from './state-helpers';
 import * as effectful from '../ui/use-effectful-reducer';
 
 function resolveDrag(state: GameState): GameState {
@@ -37,7 +37,7 @@ function resolveDrag(state: GameState): GameState {
           }
           s.mouseState = { t: 'up', p: ms.p };
         });
-        return checkAllWords(afterDrop);
+        return checkValid(afterDrop);
       }
       else {
         // effectively the same as the purely translational hand_from_tile
@@ -52,7 +52,7 @@ function resolveDrag(state: GameState): GameState {
           s.hand_tiles.splice(new_tile_in_hand_int.y, 0, tile);
           s.mouseState = { t: 'up', p: ms.p };
         });
-        return checkAllWords(afterDrop);
+        return checkValid(afterDrop);
       }
 
     } break;
@@ -79,7 +79,7 @@ function resolveDrag(state: GameState): GameState {
           }
           s.mouseState = { t: 'up', p: ms.p };
         });
-        return checkAllWords(afterDrop);
+        return checkValid(afterDrop);
       }
       else {
         return produce(state, s => {
