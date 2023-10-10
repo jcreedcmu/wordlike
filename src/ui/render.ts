@@ -2,12 +2,13 @@ import { SceneState, Tile } from "../core/state";
 import { pan_canvas_from_world_of_state, drag_canvas_from_canvas_of_mouse_state, canvas_from_drag_tile } from "./view-helpers";
 import { apply, compose, composen, ident, inverse, SE2, translate } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
-import { Rect } from "../util/types";
+import { Point, Rect } from "../util/types";
 import { vadd, vm, vscale, vtrans } from "../util/vutil";
 import { getGrid, LocatedWord } from "../core/grid";
 import { hand_bds_in_canvas, world_bds_in_canvas, canvas_bds_in_canvas } from "./widget-helpers";
 import { canvas_from_hand } from "./widget-helpers";
 import { CanvasInfo } from "./use-canvas";
+import { getLayer } from "../core/layer";
 
 export function paint(ci: CanvasInfo, sceneState: SceneState) {
   const { d } = ci;
@@ -52,6 +53,25 @@ export function paint(ci: CanvasInfo, sceneState: SceneState) {
     state.invalidWords.forEach(lw => {
       drawInvalidWord(d, pan_canvas_from_world, lw);
     });
+  }
+
+  // draw bonuses
+  for (let i = top_left_in_world.x; i <= bot_right_in_world.x; i++) {
+    for (let j = top_left_in_world.y; j <= bot_right_in_world.y; j++) {
+      const p: Point = { x: i, y: j };
+      if (getLayer(state.bonusLayer, p) == 'bonus') {
+        const rect_in_canvas = apply_to_rect(pan_canvas_from_world, { p, sz: { x: 1, y: 1 } });
+        d.strokeStyle = 'rgba(0,0,255,0.5)';
+        d.lineWidth = 3;
+        d.beginPath();
+        d.arc(rect_in_canvas.p.x + rect_in_canvas.sz.x / 2,
+          rect_in_canvas.p.y + rect_in_canvas.sz.y / 2,
+          rect_in_canvas.sz.y * 0.4,
+          0, 360,
+        );
+        d.stroke();
+      }
+    }
   }
 
   // draw hand tiles

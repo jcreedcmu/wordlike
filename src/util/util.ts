@@ -82,7 +82,7 @@ export function point_hash(p: Point): number {
   const z: () => number = () => {
     const { seed, float } = next_rand(c);
     c = seed;
-    return c;
+    return float;
   };
   for (let i = 0; i < 10; i++)
     z();

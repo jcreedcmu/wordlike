@@ -1,8 +1,10 @@
 import { ViewData } from '../app';
 import { SE2 } from '../util/se2';
 import { Point } from '../util/types';
+import { Bonus, bonusGenerator } from './bonus';
 import { Energies, initialEnergies } from './distribution';
 import { emptyGrid, Grid, LocatedWord, mkGrid } from './grid';
+import { Layer, mkLayer } from './layer';
 
 // There are UiActions, which might have different behavior depending
 // on view state, and other GameActions, which should be treated
@@ -66,6 +68,7 @@ export type GameState = {
   canvas_from_world: SE2,
   mouseState: MouseState,
   seed: number,
+  bonusLayer: Layer<Bonus>,
 };
 
 export function mkState(): State {
@@ -93,6 +96,7 @@ export function mkGameState(seed?: number): SceneState {
         translate: { x: 200, y: 240 }
       },
       mouseState: { t: 'up', p: { x: 0, y: 0 } },
+      bonusLayer: mkLayer(bonusGenerator),
     }, revision: 0
   };
 }
