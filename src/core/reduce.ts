@@ -167,7 +167,10 @@ export function reduceGameAction(state: GameState, action: Action): [GameState, 
         return [drawOfState(state), []];
       }
       if (action.code == 'k') {
-        return [killTileOfState(state), []];
+        return [state.score > 0 ?
+          killTileOfState(
+            produce(state, s => { s.score--; })
+          ) : state, []];
       }
       return [state, []];
     }
