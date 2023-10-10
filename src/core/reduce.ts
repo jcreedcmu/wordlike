@@ -109,6 +109,10 @@ export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: numbe
     });
   }
 
+  function vacuous_down(): GameState {
+    return produce(state, s => { s.mouseState = { t: 'down', p: wp.p_in_canvas }; });
+  }
+
   switch (wp.t) {
     case 'world': {
       const p_in_world_int = vm(wp.p_in_local, Math.floor);
@@ -133,7 +137,7 @@ export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: numbe
         return drag_world();
       }
       else {
-        return produce(state, s => { s.mouseState = { t: 'down', p: wp.p_in_canvas }; });
+        return vacuous_down();
       }
     } break;
 
@@ -151,7 +155,7 @@ export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: numbe
         });
       }
       else
-        return state;
+        return vacuous_down();
     }
   }
 }
