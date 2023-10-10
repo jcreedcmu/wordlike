@@ -17,11 +17,11 @@ export function is_occupied(state: GameState, p: Point): boolean {
 export function drawOfState(state: GameState): GameState {
   const p_in_world_int = vm(apply(inverse(state.canvas_from_world), state.mouseState.p), Math.floor);
   const { letter, energies, seed } = getLetterSample(state.seed, state.energies);
-  return produce(state, s => {
+  return checkValid(produce(state, s => {
     s.seed = seed;
     s.energies = energies;
     s.hand_tiles.push({ letter, p_in_world_int, used: false });
-  });
+  }));
 }
 
 export function killTileOfState(state: GameState): GameState {

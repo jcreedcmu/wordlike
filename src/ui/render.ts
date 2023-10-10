@@ -113,7 +113,7 @@ export function paint(ci: CanvasInfo, sceneState: SceneState) {
   d.fillText(`${state.score}`, scoreLoc.x, scoreLoc.y);
 
   // draw panic bar
-  const PANIC_INTERVAL_MS = 30000;
+  const PANIC_INTERVAL_MS = 90000;
   const PANIC_THICK = 15;
   if (state.panic !== undefined) {
     const panic_fraction = (Date.now() - state.panic.lastClear) / PANIC_INTERVAL_MS;
