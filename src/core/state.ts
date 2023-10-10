@@ -72,6 +72,10 @@ export type GameState = {
   bonusLayer: Layer<Bonus>,
   bonusOverlay: Overlay<Bonus>,
   score: number,
+  panic: {
+    lastClear: number, // ms since epoch
+    currentTime: number, // ms since epoch
+  } | undefined,
 };
 
 export function mkState(): State {
@@ -102,6 +106,7 @@ export function mkGameState(seed?: number): SceneState {
       bonusLayer: mkLayer(bonusGenerator),
       bonusOverlay: mkOverlay<Bonus>(),
       score: 0,
+      panic: undefined,
     }, revision: 0
   };
 }

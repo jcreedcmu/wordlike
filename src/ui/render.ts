@@ -102,15 +102,38 @@ export function paint(ci: CanvasInfo, sceneState: SceneState) {
 
   // draw score
   const scoreLoc: Point = {
-    x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x - 30,
-    y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - 30
+    x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x - 10,
+    y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - 40
   };
   d.fillStyle = '#333';
   d.textBaseline = 'middle';
-  d.textAlign = 'center';
+  d.textAlign = 'right';
   const fontSize = 40;
   d.font = `bold ${fontSize}px sans-serif`;
   d.fillText(`${state.score}`, scoreLoc.x, scoreLoc.y);
+
+  // draw panic bar
+  const PANIC_INTERVAL_MS = 30000;
+  const PANIC_THICK = 15;
+  if (state.panic !== undefined) {
+    const panic_fraction = (Date.now() - state.panic.lastClear) / PANIC_INTERVAL_MS;
+    const panic_rect_in_canvas: Rect = {
+      p: {
+        x: canvas_bds_in_canvas.p.x,
+        y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - PANIC_THICK,
+      },
+      sz: {
+        x: canvas_bds_in_canvas.sz.x * panic_fraction,
+        y: PANIC_THICK,
+      }
+    };
+    d.fillStyle = 'red';
+    d.fillRect(
+      panic_rect_in_canvas.p.x, panic_rect_in_canvas.p.y,
+      panic_rect_in_canvas.sz.x, panic_rect_in_canvas.sz.y
+    );
+  }
+
 }
 export class RenderPane {
   d: CanvasRenderingContext2D;

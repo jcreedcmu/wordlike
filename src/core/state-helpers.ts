@@ -62,11 +62,20 @@ export function checkValid(state: GameState): GameState {
   const grid = mkGrid(tiles);
 
   const { validWords, invalidWords } = checkGridWords(grid, word => getAssets().dictionary[word]);
+
+  let allValid = false;
   if (invalidWords.length == 0 && checkConnected(grid) && state.hand_tiles.length == 0) {
     state = resolveValid(state);
+    allValid = true;
   }
 
+  let panic = state.panic;
+  if (allValid) panic = undefined;
+  if (!allValid && panic === undefined)
+    panic = { currentTime: Date.now(), lastClear: Date.now() };
+
   return produce(state, s => {
+    s.panic = panic;
     s.invalidWords = invalidWords;
   });
 }
