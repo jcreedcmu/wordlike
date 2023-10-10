@@ -2,7 +2,7 @@ import { Point } from "../util/types";
 
 // Implements a lazily-evaluated, cached, immutable sparse map from coordinates to T
 
-// XXX the fact that this is global is bad
+// FIXME(#26): the fact that this is global is bad
 const cache: Record<string, any> = {};
 
 export type Layer<T> = {
