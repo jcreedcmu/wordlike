@@ -1,12 +1,13 @@
+import * as effectful from '../ui/use-effectful-reducer';
 import { canvas_from_drag_tile, pan_canvas_from_canvas_of_mouse_state } from '../ui/view-helpers';
-import { canvas_from_hand, getWidgetPoint, WidgetPoint } from '../ui/widget-helpers';
+import { WidgetPoint, canvas_from_hand, getWidgetPoint } from '../ui/widget-helpers';
 import { produce } from '../util/produce';
 import { compose, composen, inverse, scale, translate } from '../util/se2';
 import { Point } from '../util/types';
 import { vequal, vm, vscale } from '../util/vutil';
-import { Action, Effect, GameState, SceneState } from './state';
-import { checkValid, is_occupied, killTileOfState, drawOfState } from './state-helpers';
-import * as effectful from '../ui/use-effectful-reducer';
+import { getPanicFraction } from './clock';
+import { Action, Effect, GameState, SceneState, mkGameState } from './state';
+import { checkValid, drawOfState, is_occupied, killTileOfState } from './state-helpers';
 
 function resolveDrag(state: GameState): GameState {
   const ms = state.mouseState;
@@ -196,6 +197,9 @@ export function reduceGameAction(state: GameState, action: Action): [GameState, 
     case 'resize': return [state, []]; // XXX maybe stash viewdata this in state somewhere?
     case 'repaint':
       if (state.panic !== undefined) {
+        if (getPanicFraction(state.panic) > 1) {
+          return [mkGameState(), []];
+        }
         return [produce(state, s => { s.panic!.currentTime = Date.now(); }), []]
       }
       else {

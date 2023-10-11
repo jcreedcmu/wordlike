@@ -1,3 +1,14 @@
+export type PanicData = {
+  lastClear: number, // ms since epoch
+  currentTime: number, // ms since epoch
+};
+
+export const PANIC_INTERVAL_MS = 90000;
+
+export function getPanicFraction(panic: PanicData) {
+  return (Date.now() - panic.lastClear) / PANIC_INTERVAL_MS;
+}
+
 // The idea here is that we want to have a clock that ticks every
 // MILLISECONDS_PER_TICK ms, but we also want to manage a timeout that
 // triggers on the soonest tick when anything interesting could

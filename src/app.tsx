@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useEffect } from 'react';
 import { reduce } from './core/reduce';
-import { Action, Effect, MouseState, SceneState, mkGameState } from './core/state';
+import { Action, Effect, MouseState, SceneState, mkGameSceneState } from './core/state';
 import { CanvasInfo, useCanvas } from './ui/use-canvas';
 import { useEffectfulReducer } from './ui/use-effectful-reducer';
 import { relpos, rrelpos } from './util/dutil';
@@ -21,7 +21,7 @@ type CanvasProps = {
 
 export function App(props: AppProps): JSX.Element {
 
-  const [state, dispatch] = useEffectfulReducer<Action, SceneState, Effect>(mkGameState(Date.now()), reduce, doEffect);
+  const [state, dispatch] = useEffectfulReducer<Action, SceneState, Effect>(mkGameSceneState(Date.now()), reduce, doEffect);
   const [cref, mc] = useCanvas<CanvasProps>(
     { main: state }, render, [state], ci => {
       dispatch({ t: 'resize', vd: resizeView(ci.c) });

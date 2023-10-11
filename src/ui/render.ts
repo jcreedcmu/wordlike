@@ -9,6 +9,7 @@ import { hand_bds_in_canvas, world_bds_in_canvas, canvas_bds_in_canvas } from ".
 import { canvas_from_hand } from "./widget-helpers";
 import { CanvasInfo } from "./use-canvas";
 import { getLayer, getOverlay } from "../core/layer";
+import { PANIC_INTERVAL_MS, getPanicFraction } from "../core/clock";
 
 export function paint(ci: CanvasInfo, sceneState: SceneState) {
   const { d } = ci;
@@ -113,10 +114,9 @@ export function paint(ci: CanvasInfo, sceneState: SceneState) {
   d.fillText(`${state.score}`, scoreLoc.x, scoreLoc.y);
 
   // draw panic bar
-  const PANIC_INTERVAL_MS = 90000;
   const PANIC_THICK = 15;
   if (state.panic !== undefined) {
-    const panic_fraction = (Date.now() - state.panic.lastClear) / PANIC_INTERVAL_MS;
+    const panic_fraction = getPanicFraction(state.panic);
     const panic_rect_in_canvas: Rect = {
       p: {
         x: canvas_bds_in_canvas.p.x,

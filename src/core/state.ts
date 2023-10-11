@@ -2,8 +2,9 @@ import { ViewData } from '../app';
 import { SE2 } from '../util/se2';
 import { Point } from '../util/types';
 import { Bonus, bonusGenerator } from './bonus';
+import { PanicData } from './clock';
 import { Energies, initialEnergies } from './distribution';
-import { emptyGrid, Grid, LocatedWord, mkGrid } from './grid';
+import { LocatedWord } from './grid';
 import { Layer, Overlay, mkLayer, mkOverlay } from './layer';
 
 // There are UiActions, which might have different behavior depending
@@ -73,41 +74,42 @@ export type GameState = {
   bonusLayer: Layer<Bonus>,
   bonusOverlay: Overlay<Bonus>,
   score: number,
-  panic: {
-    lastClear: number, // ms since epoch
-    currentTime: number, // ms since epoch
-  } | undefined,
+  panic: PanicData | undefined,
 };
 
 export function mkState(): State {
   return {
-    sceneState: mkGameState(),
+    sceneState: mkGameSceneState(),
   };
 }
 
-export function mkGameState(seed?: number): SceneState {
-  seed = seed ?? 12345678;
+export function mkGameSceneState(seed?: number): SceneState {
   return {
     t: 'game',
-    gameState: {
-      invalidWords: [],
-      energies: initialEnergies(),
-      seed,
-      main_tiles: ''.split('').map((x, i) => ({
-        letter: x,
-        p_in_world_int: { x: i, y: 0 },
-        used: false,
-      })),
-      hand_tiles: [],
-      canvas_from_world: {
-        scale: { x: 48, y: 48 },
-        translate: { x: 200, y: 240 }
-      },
-      mouseState: { t: 'up', p: { x: 0, y: 0 } },
-      bonusLayer: mkLayer(bonusGenerator),
-      bonusOverlay: mkOverlay<Bonus>(),
-      score: 0,
-      panic: undefined,
-    }, revision: 0
+    gameState: mkGameState(seed), revision: 0
+  };
+}
+
+export function mkGameState(seed?: number): GameState {
+  seed = seed ?? 12345678;
+  return {
+    invalidWords: [],
+    energies: initialEnergies(),
+    seed,
+    main_tiles: ''.split('').map((x, i) => ({
+      letter: x,
+      p_in_world_int: { x: i, y: 0 },
+      used: false,
+    })),
+    hand_tiles: [],
+    canvas_from_world: {
+      scale: { x: 48, y: 48 },
+      translate: { x: 200, y: 240 }
+    },
+    mouseState: { t: 'up', p: { x: 0, y: 0 } },
+    bonusLayer: mkLayer(bonusGenerator),
+    bonusOverlay: mkOverlay<Bonus>(),
+    score: 0,
+    panic: undefined,
   };
 }
