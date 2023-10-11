@@ -194,6 +194,13 @@ export function reduceGameAction(state: GameState, action: Action): [GameState, 
       s.mouseState.p = action.p;
     }), []];
     case 'resize': return [state, []]; // XXX maybe stash viewdata this in state somewhere?
+    case 'repaint':
+      if (state.panic !== undefined) {
+        return [produce(state, s => { s.panic!.currentTime = Date.now(); }), []]
+      }
+      else {
+        return [state, []];
+      }
   }
 }
 

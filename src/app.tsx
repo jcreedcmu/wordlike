@@ -56,6 +56,11 @@ export function App(props: AppProps): JSX.Element {
     dispatch({ t: 'key', code: key(k) });
   }
 
+  function intervalHandler() {
+    dispatch({ t: 'repaint' });
+  }
+
+  let interval: number | undefined = undefined;
   useEffect(() => {
 
     document.addEventListener('mouseup', mouseUpListener);
@@ -65,6 +70,8 @@ export function App(props: AppProps): JSX.Element {
     document.addEventListener('wheel', wheelListener);
     document.addEventListener('keydown', keyListener);
     window.addEventListener('resize', handleResize);
+    window.addEventListener('resize', handleResize);
+    interval = setInterval(intervalHandler, 200);
 
     return () => {
       document.removeEventListener('mouseup', mouseUpListener);
@@ -74,7 +81,8 @@ export function App(props: AppProps): JSX.Element {
       document.removeEventListener('wheel', wheelListener);
       document.removeEventListener('keydown', keyListener);
       window.removeEventListener('resize', handleResize);
-
+      clearInterval(interval);
+      console.log('clearing interval');
     };
   }, []);
 

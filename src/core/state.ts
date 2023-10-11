@@ -25,6 +25,7 @@ export type UiAction =
 
 export type Action =
   | { t: 'resize', vd: ViewData }
+  | { t: 'repaint' }
   | GameAction
   ;
 
