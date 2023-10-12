@@ -119,8 +119,13 @@ export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: numbe
       const p_in_world_int = vm(wp.p_in_local, Math.floor);
       if (button == 1) {
         let i = 0;
+
         for (const tile of state.main_tiles) {
           if (vequal(p_in_world_int, tile.p_in_world_int)) {
+            if (vequal(p_in_world_int, { x: 0, y: 0 })) {
+              return drag_world();
+            }
+
             return produce(state, s => {
               s.mouseState = {
                 t: 'drag_main_tile',

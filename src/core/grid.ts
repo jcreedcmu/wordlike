@@ -48,20 +48,6 @@ function numSet<T>(grid: Grid<T>): number {
   return rv;
 }
 
-// returns an arbitrary point that is defined in grid
-function firstSet<T>(grid: Grid<T>): Point {
-  let rv = 0;
-  for (let yo = 0; yo <= grid.rect.sz.y; yo++) {
-    const y = yo + grid.rect.p.y;
-    for (let xo = 0; xo <= grid.rect.sz.x + 1; xo++) {
-      const x = xo + grid.rect.p.x;
-      if (isSetGrid(grid, { x, y })) {
-        return { x, y };
-      }
-    }
-  }
-  throw new Error(`no values defined when trying to compute firstSet`);
-}
 
 export function emptyGrid<T>(): Grid<T> {
   return {
@@ -183,7 +169,7 @@ export function checkGridWords(grid: Grid<string>, isWord: (x: string) => boolea
 }
 
 // returns true if all the elements of grid are orthogonally connected
-export function checkConnected<T>(grid: Grid<T>): boolean {
+export function checkConnected<T>(grid: Grid<T>, startFrom: Point = { x: 0, y: 0 }): boolean {
   // Underpopulated grids are not considered connected. Even though
   // mathematically it seems reasonable to consider them connected
   // subsets of ℤ², for the purposes of the game, they shouldn't
@@ -207,6 +193,6 @@ export function checkConnected<T>(grid: Grid<T>): boolean {
     explore({ x: p.x, y: p.y - 1 });
   }
 
-  explore(firstSet(grid));
+  explore(startFrom);
   return (numSetRemaining == 0);
 }

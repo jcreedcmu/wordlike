@@ -72,8 +72,8 @@ describe('checking words', () => {
 
 describe('checkConnected', () => {
   test('should work', () => {
-    expect(checkConnected(mkGrid(tiles1))).toEqual(true);
-    expect(checkConnected(mkGrid(tiles2))).toEqual(false);
+    expect(checkConnected(mkGrid(tiles1), { x: 2, y: 4 })).toEqual(true);
+    expect(checkConnected(mkGrid(tiles2), { x: 2, y: 4 })).toEqual(false);
   });
 
 });

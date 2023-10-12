@@ -75,6 +75,19 @@ export function paint(ci: CanvasInfo, sceneState: SceneState) {
     }
   }
 
+  // draw origin
+  const origin_rect_in_canvas = apply_to_rect(pan_canvas_from_world, { p: { x: 0, y: 0 }, sz: { x: 1, y: 1 } });
+  d.strokeStyle = 'rgba(0,0,0,0.5)';
+  d.lineWidth = 2;
+  d.beginPath();
+  d.arc(origin_rect_in_canvas.p.x + origin_rect_in_canvas.sz.x / 2,
+    origin_rect_in_canvas.p.y + origin_rect_in_canvas.sz.y / 2,
+    origin_rect_in_canvas.sz.y * 0.3,
+    0, 360,
+  );
+  d.stroke();
+
+
   // draw hand tiles
   d.fillStyle = '#eeeeee';
   d.fillRect(hand_bds_in_canvas.p.x, hand_bds_in_canvas.p.y, hand_bds_in_canvas.sz.x, hand_bds_in_canvas.sz.y);
@@ -86,7 +99,7 @@ export function paint(ci: CanvasInfo, sceneState: SceneState) {
     }
   });
 
-  // draw dragged tile on the very top
+  // draw dragged tile on top
   if (ms.t == 'drag_main_tile') {
     const tile = state.main_tiles[ms.ix];
     drawTileIntrinsic(d,
