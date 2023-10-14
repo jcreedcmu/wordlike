@@ -13,8 +13,7 @@ import { vint } from './util/vutil';
 type Dispatch = (action: Action) => void;
 
 export type GameProps = {
-  // XXX: reduce this to GameState not SceneState
-  gameState: SceneState,
+  state: GameState,
   dispatch: Dispatch,
 }
 
@@ -28,20 +27,29 @@ export function App(props: {}): JSX.Element {
   const [state, dispatch] = useEffectfulReducer<Action, SceneState, Effect>(mkSceneState(), reduce, doEffect);
 
   if (state.t == 'menu') {
-    return <button onClick={() => dispatch({ t: 'newGame' })}>New Game</button>;
+    const style: React.CSSProperties = {
+      backgroundColor: 'white',
+      padding: 15,
+      border: '1px solid gray',
+      borderRadius: 10,
+      fontFamily: 'sans-serif',
+      fontWeight: 'bold',
+      cursor: 'pointer',
+    };
+    return <div style={{ textAlign: 'center', fontSize: 48, fontFamily: 'sans-serif' }}>
+      Wordlike<p />
+      <button style={style} onClick={() => dispatch({ t: 'newGame' })}>Start Game</button>
+    </div>;
   }
   else {
-    return <Game dispatch={dispatch} gameState={state} />;
+    return <Game dispatch={dispatch} state={state.gameState} />;
   }
 }
 
 export function Game(props: GameProps): JSX.Element {
-  const { gameState: state, dispatch } = props;
-  if (state.t != 'game') {
-    throw "invalid game state";
-  }
+  const { state, dispatch } = props;
   const [cref, mc] = useCanvas<CanvasProps>(
-    { main: state.gameState }, render, [state], ci => {
+    { main: state }, render, [state], ci => {
       dispatch({ t: 'resize', vd: resizeView(ci.c) });
     });
 
@@ -115,7 +123,7 @@ export function Game(props: GameProps): JSX.Element {
   }
 
   const style: React.CSSProperties =
-    { cursor: cursorOfMouseState(state.gameState.mouseState) };
+    { cursor: cursorOfMouseState(state.mouseState) };
   return <div>
     <canvas
       style={style}
