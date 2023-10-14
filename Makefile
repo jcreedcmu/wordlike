@@ -22,3 +22,6 @@ test:
 
 count:
 	ag -g 'cc$$|hh$$|tsx?$$|frag$$|vert$$' --ignore='tests' | xargs wc -l
+
+deploy:
+	git push origin "main:deploy"
