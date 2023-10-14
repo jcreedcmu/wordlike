@@ -159,12 +159,12 @@ export class RenderPane {
 }
 
 function colorsOfTile(tile: Tile): { fg: string, bg: string } {
-  if (tile.used) {
-    return { fg: '#3a320e', bg: '#c9b451' };
-  }
-  else {
-    return { fg: '#5a220e', bg: '#f97451' }
-  }
+  //  if (tile.used) {
+  return { fg: '#3a320e', bg: '#c9b451' };
+  // }
+  // else {
+  //   return { fg: '#5a220e', bg: '#f97451' }
+  // }
 }
 
 function drawInvalidWord(d: CanvasRenderingContext2D, canvas_from_world: SE2, word: LocatedWord) {

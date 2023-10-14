@@ -31,6 +31,7 @@ export function killTileOfState(state: GameState): GameState {
     return state;
   return checkValid(produce(state, s => {
     s.main_tiles.splice(ix, 1);
+    produce(state, s => { s.score--; });
   }));
 }
 

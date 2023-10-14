@@ -177,9 +177,7 @@ export function reduceGameAction(state: GameState, action: Action): effectful.Re
       }
       if (action.code == 'k') {
         return gs(state.score > 0 ?
-          killTileOfState(
-            produce(state, s => { s.score--; })
-          ) : state);
+          killTileOfState(state) : state);
       }
       return gs(state);
     }
