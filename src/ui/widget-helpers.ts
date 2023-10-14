@@ -5,7 +5,7 @@ import { GameState } from "../core/state";
 
 export const HAND_WIDTH = 100;
 
-export const canvas_bds_in_canvas: Rect = { p: { x: 0, y: 0 }, sz: { x: 640, y: 480 } };
+export const canvas_bds_in_canvas: Rect = { p: { x: 0, y: 0 }, sz: { x: 800, y: 600 } };
 export const hand_bds_in_canvas: Rect = {
   p: { x: canvas_bds_in_canvas.sz.x - HAND_WIDTH, y: 0 },
   sz: { x: HAND_WIDTH, y: canvas_bds_in_canvas.sz.y }

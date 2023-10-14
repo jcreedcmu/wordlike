@@ -9,6 +9,7 @@ import { useEffectfulReducer } from './ui/use-effectful-reducer';
 import { relpos } from './util/dutil';
 import { Point } from './util/types';
 import { vint } from './util/vutil';
+import { canvas_bds_in_canvas } from './ui/widget-helpers';
 
 type Dispatch = (action: Action) => void;
 
@@ -143,8 +144,8 @@ export function resizeView(c: HTMLCanvasElement): ViewData {
   const ratio = devicePixelRatio;
 
   const parent = c.parentElement?.getBoundingClientRect();
-  const w = 640;
-  const h = 480;
+  const w = canvas_bds_in_canvas.sz.x;
+  const h = canvas_bds_in_canvas.sz.y;
 
   c.width = w;
   c.height = h;
