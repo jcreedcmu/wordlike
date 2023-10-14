@@ -13,6 +13,8 @@ import { PANIC_INTERVAL_MS, getPanicFraction } from "../core/clock";
 
 export function paint(ci: CanvasInfo, state: GameState) {
   const { d } = ci;
+  d.save();
+  d.scale(devicePixelRatio, devicePixelRatio);
   const ms = state.mouseState;
   const pan_canvas_from_world = pan_canvas_from_world_of_state(state);
 
@@ -145,7 +147,7 @@ export function paint(ci: CanvasInfo, state: GameState) {
       panic_rect_in_canvas.sz.x, panic_rect_in_canvas.sz.y
     );
   }
-
+  d.restore();
 }
 export class RenderPane {
   d: CanvasRenderingContext2D;
