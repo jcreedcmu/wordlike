@@ -1,4 +1,4 @@
-import { SceneState, Tile } from "../core/state";
+import { GameState, SceneState, Tile } from "../core/state";
 import { pan_canvas_from_world_of_state, drag_canvas_from_canvas_of_mouse_state, canvas_from_drag_tile } from "./view-helpers";
 import { apply, compose, composen, ident, inverse, SE2, translate } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
@@ -11,9 +11,8 @@ import { CanvasInfo } from "./use-canvas";
 import { getLayer, getOverlay } from "../core/layer";
 import { PANIC_INTERVAL_MS, getPanicFraction } from "../core/clock";
 
-export function paint(ci: CanvasInfo, sceneState: SceneState) {
+export function paint(ci: CanvasInfo, state: GameState) {
   const { d } = ci;
-  const state = sceneState.gameState;
   const ms = state.mouseState;
   const pan_canvas_from_world = pan_canvas_from_world_of_state(state);
 

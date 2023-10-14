@@ -6,7 +6,7 @@ import { compose, composen, inverse, scale, translate } from '../util/se2';
 import { Point } from '../util/types';
 import { vequal, vm, vscale } from '../util/vutil';
 import { getPanicFraction } from './clock';
-import { Action, Effect, GameState, SceneState, mkGameState } from './state';
+import { Action, Effect, GameState, SceneState, mkGameSceneState, mkGameState } from './state';
 import { checkValid, drawOfState, is_occupied, killTileOfState } from './state-helpers';
 
 function resolveDrag(state: GameState): GameState {
@@ -166,21 +166,24 @@ export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: numbe
   }
 }
 
-export function reduceGameAction(state: GameState, action: Action): [GameState, Effect[]] {
+export function reduceGameAction(state: GameState, action: Action): effectful.Result<SceneState, Effect> {
+  function gs(state: GameState): effectful.Result<SceneState, Effect> {
+    return { state: { t: 'game', gameState: state, revision: 0 }, effects: [] };
+  }
   switch (action.t) {
     case 'key': {
       if (action.code == '<space>') {
-        return [drawOfState(state), []];
+        return gs(drawOfState(state));
       }
       if (action.code == 'k') {
-        return [state.score > 0 ?
+        return gs(state.score > 0 ?
           killTileOfState(
             produce(state, s => { s.score--; })
-          ) : state, []];
+          ) : state);
       }
-      return [state, []];
+      return gs(state);
     }
-    case 'none': return [state, []];
+    case 'none': return gs(state);
     case 'wheel': {
       const sf = action.delta < 0 ? 1.1 : 1 / 1.1;
       const zoomed_canvas_of_unzoomed_canvas = composen(
@@ -188,36 +191,44 @@ export function reduceGameAction(state: GameState, action: Action): [GameState, 
         scale({ x: sf, y: sf }),
         translate(vscale(action.p, -1)),
       );
-      return [produce(state, s => {
+      return gs(produce(state, s => {
         s.canvas_from_world = compose(zoomed_canvas_of_unzoomed_canvas, s.canvas_from_world);
-      }), []];
+      }));
     }
     case 'mouseDown': {
-      return [reduceMouseDown(state, getWidgetPoint(state, action.p), action.button), []]
+      return gs(reduceMouseDown(state, getWidgetPoint(state, action.p), action.button));
     }
-    case 'mouseUp': return [resolveDrag(state), []];
-    case 'mouseMove': return [produce(state, s => {
+    case 'mouseUp': return gs(resolveDrag(state));
+    case 'mouseMove': return gs(produce(state, s => {
       s.mouseState.p = action.p;
-    }), []];
-    case 'resize': return [state, []]; // XXX maybe stash viewdata this in state somewhere?
+    }));
+    case 'resize': return gs(state); // XXX maybe stash viewdata this in state somewhere?
     case 'repaint':
       if (state.panic !== undefined) {
         if (getPanicFraction(state.panic) > 1) {
-          return [mkGameState(), []];
+          return { state: { t: 'menu' }, effects: [] };
         }
-        return [produce(state, s => { s.panic!.currentTime = Date.now(); }), []]
+        return gs(produce(state, s => { s.panic!.currentTime = Date.now(); }));
       }
       else {
-        return [state, []];
+        return gs(state);
       }
+    case 'newGame':
+      throw new Error('lifecycle error');
   }
 }
 
-export function reduce(state: SceneState, action: Action): effectful.Result<SceneState, Effect> {
-  switch (state.t) {
+export function reduce(scState: SceneState, action: Action): effectful.Result<SceneState, Effect> {
+  switch (scState.t) {
     case 'game':
-      const [gs, effects] = reduceGameAction(state.gameState, action);
-      return { state: produce(state, s => { s.gameState = gs; }), effects };
+      return reduceGameAction(scState.gameState, action);
+    case 'menu':
+      switch (action.t) {
+        case 'newGame':
+          return { state: mkGameSceneState(Date.now()), effects: [] };
+        default:
+          return { state: scState, effects: [] };
+      }
   }
 
 }

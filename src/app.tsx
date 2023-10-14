@@ -1,29 +1,47 @@
 import * as React from 'react';
 import { useEffect } from 'react';
 import { reduce } from './core/reduce';
-import { Action, Effect, MouseState, SceneState, mkGameSceneState } from './core/state';
+import { Action, Effect, GameState, MouseState, SceneState, mkSceneState } from './core/state';
+import { key } from './ui/key';
+import { paint } from './ui/render';
 import { CanvasInfo, useCanvas } from './ui/use-canvas';
 import { useEffectfulReducer } from './ui/use-effectful-reducer';
-import { relpos, rrelpos } from './util/dutil';
-import { paint } from './ui/render';
+import { relpos } from './util/dutil';
 import { Point } from './util/types';
 import { vint } from './util/vutil';
-import { key } from './ui/key';
 
-export type AppProps = {
+type Dispatch = (action: Action) => void;
+
+export type GameProps = {
+  // XXX: reduce this to GameState not SceneState
+  gameState: SceneState,
+  dispatch: Dispatch,
 }
 
-export type ForRenderState = SceneState;
+export type ForRenderState = GameState;
 type CanvasProps = {
   main: ForRenderState,
 };
 
 
-export function App(props: AppProps): JSX.Element {
+export function App(props: {}): JSX.Element {
+  const [state, dispatch] = useEffectfulReducer<Action, SceneState, Effect>(mkSceneState(), reduce, doEffect);
 
-  const [state, dispatch] = useEffectfulReducer<Action, SceneState, Effect>(mkGameSceneState(Date.now()), reduce, doEffect);
+  if (state.t == 'menu') {
+    return <button onClick={() => dispatch({ t: 'newGame' })}>New Game</button>;
+  }
+  else {
+    return <Game dispatch={dispatch} gameState={state} />;
+  }
+}
+
+export function Game(props: GameProps): JSX.Element {
+  const { gameState: state, dispatch } = props;
+  if (state.t != 'game') {
+    throw "invalid game state";
+  }
   const [cref, mc] = useCanvas<CanvasProps>(
-    { main: state }, render, [state], ci => {
+    { main: state.gameState }, render, [state], ci => {
       dispatch({ t: 'resize', vd: resizeView(ci.c) });
     });
 

@@ -27,6 +27,7 @@ export type UiAction =
 export type Action =
   | { t: 'resize', vd: ViewData }
   | { t: 'repaint' }
+  | { t: 'newGame' }
   | GameAction
   ;
 
@@ -51,7 +52,8 @@ export type SceneState =
     // in case I need a finer-grained equality check on SceneState.
     // It's updated in reduce.ts.
     revision: number,
-  };
+  }
+  | { t: 'menu' };
 
 export type State = {
   sceneState: SceneState,
@@ -77,10 +79,8 @@ export type GameState = {
   panic: PanicData | undefined,
 };
 
-export function mkState(): State {
-  return {
-    sceneState: mkGameSceneState(),
-  };
+export function mkSceneState(): SceneState {
+  return { t: 'menu' };
 }
 
 export function mkGameSceneState(seed?: number): SceneState {
