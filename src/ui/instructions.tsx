@@ -2,16 +2,17 @@ import * as React from 'react';
 import { useEffect } from 'react';
 import { Dispatch } from '../core/action';
 import { bonusGenerator } from '../core/bonus';
-import { checkConnected, mkGridOf } from '../core/grid';
+import { PANIC_INTERVAL_MS } from '../core/clock';
+import { mkGridOf } from '../core/grid';
 import { mkLayer } from '../core/layer';
-import { GameState, SceneState } from '../core/state';
+import { GameState } from '../core/state';
+import { checkValid } from '../core/state-helpers';
+import { DEBUG } from '../util/debug';
+import { relpos } from '../util/dutil';
+import { Point } from '../util/types';
 import { paint } from './render';
 import { resizeView } from './ui-helpers';
 import { CanvasInfo, useCanvas } from './use-canvas';
-import { checkValid } from '../core/state-helpers';
-import { PANIC_INTERVAL_MS } from '../core/clock';
-import { Point } from '../util/types';
-import { relpos } from '../util/dutil';
 
 export type ForRenderState = GameState;
 type CanvasProps = {
@@ -21,8 +22,12 @@ type CanvasProps = {
 export function Instructions(props: { dispatch: Dispatch }): JSX.Element {
   const { dispatch } = props;
   function mouseDownListener(e: MouseEvent) {
-    console.log(relpos(e, mc.current!.c));
-    //    dispatch({ t: 'setSceneState', state: { t: 'menu' } });
+    if (DEBUG.instructions) {
+      console.log(relpos(e, mc.current!.c));
+    }
+    else {
+      dispatch({ t: 'setSceneState', state: { t: 'menu' } });
+    }
     e.preventDefault();
     e.stopPropagation();
   }
