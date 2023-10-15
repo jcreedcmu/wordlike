@@ -6,13 +6,11 @@ import { GameState, MouseState, SceneState, mkSceneState } from './core/state';
 import { Instructions } from './ui/instructions';
 import { key } from './ui/key';
 import { paint } from './ui/render';
+import { resizeView } from './ui/ui-helpers';
 import { CanvasInfo, useCanvas } from './ui/use-canvas';
 import { useEffectfulReducer } from './ui/use-effectful-reducer';
-import { canvas_bds_in_canvas } from './ui/widget-helpers';
 import { DEBUG } from './util/debug';
 import { relpos } from './util/dutil';
-import { Point } from './util/types';
-import { vint } from './util/vutil';
 
 export type GameProps = {
   state: GameState,
@@ -146,33 +144,7 @@ function render(ci: CanvasInfo, props: CanvasProps) {
   paint(ci, props.main);
 }
 
-export type ViewData = {
-  wsize: Point,
-};
 
-export function resizeView(c: HTMLCanvasElement): ViewData {
-  const ratio = devicePixelRatio;
-
-  const parent = c.parentElement?.getBoundingClientRect();
-  const w = canvas_bds_in_canvas.sz.x;
-  const h = canvas_bds_in_canvas.sz.y;
-
-  c.width = w;
-  c.height = h;
-
-  const ow = w;
-  const oh = h;
-
-  c.width = ow * ratio;
-  c.height = oh * ratio;
-
-  c.style.width = ow + 'px';
-  c.style.height = oh + 'px';
-
-  const wsize = vint({ x: c.width / ratio, y: c.height / ratio });
-
-  return { wsize };
-}
 
 export function doEffect(state: SceneState, dispatch: (action: Action) => void, effect: Effect): void {
   return;

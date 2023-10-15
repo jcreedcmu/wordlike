@@ -150,6 +150,7 @@ export function paint(ci: CanvasInfo, state: GameState) {
   }
   d.restore();
 }
+
 export class RenderPane {
   d: CanvasRenderingContext2D;
   constructor(public c: HTMLCanvasElement) {
