@@ -10,7 +10,7 @@ import { checkValid } from '../core/state-helpers';
 import { DEBUG } from '../util/debug';
 import { relpos } from '../util/dutil';
 import { Point } from '../util/types';
-import { paint } from './render';
+import { rawPaint } from './render';
 import { resizeView } from './ui-helpers';
 import { CanvasInfo, useCanvas } from './use-canvas';
 
@@ -54,7 +54,10 @@ export function Instructions(props: { dispatch: Dispatch }): JSX.Element {
 }
 
 function render(ci: CanvasInfo, props: CanvasProps) {
-  paint(ci, props.main);
+  const { d } = ci;
+  d.save();
+  d.scale(devicePixelRatio, devicePixelRatio);
+  rawPaint(ci, props.main);
 
   drawBubble(ci, `This is the origin.\nAll tiles must connect here, and\nthe tile cannot be moved once placed.`,
     { x: 150, y: 100 }, { x: 70, y: 230 });
@@ -67,7 +70,7 @@ function render(ci: CanvasInfo, props: CanvasProps) {
 
   drawBubble(ci, `This is the panic bar. If it\nfills up all the way to\nthe right, you lose!`,
     { x: 133, y: 513 }, { x: 221, y: 593 });
-
+  d.restore();
 }
 
 function exampleState(): GameState {

@@ -5,7 +5,7 @@ import { reduce } from './core/reduce';
 import { GameState, MouseState, SceneState, mkSceneState } from './core/state';
 import { Instructions } from './ui/instructions';
 import { key } from './ui/key';
-import { paint } from './ui/render';
+import { paintWithScale } from './ui/render';
 import { resizeView } from './ui/ui-helpers';
 import { CanvasInfo, useCanvas } from './ui/use-canvas';
 import { useEffectfulReducer } from './ui/use-effectful-reducer';
@@ -141,7 +141,7 @@ export function Game(props: GameProps): JSX.Element {
 }
 
 function render(ci: CanvasInfo, props: CanvasProps) {
-  paint(ci, props.main);
+  paintWithScale(ci, props.main);
 }
 
 
