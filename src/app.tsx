@@ -1,17 +1,18 @@
 import * as React from 'react';
 import { useEffect } from 'react';
+import { Action, Dispatch, Effect } from './core/action';
 import { reduce } from './core/reduce';
-import { Action, Effect, GameState, MouseState, SceneState, mkSceneState } from './core/state';
+import { GameState, MouseState, SceneState, mkSceneState } from './core/state';
+import { Instructions } from './ui/instructions';
 import { key } from './ui/key';
 import { paint } from './ui/render';
 import { CanvasInfo, useCanvas } from './ui/use-canvas';
 import { useEffectfulReducer } from './ui/use-effectful-reducer';
+import { canvas_bds_in_canvas } from './ui/widget-helpers';
+import { DEBUG } from './util/debug';
 import { relpos } from './util/dutil';
 import { Point } from './util/types';
 import { vint } from './util/vutil';
-import { canvas_bds_in_canvas } from './ui/widget-helpers';
-
-type Dispatch = (action: Action) => void;
 
 export type GameProps = {
   state: GameState,
@@ -23,26 +24,12 @@ type CanvasProps = {
   main: ForRenderState,
 };
 
-
-function Instructions(props: { dispatch: Dispatch }): JSX.Element {
-  const { dispatch } = props;
-  function mouseDownListener(e: MouseEvent) {
-    dispatch({ t: 'setSceneState', state: { t: 'menu' } });
-    e.preventDefault();
-    e.stopPropagation();
-  }
-
-  useEffect(() => {
-    document.addEventListener('mousedown', mouseDownListener);
-    return () => {
-      document.removeEventListener('mousedown', mouseDownListener);
-    }
-  });
-  return <span>Instructions go here</span>;
-}
-
 export function App(props: {}): JSX.Element {
   const [state, dispatch] = useEffectfulReducer<Action, SceneState, Effect>(mkSceneState(), reduce, doEffect);
+
+  if (DEBUG.stateExporter) {
+    (window as any).state = () => { return state; }
+  }
 
   switch (state.t) {
     case 'menu': {

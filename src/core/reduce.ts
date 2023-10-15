@@ -6,7 +6,8 @@ import { compose, composen, inverse, scale, translate } from '../util/se2';
 import { Point } from '../util/types';
 import { vequal, vm, vscale } from '../util/vutil';
 import { getPanicFraction } from './clock';
-import { Action, Effect, GameAction, GameState, SceneState, mkGameSceneState, mkGameState } from './state';
+import { GameState, SceneState, mkGameSceneState, mkGameState } from './state';
+import { Action, Effect, GameAction } from './action';
 import { checkValid, drawOfState, is_occupied, killTileOfState } from './state-helpers';
 
 function resolveDrag(state: GameState): GameState {
