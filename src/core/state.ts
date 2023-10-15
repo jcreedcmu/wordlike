@@ -22,12 +22,13 @@ export type UiAction =
   | { t: 'mouseUp', p: Point }
   | { t: 'mouseMove', p: Point }
   | { t: 'wheel', p: Point, delta: number }
+  | { t: 'repaint' }
   ;
 
 export type Action =
   | { t: 'resize', vd: ViewData }
-  | { t: 'repaint' }
   | { t: 'newGame' }
+  | { t: 'setSceneState', state: SceneState }
   | GameAction
   ;
 
@@ -53,7 +54,9 @@ export type SceneState =
     // It's updated in reduce.ts.
     revision: number,
   }
-  | { t: 'menu' };
+  | { t: 'menu' }
+  | { t: 'instructions' }
+  ;
 
 export type State = {
   sceneState: SceneState,

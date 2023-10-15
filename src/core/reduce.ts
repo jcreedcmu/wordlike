@@ -6,7 +6,7 @@ import { compose, composen, inverse, scale, translate } from '../util/se2';
 import { Point } from '../util/types';
 import { vequal, vm, vscale } from '../util/vutil';
 import { getPanicFraction } from './clock';
-import { Action, Effect, GameState, SceneState, mkGameSceneState, mkGameState } from './state';
+import { Action, Effect, GameAction, GameState, SceneState, mkGameSceneState, mkGameState } from './state';
 import { checkValid, drawOfState, is_occupied, killTileOfState } from './state-helpers';
 
 function resolveDrag(state: GameState): GameState {
@@ -166,7 +166,7 @@ export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: numbe
   }
 }
 
-export function reduceGameAction(state: GameState, action: Action): effectful.Result<SceneState, Effect> {
+export function reduceGameAction(state: GameState, action: GameAction): effectful.Result<SceneState, Effect> {
   function gs(state: GameState): effectful.Result<SceneState, Effect> {
     return { state: { t: 'game', gameState: state, revision: 0 }, effects: [] };
   }
@@ -200,7 +200,6 @@ export function reduceGameAction(state: GameState, action: Action): effectful.Re
     case 'mouseMove': return gs(produce(state, s => {
       s.mouseState.p = action.p;
     }));
-    case 'resize': return gs(state); // XXX maybe stash viewdata this in state somewhere?
     case 'repaint':
       if (state.panic !== undefined) {
         if (getPanicFraction(state.panic) > 1) {
@@ -211,22 +210,24 @@ export function reduceGameAction(state: GameState, action: Action): effectful.Re
       else {
         return gs(state);
       }
-    case 'newGame':
-      throw new Error('lifecycle error');
   }
 }
 
 export function reduce(scState: SceneState, action: Action): effectful.Result<SceneState, Effect> {
-  switch (scState.t) {
-    case 'game':
-      return reduceGameAction(scState.gameState, action);
-    case 'menu':
-      switch (action.t) {
-        case 'newGame':
-          return { state: mkGameSceneState(Date.now()), effects: [] };
-        default:
-          return { state: scState, effects: [] };
+  switch (action.t) {
+    case 'resize': return { state: scState, effects: [] }; // XXX maybe stash viewdata this in state somewhere?
+    case 'newGame':
+      return { state: mkGameSceneState(Date.now()), effects: [] };
+    case 'setSceneState':
+      return { state: action.state, effects: [] };
+    default:
+      if (scState.t == 'game') {
+        return reduceGameAction(scState.gameState, action);
+      }
+      else {
+        return { state: scState, effects: [] };
       }
   }
+
 
 }

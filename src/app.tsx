@@ -24,26 +24,49 @@ type CanvasProps = {
 };
 
 
+function Instructions(props: { dispatch: Dispatch }): JSX.Element {
+  const { dispatch } = props;
+  function mouseDownListener(e: MouseEvent) {
+    dispatch({ t: 'setSceneState', state: { t: 'menu' } });
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  useEffect(() => {
+    document.addEventListener('mousedown', mouseDownListener);
+    return () => {
+      document.removeEventListener('mousedown', mouseDownListener);
+    }
+  });
+  return <span>Instructions go here</span>;
+}
+
 export function App(props: {}): JSX.Element {
   const [state, dispatch] = useEffectfulReducer<Action, SceneState, Effect>(mkSceneState(), reduce, doEffect);
 
-  if (state.t == 'menu') {
-    const style: React.CSSProperties = {
-      backgroundColor: 'white',
-      padding: 15,
-      border: '1px solid gray',
-      borderRadius: 10,
-      fontFamily: 'sans-serif',
-      fontWeight: 'bold',
-      cursor: 'pointer',
-    };
-    return <div style={{ textAlign: 'center', fontSize: 48, fontFamily: 'sans-serif' }}>
-      Wordlike<p />
-      <button style={style} onClick={() => dispatch({ t: 'newGame' })}>Start Game</button>
-    </div>;
-  }
-  else {
-    return <Game dispatch={dispatch} state={state.gameState} />;
+  switch (state.t) {
+    case 'menu': {
+      const style: React.CSSProperties = {
+        backgroundColor: 'white',
+        padding: 15,
+        border: '1px solid gray',
+        borderRadius: 10,
+        fontFamily: 'sans-serif',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+      };
+      return <div style={{ textAlign: 'center', fontSize: 48, fontFamily: 'sans-serif' }}>
+        Wordlike<p />
+        <button style={style} onClick={() => dispatch({ t: 'newGame' })}>Start Game</button>
+        <p /><p />
+        <button style={style} onClick={() => dispatch({ t: 'setSceneState', state: { t: 'instructions' } })}>Instructions</button>
+      </div>;
+    }
+    case 'game':
+      return <Game dispatch={dispatch} state={state.gameState} />;
+    case 'instructions': {
+      return <Instructions dispatch={dispatch} />;
+    }
   }
 }
 
