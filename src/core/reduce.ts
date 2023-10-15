@@ -87,7 +87,7 @@ function resolveDrag(state: GameState): GameState {
     }
 
     case 'up': {
-      console.warn(`unexpected resolveDrag with up mouse button`);
+      // no drag to resolve
       return produce(state, s => { s.mouseState = { t: 'up', p: ms.p }; });
     } break;
 
