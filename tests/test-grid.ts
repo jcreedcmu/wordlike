@@ -1,5 +1,6 @@
 import { checkConnected, checkGridWordsHoriz, checkGridWordsVert, mkGrid, transpose } from '../src/core/grid';
 import { Tile } from '../src/core/state';
+import { vequal } from '../src/util/vutil';
 
 function isWord(word: string): boolean {
   return word == 'foo' || word == 'fumble' || word == 'baz' || word == 'the' || word == 'nib';
@@ -72,8 +73,13 @@ describe('checking words', () => {
 
 describe('checkConnected', () => {
   test('should work', () => {
-    expect(checkConnected(mkGrid(tiles1), { x: 2, y: 4 })).toEqual(true);
-    expect(checkConnected(mkGrid(tiles2), { x: 2, y: 4 })).toEqual(false);
+    const cr1 = checkConnected(mkGrid(tiles1), { x: 2, y: 4 });
+    expect(cr1.allConnected).toEqual(true);
+    const cr2 = checkConnected(mkGrid(tiles2), { x: 2, y: 4 });
+    expect(cr2.allConnected).toEqual(false);
+    expect(cr2.connectedSet.length).toBe(12);
+    expect(cr2.connectedSet.findIndex(p => vequal(p, { x: 7, y: 4 }))).toBe(-1);
+    expect(cr2.connectedSet.find(p => vequal(p, { x: 5, y: 4 }))).toBeTruthy();
   });
 
 });

@@ -69,6 +69,7 @@ export type GameState = {
   main_tiles: Tile[],
   hand_tiles: Tile[],
   invalidWords: LocatedWord[],
+  connectedSet: Point[],
   energies: Energies,
   canvas_from_world: SE2,
   mouseState: MouseState,
@@ -94,6 +95,7 @@ export function mkGameState(seed?: number): GameState {
   seed = seed ?? 12345678;
   return {
     invalidWords: [],
+    connectedSet: [],
     energies: initialEnergies(),
     seed,
     main_tiles: ''.split('').map((x, i) => ({

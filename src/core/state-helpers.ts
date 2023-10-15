@@ -6,7 +6,7 @@ import { next_rand } from "../util/util";
 import { vequal, vm } from "../util/vutil";
 import { getAssets } from "./assets";
 import { Energies, getLetterSample } from "./distribution";
-import { checkConnected, checkGridWords, Grid, mkGrid, mkGridOf } from "./grid";
+import { checkConnected, checkGridWords, Grid, gridKeys, mkGrid, mkGridOf } from "./grid";
 import { getOverlay, setOverlay } from "./layer";
 import { GameState } from "./state";
 
@@ -63,9 +63,9 @@ export function checkValid(state: GameState): GameState {
   const grid = mkGrid(tiles);
 
   const { validWords, invalidWords } = checkGridWords(grid, word => getAssets().dictionary[word]);
-
+  const { allConnected, connectedSet } = checkConnected(grid);
   let allValid = false;
-  if (invalidWords.length == 0 && checkConnected(grid) && state.hand_tiles.length == 0) {
+  if (invalidWords.length == 0 && allConnected && state.hand_tiles.length == 0) {
     state = resolveValid(state);
     allValid = true;
   }
@@ -78,5 +78,6 @@ export function checkValid(state: GameState): GameState {
   return produce(state, s => {
     s.panic = panic;
     s.invalidWords = invalidWords;
+    s.connectedSet = connectedSet;
   });
 }

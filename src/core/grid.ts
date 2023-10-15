@@ -168,17 +168,22 @@ export function checkGridWords(grid: Grid<string>, isWord: (x: string) => boolea
   };
 }
 
+export type ConnectedResult = {
+  allConnected: boolean,
+  connectedSet: Point[],
+};
+
 // returns true if all the elements of grid are orthogonally connected
-export function checkConnected<T>(grid: Grid<T>, startFrom: Point = { x: 0, y: 0 }): boolean {
+export function checkConnected<T>(grid: Grid<T>, startFrom: Point = { x: 0, y: 0 }): ConnectedResult {
+  // We don't really need the bounding rect for the 'already seen' grid.
+  const seen: Grid<boolean> = { elems: {}, rect: { p: { x: 0, y: 0 }, sz: { x: 0, y: 0 } } };
+
   // Underpopulated grids are not considered connected. Even though
   // mathematically it seems reasonable to consider them connected
   // subsets of ℤ², for the purposes of the game, they shouldn't
   // trigger "freshness clearing" of tiles.
   if (Object.keys(grid.elems).length < 2)
-    return false;
-
-  // We don't really need the bounding rect for the 'already seen' grid.
-  const seen: Grid<boolean> = { elems: {}, rect: { p: { x: 0, y: 0 }, sz: { x: 0, y: 0 } } };
+    return { allConnected: false, connectedSet: gridKeys(seen) };
 
   let numSetRemaining = numSet(grid);
 
@@ -194,5 +199,9 @@ export function checkConnected<T>(grid: Grid<T>, startFrom: Point = { x: 0, y: 0
   }
 
   explore(startFrom);
-  return (numSetRemaining == 0);
+  return { allConnected: numSetRemaining == 0, connectedSet: gridKeys(seen) };
+}
+
+export function gridKeys<T>(x: Grid<T>): Point[] {
+  return Object.keys(x.elems).map(k => parseCoord(k));
 }
