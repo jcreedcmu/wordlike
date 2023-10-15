@@ -1,4 +1,4 @@
-import { checkConnected, checkGridWordsHoriz, checkGridWordsVert, mkGrid, transpose } from '../src/core/grid';
+import { checkConnected, checkGridWordsHoriz, checkGridWordsVert, getGrid, mkGrid, transpose } from '../src/core/grid';
 import { Tile } from '../src/core/state';
 import { vequal } from '../src/util/vutil';
 
@@ -77,9 +77,8 @@ describe('checkConnected', () => {
     expect(cr1.allConnected).toEqual(true);
     const cr2 = checkConnected(mkGrid(tiles2), { x: 2, y: 4 });
     expect(cr2.allConnected).toEqual(false);
-    expect(cr2.connectedSet.length).toBe(12);
-    expect(cr2.connectedSet.findIndex(p => vequal(p, { x: 7, y: 4 }))).toBe(-1);
-    expect(cr2.connectedSet.find(p => vequal(p, { x: 5, y: 4 }))).toBeTruthy();
+    expect(getGrid(cr2.connectedSet, { x: 7, y: 4 })).toBe(undefined);
+    expect(getGrid(cr2.connectedSet, { x: 5, y: 4 })).toBe(true);
   });
 
 });

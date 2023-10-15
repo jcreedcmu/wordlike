@@ -170,7 +170,7 @@ export function checkGridWords(grid: Grid<string>, isWord: (x: string) => boolea
 
 export type ConnectedResult = {
   allConnected: boolean,
-  connectedSet: Point[],
+  connectedSet: Grid<boolean>,
 };
 
 // returns true if all the elements of grid are orthogonally connected
@@ -183,7 +183,7 @@ export function checkConnected<T>(grid: Grid<T>, startFrom: Point = { x: 0, y: 0
   // subsets of ℤ², for the purposes of the game, they shouldn't
   // trigger "freshness clearing" of tiles.
   if (Object.keys(grid.elems).length < 2)
-    return { allConnected: false, connectedSet: gridKeys(seen) };
+    return { allConnected: false, connectedSet: seen };
 
   let numSetRemaining = numSet(grid);
 
@@ -199,7 +199,7 @@ export function checkConnected<T>(grid: Grid<T>, startFrom: Point = { x: 0, y: 0
   }
 
   explore(startFrom);
-  return { allConnected: numSetRemaining == 0, connectedSet: gridKeys(seen) };
+  return { allConnected: numSetRemaining == 0, connectedSet: seen };
 }
 
 export function gridKeys<T>(x: Grid<T>): Point[] {

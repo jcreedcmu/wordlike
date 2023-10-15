@@ -4,7 +4,7 @@ import { Point } from '../util/types';
 import { Bonus, bonusGenerator } from './bonus';
 import { PanicData } from './clock';
 import { Energies, initialEnergies } from './distribution';
-import { LocatedWord } from './grid';
+import { Grid, LocatedWord, mkGrid, mkGridOf } from './grid';
 import { Layer, Overlay, mkLayer, mkOverlay } from './layer';
 
 // There are UiActions, which might have different behavior depending
@@ -69,7 +69,7 @@ export type GameState = {
   main_tiles: Tile[],
   hand_tiles: Tile[],
   invalidWords: LocatedWord[],
-  connectedSet: Point[],
+  connectedSet: Grid<boolean>,
   energies: Energies,
   canvas_from_world: SE2,
   mouseState: MouseState,
@@ -95,7 +95,7 @@ export function mkGameState(seed?: number): GameState {
   seed = seed ?? 12345678;
   return {
     invalidWords: [],
-    connectedSet: [],
+    connectedSet: mkGridOf([]),
     energies: initialEnergies(),
     seed,
     main_tiles: ''.split('').map((x, i) => ({
