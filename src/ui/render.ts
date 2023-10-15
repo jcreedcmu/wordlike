@@ -148,7 +148,9 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
         y: PANIC_THICK,
       }
     };
-    d.fillStyle = 'red';
+    d.fillStyle = panic_fraction < 0.5 ? 'green' :
+      panic_fraction < 0.75 ? 'yellow' :
+        panic_fraction < 0.875 ? 'orange' : 'red';
     d.fillRect(
       panic_rect_in_canvas.p.x, panic_rect_in_canvas.p.y,
       panic_rect_in_canvas.sz.x, panic_rect_in_canvas.sz.y
