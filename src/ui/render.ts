@@ -46,7 +46,8 @@ export function paint(ci: CanvasInfo, state: GameState) {
   // draw tiles
   state.main_tiles.forEach((tile, ix) => {
     if (!(ms.t == 'drag_main_tile' && ms.ix == ix)) {
-      drawTile(d, pan_canvas_from_world, tile);
+      const world_from_tile = translate(tile.p_in_world_int);
+      drawTile(d, compose(pan_canvas_from_world, world_from_tile), tile);
     }
   });
 
@@ -96,21 +97,21 @@ export function paint(ci: CanvasInfo, state: GameState) {
   state.hand_tiles.forEach((tile, ix) => {
     if (!(ms.t == 'drag_hand_tile' && ms.ix == ix)) {
       const hand_from_tile = translate({ x: 0, y: ix });
-      drawTileIntrinsic(d, compose(canvas_from_hand(), hand_from_tile), tile);
+      drawTile(d, compose(canvas_from_hand(), hand_from_tile), tile);
     }
   });
 
   // draw dragged tile on top
   if (ms.t == 'drag_main_tile') {
     const tile = state.main_tiles[ms.ix];
-    drawTileIntrinsic(d,
+    drawTile(d,
       canvas_from_drag_tile(state),
       tile);
   }
 
   if (ms.t == 'drag_hand_tile') {
     const tile = state.hand_tiles[ms.ix];
-    drawTileIntrinsic(d,
+    drawTile(d,
       canvas_from_drag_tile(state),
       tile);
   }
@@ -185,28 +186,7 @@ function drawInvalidWord(d: CanvasRenderingContext2D, canvas_from_world: SE2, wo
     rect_in_canvas.sz.x - 2 * OFF, rect_in_canvas.sz.y - 2 * OFF);
 }
 
-// DEPRECATED: in favor of drawTileIntrinsic
-function drawTile(d: CanvasRenderingContext2D, canvas_from_world: SE2, tile: Tile) {
-  const rect_in_world: Rect = { p: tile.p_in_world_int, sz: { x: 1, y: 1 } };
-  const rect_in_canvas = apply_to_rect(canvas_from_world, rect_in_world);
-
-  const { fg, bg } = colorsOfTile(tile);
-  d.fillStyle = bg;
-  d.fillRect(rect_in_canvas.p.x + 0.5, rect_in_canvas.p.y + 0.5, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
-  d.strokeStyle = fg;
-  d.lineWidth = 1;
-  d.strokeRect(rect_in_canvas.p.x + 0.5, rect_in_canvas.p.y + 0.5, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
-
-  d.fillStyle = fg;
-  d.textBaseline = 'middle';
-  d.textAlign = 'center';
-  const fontSize = Math.round(0.6 * canvas_from_world.scale.x);
-  d.font = `bold ${fontSize}px sans-serif`;
-  d.fillText(tile.letter.toUpperCase(), rect_in_canvas.p.x + rect_in_canvas.sz.x / 2 + 0.5,
-    rect_in_canvas.p.y + rect_in_canvas.sz.y / 2 + 1.5);
-}
-
-function drawTileIntrinsic(d: CanvasRenderingContext2D, canvas_from_tile: SE2, tile: Tile) {
+function drawTile(d: CanvasRenderingContext2D, canvas_from_tile: SE2, tile: Tile) {
   const rect_in_tile: Rect = { p: { x: 0, y: 0 }, sz: { x: 1, y: 1 } };
   const rect_in_canvas = apply_to_rect(canvas_from_tile, rect_in_tile);
 
