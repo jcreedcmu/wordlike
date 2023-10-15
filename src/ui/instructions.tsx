@@ -11,6 +11,7 @@ import { CanvasInfo, useCanvas } from './use-canvas';
 import { checkValid } from '../core/state-helpers';
 import { PANIC_INTERVAL_MS } from '../core/clock';
 import { Point } from '../util/types';
+import { relpos } from '../util/dutil';
 
 export type ForRenderState = GameState;
 type CanvasProps = {
@@ -20,7 +21,8 @@ type CanvasProps = {
 export function Instructions(props: { dispatch: Dispatch }): JSX.Element {
   const { dispatch } = props;
   function mouseDownListener(e: MouseEvent) {
-    dispatch({ t: 'setSceneState', state: { t: 'menu' } });
+    console.log(relpos(e, mc.current!.c));
+    //    dispatch({ t: 'setSceneState', state: { t: 'menu' } });
     e.preventDefault();
     e.stopPropagation();
   }
@@ -51,6 +53,16 @@ function render(ci: CanvasInfo, props: CanvasProps) {
 
   drawBubble(ci, `This is the origin.\nAll tiles must connect here, and\nthe tile cannot be moved once placed.`,
     { x: 150, y: 100 }, { x: 70, y: 230 });
+
+  drawBubble(ci, `This is your hand.\nDrag tiles from here to\nmake intersecting words.`,
+    { x: 670, y: 197 }, { x: 732, y: 140 });
+
+  drawBubble(ci, `Click in this space to get more tiles.`,
+    { x: 670, y: 347 }, { x: 732, y: 290 });
+
+  drawBubble(ci, `This is the panic bar. If it\nfills up all the way to\nthe right, you lose!`,
+    { x: 133, y: 513 }, { x: 221, y: 593 });
+
 }
 
 function exampleState(): GameState {
@@ -192,10 +204,11 @@ function drawBubble(ci: CanvasInfo, text: string, textCenter: Point, coneApex: P
     d.roundRect(textCenter.x - maxWidth / 2 - MARGIN, textCenter.y - fontSize / 2 - MARGIN,
       maxWidth + MARGIN * 2, fontSize * lines.length + MARGIN * 2, RADIUS);
 
-    d.moveTo(textCenter.x - 10, textCenter.y);
-    d.lineTo(textCenter.x + 10, textCenter.y);
+    const OFFSET = textCenter.y < coneApex.y ? 10 : -10;
+    d.moveTo(textCenter.x - OFFSET, textCenter.y);
+    d.lineTo(textCenter.x + OFFSET, textCenter.y);
     d.lineTo(coneApex.x, coneApex.y);
-    d.lineTo(textCenter.x - 10, textCenter.y);
+    d.lineTo(textCenter.x - OFFSET, textCenter.y);
 
     d.fill();
     if (thick != 0)
