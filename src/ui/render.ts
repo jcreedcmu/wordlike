@@ -47,7 +47,7 @@ export function paint(ci: CanvasInfo, state: GameState) {
   state.main_tiles.forEach((tile, ix) => {
     if (!(ms.t == 'drag_main_tile' && ms.ix == ix)) {
       const world_from_tile = translate(tile.p_in_world_int);
-      drawTile(d, compose(pan_canvas_from_world, world_from_tile), tile);
+      drawTile(d, compose(pan_canvas_from_world, world_from_tile), tile, getGrid(state.connectedSet, tile.p_in_world_int) ?? false);
     }
   });
 
@@ -161,13 +161,10 @@ export class RenderPane {
 
 }
 
-function colorsOfTile(tile: Tile): { fg: string, bg: string } {
-  //  if (tile.used) {
+function colorsOfTile(tile: Tile, connected?: boolean): { fg: string, bg: string } {
+  if (connected == false)
+    return { fg: '#5a220e', bg: '#f97451' };
   return { fg: '#3a320e', bg: '#c9b451' };
-  // }
-  // else {
-  //   return { fg: '#5a220e', bg: '#f97451' }
-  // }
 }
 
 function drawInvalidWord(d: CanvasRenderingContext2D, canvas_from_world: SE2, word: LocatedWord) {
@@ -186,11 +183,11 @@ function drawInvalidWord(d: CanvasRenderingContext2D, canvas_from_world: SE2, wo
     rect_in_canvas.sz.x - 2 * OFF, rect_in_canvas.sz.y - 2 * OFF);
 }
 
-function drawTile(d: CanvasRenderingContext2D, canvas_from_tile: SE2, tile: Tile) {
+function drawTile(d: CanvasRenderingContext2D, canvas_from_tile: SE2, tile: Tile, connected?: boolean) {
   const rect_in_tile: Rect = { p: { x: 0, y: 0 }, sz: { x: 1, y: 1 } };
   const rect_in_canvas = apply_to_rect(canvas_from_tile, rect_in_tile);
 
-  const { fg, bg } = colorsOfTile(tile);
+  const { fg, bg } = colorsOfTile(tile, connected);
   d.fillStyle = bg;
   d.fillRect(rect_in_canvas.p.x + 0.5, rect_in_canvas.p.y + 0.5, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
   d.strokeStyle = fg;
