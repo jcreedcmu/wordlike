@@ -13,6 +13,11 @@ import { checkValid, drawOfState, is_occupied, killTileOfState } from './state-h
 function resolveDrag(state: GameState): GameState {
   const ms = state.mouseState;
   switch (ms.t) {
+    case 'drag_selection': {
+      return produce(state, s => {
+        s.mouseState = { t: 'up', p: ms.p };
+      });
+    }
     case 'drag_world': {
 
       const new_canvas_from_world = compose(pan_canvas_from_canvas_of_mouse_state(state.mouseState), state.canvas_from_world);
@@ -99,7 +104,7 @@ function resolveDrag(state: GameState): GameState {
   }
 }
 
-export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number): GameState {
+export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number, mods: Set<string>): GameState {
 
   function drag_world(): GameState {
     return produce(state, s => {
@@ -117,6 +122,15 @@ export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: numbe
 
   switch (wp.t) {
     case 'world': {
+      if (mods.has('ctrl')) {
+        return produce(state, s => {
+          s.mouseState = {
+            t: 'drag_selection',
+            orig_p: wp.p_in_canvas,
+            p: wp.p_in_canvas,
+          }
+        });
+      }
       const p_in_world_int = vm(wp.p_in_local, Math.floor);
       if (button == 1) {
         let i = 0;
@@ -195,7 +209,7 @@ export function reduceGameAction(state: GameState, action: GameAction): effectfu
       }));
     }
     case 'mouseDown': {
-      return gs(reduceMouseDown(state, getWidgetPoint(state, action.p), action.button));
+      return gs(reduceMouseDown(state, getWidgetPoint(state, action.p), action.button, action.mods));
     }
     case 'mouseUp': return gs(resolveDrag(state));
     case 'mouseMove': return gs(produce(state, s => {

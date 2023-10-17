@@ -67,7 +67,10 @@ export function Game(props: GameProps): JSX.Element {
   }
 
   function mouseDownListener(e: MouseEvent) {
-    dispatch({ t: 'mouseDown', button: e.buttons, p: relpos(e, mc.current!.c) })
+    const mods = new Set<string>();
+    if (e.ctrlKey)
+      mods.add('ctrl');
+    dispatch({ t: 'mouseDown', button: e.buttons, p: relpos(e, mc.current!.c), mods })
     e.preventDefault();
     e.stopPropagation();
   }

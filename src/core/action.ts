@@ -13,7 +13,7 @@ export type GameAction =
 // I think I want to migrate some of these up to GameAction
 export type UiAction =
   | { t: 'key', code: string }
-  | { t: 'mouseDown', button: number, p: Point }
+  | { t: 'mouseDown', button: number, p: Point, mods: Set<string> }
   | { t: 'mouseUp', p: Point }
   | { t: 'mouseMove', p: Point }
   | { t: 'wheel', p: Point, delta: number }

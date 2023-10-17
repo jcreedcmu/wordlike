@@ -10,6 +10,7 @@ export type MouseState =
   | { t: 'up', p: Point }
   | { t: 'down', p: Point }
   | { t: 'drag_world', orig_p: Point, p: Point }
+  | { t: 'drag_selection', orig_p: Point, p: Point }
   | { t: 'drag_main_tile', orig_p: Point, p: Point, ix: number }
   | { t: 'drag_hand_tile', orig_p: Point, p: Point, ix: number }
   ;

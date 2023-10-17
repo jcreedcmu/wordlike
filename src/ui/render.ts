@@ -3,7 +3,7 @@ import { pan_canvas_from_world_of_state, drag_canvas_from_canvas_of_mouse_state,
 import { apply, compose, composen, ident, inverse, SE2, translate } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
-import { vadd, vm, vscale, vtrans } from "../util/vutil";
+import { vadd, vm, vm2, vscale, vsub, vtrans } from "../util/vutil";
 import { getGrid, LocatedWord } from "../core/grid";
 import { hand_bds_in_canvas, world_bds_in_canvas, canvas_bds_in_canvas } from "./widget-helpers";
 import { canvas_from_hand } from "./widget-helpers";
@@ -155,6 +155,20 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
       panic_rect_in_canvas.p.x, panic_rect_in_canvas.p.y,
       panic_rect_in_canvas.sz.x, panic_rect_in_canvas.sz.y
     );
+  }
+
+  // draw selection
+  if (ms.t == 'drag_selection') {
+    const sel_rect_in_canvas: Rect = {
+      p: vm2(ms.orig_p, ms.p, Math.min),
+      sz: vm(vsub(ms.orig_p, ms.p), Math.abs)
+    };
+    d.fillStyle = "rgb(0,255,255,0.5)";
+    d.fillRect(
+      sel_rect_in_canvas.p.x, sel_rect_in_canvas.p.y,
+      sel_rect_in_canvas.sz.x, sel_rect_in_canvas.sz.y
+    );
+
   }
 }
 
