@@ -1,15 +1,15 @@
-import { GameState, SceneState, Tile } from "../core/state";
-import { pan_canvas_from_world_of_state, drag_canvas_from_canvas_of_mouse_state, canvas_from_drag_tile } from "./view-helpers";
-import { apply, compose, composen, ident, inverse, SE2, translate } from '../util/se2';
+import { getPanicFraction } from "../core/clock";
+import { LocatedWord, getGrid } from "../core/grid";
+import { getOverlay, getOverlayLayer } from "../core/layer";
+import { GameState, Tile } from "../core/state";
+import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
-import { vadd, vm, vm2, vscale, vsub, vtrans } from "../util/vutil";
-import { getGrid, LocatedWord } from "../core/grid";
-import { hand_bds_in_canvas, world_bds_in_canvas, canvas_bds_in_canvas } from "./widget-helpers";
-import { canvas_from_hand } from "./widget-helpers";
+import { boundRect } from "../util/util";
+import { vadd, vm, vscale, vtrans } from "../util/vutil";
 import { CanvasInfo } from "./use-canvas";
-import { getLayer, getOverlay } from "../core/layer";
-import { PANIC_INTERVAL_MS, getPanicFraction } from "../core/clock";
+import { canvas_from_drag_tile, pan_canvas_from_world_of_state } from "./view-helpers";
+import { canvas_bds_in_canvas, canvas_from_hand, hand_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
 
 export function paintWithScale(ci: CanvasInfo, state: GameState) {
   const { d } = ci;
@@ -53,7 +53,13 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   state.main_tiles.forEach((tile, ix) => {
     if (!(ms.t == 'drag_main_tile' && ms.ix == ix)) {
       const world_from_tile = translate(tile.p_in_world_int);
-      drawTile(d, compose(pan_canvas_from_world, world_from_tile), tile, getGrid(state.connectedSet, tile.p_in_world_int) ?? false);
+      drawTile(
+        d,
+        compose(pan_canvas_from_world, world_from_tile),
+        tile,
+        getGrid(state.connectedSet, tile.p_in_world_int) ?? false,
+        state.selected ? getOverlay(state.selected, tile.p_in_world_int) : undefined
+      );
     }
   });
 
@@ -68,7 +74,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   for (let i = top_left_in_world.x; i <= bot_right_in_world.x; i++) {
     for (let j = top_left_in_world.y; j <= bot_right_in_world.y; j++) {
       const p: Point = { x: i, y: j };
-      if (getOverlay(state.bonusOverlay, state.bonusLayer, p) == 'bonus') {
+      if (getOverlayLayer(state.bonusOverlay, state.bonusLayer, p) == 'bonus') {
         const rect_in_canvas = apply_to_rect(pan_canvas_from_world, { p, sz: { x: 1, y: 1 } });
         d.strokeStyle = 'rgba(0,0,255,0.5)';
         d.lineWidth = 3;
@@ -159,12 +165,10 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
 
   // draw selection
   if (ms.t == 'drag_selection') {
-    const sel_rect_in_canvas: Rect = {
-      p: vm2(ms.orig_p, ms.p, Math.min),
-      sz: vm(vsub(ms.orig_p, ms.p), Math.abs)
-    };
-    d.fillStyle = "rgb(0,255,255,0.5)";
-    d.fillRect(
+    const sel_rect_in_canvas: Rect = boundRect([ms.orig_p, ms.p]);
+    d.strokeStyle = "rgb(0,255,255,0.5)";
+    d.lineWidth = 2;
+    d.strokeRect(
       sel_rect_in_canvas.p.x, sel_rect_in_canvas.p.y,
       sel_rect_in_canvas.sz.x, sel_rect_in_canvas.sz.y
     );
@@ -183,8 +187,10 @@ export class RenderPane {
 
 }
 
-function colorsOfTile(tile: Tile, connected?: boolean): { fg: string, bg: string } {
-  if (connected == false)
+function colorsOfTile(tile: Tile, opts?: { connected?: boolean, selected?: boolean }): { fg: string, bg: string } {
+  if (opts?.selected === true)
+    return { fg: '#1f5198', bg: '#809fca' };
+  if (opts?.connected === false)
     return { fg: '#5a220e', bg: '#f97451' };
   return { fg: '#3a320e', bg: '#c9b451' };
 }
@@ -205,11 +211,11 @@ function drawInvalidWord(d: CanvasRenderingContext2D, canvas_from_world: SE2, wo
     rect_in_canvas.sz.x - 2 * OFF, rect_in_canvas.sz.y - 2 * OFF);
 }
 
-function drawTile(d: CanvasRenderingContext2D, canvas_from_tile: SE2, tile: Tile, connected?: boolean) {
+function drawTile(d: CanvasRenderingContext2D, canvas_from_tile: SE2, tile: Tile, connected?: boolean, selected?: boolean) {
   const rect_in_tile: Rect = { p: { x: 0, y: 0 }, sz: { x: 1, y: 1 } };
   const rect_in_canvas = apply_to_rect(canvas_from_tile, rect_in_tile);
 
-  const { fg, bg } = colorsOfTile(tile, connected);
+  const { fg, bg } = colorsOfTile(tile, { connected, selected });
   d.fillStyle = bg;
   d.fillRect(rect_in_canvas.p.x + 0.5, rect_in_canvas.p.y + 0.5, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
   d.strokeStyle = fg;

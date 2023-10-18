@@ -1,20 +1,36 @@
 import * as effectful from '../ui/use-effectful-reducer';
 import { canvas_from_drag_tile, pan_canvas_from_canvas_of_mouse_state } from '../ui/view-helpers';
 import { WidgetPoint, canvas_from_hand, getWidgetPoint } from '../ui/widget-helpers';
+import { debugTiles } from '../util/debug';
 import { produce } from '../util/produce';
 import { compose, composen, inverse, scale, translate } from '../util/se2';
+import { apply_to_rect } from '../util/se2-extra';
 import { Point } from '../util/types';
-import { vequal, vm, vscale } from '../util/vutil';
-import { getPanicFraction } from './clock';
-import { GameState, SceneState, mkGameSceneState, mkGameState } from './state';
+import { boundRect, pointInRect } from '../util/util';
+import { vadd, vequal, vm, vscale, vsub } from '../util/vutil';
 import { Action, Effect, GameAction } from './action';
+import { getPanicFraction } from './clock';
+import { Overlay, mkOverlay, setOverlay } from './layer';
+import { GameState, SceneState, mkGameSceneState } from './state';
 import { checkValid, drawOfState, is_occupied, killTileOfState } from './state-helpers';
 
-function resolveDrag(state: GameState): GameState {
+function resolveMouseup(state: GameState): GameState {
   const ms = state.mouseState;
   switch (ms.t) {
     case 'drag_selection': {
+      const small_rect_in_canvas = boundRect([ms.orig_p, ms.p]);
+      const small_rect_in_world = apply_to_rect(inverse(state.canvas_from_world), small_rect_in_canvas);
+      const rect_in_world = {
+        p: vsub(small_rect_in_world.p, { x: 1, y: 1 }),
+        sz: vadd(small_rect_in_world.sz, { x: 1, y: 1 }),
+      };
+      const selected: Overlay<boolean> = mkOverlay();
+      state.main_tiles.forEach(tile => {
+        if (pointInRect(tile.p_in_world_int, rect_in_world))
+          setOverlay(selected, tile.p_in_world_int, true)
+      });
       return produce(state, s => {
+        s.selected = selected;
         s.mouseState = { t: 'up', p: ms.p };
       });
     }
@@ -194,6 +210,11 @@ export function reduceGameAction(state: GameState, action: GameAction): effectfu
         return gs(state.score > 0 ?
           killTileOfState(state) : state);
       }
+      if (action.code == 'd') {
+        return gs(checkValid(produce(state, s => {
+          s.main_tiles = debugTiles();
+        })));
+      }
       return gs(state);
     }
     case 'none': return gs(state);
@@ -211,7 +232,7 @@ export function reduceGameAction(state: GameState, action: GameAction): effectfu
     case 'mouseDown': {
       return gs(reduceMouseDown(state, getWidgetPoint(state, action.p), action.button, action.mods));
     }
-    case 'mouseUp': return gs(resolveDrag(state));
+    case 'mouseUp': return gs(resolveMouseup(state));
     case 'mouseMove': return gs(produce(state, s => {
       s.mouseState.p = action.p;
     }));

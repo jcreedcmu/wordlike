@@ -42,9 +42,13 @@ export function setOverlay<T>(layer: Overlay<T>, p: Point, v: T): void {
   layer.cells[unparseCoord(p)] = v;
 }
 
-export function getOverlay<T>(layer1: Overlay<T>, layer2: Layer<T>, p: Point): T {
+export function getOverlayLayer<T>(layer1: Overlay<T>, layer2: Layer<T>, p: Point): T {
   const k = unparseCoord(p);
   const v1 = layer1.cells[k];
   if (v1 !== undefined) return v1;
   return getLayer(layer2, p);
+}
+
+export function getOverlay<T>(layer: Overlay<T>, p: Point): T | undefined {
+  return layer.cells[unparseCoord(p)];
 }

@@ -7,7 +7,7 @@ import { vequal, vm } from "../util/vutil";
 import { getAssets } from "./assets";
 import { Energies, getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, Grid, gridKeys, mkGrid, mkGridOf } from "./grid";
-import { getOverlay, setOverlay } from "./layer";
+import { getOverlayLayer, setOverlay } from "./layer";
 import { GameState } from "./state";
 
 export function is_occupied(state: GameState, p: Point): boolean {
@@ -39,7 +39,7 @@ function resolveValid(state: GameState): GameState {
   const tiles = state.main_tiles;
   logger('words', 'grid valid');
   const scorings = tiles.flatMap(tile => {
-    if (getOverlay(state.bonusOverlay, state.bonusLayer, tile.p_in_world_int) == 'bonus') {
+    if (getOverlayLayer(state.bonusOverlay, state.bonusLayer, tile.p_in_world_int) == 'bonus') {
       return [tile.p_in_world_int];
     }
     else {

@@ -49,6 +49,7 @@ export type GameState = {
   seed: number,
   bonusLayer: Layer<Bonus>,
   bonusOverlay: Overlay<Bonus>,
+  selected?: Overlay<boolean>,
   score: number,
   panic: PanicData | undefined,
 };
