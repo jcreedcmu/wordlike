@@ -20,7 +20,7 @@ export function drawOfState(state: GameState): GameState {
   return checkValid(produce(state, s => {
     s.seed = seed;
     s.energies = energies;
-    s.hand_tiles.push({ letter, p_in_world_int, used: false });
+    s.hand_tiles.push({ letter, p_in_world_int });
   }));
 }
 
@@ -46,11 +46,7 @@ function resolveValid(state: GameState): GameState {
       return [];
     }
   });
-  const newTiles = produce(tiles, ts => {
-    ts.forEach(t => { t.used = true });
-  });
   return produce(state, s => {
-    s.main_tiles = newTiles;
     scorings.forEach(p => {
       setOverlay(s.bonusOverlay, p, 'empty');
       s.score++;

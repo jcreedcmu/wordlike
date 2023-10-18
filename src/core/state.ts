@@ -35,7 +35,6 @@ export type State = {
 
 export type Tile = {
   p_in_world_int: Point,
-  used: boolean,
   letter: string,
 }
 
@@ -75,7 +74,6 @@ export function mkGameState(seed?: number): GameState {
     main_tiles: ''.split('').map((x, i) => ({
       letter: x,
       p_in_world_int: { x: i, y: 0 },
-      used: false,
     })),
     hand_tiles: [],
     canvas_from_world: {

@@ -10,7 +10,7 @@ function tilesOfString(x: string): Tile[] {
   return x.replace(/^\n/, '').split('\n').flatMap((line, y) => line.split('').flatMap((letter, x) => {
     if (letter == '.')
       return [];
-    const tile: Tile = { letter, p_in_world_int: { x, y }, used: false };
+    const tile: Tile = { letter, p_in_world_int: { x, y } };
     return [tile];
   }));
 }
