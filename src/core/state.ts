@@ -51,7 +51,7 @@ export type TileEntity = {
 
 export type GameState = {
   tile_entities: TileEntity[],
-  main_tiles: Tile[],
+  main_tiles_: Tile[],
   hand_tiles: Tile[],
   invalidWords: LocatedWord[],
   connectedSet: Grid<boolean>,
@@ -85,7 +85,7 @@ export function mkGameState(seed?: number): GameState {
     connectedSet: mkGridOf([]),
     energies: initialEnergies(),
     seed,
-    main_tiles: ''.split('').map((x, i) => ({
+    main_tiles_: ''.split('').map((x, i) => ({
       letter: x,
       p_in_world_int: { x: i, y: 0 },
     })),

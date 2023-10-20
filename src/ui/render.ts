@@ -2,6 +2,7 @@ import { getPanicFraction } from "../core/clock";
 import { LocatedWord, getGrid } from "../core/grid";
 import { getOverlay, getOverlayLayer } from "../core/layer";
 import { GameState, Tile } from "../core/state";
+import { get_main_tiles } from "../core/state-helpers";
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
@@ -50,7 +51,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   }
 
   // draw tiles
-  state.main_tiles.forEach((tile, ix) => {
+  get_main_tiles(state).forEach((tile, ix) => {
     if (!(ms.t == 'drag_main_tile' && ms.ix == ix)) {
       const world_from_tile = translate(tile.p_in_world_int);
       drawTile(
@@ -115,7 +116,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
 
   // draw dragged tile on top
   if (ms.t == 'drag_main_tile') {
-    const tile = state.main_tiles[ms.ix];
+    const tile = get_main_tiles(state)[ms.ix];
     drawTile(d,
       canvas_from_drag_tile(state),
       tile);

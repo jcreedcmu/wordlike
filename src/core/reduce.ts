@@ -12,7 +12,7 @@ import { Action, Effect, GameAction } from './action';
 import { getPanicFraction } from './clock';
 import { Overlay, mkOverlay, setOverlay } from './layer';
 import { GameState, SceneState, mkGameSceneState } from './state';
-import { checkValid, drawOfState, is_occupied, killTileOfState } from './state-helpers';
+import { addTile, checkValid, drawOfState, get_main_tiles, is_occupied, killTileOfState, removeTile, setTilePosition, setTiles } from './state-helpers';
 
 function resolveMouseup(state: GameState): GameState {
   const ms = state.mouseState;
@@ -25,7 +25,7 @@ function resolveMouseup(state: GameState): GameState {
         sz: vadd(small_rect_in_world.sz, { x: 1, y: 1 }),
       };
       const selected: Overlay<boolean> = mkOverlay();
-      state.main_tiles.forEach(tile => {
+      get_main_tiles(state).forEach(tile => {
         if (pointInRect(tile.p_in_world_int, rect_in_world))
           setOverlay(selected, tile.p_in_world_int, true)
       });
@@ -56,7 +56,7 @@ function resolveMouseup(state: GameState): GameState {
 
         const afterDrop = produce(state, s => {
           if (!is_occupied(state, new_tile_in_world_int)) {
-            s.main_tiles[ms.ix].p_in_world_int = new_tile_in_world_int;
+            setTilePosition(s, ms.ix, new_tile_in_world_int);
           }
           s.mouseState = { t: 'up', p: ms.p };
         });
@@ -69,9 +69,8 @@ function resolveMouseup(state: GameState): GameState {
           canvas_from_drag_tile(state)).translate,
           Math.round);
 
-        const tile = state.main_tiles[ms.ix];
-        const afterDrop = produce(state, s => {
-          s.main_tiles.splice(ms.ix, 1);
+        const tile = get_main_tiles(state)[ms.ix];
+        const afterDrop = produce(removeTile(state, ms.ix), s => {
           s.hand_tiles.splice(new_tile_in_hand_int.y, 0, tile);
           s.mouseState = { t: 'up', p: ms.p };
         });
@@ -94,7 +93,7 @@ function resolveMouseup(state: GameState): GameState {
         const afterDrop = produce(state, s => {
           if (!is_occupied(state, new_tile_in_world_int)) {
             s.hand_tiles.splice(ms.ix, 1);
-            s.main_tiles.push({ ...tile, p_in_world_int: new_tile_in_world_int })
+            addTile(s, { ...tile, p_in_world_int: new_tile_in_world_int });
           }
           s.mouseState = { t: 'up', p: ms.p };
         });
@@ -151,7 +150,7 @@ export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: numbe
       if (button == 1) {
         let i = 0;
 
-        for (const tile of state.main_tiles) {
+        for (const tile of get_main_tiles(state)) {
           if (vequal(p_in_world_int, tile.p_in_world_int)) {
             if (vequal(p_in_world_int, { x: 0, y: 0 })) {
               return drag_world();
@@ -211,9 +210,7 @@ export function reduceGameAction(state: GameState, action: GameAction): effectfu
           killTileOfState(state) : state);
       }
       if (action.code == 'd') {
-        return gs(checkValid(produce(state, s => {
-          s.main_tiles = debugTiles();
-        })));
+        return gs(checkValid(setTiles(state, debugTiles())));
       }
       return gs(state);
     }
