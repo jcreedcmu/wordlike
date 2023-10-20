@@ -38,7 +38,19 @@ export type Tile = {
   letter: string,
 }
 
+export type Location =
+  | { t: 'hand', p_in_hand_int: Point }
+  | { t: 'world', p_in_hand_int: Point }
+  ;
+
+export type TileEntity = {
+  id: number,
+  loc: Location,
+  letter: string,
+};
+
 export type GameState = {
+  tile_entities: TileEntity[],
   main_tiles: Tile[],
   hand_tiles: Tile[],
   invalidWords: LocatedWord[],
@@ -68,6 +80,7 @@ export function mkGameSceneState(seed?: number): SceneState {
 export function mkGameState(seed?: number): GameState {
   seed = seed ?? 12345678;
   return {
+    tile_entities: [],
     invalidWords: [],
     connectedSet: mkGridOf([]),
     energies: initialEnergies(),

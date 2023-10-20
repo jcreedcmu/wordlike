@@ -106,6 +106,7 @@ function exampleState(): GameState {
       0
     ],
     seed: 1533311107,
+    tile_entities: [],
     main_tiles: [
       { letter: "p", p_in_world_int: { x: 0, y: 0 } },
       { letter: "i", p_in_world_int: { x: 2, y: 2 } },
