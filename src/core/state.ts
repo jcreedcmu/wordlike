@@ -11,7 +11,7 @@ export type MouseState =
   | { t: 'down', p: Point }
   | { t: 'drag_world', orig_p: Point, p: Point }
   | { t: 'drag_selection', orig_p: Point, p: Point }
-  | { t: 'drag_main_tile', orig_p: Point, p: Point, ix: number }
+  | { t: 'drag_main_tile', orig_p: Point, p: Point, id: string }
   | { t: 'drag_hand_tile', orig_p: Point, p: Point, ix: number }
   ;
 
@@ -34,24 +34,24 @@ export type State = {
 };
 
 export type Tile = {
+  id?: string,
   p_in_world_int: Point,
   letter: string,
 }
 
 export type Location =
   | { t: 'hand', p_in_hand_int: Point }
-  | { t: 'world', p_in_hand_int: Point }
+  | { t: 'world', p_in_world_int: Point }
   ;
 
 export type TileEntity = {
-  id: number,
+  id: string,
   loc: Location,
   letter: string,
 };
 
 export type GameState = {
-  tile_entities: TileEntity[],
-  main_tiles_: Tile[],
+  tile_entities: Record<string, TileEntity>,
   hand_tiles: Tile[],
   invalidWords: LocatedWord[],
   connectedSet: Grid<boolean>,
@@ -80,15 +80,11 @@ export function mkGameSceneState(seed?: number): SceneState {
 export function mkGameState(seed?: number): GameState {
   seed = seed ?? 12345678;
   return {
-    tile_entities: [],
+    tile_entities: {},
     invalidWords: [],
     connectedSet: mkGridOf([]),
     energies: initialEnergies(),
     seed,
-    main_tiles_: ''.split('').map((x, i) => ({
-      letter: x,
-      p_in_world_int: { x: i, y: 0 },
-    })),
     hand_tiles: [],
     canvas_from_world: {
       scale: { x: 48, y: 48 },

@@ -6,7 +6,7 @@ import { PANIC_INTERVAL_MS } from '../core/clock';
 import { mkGridOf } from '../core/grid';
 import { mkLayer } from '../core/layer';
 import { GameState, Tile } from '../core/state';
-import { checkValid, setTiles } from '../core/state-helpers';
+import { checkValid, setWorldTiles } from '../core/state-helpers';
 import { DEBUG } from '../util/debug';
 import { relpos } from '../util/dutil';
 import { Point } from '../util/types';
@@ -106,8 +106,7 @@ function exampleState(): GameState {
       0
     ],
     seed: 1533311107,
-    tile_entities: [],
-    main_tiles_: [],
+    tile_entities: {},
     hand_tiles: [
       { letter: "e", p_in_world_int: { x: 0, y: 0 } },
       { letter: "t", p_in_world_int: { x: 0, y: 1 } },
@@ -193,7 +192,7 @@ function exampleState(): GameState {
     { letter: "j", p_in_world_int: { x: 6, y: 6 } },
     { letter: "o", p_in_world_int: { x: 7, y: 6 } }
   ];
-  return checkValid(setTiles(state, tiles));
+  return checkValid(setWorldTiles(state, tiles));
 }
 
 function drawBubble(ci: CanvasInfo, text: string, textCenter: Point, coneApex: Point): void {
