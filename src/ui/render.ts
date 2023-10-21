@@ -118,7 +118,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   if (ms.t == 'drag_tile') {
     const tile = getTileId(state, ms.id);
     drawTile(d,
-      canvas_from_drag_tile(state),
+      canvas_from_drag_tile(state, state.mouseState),
       tile);
   }
 

@@ -57,7 +57,7 @@ function resolveMouseupInner(state: GameState): GameState {
         // effectively the same as the purely translational world_from_tile
         const new_tile_in_world_int: Point = vm(compose(
           inverse(state.canvas_from_world),
-          canvas_from_drag_tile(state)).translate,
+          canvas_from_drag_tile(state, state.mouseState)).translate,
           Math.round);
 
         const afterDrop = !isOccupied(state, new_tile_in_world_int)
@@ -70,7 +70,7 @@ function resolveMouseupInner(state: GameState): GameState {
         // effectively the same as the purely translational hand_from_tile
         const new_tile_in_hand_int: Point = vm(compose(
           inverse(canvas_from_hand()),
-          canvas_from_drag_tile(state)).translate,
+          canvas_from_drag_tile(state, state.mouseState)).translate,
           Math.round);
 
         return ms.orig_loc.t == 'world'

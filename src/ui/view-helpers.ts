@@ -37,8 +37,7 @@ export function drag_canvas_from_canvas_of_mouse_state(state: MouseState): SE2 {
 //
 // - tile1_from_canvas * p1_in_canvas = tile0_from_canvas * p0_in_canvas
 // - tile1_from_canvas's scale factor is the same as that of local1_from_canvas
-export function canvas_from_drag_tile(state: GameState): SE2 {
-  const ms = state.mouseState;
+export function canvas_from_drag_tile(state: GameState, ms: MouseState): SE2 {
   switch (ms.t) {
     case 'drag_tile':
       const wp0 = getWidgetPoint(state, ms.orig_p_in_canvas);
