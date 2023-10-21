@@ -11,7 +11,7 @@ import { vadd, vequal, vm, vscale, vsub } from '../util/vutil';
 import { Action, Effect, GameAction } from './action';
 import { getPanicFraction } from './clock';
 import { Overlay, mkOverlay, setOverlay } from './layer';
-import { GameState, SceneState, mkGameSceneState } from './state';
+import { GameState, SceneState, SelectionState, mkGameSceneState } from './state';
 import { addWorldTiles, checkValid, drawOfState, isOccupied, killTileOfState } from './state-helpers';
 import { get_hand_tiles, get_main_tiles, putTileInHand, putTileInWorld, removeAllTiles } from "./tile-helpers";
 
@@ -32,10 +32,15 @@ function resolveMouseupInner(state: GameState): GameState {
         p: vsub(small_rect_in_world.p, { x: 1, y: 1 }),
         sz: vadd(small_rect_in_world.sz, { x: 1, y: 1 }),
       };
-      const selected: Overlay<boolean> = mkOverlay();
+      const selected: SelectionState = {
+        overlay: mkOverlay(),
+        selectedIds: []
+      };
       get_main_tiles(state).forEach(tile => {
-        if (pointInRect(tile.loc.p_in_world_int, rect_in_world))
-          setOverlay(selected, tile.loc.p_in_world_int, true)
+        if (pointInRect(tile.loc.p_in_world_int, rect_in_world)) {
+          setOverlay(selected.overlay, tile.loc.p_in_world_int, true);
+          selected.selectedIds.push(tile.id);
+        }
       });
       return produce(state, s => {
         s.selected = selected;

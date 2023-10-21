@@ -77,7 +77,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     if (tile.loc.t == 'world') {
       opts = {
         connected: getGrid(state.connectedSet, tile.loc.p_in_world_int) ?? false,
-        selected: state.selected ? getOverlay(state.selected, tile.loc.p_in_world_int) : undefined
+        selected: state.selected ? getOverlay(state.selected.overlay, tile.loc.p_in_world_int) : undefined
       };
 
       d.save();
@@ -137,7 +137,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   // draw dragged tile on top
   if (ms.t == 'drag_tile') {
     if (state.selected) {
-      overlayForEach(state.selected, p => {
+      overlayForEach(state.selected.overlay, p => {
 
       });
     }

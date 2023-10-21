@@ -66,6 +66,11 @@ export type TileEntityOptionalId = {
   letter: string,
 };
 
+export type SelectionState = {
+  overlay: Overlay<boolean>,
+  selectedIds: string[],
+};
+
 export type GameState = {
   tile_entities: Record<string, TileEntity>,
   invalidWords: LocatedWord[],
@@ -76,7 +81,7 @@ export type GameState = {
   seed: number,
   bonusLayer: Layer<Bonus>,
   bonusOverlay: Overlay<Bonus>,
-  selected?: Overlay<boolean>,
+  selected?: SelectionState,
   score: number,
   panic: PanicData | undefined,
 };

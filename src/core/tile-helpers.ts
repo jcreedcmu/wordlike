@@ -145,6 +145,6 @@ export function isSelectedForDrag(state: GameState, tile: TileEntity): boolean {
     return state.mouseState.id == tile.id;
   }
   else {
-    return state.mouseState.id == tile.id || tile.loc.t == 'world' && getOverlay(state.selected, tile.loc.p_in_world_int) !== undefined;
+    return state.mouseState.id == tile.id || tile.loc.t == 'world' && state.selected.selectedIds.includes(tile.id);
   }
 }
