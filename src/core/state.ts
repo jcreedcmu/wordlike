@@ -33,6 +33,12 @@ export type State = {
 };
 
 export type Tile = {
+  id: string,
+  p_in_world_int: Point,
+  letter: string,
+}
+
+export type TileOptionalId = {
   id?: string,
   p_in_world_int: Point,
   letter: string,

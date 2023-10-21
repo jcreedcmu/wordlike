@@ -1,4 +1,5 @@
 import { Tile } from "../core/state";
+import { ensureTileId } from "../core/tile-helpers";
 
 export const isDev = globalThis['window'] == undefined || (globalThis['location'] != undefined && !!globalThis['location'].host.match(/localhost/));
 
@@ -100,5 +101,5 @@ export function debugTiles(): Tile[] {
     { "letter": "d", "p_in_world_int": { "x": 8, "y": 5 } },
     { "letter": "o", "p_in_world_int": { "x": 9, "y": 5 } },
     { "letter": "s", "p_in_world_int": { "x": 11, "y": 5 } },
-    { "letter": "m", "p_in_world_int": { "x": 10, "y": 5 } }];
+    { "letter": "m", "p_in_world_int": { "x": 10, "y": 5 } }].map(ensureTileId);
 }

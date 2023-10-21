@@ -61,7 +61,7 @@ function resolveMouseupInner(state: GameState): GameState {
           Math.round);
 
         const afterDrop = !isOccupied(state, new_tile_in_world_int)
-          ? putTileInWorld(state, ms.id, new_tile_in_world_int)  // FIXME undefined
+          ? putTileInWorld(state, ms.id, new_tile_in_world_int)
           : state;
 
         return checkValid(afterDrop);
@@ -153,7 +153,7 @@ export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: numbe
           s.mouseState = {
             t: 'drag_tile',
             orig_loc: { t: 'hand', p_in_hand_int },
-            id: tiles[p_in_hand_int.y].id!, // FIXME undefined
+            id: tiles[p_in_hand_int.y].id,
             orig_p_in_canvas: wp.p_in_canvas,
             p_in_canvas: wp.p_in_canvas,
           }

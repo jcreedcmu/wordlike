@@ -1,7 +1,7 @@
 import { Draft } from "immer";
 import { produce } from "../util/produce";
 import { Point } from "../util/types";
-import { GameState, Tile, TileEntity, TileEntityOptionalId } from "./state";
+import { GameState, Tile, TileEntity, TileEntityOptionalId, TileOptionalId } from "./state";
 
 // FIXME: global counter
 let tileIdCounter = 1000;
@@ -56,7 +56,7 @@ export function removeTile(state: GameState, id: string): GameState {
       const handTiles = get_hand_tiles(state);
       return produce(state, s => {
         for (let i = loc.p_in_hand_int.y; i < handTiles.length; i++) {
-          s.tile_entities[handTiles[i].id!].loc = { t: 'hand', p_in_hand_int: { x: 0, y: i - 1 } }; // FIXME undefined
+          s.tile_entities[handTiles[i].id].loc = { t: 'hand', p_in_hand_int: { x: 0, y: i - 1 } };
         }
         delete s.tile_entities[id];
       });
@@ -68,7 +68,12 @@ function ensureId(tile: TileEntityOptionalId): TileEntity {
   return { ...tile, id };
 }
 
-export function addWorldTile(state: Draft<GameState>, tile: Tile): void {
+export function ensureTileId(tile: TileOptionalId): Tile {
+  const id = tile.id ?? `tile${tileIdCounter++}`;
+  return { ...tile, id };
+}
+
+export function addWorldTile(state: Draft<GameState>, tile: TileOptionalId): void {
   const newTile: TileEntity = ensureId({
     id: tile.id,
     letter: tile.letter, loc: { t: 'world', p_in_world_int: tile.p_in_world_int }
@@ -95,7 +100,7 @@ export function putTileInWorld(state: GameState, id: string, p_in_world_int: Poi
     case 'hand':
       return produce(state, s => {
         for (let i = loc.p_in_hand_int.y; i < handTiles.length; i++) {
-          s.tile_entities[handTiles[i].id!].loc = { t: 'hand', p_in_hand_int: { x: 0, y: i - 1 } }; // FIXME undefined
+          s.tile_entities[handTiles[i].id].loc = { t: 'hand', p_in_hand_int: { x: 0, y: i - 1 } };
         }
         s.tile_entities[id].loc = { t: 'world', p_in_world_int };
       });
@@ -110,7 +115,7 @@ export function putTileInHand(state: GameState, id: string, ix: number): GameSta
 
   return produce(state, s => {
     for (let i = ix; i < handTiles.length; i++) {
-      s.tile_entities[handTiles[i].id!].loc = { t: 'hand', p_in_hand_int: { x: 0, y: i + 1 } };
+      s.tile_entities[handTiles[i].id].loc = { t: 'hand', p_in_hand_int: { x: 0, y: i + 1 } };
     }
     s.tile_entities[id].loc = { t: 'hand', p_in_hand_int: { x: 0, y: ix } };
   });

@@ -10,7 +10,7 @@ import { Energies, getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, Grid, gridKeys, mkGrid, mkGridOf } from "./grid";
 import { getOverlayLayer, setOverlay } from "./layer";
 import { GameState, Tile } from "./state";
-import { addWorldTile, addHandTile, get_main_tiles, get_hand_tiles, removeTile } from "./tile-helpers";
+import { addWorldTile, addHandTile, get_main_tiles, get_hand_tiles, removeTile, ensureTileId } from "./tile-helpers";
 
 export function addWorldTiles(state: GameState, tiles: Tile[]): GameState {
   return produce(state, s => {
@@ -38,7 +38,7 @@ export function drawOfState(state: GameState): GameState {
   return checkValid(produce(state, s => {
     s.seed = seed;
     s.energies = energies;
-    addHandTile(s, { letter, p_in_world_int: { x: 0, y: handLength } });
+    addHandTile(s, ensureTileId({ letter, p_in_world_int: { x: 0, y: handLength } }));
   }));
 }
 
@@ -48,7 +48,7 @@ export function killTileOfState(state: GameState, wp: WidgetPoint): GameState {
     case 'world': {
       const p_in_world_int = vint(wp.p_in_local);
       const tile = get_main_tiles(state).find(tile => vequal(tile.p_in_world_int, p_in_world_int));
-      if (tile == undefined || tile.id == undefined) // FIXME: eventually tile.id should be mandatory
+      if (tile == undefined)
         return state;
       return checkValid(produce(removeTile(state, tile.id), s => {
         s.score--;
@@ -59,7 +59,7 @@ export function killTileOfState(state: GameState, wp: WidgetPoint): GameState {
       const hand_tiles = get_hand_tiles(state);
       if (p_in_hand_int.x == 0 && p_in_hand_int.y < hand_tiles.length) {
         const tile = hand_tiles[p_in_hand_int.y];
-        if (tile == undefined || tile.id == undefined) // FIXME: eventually tile.id should be mandatory
+        if (tile == undefined)
           return state;
         return checkValid(produce(removeTile(state, tile.id), s => {
           s.score--;

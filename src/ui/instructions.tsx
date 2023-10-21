@@ -7,7 +7,7 @@ import { mkGridOf } from '../core/grid';
 import { mkLayer } from '../core/layer';
 import { GameState, Tile } from '../core/state';
 import { checkValid, addWorldTiles, addHandTiles } from '../core/state-helpers';
-import { addHandTile } from "../core/tile-helpers";
+import { addHandTile, ensureTileId } from "../core/tile-helpers";
 import { DEBUG } from '../util/debug';
 import { relpos } from '../util/dutil';
 import { Point } from '../util/types';
@@ -187,12 +187,12 @@ function exampleState(): GameState {
     { letter: "x", p_in_world_int: { x: 13, y: -2 } },
     { letter: "j", p_in_world_int: { x: 6, y: 6 } },
     { letter: "o", p_in_world_int: { x: 7, y: 6 } }
-  ];
+  ].map(ensureTileId);
   const handTiles: Tile[] = [
     { letter: "e", p_in_world_int: { x: 0, y: 0 } },
     { letter: "t", p_in_world_int: { x: 0, y: 1 } },
     { letter: "a", p_in_world_int: { x: 0, y: 2 } },
-  ];
+  ].map(ensureTileId);
   return checkValid(addHandTiles(addWorldTiles(state, tiles), handTiles));
 }
 

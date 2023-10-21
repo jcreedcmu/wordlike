@@ -1,5 +1,6 @@
 import { checkConnected, checkGridWordsHoriz, checkGridWordsVert, getGrid, mkGrid, transpose } from '../src/core/grid';
-import { Tile } from '../src/core/state';
+import { Tile, TileOptionalId } from '../src/core/state';
+import { ensureTileId } from '../src/core/tile-helpers';
 import { vequal } from '../src/util/vutil';
 
 function isWord(word: string): boolean {
@@ -10,8 +11,7 @@ function tilesOfString(x: string): Tile[] {
   return x.replace(/^\n/, '').split('\n').flatMap((line, y) => line.split('').flatMap((letter, x) => {
     if (letter == '.')
       return [];
-    const tile: Tile = { letter, p_in_world_int: { x, y } };
-    return [tile];
+    return [ensureTileId({ letter, p_in_world_int: { x, y } })];
   }));
 }
 
