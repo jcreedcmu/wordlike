@@ -103,6 +103,10 @@ export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: numbe
     });
   }
 
+  function deselect(state: GameState): GameState {
+    return produce(state, s => { s.selected = undefined; });
+  }
+
   function vacuous_down(): GameState {
     return produce(state, s => { s.mouseState = { t: 'down', p_in_canvas: wp.p_in_canvas }; });
   }
@@ -110,7 +114,7 @@ export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: numbe
   switch (wp.t) {
     case 'world': {
       if (mods.has('ctrl')) {
-        return produce(state, s => {
+        return produce(deselect(state), s => {
           s.mouseState = {
             t: 'drag_selection',
             orig_p: wp.p_in_canvas,
@@ -140,10 +144,10 @@ export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: numbe
           }
           i++;
         }
-        return drag_world();
+        return deselect(drag_world());
       }
       else if (button == 2) {
-        return drag_world();
+        return deselect(drag_world());
       }
       else {
         return vacuous_down();
