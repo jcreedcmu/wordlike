@@ -2,7 +2,7 @@ import { DEBUG } from "../util/debug";
 import { Point, Rect } from "../util/types";
 import { boundRect } from "../util/util";
 import { vtrans } from "../util/vutil";
-import { Tile } from "./state";
+import { MainTile, Tile } from "./state";
 
 // Implements a spatially-bounded sparse map from coordinates to T
 
@@ -74,6 +74,17 @@ export function mkGrid(tiles: Tile[]): Grid<string> {
   });
   return {
     rect: boundRect(tiles.map(tile => tile.p_in_world_int)),
+    elems
+  };
+}
+
+export function mkGridOfMainTiles(tiles: MainTile[]): Grid<string> {
+  const elems: Record<string, string> = {};
+  tiles.forEach(tile => {
+    elems[unparseCoord(tile.loc.p_in_world_int)] = tile.letter;
+  });
+  return {
+    rect: boundRect(tiles.map(tile => tile.loc.p_in_world_int)),
     elems
   };
 }

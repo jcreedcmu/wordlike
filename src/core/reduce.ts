@@ -13,7 +13,7 @@ import { getPanicFraction } from './clock';
 import { Overlay, mkOverlay, setOverlay } from './layer';
 import { GameState, SceneState, mkGameSceneState } from './state';
 import { addWorldTiles, checkValid, drawOfState, isOccupied, killTileOfState } from './state-helpers';
-import { getTileId, get_hand_tiles, get_main_tiles, putTileInHand, putTileInWorld, removeAllTiles } from "./tile-helpers";
+import { get_hand_tiles, get_main_tiles, putTileInHand, putTileInWorld, removeAllTiles } from "./tile-helpers";
 
 function resolveMouseup(state: GameState): GameState {
   return produce(resolveMouseupInner(state), s => {
@@ -34,8 +34,8 @@ function resolveMouseupInner(state: GameState): GameState {
       };
       const selected: Overlay<boolean> = mkOverlay();
       get_main_tiles(state).forEach(tile => {
-        if (pointInRect(tile.p_in_world_int, rect_in_world))
-          setOverlay(selected, tile.p_in_world_int, true)
+        if (pointInRect(tile.loc.p_in_world_int, rect_in_world))
+          setOverlay(selected, tile.loc.p_in_world_int, true)
       });
       return produce(state, s => {
         s.selected = selected;
@@ -118,7 +118,7 @@ export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: numbe
         let i = 0;
 
         for (const tile of get_main_tiles(state)) {
-          if (vequal(p_in_world_int, tile.p_in_world_int)) {
+          if (vequal(p_in_world_int, tile.loc.p_in_world_int)) {
             if (vequal(p_in_world_int, { x: 0, y: 0 })) {
               return drag_world();
             }

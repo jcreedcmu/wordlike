@@ -1,7 +1,7 @@
 import { getPanicFraction } from "../core/clock";
 import { LocatedWord, getGrid } from "../core/grid";
 import { getOverlay, getOverlayLayer } from "../core/layer";
-import { GameState, Tile } from "../core/state";
+import { GameState, Tile, TileEntity } from "../core/state";
 import { getTileId, get_hand_tiles, get_main_tiles } from "../core/tile-helpers";
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
@@ -53,13 +53,13 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   // draw tiles
   get_main_tiles(state).forEach((tile, ix) => {
     if (!(ms.t == 'drag_tile' && ms.id == tile.id!)) {
-      const world_from_tile = translate(tile.p_in_world_int);
-      drawTile(
+      const world_from_tile = translate(tile.loc.p_in_world_int);
+      drawTileEntity(
         d,
         compose(pan_canvas_from_world, world_from_tile),
         tile,
-        getGrid(state.connectedSet, tile.p_in_world_int) ?? false,
-        state.selected ? getOverlay(state.selected, tile.p_in_world_int) : undefined
+        getGrid(state.connectedSet, tile.loc.p_in_world_int) ?? false,
+        state.selected ? getOverlay(state.selected, tile.loc.p_in_world_int) : undefined
       );
     }
   });
@@ -181,7 +181,7 @@ export class RenderPane {
 
 }
 
-function colorsOfTile(tile: Tile, opts?: { connected?: boolean, selected?: boolean }): { fg: string, bg: string } {
+function colorsOfTile(opts?: { connected?: boolean, selected?: boolean }): { fg: string, bg: string } {
   if (opts?.selected === true)
     return { fg: '#1f5198', bg: '#809fca' };
   if (opts?.connected === false)
@@ -209,7 +209,27 @@ function drawTile(d: CanvasRenderingContext2D, canvas_from_tile: SE2, tile: Tile
   const rect_in_tile: Rect = { p: { x: 0, y: 0 }, sz: { x: 1, y: 1 } };
   const rect_in_canvas = apply_to_rect(canvas_from_tile, rect_in_tile);
 
-  const { fg, bg } = colorsOfTile(tile, { connected, selected });
+  const { fg, bg } = colorsOfTile({ connected, selected });
+  d.fillStyle = bg;
+  d.fillRect(rect_in_canvas.p.x + 0.5, rect_in_canvas.p.y + 0.5, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
+  d.strokeStyle = fg;
+  d.lineWidth = 1;
+  d.strokeRect(rect_in_canvas.p.x + 0.5, rect_in_canvas.p.y + 0.5, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
+
+  d.fillStyle = fg;
+  d.textBaseline = 'middle';
+  d.textAlign = 'center';
+  const fontSize = Math.round(0.6 * canvas_from_tile.scale.x);
+  d.font = `bold ${fontSize}px sans-serif`;
+  d.fillText(tile.letter.toUpperCase(), rect_in_canvas.p.x + rect_in_canvas.sz.x / 2 + 0.5,
+    rect_in_canvas.p.y + rect_in_canvas.sz.y / 2 + 1.5);
+}
+
+function drawTileEntity(d: CanvasRenderingContext2D, canvas_from_tile: SE2, tile: TileEntity, connected?: boolean, selected?: boolean) {
+  const rect_in_tile: Rect = { p: { x: 0, y: 0 }, sz: { x: 1, y: 1 } };
+  const rect_in_canvas = apply_to_rect(canvas_from_tile, rect_in_tile);
+
+  const { fg, bg } = colorsOfTile({ connected, selected });
   d.fillStyle = bg;
   d.fillRect(rect_in_canvas.p.x + 0.5, rect_in_canvas.p.y + 0.5, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
   d.strokeStyle = fg;

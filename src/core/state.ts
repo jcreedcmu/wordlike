@@ -44,9 +44,11 @@ export type TileOptionalId = {
   letter: string,
 }
 
+export type HandLoc = { t: 'hand', p_in_hand_int: Point };
+export type MainLoc = { t: 'world', p_in_world_int: Point };
 export type Location =
-  | { t: 'hand', p_in_hand_int: Point }
-  | { t: 'world', p_in_world_int: Point }
+  | HandLoc
+  | MainLoc
   ;
 
 export type TileEntity = {
@@ -54,6 +56,8 @@ export type TileEntity = {
   loc: Location,
   letter: string,
 };
+
+export type MainTile = TileEntity & { loc: MainLoc };
 
 export type TileEntityOptionalId = {
   id: string | undefined,

@@ -1,16 +1,14 @@
-import { WidgetPoint, getWidgetPoint } from "../ui/widget-helpers";
-import { DEBUG, logger } from "../util/debug";
+import { WidgetPoint } from "../ui/widget-helpers";
+import { logger } from "../util/debug";
 import { produce } from "../util/produce";
-import { apply, inverse } from "../util/se2";
 import { Point } from "../util/types";
-import { next_rand } from "../util/util";
-import { vequal, vint, vm } from "../util/vutil";
+import { vequal, vint } from "../util/vutil";
 import { getAssets } from "./assets";
-import { Energies, getLetterSample } from "./distribution";
-import { checkConnected, checkGridWords, Grid, gridKeys, mkGrid, mkGridOf } from "./grid";
+import { getLetterSample } from "./distribution";
+import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
 import { getOverlayLayer, setOverlay } from "./layer";
 import { GameState, Tile } from "./state";
-import { addWorldTile, addHandTile, get_main_tiles, get_hand_tiles, removeTile, ensureTileId } from "./tile-helpers";
+import { addHandTile, addWorldTile, ensureTileId, get_hand_tiles, get_main_tiles, removeTile } from "./tile-helpers";
 
 export function addWorldTiles(state: GameState, tiles: Tile[]): GameState {
   return produce(state, s => {
@@ -29,7 +27,7 @@ export function addHandTiles(state: GameState, tiles: Tile[]): GameState {
 }
 
 export function isOccupied(state: GameState, p: Point): boolean {
-  return get_main_tiles(state).some(tile => vequal(tile.p_in_world_int, p));
+  return get_main_tiles(state).some(tile => vequal(tile.loc.p_in_world_int, p));
 }
 
 export function drawOfState(state: GameState): GameState {
@@ -47,7 +45,7 @@ export function killTileOfState(state: GameState, wp: WidgetPoint): GameState {
   switch (wp.t) {
     case 'world': {
       const p_in_world_int = vint(wp.p_in_local);
-      const tile = get_main_tiles(state).find(tile => vequal(tile.p_in_world_int, p_in_world_int));
+      const tile = get_main_tiles(state).find(tile => vequal(tile.loc.p_in_world_int, p_in_world_int));
       if (tile == undefined)
         return state;
       return checkValid(produce(removeTile(state, tile.id), s => {
@@ -76,8 +74,8 @@ function resolveValid(state: GameState): GameState {
   const tiles = get_main_tiles(state);
   logger('words', 'grid valid');
   const scorings = tiles.flatMap(tile => {
-    if (getOverlayLayer(state.bonusOverlay, state.bonusLayer, tile.p_in_world_int) == 'bonus') {
-      return [tile.p_in_world_int];
+    if (getOverlayLayer(state.bonusOverlay, state.bonusLayer, tile.loc.p_in_world_int) == 'bonus') {
+      return [tile.loc.p_in_world_int];
     }
     else {
       return [];
@@ -93,7 +91,7 @@ function resolveValid(state: GameState): GameState {
 
 export function checkValid(state: GameState): GameState {
   const tiles = get_main_tiles(state);
-  const grid = mkGrid(tiles);
+  const grid = mkGridOfMainTiles(tiles);
 
   const { validWords, invalidWords } = checkGridWords(grid, word => getAssets().dictionary[word]);
   const { allConnected, connectedSet } = checkConnected(grid);
