@@ -106,17 +106,29 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   for (let i = top_left_in_world.x; i <= bot_right_in_world.x; i++) {
     for (let j = top_left_in_world.y; j <= bot_right_in_world.y; j++) {
       const p: Point = { x: i, y: j };
-      if (getOverlayLayer(state.bonusOverlay, state.bonusLayer, p) == 'bonus') {
-        const rect_in_canvas = apply_to_rect(pan_canvas_from_world, { p, sz: { x: 1, y: 1 } });
-        d.strokeStyle = 'rgba(0,0,255,0.5)';
-        d.lineWidth = 3;
-        d.beginPath();
-        d.arc(rect_in_canvas.p.x + rect_in_canvas.sz.x / 2,
-          rect_in_canvas.p.y + rect_in_canvas.sz.y / 2,
-          rect_in_canvas.sz.y * 0.4,
-          0, 360,
-        );
-        d.stroke();
+      switch (getOverlayLayer(state.bonusOverlay, state.bonusLayer, p)) {
+        case 'bonus': {
+          const rect_in_canvas = apply_to_rect(pan_canvas_from_world, { p, sz: { x: 1, y: 1 } });
+          d.strokeStyle = 'rgba(0,0,255,0.5)';
+          d.lineWidth = 3;
+          d.beginPath();
+          d.arc(rect_in_canvas.p.x + rect_in_canvas.sz.x / 2,
+            rect_in_canvas.p.y + rect_in_canvas.sz.y / 2,
+            rect_in_canvas.sz.y * 0.4,
+            0, 360,
+          );
+          d.stroke();
+        } break;
+        case 'empty':
+          break;
+        case 'block': {
+          const rect_in_canvas = apply_to_rect(pan_canvas_from_world, { p, sz: { x: 1, y: 1 } });
+          d.fillStyle = "gray";
+          d.fillRect(
+            rect_in_canvas.p.x, rect_in_canvas.p.y,
+            rect_in_canvas.sz.x, rect_in_canvas.sz.y
+          );
+        } break;
       }
     }
   }
