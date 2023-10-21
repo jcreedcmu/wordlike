@@ -3,7 +3,7 @@ import { Point } from '../util/types';
 import { Bonus, bonusGenerator } from './bonus';
 import { PanicData } from './clock';
 import { Energies, initialEnergies } from './distribution';
-import { Grid, LocatedWord, mkGrid, mkGridOf } from './grid';
+import { Grid, LocatedWord, mkGridOf } from './grid';
 import { Layer, Overlay, mkLayer, mkOverlay } from './layer';
 
 export type MouseState =

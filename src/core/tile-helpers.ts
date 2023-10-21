@@ -24,6 +24,10 @@ export function setTileLoc(state: Draft<GameState>, id: string, loc: Location): 
   state.tile_entities[id].loc = loc;
 }
 
+export function get_tiles(state: GameState): TileEntity[] {
+  return Object.values(state.tile_entities);
+}
+
 export function get_main_tiles(state: GameState): MainTile[] {
   const keys: string[] = Object.keys(state.tile_entities);
   function mainTilesOfString(k: string): MainTile[] {

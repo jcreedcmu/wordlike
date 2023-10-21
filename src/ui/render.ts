@@ -2,7 +2,7 @@ import { getPanicFraction } from "../core/clock";
 import { LocatedWord, getGrid } from "../core/grid";
 import { getOverlay, getOverlayLayer } from "../core/layer";
 import { GameState, Tile, TileEntity } from "../core/state";
-import { getTileId, get_hand_tiles, get_main_tiles } from "../core/tile-helpers";
+import { getTileId, get_hand_tiles, get_main_tiles, get_tiles } from "../core/tile-helpers";
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
@@ -69,26 +69,24 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   }
 
   // draw tiles
-  d.save();
-  d.clip(worldClip);
-
-  get_main_tiles(state).forEach((tile, ix) => {
+  get_tiles(state).forEach(tile => {
     if (!(ms.t == 'drag_tile' && ms.id == tile.id!)) {
-      drawTile(
-        d,
-        canvas_from_tile(tile),
-        tile,
-        getGrid(state.connectedSet, tile.loc.p_in_world_int) ?? false,
-        state.selected ? getOverlay(state.selected, tile.loc.p_in_world_int) : undefined
-      );
-    }
-  });
+      let opts = undefined;
+      if (tile.loc.t == 'world') {
+        opts = {
+          connected: getGrid(state.connectedSet, tile.loc.p_in_world_int) ?? false,
+          selected: state.selected ? getOverlay(state.selected, tile.loc.p_in_world_int) : undefined
+        };
 
-  d.restore();
+        d.save();
+        d.clip(worldClip);
+      }
 
-  get_hand_tiles(state).forEach((tile, ix) => {
-    if (!(ms.t == 'drag_tile' && ms.id == tile.id)) {
-      drawTile(d, canvas_from_tile(tile), tile);
+      drawTile(d, canvas_from_tile(tile), tile, opts);
+
+      if (tile.loc.t == 'world') {
+        d.restore();
+      }
     }
   });
 
@@ -228,11 +226,11 @@ function drawInvalidWord(d: CanvasRenderingContext2D, canvas_from_world: SE2, wo
     rect_in_canvas.sz.x - 2 * OFF, rect_in_canvas.sz.y - 2 * OFF);
 }
 
-function drawTile(d: CanvasRenderingContext2D, canvas_from_tile: SE2, tile: TileEntity, connected?: boolean, selected?: boolean) {
+function drawTile(d: CanvasRenderingContext2D, canvas_from_tile: SE2, tile: TileEntity, opts?: { connected?: boolean, selected?: boolean }) {
   const rect_in_tile: Rect = { p: { x: 0, y: 0 }, sz: { x: 1, y: 1 } };
   const rect_in_canvas = apply_to_rect(canvas_from_tile, rect_in_tile);
 
-  const { fg, bg } = colorsOfTile({ connected, selected });
+  const { fg, bg } = colorsOfTile(opts);
   d.fillStyle = bg;
   d.fillRect(rect_in_canvas.p.x + 0.5, rect_in_canvas.p.y + 0.5, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
   d.strokeStyle = fg;
