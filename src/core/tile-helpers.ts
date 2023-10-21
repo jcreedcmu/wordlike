@@ -1,7 +1,7 @@
 import { Draft } from "immer";
 import { produce } from "../util/produce";
 import { Point } from "../util/types";
-import { GameState, MainTile, Tile, TileEntity, TileEntityOptionalId, TileOptionalId } from "./state";
+import { GameState, HandTile, MainTile, Tile, TileEntity, TileEntityOptionalId, TileOptionalId } from "./state";
 
 // FIXME: global counter
 let tileIdCounter = 1000;
@@ -30,18 +30,15 @@ export function get_main_tiles(state: GameState): MainTile[] {
   return keys.flatMap(mainTilesOfString);
 }
 
-export function get_hand_tiles(state: GameState): Tile[] {
+export function get_hand_tiles(state: GameState): HandTile[] {
   return Object.keys(state.tile_entities).flatMap(k => {
     const tile = state.tile_entities[k];
-    if (tile.loc.t == 'hand')
-      return [{
-        id: tile.id,
-        p_in_world_int: tile.loc.p_in_hand_int,
-        letter: tile.letter
-      }];
+    const loc = tile.loc;
+    if (loc.t == 'hand')
+      return [{ ...tile, loc }];
     else
       return [];
-  }).sort((a, b) => a.p_in_world_int.y - b.p_in_world_int.y);
+  }).sort((a, b) => a.loc.p_in_hand_int.y - b.loc.p_in_hand_int.y);
 }
 
 export function removeTile(state: GameState, id: string): GameState {

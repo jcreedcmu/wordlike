@@ -110,7 +110,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   get_hand_tiles(state).forEach((tile, ix) => {
     if (!(ms.t == 'drag_tile' && ms.id == tile.id)) {
       const hand_from_tile = translate({ x: 0, y: ix });
-      drawTile(d, compose(canvas_from_hand(), hand_from_tile), tile);
+      drawTileEntity(d, compose(canvas_from_hand(), hand_from_tile), tile);
     }
   });
 

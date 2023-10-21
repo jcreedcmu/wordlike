@@ -58,6 +58,7 @@ export type TileEntity = {
 };
 
 export type MainTile = TileEntity & { loc: MainLoc };
+export type HandTile = TileEntity & { loc: HandLoc };
 
 export type TileEntityOptionalId = {
   id: string | undefined,
