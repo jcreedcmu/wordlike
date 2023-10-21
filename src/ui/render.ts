@@ -21,6 +21,11 @@ export function paintWithScale(ci: CanvasInfo, state: GameState) {
 }
 
 export function rawPaint(ci: CanvasInfo, state: GameState) {
+
+  const worldClip = new Path2D();
+  worldClip.rect(world_bds_in_canvas.p.x, world_bds_in_canvas.p.y,
+    world_bds_in_canvas.sz.x, world_bds_in_canvas.sz.y);
+
   const { d } = ci;
   const ms = state.mouseState;
   const pan_canvas_from_world = pan_canvas_from_world_of_state(state);
@@ -50,17 +55,40 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     }
   }
 
+  // draw hand
+  d.fillStyle = '#eeeeee';
+  d.fillRect(hand_bds_in_canvas.p.x, hand_bds_in_canvas.p.y, hand_bds_in_canvas.sz.x, hand_bds_in_canvas.sz.y);
+
+  function canvas_from_tile(tile: TileEntity): SE2 {
+    switch (tile.loc.t) {
+      case 'hand':
+        return compose(canvas_from_hand(), translate(tile.loc.p_in_hand_int));
+      case 'world':
+        return compose(pan_canvas_from_world, translate(tile.loc.p_in_world_int));
+    }
+  }
+
   // draw tiles
+  d.save();
+  d.clip(worldClip);
+
   get_main_tiles(state).forEach((tile, ix) => {
     if (!(ms.t == 'drag_tile' && ms.id == tile.id!)) {
-      const world_from_tile = translate(tile.loc.p_in_world_int);
       drawTile(
         d,
-        compose(pan_canvas_from_world, world_from_tile),
+        canvas_from_tile(tile),
         tile,
         getGrid(state.connectedSet, tile.loc.p_in_world_int) ?? false,
         state.selected ? getOverlay(state.selected, tile.loc.p_in_world_int) : undefined
       );
+    }
+  });
+
+  d.restore();
+
+  get_hand_tiles(state).forEach((tile, ix) => {
+    if (!(ms.t == 'drag_tile' && ms.id == tile.id)) {
+      drawTile(d, canvas_from_tile(tile), tile);
     }
   });
 
@@ -70,6 +98,9 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
       drawInvalidWord(d, pan_canvas_from_world, lw);
     });
   }
+
+  d.save();
+  d.clip(worldClip);
 
   // draw bonuses
   for (let i = top_left_in_world.x; i <= bot_right_in_world.x; i++) {
@@ -101,18 +132,10 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     0, 360,
   );
   d.stroke();
+  d.restore();
 
 
-  // draw hand tiles
-  d.fillStyle = '#eeeeee';
-  d.fillRect(hand_bds_in_canvas.p.x, hand_bds_in_canvas.p.y, hand_bds_in_canvas.sz.x, hand_bds_in_canvas.sz.y);
 
-  get_hand_tiles(state).forEach((tile, ix) => {
-    if (!(ms.t == 'drag_tile' && ms.id == tile.id)) {
-      const hand_from_tile = translate({ x: 0, y: ix });
-      drawTile(d, compose(canvas_from_hand(), hand_from_tile), tile);
-    }
-  });
 
   // draw dragged tile on top
   if (ms.t == 'drag_tile') {
