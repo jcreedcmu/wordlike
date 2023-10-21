@@ -91,7 +91,7 @@ function resolveMouseupInner(state: GameState): GameState {
           });
 
           const tgts = moves.map(x => x.p_in_world_int);
-          if (isCollision(remainingTiles, tgts)) {
+          if (isCollision(remainingTiles, tgts, state.bonusOverlay, state.bonusLayer)) {
             return state;
           }
 

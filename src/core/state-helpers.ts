@@ -4,9 +4,10 @@ import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { vequal, vint } from "../util/vutil";
 import { getAssets } from "./assets";
+import { Bonus } from "./bonus";
 import { getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
-import { getOverlayLayer, setOverlay } from "./layer";
+import { Layer, Overlay, getOverlayLayer, setOverlay } from "./layer";
 import { GameState, Tile, TileEntity } from "./state";
 import { addHandTile, addWorldTile, ensureTileId, get_hand_tiles, get_main_tiles, get_tiles, removeTile } from "./tile-helpers";
 
@@ -26,12 +27,12 @@ export function addHandTiles(state: GameState, tiles: Tile[]): GameState {
   });
 }
 
-export function isCollision(tiles: TileEntity[], points: Point[]) {
-  return points.some(point => isOccupiedTiles(tiles, point));
+export function isCollision(tiles: TileEntity[], points: Point[], bonusOverlay: Overlay<Bonus>, bonusLayer: Layer<Bonus>) {
+  return points.some(p => isOccupiedTiles(tiles, p) || getOverlayLayer(bonusOverlay, bonusLayer, p) == 'block');
 }
 
 export function isOccupied(state: GameState, p: Point): boolean {
-  return isOccupiedTiles(get_tiles(state), p);
+  return isOccupiedTiles(get_tiles(state), p) || getOverlayLayer(state.bonusOverlay, state.bonusLayer, p) == 'block';
 }
 
 export function isOccupiedTiles(tiles: TileEntity[], p: Point): boolean {
