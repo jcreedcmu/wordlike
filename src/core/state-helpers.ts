@@ -55,11 +55,22 @@ export function killTileOfState(state: GameState, wp: WidgetPoint): GameState {
     case 'world': {
       const p_in_world_int = vint(wp.p_in_local);
       const tile = get_main_tiles(state).find(tile => vequal(tile.loc.p_in_world_int, p_in_world_int));
-      if (tile == undefined)
+      if (tile != undefined) {
+
+        return checkValid(produce(removeTile(state, tile.id), s => {
+          s.score--;
+        }));
+
+      }
+      else if (getOverlayLayer(state.bonusOverlay, state.bonusLayer, p_in_world_int) == 'block') {
+        return checkValid(produce(state, s => {
+          setOverlay(s.bonusOverlay, p_in_world_int, 'empty');
+          s.score--;
+        }));
+      }
+      else {
         return state;
-      return checkValid(produce(removeTile(state, tile.id), s => {
-        s.score--;
-      }));
+      }
     }
     case 'hand': {
       const p_in_hand_int = vint(wp.p_in_local);
