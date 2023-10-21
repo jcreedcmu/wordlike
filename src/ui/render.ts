@@ -7,9 +7,9 @@ import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
 import { boundRect } from "../util/util";
-import { vadd, vm, vscale, vtrans } from "../util/vutil";
+import { vadd, vm, vscale, vsub, vtrans } from "../util/vutil";
 import { CanvasInfo } from "./use-canvas";
-import { canvas_from_drag_tile, pan_canvas_from_world_of_state, tile_from_drag_tile } from "./view-helpers";
+import { canvas_from_drag_tile, pan_canvas_from_world_of_state } from "./view-helpers";
 import { canvas_bds_in_canvas, canvas_from_hand, hand_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
 
 export function paintWithScale(ci: CanvasInfo, state: GameState) {
@@ -137,13 +137,14 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   // draw dragged tile on top
   if (ms.t == 'drag_tile') {
     if (state.selected) {
+      const tile0 = getTileId(state, ms.id);
       state.selected.selectedIds.forEach(id => {
         const tile = getTileId(state, id);
-
-        drawTile(d,
-          compose(canvas_from_tile(tile), tile_from_drag_tile(state, state.mouseState)),
-          tile);
-
+        if (tile.loc.t == 'world' && tile0.loc.t == 'world') {
+          drawTile(d,
+            compose(canvas_from_drag_tile(state, ms), translate(vsub(tile.loc.p_in_world_int, tile0.loc.p_in_world_int))),
+            tile);
+        }
       });
     }
 
