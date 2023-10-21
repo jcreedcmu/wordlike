@@ -1,7 +1,7 @@
 import { Draft } from "immer";
 import { produce } from "../util/produce";
 import { Point } from "../util/types";
-import { GameState, HandTile, MainTile, Tile, TileEntity, TileEntityOptionalId, TileOptionalId } from "./state";
+import { GameState, HandTile, Location, MainTile, Tile, TileEntity, TileEntityOptionalId, TileOptionalId } from "./state";
 
 // FIXME: global counter
 let tileIdCounter = 1000;
@@ -12,18 +12,22 @@ function tileOfTileEntity(tile: TileEntity): Tile {
   }
 }
 
-export function getTileId(state: GameState, id: string): Tile {
-  return tileOfTileEntity(state.tile_entities[id]);
+export function getTileId(state: GameState, id: string): TileEntity {
+  return state.tile_entities[id];
 }
 
-export function getTileEntity(state: GameState, id: string): TileEntity {
-  return state.tile_entities[id];
+export function getTileLoc(state: GameState, id: string): Location {
+  return state.tile_entities[id].loc;
+}
+
+export function setTileLoc(state: Draft<GameState>, id: string, loc: Location): void {
+  state.tile_entities[id].loc = loc;
 }
 
 export function get_main_tiles(state: GameState): MainTile[] {
   const keys: string[] = Object.keys(state.tile_entities);
   function mainTilesOfString(k: string): MainTile[] {
-    const tile = state.tile_entities[k];
+    const tile = getTileId(state, k);
     const loc = tile.loc;
     if (loc.t == 'world') {
       return [{ ...tile, loc }];
@@ -36,7 +40,7 @@ export function get_main_tiles(state: GameState): MainTile[] {
 
 export function get_hand_tiles(state: GameState): HandTile[] {
   return Object.keys(state.tile_entities).flatMap(k => {
-    const tile = state.tile_entities[k];
+    const tile = getTileId(state, k);
     const loc = tile.loc;
     if (loc.t == 'hand')
       return [{ ...tile, loc }];
@@ -46,7 +50,7 @@ export function get_hand_tiles(state: GameState): HandTile[] {
 }
 
 export function removeTile(state: GameState, id: string): GameState {
-  const loc = state.tile_entities[id].loc;
+  const loc = getTileLoc(state, id);
   switch (loc.t) {
     case 'world':
       return produce(state, s => {
@@ -56,7 +60,7 @@ export function removeTile(state: GameState, id: string): GameState {
       const handTiles = get_hand_tiles(state);
       return produce(state, s => {
         for (let i = loc.p_in_hand_int.y; i < handTiles.length; i++) {
-          s.tile_entities[handTiles[i].id].loc = { t: 'hand', p_in_hand_int: { x: 0, y: i - 1 } };
+          setTileLoc(s, handTiles[i].id, { t: 'hand', p_in_hand_int: { x: 0, y: i - 1 } });
         }
         delete s.tile_entities[id];
       });
@@ -90,19 +94,19 @@ export function addHandTile(state: Draft<GameState>, tile: Tile): void {
 }
 
 export function putTileInWorld(state: GameState, id: string, p_in_world_int: Point): GameState {
-  const loc = state.tile_entities[id].loc;
+  const loc = getTileLoc(state, id);
   const handTiles = get_hand_tiles(state);
   switch (loc.t) {
     case 'world':
       return produce(state, s => {
-        s.tile_entities[id].loc = { t: 'world', p_in_world_int };
+        setTileLoc(s, id, { t: 'world', p_in_world_int });
       });
     case 'hand':
       return produce(state, s => {
         for (let i = loc.p_in_hand_int.y; i < handTiles.length; i++) {
-          s.tile_entities[handTiles[i].id].loc = { t: 'hand', p_in_hand_int: { x: 0, y: i - 1 } };
+          setTileLoc(s, handTiles[i].id, { t: 'hand', p_in_hand_int: { x: 0, y: i - 1 } });
         }
-        s.tile_entities[id].loc = { t: 'world', p_in_world_int };
+        setTileLoc(s, id, { t: 'world', p_in_world_int });
       });
   }
 
@@ -110,14 +114,13 @@ export function putTileInWorld(state: GameState, id: string, p_in_world_int: Poi
 
 // XXX: assumes tile was in world before
 export function putTileInHand(state: GameState, id: string, ix: number): GameState {
-  const tile = getTileId(state, id);
   const handTiles = get_hand_tiles(state);
 
   return produce(state, s => {
     for (let i = ix; i < handTiles.length; i++) {
-      s.tile_entities[handTiles[i].id].loc = { t: 'hand', p_in_hand_int: { x: 0, y: i + 1 } };
+      setTileLoc(s, handTiles[i].id, { t: 'hand', p_in_hand_int: { x: 0, y: i + 1 } });
     }
-    s.tile_entities[id].loc = { t: 'hand', p_in_hand_int: { x: 0, y: ix } };
+    setTileLoc(s, id, { t: 'hand', p_in_hand_int: { x: 0, y: ix } });
   });
 }
 
