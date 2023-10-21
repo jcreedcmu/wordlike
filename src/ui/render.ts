@@ -2,7 +2,7 @@ import { getPanicFraction } from "../core/clock";
 import { LocatedWord, getGrid } from "../core/grid";
 import { getOverlay, getOverlayLayer } from "../core/layer";
 import { GameState, Tile } from "../core/state";
-import { getTileId, get_hand_tiles, get_main_tiles } from "../core/state-helpers";
+import { getTileId, get_hand_tiles, get_main_tiles } from "../core/tile-helpers";
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";

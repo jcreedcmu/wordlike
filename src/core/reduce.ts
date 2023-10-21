@@ -12,7 +12,8 @@ import { Action, Effect, GameAction } from './action';
 import { getPanicFraction } from './clock';
 import { Overlay, mkOverlay, setOverlay } from './layer';
 import { GameState, SceneState, mkGameSceneState } from './state';
-import { addWorldTiles, checkValid, drawOfState, getTileId, get_hand_tiles, get_main_tiles, isOccupied, killTileOfState, putTileInHand, putTileInWorld } from './state-helpers';
+import { addWorldTiles, checkValid, drawOfState, isOccupied, killTileOfState } from './state-helpers';
+import { getTileId, get_hand_tiles, get_main_tiles, putTileInHand, putTileInWorld, removeAllTiles } from "./tile-helpers";
 
 function resolveMouseup(state: GameState): GameState {
   return produce(resolveMouseupInner(state), s => {
@@ -178,7 +179,7 @@ export function reduceGameAction(state: GameState, action: GameAction): effectfu
           killTileOfState(state) : state);
       }
       if (action.code == 'd') {
-        return gs(checkValid(addWorldTiles(state, debugTiles())));
+        return gs(checkValid(addWorldTiles(removeAllTiles(state), debugTiles())));
       }
       return gs(state);
     }

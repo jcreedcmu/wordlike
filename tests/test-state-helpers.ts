@@ -1,6 +1,7 @@
 import { reduce } from "../src/core/reduce";
 import { GameState, mkGameState } from "../src/core/state";
-import { addWorldTile, checkValid, removeTile, addWorldTiles, putTileInWorld } from "../src/core/state-helpers";
+import { checkValid, addWorldTiles } from "../src/core/state-helpers";
+import { addWorldTile, removeTile, putTileInWorld } from "../src/core/tile-helpers";
 import { debugTiles } from "../src/util/debug";
 import { produce } from "../src/util/produce";
 
