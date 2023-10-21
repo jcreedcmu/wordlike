@@ -20,7 +20,7 @@ export function pan_canvas_from_world_of_state(state: GameState): SE2 {
 }
 
 export function drag_canvas_from_canvas_of_mouse_state(state: MouseState): SE2 {
-  return state.t == 'drag_main_tile' || state.t == 'drag_hand_tile' ? translate(vsub(state.p_in_canvas, state.orig_p_in_canvas)) : ident();
+  return state.t == 'drag_tile' ? translate(vsub(state.p_in_canvas, state.orig_p_in_canvas)) : ident();
 }
 
 // Given a mouse state that represents a dragged tile, what is the canvas_from_local for that tile
@@ -40,8 +40,7 @@ export function drag_canvas_from_canvas_of_mouse_state(state: MouseState): SE2 {
 export function canvas_from_drag_tile(state: GameState): SE2 {
   const ms = state.mouseState;
   switch (ms.t) {
-    case 'drag_main_tile':
-    case 'drag_hand_tile':
+    case 'drag_tile':
       const wp0 = getWidgetPoint(state, ms.orig_p_in_canvas);
       const wp1 = getWidgetPoint(state, ms.p_in_canvas);
       const local1_from_canvas = wp1.local_from_canvas;

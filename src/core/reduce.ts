@@ -49,7 +49,7 @@ function resolveMouseupInner(state: GameState): GameState {
       });
     }
 
-    case 'drag_main_tile': {
+    case 'drag_tile': {
 
       const wp = getWidgetPoint(state, ms.p_in_canvas);
       if (wp.t == 'world') {
@@ -72,31 +72,14 @@ function resolveMouseupInner(state: GameState): GameState {
           canvas_from_drag_tile(state)).translate,
           Math.round);
 
-        return checkValid(putTileInHand(state, ms.id, new_tile_in_hand_int.y));
-      }
-
-    }
-
-    case 'drag_hand_tile': {
-
-      const wp = getWidgetPoint(state, ms.p_in_canvas);
-      if (wp.t == 'world') {
-        // effectively the same as the purely translational world_from_tile
-        const new_tile_in_world_int: Point = vm(compose(
-          inverse(state.canvas_from_world),
-          canvas_from_drag_tile(state)).translate,
-          Math.round);
-
-        const afterDrop = !isOccupied(state, new_tile_in_world_int)
-          ? putTileInWorld(state, ms.id, new_tile_in_world_int)  // FIXME undefined
+        return ms.orig_loc.t == 'world'
+          ? checkValid(putTileInHand(state, ms.id, new_tile_in_hand_int.y))
           : state;
+      }
 
-        return checkValid(afterDrop);
-      }
-      else {
-        return state;
-      }
     }
+
+
     case 'up': return state; // no drag to resolve
     case 'down': return state;
   }
@@ -141,7 +124,8 @@ export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: numbe
 
             return produce(state, s => {
               s.mouseState = {
-                t: 'drag_main_tile',
+                t: 'drag_tile',
+                orig_loc: { t: 'world', p_in_world_int },
                 id: tile.id!,
                 orig_p_in_canvas: wp.p_in_canvas,
                 p_in_canvas: wp.p_in_canvas,
@@ -166,7 +150,8 @@ export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: numbe
       if (p_in_hand_int.x == 0 && p_in_hand_int.y >= 0 && p_in_hand_int.y < tiles.length) {
         return produce(state, s => {
           s.mouseState = {
-            t: 'drag_hand_tile',
+            t: 'drag_tile',
+            orig_loc: { t: 'hand', p_in_hand_int },
             id: tiles[p_in_hand_int.y].id!, // FIXME undefined
             orig_p_in_canvas: wp.p_in_canvas,
             p_in_canvas: wp.p_in_canvas,

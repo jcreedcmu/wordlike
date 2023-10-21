@@ -52,7 +52,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
 
   // draw tiles
   get_main_tiles(state).forEach((tile, ix) => {
-    if (!(ms.t == 'drag_main_tile' && ms.id == tile.id!)) {
+    if (!(ms.t == 'drag_tile' && ms.id == tile.id!)) {
       const world_from_tile = translate(tile.p_in_world_int);
       drawTile(
         d,
@@ -108,21 +108,14 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   d.fillRect(hand_bds_in_canvas.p.x, hand_bds_in_canvas.p.y, hand_bds_in_canvas.sz.x, hand_bds_in_canvas.sz.y);
 
   get_hand_tiles(state).forEach((tile, ix) => {
-    if (!(ms.t == 'drag_hand_tile' && ms.id == tile.id)) {
+    if (!(ms.t == 'drag_tile' && ms.id == tile.id)) {
       const hand_from_tile = translate({ x: 0, y: ix });
       drawTile(d, compose(canvas_from_hand(), hand_from_tile), tile);
     }
   });
 
   // draw dragged tile on top
-  if (ms.t == 'drag_main_tile') {
-    const tile = getTileId(state, ms.id);
-    drawTile(d,
-      canvas_from_drag_tile(state),
-      tile);
-  }
-
-  if (ms.t == 'drag_hand_tile') {
+  if (ms.t == 'drag_tile') {
     const tile = getTileId(state, ms.id);
     drawTile(d,
       canvas_from_drag_tile(state),

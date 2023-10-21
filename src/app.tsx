@@ -129,8 +129,7 @@ export function Game(props: GameProps): JSX.Element {
     switch (ms.t) {
       case 'up': return undefined;
       case 'drag_world': return 'grab';
-      case 'drag_main_tile': return 'pointer';
-      case 'drag_hand_tile': return 'pointer';
+      case 'drag_tile': return 'pointer';
     }
   }
 
