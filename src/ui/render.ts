@@ -166,7 +166,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
 
   // draw selection
   if (ms.t == 'drag_selection') {
-    const sel_rect_in_canvas: Rect = boundRect([ms.orig_p, ms.p]);
+    const sel_rect_in_canvas: Rect = boundRect([ms.orig_p, ms.p_in_canvas]);
     d.strokeStyle = "rgb(0,255,255,0.5)";
     d.lineWidth = 2;
     d.strokeRect(

@@ -16,7 +16,7 @@ import { addWorldTiles, checkValid, drawOfState, getTileId, get_hand_tiles, get_
 
 function resolveMouseup(state: GameState): GameState {
   return produce(resolveMouseupInner(state), s => {
-    s.mouseState = { t: 'up', p: state.mouseState.p };
+    s.mouseState = { t: 'up', p_in_canvas: state.mouseState.p_in_canvas };
   });
 }
 
@@ -25,7 +25,7 @@ function resolveMouseupInner(state: GameState): GameState {
 
   switch (ms.t) {
     case 'drag_selection': {
-      const small_rect_in_canvas = boundRect([ms.orig_p, ms.p]);
+      const small_rect_in_canvas = boundRect([ms.orig_p, ms.p_in_canvas]);
       const small_rect_in_world = apply_to_rect(inverse(state.canvas_from_world), small_rect_in_canvas);
       const rect_in_world = {
         p: vsub(small_rect_in_world.p, { x: 1, y: 1 }),
@@ -51,7 +51,7 @@ function resolveMouseupInner(state: GameState): GameState {
 
     case 'drag_main_tile': {
 
-      const wp = getWidgetPoint(state, ms.p);
+      const wp = getWidgetPoint(state, ms.p_in_canvas);
       if (wp.t == 'world') {
         // effectively the same as the purely translational world_from_tile
         const new_tile_in_world_int: Point = vm(compose(
@@ -79,7 +79,7 @@ function resolveMouseupInner(state: GameState): GameState {
 
     case 'drag_hand_tile': {
 
-      const wp = getWidgetPoint(state, ms.p);
+      const wp = getWidgetPoint(state, ms.p_in_canvas);
       if (wp.t == 'world') {
         // effectively the same as the purely translational world_from_tile
         const new_tile_in_world_int: Point = vm(compose(
@@ -109,13 +109,13 @@ export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: numbe
       s.mouseState = {
         t: 'drag_world',
         orig_p: wp.p_in_canvas,
-        p: wp.p_in_canvas,
+        p_in_canvas: wp.p_in_canvas,
       }
     });
   }
 
   function vacuous_down(): GameState {
-    return produce(state, s => { s.mouseState = { t: 'down', p: wp.p_in_canvas }; });
+    return produce(state, s => { s.mouseState = { t: 'down', p_in_canvas: wp.p_in_canvas }; });
   }
 
   switch (wp.t) {
@@ -125,7 +125,7 @@ export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: numbe
           s.mouseState = {
             t: 'drag_selection',
             orig_p: wp.p_in_canvas,
-            p: wp.p_in_canvas,
+            p_in_canvas: wp.p_in_canvas,
           }
         });
       }
@@ -143,8 +143,8 @@ export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: numbe
               s.mouseState = {
                 t: 'drag_main_tile',
                 id: tile.id!,
-                orig_p: wp.p_in_canvas,
-                p: wp.p_in_canvas,
+                orig_p_in_canvas: wp.p_in_canvas,
+                p_in_canvas: wp.p_in_canvas,
               }
             });
           }
@@ -168,8 +168,8 @@ export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: numbe
           s.mouseState = {
             t: 'drag_hand_tile',
             id: tiles[p_in_hand_int.y].id!, // FIXME undefined
-            orig_p: wp.p_in_canvas,
-            p: wp.p_in_canvas,
+            orig_p_in_canvas: wp.p_in_canvas,
+            p_in_canvas: wp.p_in_canvas,
           }
         });
       }
@@ -214,7 +214,7 @@ export function reduceGameAction(state: GameState, action: GameAction): effectfu
     }
     case 'mouseUp': return gs(resolveMouseup(state));
     case 'mouseMove': return gs(produce(state, s => {
-      s.mouseState.p = action.p;
+      s.mouseState.p_in_canvas = action.p;
     }));
     case 'repaint':
       if (state.panic !== undefined) {

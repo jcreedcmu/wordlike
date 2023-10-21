@@ -7,12 +7,12 @@ import { Grid, LocatedWord, mkGrid, mkGridOf } from './grid';
 import { Layer, Overlay, mkLayer, mkOverlay } from './layer';
 
 export type MouseState =
-  | { t: 'up', p: Point }
-  | { t: 'down', p: Point }
-  | { t: 'drag_world', orig_p: Point, p: Point }
-  | { t: 'drag_selection', orig_p: Point, p: Point }
-  | { t: 'drag_main_tile', orig_p: Point, p: Point, id: string }
-  | { t: 'drag_hand_tile', orig_p: Point, p: Point, id: string }
+  | { t: 'up', p_in_canvas: Point }
+  | { t: 'down', p_in_canvas: Point }
+  | { t: 'drag_world', orig_p: Point, p_in_canvas: Point }
+  | { t: 'drag_selection', orig_p: Point, p_in_canvas: Point }
+  | { t: 'drag_main_tile', orig_p_in_canvas: Point, p_in_canvas: Point, id: string }
+  | { t: 'drag_hand_tile', orig_p_in_canvas: Point, p_in_canvas: Point, id: string }
   ;
 
 // If I need to add more state around settings, menus, saving, etc.,
@@ -94,7 +94,7 @@ export function mkGameState(seed?: number): GameState {
       scale: { x: 48, y: 48 },
       translate: { x: 200, y: 240 }
     },
-    mouseState: { t: 'up', p: { x: 0, y: 0 } },
+    mouseState: { t: 'up', p_in_canvas: { x: 0, y: 0 } },
     bonusLayer: mkLayer(bonusGenerator),
     bonusOverlay: mkOverlay<Bonus>(),
     score: 0,

@@ -148,7 +148,7 @@ export function drawOfState(state: GameState): GameState {
 }
 
 export function killTileOfState(state: GameState): GameState {
-  const p_in_world_int = vm(apply(inverse(state.canvas_from_world), state.mouseState.p), Math.floor);
+  const p_in_world_int = vm(apply(inverse(state.canvas_from_world), state.mouseState.p_in_canvas), Math.floor);
   const tile = get_main_tiles(state).find(tile => vequal(tile.p_in_world_int, p_in_world_int));
   if (tile == undefined || tile.id == undefined) // FIXME: eventually tile.id should be mandatory
     return state;

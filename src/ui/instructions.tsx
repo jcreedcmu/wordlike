@@ -119,7 +119,7 @@ function exampleState(): GameState {
     },
     mouseState: {
       t: "up",
-      p: {
+      p_in_canvas: {
         x: 962,
         y: 88
       }
