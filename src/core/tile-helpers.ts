@@ -2,6 +2,7 @@ import { Draft } from "immer";
 import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { GameState, HandTile, Location, MainTile, Tile, TileEntity, TileEntityOptionalId, TileOptionalId } from "./state";
+import { getOverlay } from "./layer";
 
 // FIXME: global counter
 let tileIdCounter = 1000;
@@ -135,4 +136,15 @@ export function putTileInHand(state: GameState, id: string, ix: number): GameSta
 
 export function removeAllTiles(state: GameState): GameState {
   return produce(state, s => { s.tile_entities = {}; });
+}
+
+export function isSelectedForDrag(state: GameState, tile: TileEntity): boolean {
+  if (state.mouseState.t != 'drag_tile')
+    return false;
+  if (state.selected === undefined) {
+    return state.mouseState.id == tile.id;
+  }
+  else {
+    return state.mouseState.id == tile.id || tile.loc.t == 'world' && getOverlay(state.selected, tile.loc.p_in_world_int) !== undefined;
+  }
 }

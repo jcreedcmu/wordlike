@@ -2,7 +2,7 @@ import { getPanicFraction } from "../core/clock";
 import { LocatedWord, getGrid } from "../core/grid";
 import { getOverlay, getOverlayLayer } from "../core/layer";
 import { GameState, Tile, TileEntity } from "../core/state";
-import { getTileId, get_hand_tiles, get_main_tiles, get_tiles } from "../core/tile-helpers";
+import { getTileId, get_hand_tiles, get_main_tiles, get_tiles, isSelectedForDrag } from "../core/tile-helpers";
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
@@ -19,6 +19,7 @@ export function paintWithScale(ci: CanvasInfo, state: GameState) {
   rawPaint(ci, state);
   d.restore();
 }
+
 
 export function rawPaint(ci: CanvasInfo, state: GameState) {
 
@@ -70,24 +71,25 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
 
   // draw tiles
   get_tiles(state).forEach(tile => {
-    if (!(ms.t == 'drag_tile' && ms.id == tile.id!)) {
-      let opts = undefined;
-      if (tile.loc.t == 'world') {
-        opts = {
-          connected: getGrid(state.connectedSet, tile.loc.p_in_world_int) ?? false,
-          selected: state.selected ? getOverlay(state.selected, tile.loc.p_in_world_int) : undefined
-        };
+    if (isSelectedForDrag(state, tile))
+      return;
+    let opts = undefined;
+    if (tile.loc.t == 'world') {
+      opts = {
+        connected: getGrid(state.connectedSet, tile.loc.p_in_world_int) ?? false,
+        selected: state.selected ? getOverlay(state.selected, tile.loc.p_in_world_int) : undefined
+      };
 
-        d.save();
-        d.clip(worldClip);
-      }
-
-      drawTile(d, canvas_from_tile(tile), tile, opts);
-
-      if (tile.loc.t == 'world') {
-        d.restore();
-      }
+      d.save();
+      d.clip(worldClip);
     }
+
+    drawTile(d, canvas_from_tile(tile), tile, opts);
+
+    if (tile.loc.t == 'world') {
+      d.restore();
+    }
+
   });
 
   // draw invalid words
@@ -131,9 +133,6 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   );
   d.stroke();
   d.restore();
-
-
-
 
   // draw dragged tile on top
   if (ms.t == 'drag_tile') {
