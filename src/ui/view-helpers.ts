@@ -37,6 +37,9 @@ export function drag_canvas_from_canvas_of_mouse_state(state: MouseState): SE2 {
 //
 // - tile1_from_canvas * p1_in_canvas = tile0_from_canvas * p0_in_canvas
 // - tile1_from_canvas's scale factor is the same as that of local1_from_canvas
+//
+// tile is synonymous with tile0: it's the coordinate system of the tile before it was dragged
+// drag_tile is synonymous with tile1: it's the coordinate system of the tile being dragged
 export function canvas_from_drag_tile(state: GameState, ms: MouseState): SE2 {
   switch (ms.t) {
     case 'drag_tile':
@@ -45,8 +48,20 @@ export function canvas_from_drag_tile(state: GameState, ms: MouseState): SE2 {
       const local1_from_canvas = wp1.local_from_canvas;
       const local0_from_tile0 = translate(vm(wp0.p_in_local, Math.floor));
       const tile0_from_canvas = compose(inverse(local0_from_tile0), wp0.local_from_canvas);
-      const rv = inverse(matchScale(local1_from_canvas, wp1.p_in_canvas, apply(tile0_from_canvas, wp0.p_in_canvas)));
-      return rv;
+      const canvas_from_tile1 = inverse(matchScale(local1_from_canvas, wp1.p_in_canvas, apply(tile0_from_canvas, wp0.p_in_canvas)));
+      return canvas_from_tile1;
+      break;
+    default: return ident();
+  }
+}
+
+export function tile_from_drag_tile(state: GameState, ms: MouseState): SE2 {
+  switch (ms.t) {
+    case 'drag_tile':
+      const wp0 = getWidgetPoint(state, ms.orig_p_in_canvas);
+      const local0_from_tile0 = translate(vm(wp0.p_in_local, Math.floor));
+      const tile0_from_canvas = compose(inverse(local0_from_tile0), wp0.local_from_canvas);
+      return compose(tile0_from_canvas, canvas_from_drag_tile(state, ms));
       break;
     default: return ident();
   }
