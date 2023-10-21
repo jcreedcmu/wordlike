@@ -14,9 +14,15 @@ import { Overlay, mkOverlay, setOverlay } from './layer';
 import { GameState, SceneState, mkGameSceneState } from './state';
 import { addWorldTile, checkValid, drawOfState, getTileId, get_main_tiles, isOccupied, killTileOfState, moveTile, removeTile, setTilePosition, setWorldTiles } from './state-helpers';
 
-// FIXME: factor out the mouseState setting
 function resolveMouseup(state: GameState): GameState {
+  return produce(resolveMouseupInner(state), s => {
+    s.mouseState = { t: 'up', p: state.mouseState.p };
+  });
+}
+
+function resolveMouseupInner(state: GameState): GameState {
   const ms = state.mouseState;
+
   switch (ms.t) {
     case 'drag_selection': {
       const small_rect_in_canvas = boundRect([ms.orig_p, ms.p]);
@@ -32,18 +38,16 @@ function resolveMouseup(state: GameState): GameState {
       });
       return produce(state, s => {
         s.selected = selected;
-        s.mouseState = { t: 'up', p: ms.p };
       });
     }
     case 'drag_world': {
 
-      const new_canvas_from_world = compose(pan_canvas_from_canvas_of_mouse_state(state.mouseState), state.canvas_from_world);
+      const new_canvas_from_world = compose(pan_canvas_from_canvas_of_mouse_state(ms), state.canvas_from_world);
 
       return produce(state, s => {
         s.canvas_from_world = new_canvas_from_world;
-        s.mouseState = { t: 'up', p: ms.p };
       });
-    } break;
+    }
 
     case 'drag_main_tile': {
 
@@ -55,9 +59,7 @@ function resolveMouseup(state: GameState): GameState {
           canvas_from_drag_tile(state)).translate,
           Math.round);
 
-        const afterDrop = produce(moveTile(state, ms.id, new_tile_in_world_int), s => {
-          s.mouseState = { t: 'up', p: ms.p };
-        });
+        const afterDrop = moveTile(state, ms.id, new_tile_in_world_int);
         return checkValid(afterDrop);
       }
       else {
@@ -70,12 +72,11 @@ function resolveMouseup(state: GameState): GameState {
         const tile = getTileId(state, ms.id);
         const afterDrop = produce(removeTile(state, ms.id), s => {
           s.hand_tiles.splice(new_tile_in_hand_int.y, 0, tile);
-          s.mouseState = { t: 'up', p: ms.p };
         });
         return checkValid(afterDrop);
       }
 
-    } break;
+    }
 
     case 'drag_hand_tile': {
 
@@ -93,28 +94,16 @@ function resolveMouseup(state: GameState): GameState {
             s.hand_tiles.splice(ms.ix, 1);
             addWorldTile(s, { ...tile, p_in_world_int: new_tile_in_world_int });
           }
-          s.mouseState = { t: 'up', p: ms.p };
         });
 
         return checkValid(afterDrop);
       }
       else {
-        return produce(state, s => {
-          s.mouseState = { t: 'up', p: ms.p };
-        });
+        return state;
       }
     }
-
-    case 'up': {
-      // no drag to resolve
-      return produce(state, s => { s.mouseState = { t: 'up', p: ms.p }; });
-    } break;
-
-
-    case 'down': {
-      return produce(state, s => { s.mouseState = { t: 'up', p: ms.p }; });
-    } break;
-
+    case 'up': return state; // no drag to resolve
+    case 'down': return state;
   }
 }
 
