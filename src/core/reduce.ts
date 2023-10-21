@@ -62,7 +62,7 @@ function resolveMouseupInner(state: GameState): GameState {
 
       const wp = getWidgetPoint(state, ms.p_in_canvas);
       if (wp.t == 'world') {
-        // effectively the same as the purely translational world_from_tile
+
         const new_tile_in_world_int: Point = vm(compose(
           inverse(state.canvas_from_world),
           canvas_from_drag_tile(state, state.mouseState)).translate,
@@ -75,7 +75,10 @@ function resolveMouseupInner(state: GameState): GameState {
         return checkValid(afterDrop);
       }
       else {
-        // effectively the same as the purely translational hand_from_tile
+        // Can't drag multiple things into hand
+        if (state.selected)
+          return state;
+
         const new_tile_in_hand_int: Point = vm(compose(
           inverse(canvas_from_hand()),
           canvas_from_drag_tile(state, state.mouseState)).translate,
