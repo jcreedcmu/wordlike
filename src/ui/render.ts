@@ -1,6 +1,6 @@
 import { getPanicFraction } from "../core/clock";
 import { LocatedWord, getGrid } from "../core/grid";
-import { getOverlay, getOverlayLayer } from "../core/layer";
+import { getOverlay, getOverlayLayer, overlayForEach } from "../core/layer";
 import { GameState, Tile, TileEntity } from "../core/state";
 import { getTileId, get_hand_tiles, get_main_tiles, get_tiles, isSelectedForDrag } from "../core/tile-helpers";
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
@@ -136,10 +136,17 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
 
   // draw dragged tile on top
   if (ms.t == 'drag_tile') {
+    if (state.selected) {
+      overlayForEach(state.selected, p => {
+
+      });
+    }
+
     const tile = getTileId(state, ms.id);
     drawTile(d,
       canvas_from_drag_tile(state, state.mouseState),
       tile);
+
   }
 
   // draw score

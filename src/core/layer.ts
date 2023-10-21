@@ -52,3 +52,9 @@ export function getOverlayLayer<T>(layer1: Overlay<T>, layer2: Layer<T>, p: Poin
 export function getOverlay<T>(layer: Overlay<T>, p: Point): T | undefined {
   return layer.cells[unparseCoord(p)];
 }
+
+export function overlayForEach<T>(layer: Overlay<T>, kont: (p: Point) => void): void {
+  Object.keys(layer.cells).forEach(k => {
+    kont(parseCoord(k));
+  });
+}
