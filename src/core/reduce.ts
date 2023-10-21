@@ -16,6 +16,9 @@ import { addWorldTiles, checkValid, drawOfState, isOccupied, killTileOfState } f
 import { get_hand_tiles, get_main_tiles, putTileInHand, putTileInWorld, removeAllTiles } from "./tile-helpers";
 
 function resolveMouseup(state: GameState): GameState {
+  // FIXME: Setting the mouse state to up *before* calling
+  // resolveMouseupInner had some problems I think. I should investigate
+  // why.
   return produce(resolveMouseupInner(state), s => {
     s.mouseState = { t: 'up', p_in_canvas: state.mouseState.p_in_canvas };
   });
@@ -158,7 +161,7 @@ export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: numbe
       const p_in_hand_int = vm(wp.p_in_local, Math.floor);
       const tiles = get_hand_tiles(state);
       if (p_in_hand_int.x == 0 && p_in_hand_int.y >= 0 && p_in_hand_int.y < tiles.length) {
-        return produce(state, s => {
+        return produce(deselect(state), s => {
           s.mouseState = {
             t: 'drag_tile',
             orig_loc: { t: 'hand', p_in_hand_int },
@@ -169,7 +172,7 @@ export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: numbe
         });
       }
       else
-        return drawOfState(state);
+        return drawOfState(deselect(state));
     }
   }
 }
