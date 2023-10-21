@@ -12,7 +12,7 @@ export type MouseState =
   | { t: 'drag_world', orig_p: Point, p: Point }
   | { t: 'drag_selection', orig_p: Point, p: Point }
   | { t: 'drag_main_tile', orig_p: Point, p: Point, id: string }
-  | { t: 'drag_hand_tile', orig_p: Point, p: Point, ix: number }
+  | { t: 'drag_hand_tile', orig_p: Point, p: Point, id: string }
   ;
 
 // If I need to add more state around settings, menus, saving, etc.,
@@ -50,9 +50,14 @@ export type TileEntity = {
   letter: string,
 };
 
+export type TileEntityOptionalId = {
+  id: string | undefined,
+  loc: Location,
+  letter: string,
+};
+
 export type GameState = {
   tile_entities: Record<string, TileEntity>,
-  hand_tiles: Tile[],
   invalidWords: LocatedWord[],
   connectedSet: Grid<boolean>,
   energies: Energies,
@@ -85,7 +90,6 @@ export function mkGameState(seed?: number): GameState {
     connectedSet: mkGridOf([]),
     energies: initialEnergies(),
     seed,
-    hand_tiles: [],
     canvas_from_world: {
       scale: { x: 48, y: 48 },
       translate: { x: 200, y: 240 }

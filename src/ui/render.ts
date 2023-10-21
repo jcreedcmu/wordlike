@@ -2,7 +2,7 @@ import { getPanicFraction } from "../core/clock";
 import { LocatedWord, getGrid } from "../core/grid";
 import { getOverlay, getOverlayLayer } from "../core/layer";
 import { GameState, Tile } from "../core/state";
-import { getTileId, get_main_tiles } from "../core/state-helpers";
+import { getTileId, get_hand_tiles, get_main_tiles } from "../core/state-helpers";
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
@@ -107,8 +107,8 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   d.fillStyle = '#eeeeee';
   d.fillRect(hand_bds_in_canvas.p.x, hand_bds_in_canvas.p.y, hand_bds_in_canvas.sz.x, hand_bds_in_canvas.sz.y);
 
-  state.hand_tiles.forEach((tile, ix) => {
-    if (!(ms.t == 'drag_hand_tile' && ms.ix == ix)) {
+  get_hand_tiles(state).forEach((tile, ix) => {
+    if (!(ms.t == 'drag_hand_tile' && ms.id == tile.id)) {
       const hand_from_tile = translate({ x: 0, y: ix });
       drawTile(d, compose(canvas_from_hand(), hand_from_tile), tile);
     }
@@ -123,7 +123,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   }
 
   if (ms.t == 'drag_hand_tile') {
-    const tile = state.hand_tiles[ms.ix];
+    const tile = getTileId(state, ms.id);
     drawTile(d,
       canvas_from_drag_tile(state),
       tile);

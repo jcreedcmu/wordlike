@@ -1,6 +1,6 @@
 import { reduce } from "../src/core/reduce";
 import { GameState, mkGameState } from "../src/core/state";
-import { addWorldTile, checkValid, moveTile, removeTile, setTilePosition, setWorldTiles } from "../src/core/state-helpers";
+import { addWorldTile, checkValid, removeTile, addWorldTiles, putTileInWorld } from "../src/core/state-helpers";
 import { debugTiles } from "../src/util/debug";
 import { produce } from "../src/util/produce";
 
@@ -52,7 +52,7 @@ describe('addWorldTile', () => {
 describe('moveTile', () => {
   test('should work correctly', () => {
     let state = twoTileState();
-    state = moveTile(state, '2', { x: 3, y: 3 });
+    state = putTileInWorld(state, '2', { x: 3, y: 3 });
     expect(state.tile_entities).toEqual({
       '1': {
         id: '1',
@@ -83,7 +83,7 @@ describe('moveTile', () => {
 
 describe('removeTile', () => {
   test('should work correctly', () => {
-    const state = checkValid(setWorldTiles(mkGameState(), debugTiles()));
+    const state = checkValid(addWorldTiles(mkGameState(), debugTiles()));
     const state2 = removeTile(state, Object.keys(state.tile_entities)[0]);
     expect(Object.keys(state2.tile_entities).length).toBe(Object.keys(state.tile_entities).length - 1);
   });

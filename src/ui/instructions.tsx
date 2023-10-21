@@ -6,7 +6,7 @@ import { PANIC_INTERVAL_MS } from '../core/clock';
 import { mkGridOf } from '../core/grid';
 import { mkLayer } from '../core/layer';
 import { GameState, Tile } from '../core/state';
-import { checkValid, setWorldTiles } from '../core/state-helpers';
+import { checkValid, addWorldTiles, addHandTile, addHandTiles } from '../core/state-helpers';
 import { DEBUG } from '../util/debug';
 import { relpos } from '../util/dutil';
 import { Point } from '../util/types';
@@ -107,11 +107,6 @@ function exampleState(): GameState {
     ],
     seed: 1533311107,
     tile_entities: {},
-    hand_tiles: [
-      { letter: "e", p_in_world_int: { x: 0, y: 0 } },
-      { letter: "t", p_in_world_int: { x: 0, y: 1 } },
-      { letter: "a", p_in_world_int: { x: 0, y: 2 } },
-    ],
     canvas_from_world: {
       scale: {
         x: 39.6694214876033,
@@ -192,7 +187,12 @@ function exampleState(): GameState {
     { letter: "j", p_in_world_int: { x: 6, y: 6 } },
     { letter: "o", p_in_world_int: { x: 7, y: 6 } }
   ];
-  return checkValid(setWorldTiles(state, tiles));
+  const handTiles: Tile[] = [
+    { letter: "e", p_in_world_int: { x: 0, y: 0 } },
+    { letter: "t", p_in_world_int: { x: 0, y: 1 } },
+    { letter: "a", p_in_world_int: { x: 0, y: 2 } },
+  ];
+  return checkValid(addHandTiles(addWorldTiles(state, tiles), handTiles));
 }
 
 function drawBubble(ci: CanvasInfo, text: string, textCenter: Point, coneApex: Point): void {
