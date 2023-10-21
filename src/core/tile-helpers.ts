@@ -16,6 +16,10 @@ export function getTileId(state: GameState, id: string): Tile {
   return tileOfTileEntity(state.tile_entities[id]);
 }
 
+export function getTileEntity(state: GameState, id: string): TileEntity {
+  return state.tile_entities[id];
+}
+
 export function get_main_tiles(state: GameState): MainTile[] {
   const keys: string[] = Object.keys(state.tile_entities);
   function mainTilesOfString(k: string): MainTile[] {

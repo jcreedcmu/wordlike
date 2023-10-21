@@ -2,7 +2,7 @@ import { getPanicFraction } from "../core/clock";
 import { LocatedWord, getGrid } from "../core/grid";
 import { getOverlay, getOverlayLayer } from "../core/layer";
 import { GameState, Tile, TileEntity } from "../core/state";
-import { getTileId, get_hand_tiles, get_main_tiles } from "../core/tile-helpers";
+import { getTileEntity, getTileId, get_hand_tiles, get_main_tiles } from "../core/tile-helpers";
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
@@ -54,7 +54,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   get_main_tiles(state).forEach((tile, ix) => {
     if (!(ms.t == 'drag_tile' && ms.id == tile.id!)) {
       const world_from_tile = translate(tile.loc.p_in_world_int);
-      drawTileEntity(
+      drawTile(
         d,
         compose(pan_canvas_from_world, world_from_tile),
         tile,
@@ -110,13 +110,13 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   get_hand_tiles(state).forEach((tile, ix) => {
     if (!(ms.t == 'drag_tile' && ms.id == tile.id)) {
       const hand_from_tile = translate({ x: 0, y: ix });
-      drawTileEntity(d, compose(canvas_from_hand(), hand_from_tile), tile);
+      drawTile(d, compose(canvas_from_hand(), hand_from_tile), tile);
     }
   });
 
   // draw dragged tile on top
   if (ms.t == 'drag_tile') {
-    const tile = getTileId(state, ms.id);
+    const tile = getTileEntity(state, ms.id);
     drawTile(d,
       canvas_from_drag_tile(state),
       tile);
@@ -205,27 +205,7 @@ function drawInvalidWord(d: CanvasRenderingContext2D, canvas_from_world: SE2, wo
     rect_in_canvas.sz.x - 2 * OFF, rect_in_canvas.sz.y - 2 * OFF);
 }
 
-function drawTile(d: CanvasRenderingContext2D, canvas_from_tile: SE2, tile: Tile, connected?: boolean, selected?: boolean) {
-  const rect_in_tile: Rect = { p: { x: 0, y: 0 }, sz: { x: 1, y: 1 } };
-  const rect_in_canvas = apply_to_rect(canvas_from_tile, rect_in_tile);
-
-  const { fg, bg } = colorsOfTile({ connected, selected });
-  d.fillStyle = bg;
-  d.fillRect(rect_in_canvas.p.x + 0.5, rect_in_canvas.p.y + 0.5, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
-  d.strokeStyle = fg;
-  d.lineWidth = 1;
-  d.strokeRect(rect_in_canvas.p.x + 0.5, rect_in_canvas.p.y + 0.5, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
-
-  d.fillStyle = fg;
-  d.textBaseline = 'middle';
-  d.textAlign = 'center';
-  const fontSize = Math.round(0.6 * canvas_from_tile.scale.x);
-  d.font = `bold ${fontSize}px sans-serif`;
-  d.fillText(tile.letter.toUpperCase(), rect_in_canvas.p.x + rect_in_canvas.sz.x / 2 + 0.5,
-    rect_in_canvas.p.y + rect_in_canvas.sz.y / 2 + 1.5);
-}
-
-function drawTileEntity(d: CanvasRenderingContext2D, canvas_from_tile: SE2, tile: TileEntity, connected?: boolean, selected?: boolean) {
+function drawTile(d: CanvasRenderingContext2D, canvas_from_tile: SE2, tile: TileEntity, connected?: boolean, selected?: boolean) {
   const rect_in_tile: Rect = { p: { x: 0, y: 0 }, sz: { x: 1, y: 1 } };
   const rect_in_canvas = apply_to_rect(canvas_from_tile, rect_in_tile);
 
