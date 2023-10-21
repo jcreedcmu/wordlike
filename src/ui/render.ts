@@ -9,7 +9,7 @@ import { Point, Rect } from "../util/types";
 import { boundRect } from "../util/util";
 import { vadd, vm, vscale, vtrans } from "../util/vutil";
 import { CanvasInfo } from "./use-canvas";
-import { canvas_from_drag_tile, pan_canvas_from_world_of_state } from "./view-helpers";
+import { canvas_from_drag_tile, pan_canvas_from_world_of_state, tile_from_drag_tile } from "./view-helpers";
 import { canvas_bds_in_canvas, canvas_from_hand, hand_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
 
 export function paintWithScale(ci: CanvasInfo, state: GameState) {
@@ -137,7 +137,12 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   // draw dragged tile on top
   if (ms.t == 'drag_tile') {
     if (state.selected) {
-      overlayForEach(state.selected.overlay, p => {
+      state.selected.selectedIds.forEach(id => {
+        const tile = getTileId(state, id);
+
+        drawTile(d,
+          compose(canvas_from_tile(tile), tile_from_drag_tile(state, state.mouseState)),
+          tile);
 
       });
     }
