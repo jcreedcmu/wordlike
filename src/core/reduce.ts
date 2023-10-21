@@ -176,7 +176,7 @@ export function reduceGameAction(state: GameState, action: GameAction): effectfu
       }
       if (action.code == 'k') {
         return gs(state.score > 0 ?
-          killTileOfState(state) : state);
+          killTileOfState(state, getWidgetPoint(state, state.mouseState.p_in_canvas)) : state);
       }
       if (action.code == 'd') {
         return gs(checkValid(addWorldTiles(removeAllTiles(state), debugTiles())));

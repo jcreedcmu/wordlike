@@ -1,9 +1,10 @@
+import { WidgetPoint, getWidgetPoint } from "../ui/widget-helpers";
 import { DEBUG, logger } from "../util/debug";
 import { produce } from "../util/produce";
 import { apply, inverse } from "../util/se2";
 import { Point } from "../util/types";
 import { next_rand } from "../util/util";
-import { vequal, vm } from "../util/vutil";
+import { vequal, vint, vm } from "../util/vutil";
 import { getAssets } from "./assets";
 import { Energies, getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, Grid, gridKeys, mkGrid, mkGridOf } from "./grid";
@@ -41,14 +42,34 @@ export function drawOfState(state: GameState): GameState {
   }));
 }
 
-export function killTileOfState(state: GameState): GameState {
-  const p_in_world_int = vm(apply(inverse(state.canvas_from_world), state.mouseState.p_in_canvas), Math.floor);
-  const tile = get_main_tiles(state).find(tile => vequal(tile.p_in_world_int, p_in_world_int));
-  if (tile == undefined || tile.id == undefined) // FIXME: eventually tile.id should be mandatory
-    return state;
-  return checkValid(produce(removeTile(state, tile.id), s => {
-    s.score--;
-  }));
+export function killTileOfState(state: GameState, wp: WidgetPoint): GameState {
+
+  switch (wp.t) {
+    case 'world': {
+      const p_in_world_int = vint(wp.p_in_local);
+      const tile = get_main_tiles(state).find(tile => vequal(tile.p_in_world_int, p_in_world_int));
+      if (tile == undefined || tile.id == undefined) // FIXME: eventually tile.id should be mandatory
+        return state;
+      return checkValid(produce(removeTile(state, tile.id), s => {
+        s.score--;
+      }));
+    }
+    case 'hand': {
+      const p_in_hand_int = vint(wp.p_in_local);
+      const hand_tiles = get_hand_tiles(state);
+      if (p_in_hand_int.x == 0 && p_in_hand_int.y < hand_tiles.length) {
+        const tile = hand_tiles[p_in_hand_int.y];
+        if (tile == undefined || tile.id == undefined) // FIXME: eventually tile.id should be mandatory
+          return state;
+        return checkValid(produce(removeTile(state, tile.id), s => {
+          s.score--;
+        }));
+      }
+      else {
+        return state;
+      }
+    }
+  }
 }
 
 function resolveValid(state: GameState): GameState {

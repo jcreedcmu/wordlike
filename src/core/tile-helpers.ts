@@ -40,17 +40,29 @@ export function get_hand_tiles(state: GameState): Tile[] {
         p_in_world_int: tile.loc.p_in_hand_int,
         letter: tile.letter
       }];
-
     else
       return [];
   }).sort((a, b) => a.p_in_world_int.y - b.p_in_world_int.y);
 }
 
 export function removeTile(state: GameState, id: string): GameState {
-  return produce(state, s => {
-    delete s.tile_entities[id];
-  });
+  const loc = state.tile_entities[id].loc;
+  switch (loc.t) {
+    case 'world':
+      return produce(state, s => {
+        delete s.tile_entities[id];
+      });
+    case 'hand':
+      const handTiles = get_hand_tiles(state);
+      return produce(state, s => {
+        for (let i = loc.p_in_hand_int.y; i < handTiles.length; i++) {
+          s.tile_entities[handTiles[i].id!].loc = { t: 'hand', p_in_hand_int: { x: 0, y: i - 1 } }; // FIXME undefined
+        }
+        delete s.tile_entities[id];
+      });
+  }
 }
+
 function ensureId(tile: TileEntityOptionalId): TileEntity {
   const id = tile.id ?? `tile${tileIdCounter++}`;
   return { ...tile, id };
