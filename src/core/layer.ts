@@ -58,3 +58,15 @@ export function overlayForEach<T>(layer: Overlay<T>, kont: (p: Point) => void): 
     kont(parseCoord(k));
   });
 }
+
+export function overlayPoints<T>(layer: Overlay<T>): Point[] {
+  return Object.keys(layer.cells).map(k => parseCoord(k));
+}
+
+export function mkOverlayFrom(points: Point[]): Overlay<boolean> {
+  const layer: Overlay<boolean> = mkOverlay();
+  points.forEach(p => {
+    setOverlay(layer, p, true);
+  });
+  return layer;
+}

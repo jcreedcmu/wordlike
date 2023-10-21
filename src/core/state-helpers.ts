@@ -7,8 +7,8 @@ import { getAssets } from "./assets";
 import { getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
 import { getOverlayLayer, setOverlay } from "./layer";
-import { GameState, Tile } from "./state";
-import { addHandTile, addWorldTile, ensureTileId, get_hand_tiles, get_main_tiles, removeTile } from "./tile-helpers";
+import { GameState, Tile, TileEntity } from "./state";
+import { addHandTile, addWorldTile, ensureTileId, get_hand_tiles, get_main_tiles, get_tiles, removeTile } from "./tile-helpers";
 
 export function addWorldTiles(state: GameState, tiles: Tile[]): GameState {
   return produce(state, s => {
@@ -26,8 +26,16 @@ export function addHandTiles(state: GameState, tiles: Tile[]): GameState {
   });
 }
 
+export function isCollision(tiles: TileEntity[], points: Point[]) {
+  return points.some(point => isOccupiedTiles(tiles, point));
+}
+
 export function isOccupied(state: GameState, p: Point): boolean {
-  return get_main_tiles(state).some(tile => vequal(tile.loc.p_in_world_int, p));
+  return isOccupiedTiles(get_tiles(state), p);
+}
+
+export function isOccupiedTiles(tiles: TileEntity[], p: Point): boolean {
+  return tiles.some(tile => tile.loc.t == 'world' && vequal(tile.loc.p_in_world_int, p));
 }
 
 export function drawOfState(state: GameState): GameState {

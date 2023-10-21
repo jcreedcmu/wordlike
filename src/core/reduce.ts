@@ -3,17 +3,17 @@ import { canvas_from_drag_tile, pan_canvas_from_canvas_of_mouse_state } from '..
 import { WidgetPoint, canvas_from_hand, getWidgetPoint } from '../ui/widget-helpers';
 import { debugTiles } from '../util/debug';
 import { produce } from '../util/produce';
-import { compose, composen, inverse, scale, translate } from '../util/se2';
+import { SE2, apply, compose, composen, inverse, scale, translate } from '../util/se2';
 import { apply_to_rect } from '../util/se2-extra';
 import { Point } from '../util/types';
 import { boundRect, pointInRect } from '../util/util';
 import { vadd, vequal, vm, vscale, vsub } from '../util/vutil';
 import { Action, Effect, GameAction } from './action';
 import { getPanicFraction } from './clock';
-import { Overlay, mkOverlay, setOverlay } from './layer';
-import { GameState, SceneState, SelectionState, mkGameSceneState } from './state';
-import { addWorldTiles, checkValid, drawOfState, isOccupied, killTileOfState } from './state-helpers';
-import { get_hand_tiles, get_main_tiles, putTileInHand, putTileInWorld, removeAllTiles } from "./tile-helpers";
+import { Overlay, mkOverlay, mkOverlayFrom, overlayPoints, setOverlay } from './layer';
+import { GameState, Location, SceneState, SelectionState, mkGameSceneState } from './state';
+import { addWorldTiles, checkValid, drawOfState, isCollision, isOccupied, killTileOfState } from './state-helpers';
+import { getTileId, get_hand_tiles, get_main_tiles, get_tiles, putTileInHand, putTileInWorld, removeAllTiles, setTileLoc } from "./tile-helpers";
 
 function resolveMouseup(state: GameState): GameState {
   // FIXME: Setting the mouse state to up *before* calling
@@ -63,16 +63,59 @@ function resolveMouseupInner(state: GameState): GameState {
       const wp = getWidgetPoint(state, ms.p_in_canvas);
       if (wp.t == 'world') {
 
-        const new_tile_in_world_int: Point = vm(compose(
-          inverse(state.canvas_from_world),
-          canvas_from_drag_tile(state, state.mouseState)).translate,
-          Math.round);
+        const selected = state.selected;
+        if (selected) {
 
-        const afterDrop = !isOccupied(state, new_tile_in_world_int)
-          ? putTileInWorld(state, ms.id, new_tile_in_world_int)
-          : state;
+          // FIXME: ensure the dragged tile is in the selection
+          const remainingTiles = get_tiles(state).filter(tile => !selected.selectedIds.includes(tile.id));
 
-        return checkValid(afterDrop);
+          const new_tile_in_world_int: Point = vm(compose(
+            inverse(state.canvas_from_world),
+            canvas_from_drag_tile(state, ms)).translate,
+            Math.round);
+          const old_tile_loc: Location = ms.orig_loc;
+          if (old_tile_loc.t != 'world') {
+            console.error(`Unexpected non-world tile`);
+            return state;
+          }
+          const old_tile_in_world_t = old_tile_loc.p_in_world_int;
+          const new_tile_from_old_tile: SE2 = translate(vsub(new_tile_in_world_int, old_tile_in_world_t));
+
+          const moves: { id: string, p_in_world_int: Point }[] = selected.selectedIds.flatMap(id => {
+            const tile = getTileId(state, id);
+            const loc = tile.loc;
+            if (loc.t == 'world') {
+              return [{ id, p_in_world_int: apply(new_tile_from_old_tile, loc.p_in_world_int) }];
+            }
+            else return [];
+          });
+
+          const tgts = moves.map(x => x.p_in_world_int);
+          if (isCollision(remainingTiles, tgts)) {
+            return state;
+          }
+
+          const afterDrop = produce(state, s => {
+            moves.forEach(({ id, p_in_world_int }) => {
+              setTileLoc(s, id, { t: 'world', p_in_world_int });
+            });
+            s.selected = { overlay: mkOverlayFrom(tgts), selectedIds: selected.selectedIds };
+          });
+          return checkValid(afterDrop);
+        }
+        else {
+          const new_tile_in_world_int: Point = vm(compose(
+            inverse(state.canvas_from_world),
+            canvas_from_drag_tile(state, ms)).translate,
+            Math.round);
+
+          const afterDrop = !isOccupied(state, new_tile_in_world_int)
+            ? putTileInWorld(state, ms.id, new_tile_in_world_int)
+            : state;
+          return checkValid(afterDrop);
+        }
+
+
       }
       else {
         // Can't drag multiple things into hand
@@ -81,7 +124,7 @@ function resolveMouseupInner(state: GameState): GameState {
 
         const new_tile_in_hand_int: Point = vm(compose(
           inverse(canvas_from_hand()),
-          canvas_from_drag_tile(state, state.mouseState)).translate,
+          canvas_from_drag_tile(state, ms)).translate,
           Math.round);
 
         return ms.orig_loc.t == 'world'
@@ -97,6 +140,10 @@ function resolveMouseupInner(state: GameState): GameState {
   }
 }
 
+function deselect(state: GameState): GameState {
+  return produce(state, s => { s.selected = undefined; });
+}
+
 export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number, mods: Set<string>): GameState {
 
   function drag_world(): GameState {
@@ -107,10 +154,6 @@ export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: numbe
         p_in_canvas: wp.p_in_canvas,
       }
     });
-  }
-
-  function deselect(state: GameState): GameState {
-    return produce(state, s => { s.selected = undefined; });
   }
 
   function vacuous_down(): GameState {
