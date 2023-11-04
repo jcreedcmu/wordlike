@@ -1,3 +1,5 @@
+import { GameState, State } from "./state";
+
 const tools = [
   'pointer',
   'hand',
@@ -12,4 +14,11 @@ export function toolOfIndex(index: number): Tool | undefined {
 
 export function indexOfTool(tool: Tool): number {
   return tools.findIndex(x => x == tool);
+}
+
+export function currentTool(state: GameState): Tool {
+  // state should be responsible for maintaining the invariant that
+  // tool index is always valid. Maybe instead I should store Tool in
+  // state, not toolIndex, idk.
+  return toolOfIndex(state.toolIndex)!;
 }

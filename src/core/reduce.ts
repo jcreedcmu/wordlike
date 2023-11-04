@@ -11,10 +11,10 @@ import { vadd, vequal, vm, vscale, vsub } from '../util/vutil';
 import { Action, Effect, GameAction } from './action';
 import { getPanicFraction } from './clock';
 import { Overlay, mkOverlay, mkOverlayFrom, overlayPoints, setOverlay } from './layer';
-import { GameState, Location, SceneState, SelectionState, mkGameSceneState } from './state';
+import { GameState, Location, SceneState, SelectionState, TileEntity, mkGameSceneState } from './state';
 import { addWorldTiles, checkValid, drawOfState, isCollision, isOccupied, killTileOfState } from './state-helpers';
 import { getTileId, get_hand_tiles, get_main_tiles, get_tiles, putTileInHand, putTileInWorld, removeAllTiles, setTileLoc } from "./tile-helpers";
-import { toolOfIndex } from './tools';
+import { Tool, currentTool, toolOfIndex } from './tools';
 
 function resolveMouseup(state: GameState): GameState {
   // FIXME: Setting the mouse state to up *before* calling
@@ -46,8 +46,9 @@ function resolveMouseupInner(state: GameState): GameState {
           selected.selectedIds.push(tile.id);
         }
       });
+      const realSelected = selected.selectedIds.length == 0 ? undefined : selected;
       return produce(state, s => {
-        s.selected = selected;
+        s.selected = realSelected;
       });
     }
     case 'drag_world': {
@@ -145,62 +146,86 @@ function deselect(state: GameState): GameState {
   return produce(state, s => { s.selected = undefined; });
 }
 
-export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number, mods: Set<string>): GameState {
 
-  function drag_world(): GameState {
-    return produce(state, s => {
+
+export type Intent =
+  | { t: 'dragTile', id: string }
+  | { t: 'vacuous' }
+  | { t: 'panWorld' }
+  | { t: 'killTile', id: string }
+  | { t: 'startSelection' }
+  ;
+
+function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number, mods: Set<string>, hoverTile: TileEntity | undefined): Intent {
+  switch (tool) {
+    case 'pointer':
+      if (button == 2)
+        return { t: 'panWorld' };
+      if (hoverTile) {
+        if (hoverTile.loc.t == 'world' && vequal(hoverTile.loc.p_in_world_int, { x: 0, y: 0 }))
+          return { t: 'panWorld' };
+        return { t: 'dragTile', id: hoverTile.id };
+      }
+      return { t: 'startSelection' };
+    case 'hand': return { t: 'panWorld' };
+    case 'dynamite':
+      if (hoverTile) {
+        return { t: 'killTile', id: hoverTile.id };
+      }
+      else {
+        return { t: 'vacuous' };
+      }
+  }
+}
+
+function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint): GameState {
+  const p_in_world_int = vm(wp.p_in_local, Math.floor);
+  switch (intent.t) {
+    case 'dragTile': return produce(state, s => {
+      s.mouseState = {
+        t: 'drag_tile',
+        orig_loc: { t: 'world', p_in_world_int },
+        id: intent.id,
+        orig_p_in_canvas: wp.p_in_canvas,
+        p_in_canvas: wp.p_in_canvas,
+      };
+    });
+    case 'vacuous': return vacuous_down(state, wp);
+    case 'panWorld': return produce(state, s => {
       s.mouseState = {
         t: 'drag_world',
         orig_p: wp.p_in_canvas,
         p_in_canvas: wp.p_in_canvas,
       }
     });
+    case 'killTile': return state.score > 0 ? killTileOfState(vacuous_down(state, wp), wp) : vacuous_down(state, wp);
+    case 'startSelection': return produce(deselect(state), s => {
+      s.mouseState = {
+        t: 'drag_selection',
+        orig_p: wp.p_in_canvas,
+        p_in_canvas: wp.p_in_canvas,
+      }
+    });
   }
+}
 
-  function vacuous_down(): GameState {
-    return produce(state, s => { s.mouseState = { t: 'down', p_in_canvas: wp.p_in_canvas }; });
-  }
+function vacuous_down(state: GameState, wp: WidgetPoint): GameState {
+  return produce(state, s => { s.mouseState = { t: 'down', p_in_canvas: wp.p_in_canvas }; });
+}
+
+export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number, mods: Set<string>): GameState {
 
   function reduceMouseDownInWorld(): GameState {
-    if (mods.has('ctrl')) {
-      return produce(deselect(state), s => {
-        s.mouseState = {
-          t: 'drag_selection',
-          orig_p: wp.p_in_canvas,
-          p_in_canvas: wp.p_in_canvas,
-        }
-      });
-    }
+    let hoverTile: TileEntity | undefined = undefined;
     const p_in_world_int = vm(wp.p_in_local, Math.floor);
-    if (button == 1) {
-      let i = 0;
-
-      for (const tile of get_main_tiles(state)) {
-        if (vequal(p_in_world_int, tile.loc.p_in_world_int)) {
-          if (vequal(p_in_world_int, { x: 0, y: 0 })) {
-            return drag_world();
-          }
-
-          return produce(state, s => {
-            s.mouseState = {
-              t: 'drag_tile',
-              orig_loc: { t: 'world', p_in_world_int },
-              id: tile.id!,
-              orig_p_in_canvas: wp.p_in_canvas,
-              p_in_canvas: wp.p_in_canvas,
-            }
-          });
-        }
-        i++;
+    for (const tile of get_main_tiles(state)) {
+      if (vequal(p_in_world_int, tile.loc.p_in_world_int)) {
+        hoverTile = tile;
+        break;
       }
-      return deselect(drag_world());
     }
-    else if (button == 2) {
-      return deselect(drag_world());
-    }
-    else {
-      return vacuous_down();
-    }
+    const intent = getIntentOfMouseDown(currentTool(state), wp, button, mods, hoverTile);
+    return reduceIntent(state, intent, wp);
   }
 
   function reduceMouseDownInHand(): GameState {
@@ -224,10 +249,10 @@ export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: numbe
   function reduceMouseDownInToolbar(toolIndex: number): GameState {
     const tool = toolOfIndex(toolIndex);
     if (tool !== undefined) {
-      return produce(vacuous_down(), s => { s.toolIndex = toolIndex; });
+      return produce(vacuous_down(state, wp), s => { s.toolIndex = toolIndex; });
     }
     else {
-      return vacuous_down();
+      return vacuous_down(state, wp);
     }
   }
 
