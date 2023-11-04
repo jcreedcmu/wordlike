@@ -133,7 +133,7 @@ export function Game(props: GameProps): JSX.Element {
   function cursorOfState(state: GameState): CursorType {
     const tool = currentTool(state);
     if (tool == 'dynamite') {
-      return 'url(/assets/dynamite-cursor.png) 16 16, pointer';
+      return 'url(assets/dynamite-cursor.png) 16 16, pointer';
     }
     if (tool == 'hand') {
       return 'grab';
