@@ -181,15 +181,23 @@ function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number, mods:
 function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint): GameState {
   const p_in_world_int = vm(wp.p_in_local, Math.floor);
   switch (intent.t) {
-    case 'dragTile': return produce(state, s => {
-      s.mouseState = {
-        t: 'drag_tile',
-        orig_loc: { t: 'world', p_in_world_int },
-        id: intent.id,
-        orig_p_in_canvas: wp.p_in_canvas,
-        p_in_canvas: wp.p_in_canvas,
-      };
-    });
+    case 'dragTile':
+      let state2 = state;
+      if (state.selected) {
+        // If we start dragging a tile not in the selection, we should deselect it first
+        if (!state.selected.selectedIds.includes(intent.id)) {
+          state2 = produce(state, s => { s.selected = undefined; });
+        }
+      }
+      return produce(state2, s => {
+        s.mouseState = {
+          t: 'drag_tile',
+          orig_loc: { t: 'world', p_in_world_int },
+          id: intent.id,
+          orig_p_in_canvas: wp.p_in_canvas,
+          p_in_canvas: wp.p_in_canvas,
+        };
+      });
     case 'vacuous': return vacuous_down(state, wp);
     case 'panWorld': return produce(state, s => {
       s.mouseState = {
