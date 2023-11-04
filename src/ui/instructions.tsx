@@ -61,12 +61,12 @@ function render(ci: CanvasInfo, props: CanvasProps) {
   rawPaint(ci, props.main);
 
   drawBubble(ci, `This is the origin.\nAll tiles must connect here, and\nthe tile cannot be moved once placed.`,
-    { x: 150, y: 100 }, { x: 70, y: 230 });
+    { x: 250, y: 100 }, { x: 170, y: 230 });
 
   drawBubble(ci, `This is your hand.\nDrag tiles from here to\nmake intersecting words.`,
     { x: 670, y: 197 }, { x: 732, y: 140 });
 
-  drawBubble(ci, `Click in this space to get more tiles.`,
+  drawBubble(ci, `Click in this space (or hit [spacebar])\n to get more tiles.`,
     { x: 670, y: 347 }, { x: 732, y: 290 });
 
   drawBubble(ci, `This is the panic bar. If it\nfills up all the way to\nthe right, you lose!`,
@@ -115,7 +115,7 @@ function exampleState(): GameState {
         y: 39.6694214876033
       },
       translate: {
-        x: 50.80991735537191,
+        x: 150.80991735537191,
         y: 215.56198347107437
       }
     },
