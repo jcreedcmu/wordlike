@@ -10,7 +10,7 @@ import { boundRect, pointInRect } from '../util/util';
 import { vadd, vequal, vm, vscale, vsub } from '../util/vutil';
 import { Action, Effect, GameAction } from './action';
 import { getPanicFraction } from './clock';
-import { Overlay, mkOverlay, mkOverlayFrom, overlayPoints, setOverlay } from './layer';
+import { Overlay, getOverlayLayer, mkOverlay, mkOverlayFrom, overlayPoints, setOverlay } from './layer';
 import { GameState, Location, SceneState, SelectionState, TileEntity, mkGameSceneState } from './state';
 import { addWorldTiles, checkValid, drawOfState, isCollision, isOccupied, killTileOfState } from './state-helpers';
 import { getTileId, get_hand_tiles, get_main_tiles, get_tiles, putTileInHand, putTileInWorld, removeAllTiles, setTileLoc } from "./tile-helpers";
@@ -152,15 +152,16 @@ export type Intent =
   | { t: 'dragTile', id: string }
   | { t: 'vacuous' }
   | { t: 'panWorld' }
-  | { t: 'killTile', id: string }
+  | { t: 'kill' }
   | { t: 'startSelection' }
   ;
 
-function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number, mods: Set<string>, hoverTile: TileEntity | undefined): Intent {
+function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number, mods: Set<string>, hoverTile: TileEntity | undefined, hoverBlock: boolean): Intent {
+  if (button == 2)
+    return { t: 'panWorld' };
+
   switch (tool) {
     case 'pointer':
-      if (button == 2)
-        return { t: 'panWorld' };
       if (hoverTile) {
         if (hoverTile.loc.t == 'world' && vequal(hoverTile.loc.p_in_world_int, { x: 0, y: 0 }))
           return { t: 'panWorld' };
@@ -169,8 +170,8 @@ function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number, mods:
       return { t: 'startSelection' };
     case 'hand': return { t: 'panWorld' };
     case 'dynamite':
-      if (hoverTile) {
-        return { t: 'killTile', id: hoverTile.id };
+      if (hoverTile || hoverBlock) {
+        return { t: 'kill' };
       }
       else {
         return { t: 'vacuous' };
@@ -206,7 +207,7 @@ function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint): GameSt
         p_in_canvas: wp.p_in_canvas,
       }
     });
-    case 'killTile': return state.score > 0 ? killTileOfState(vacuous_down(state, wp), wp) : vacuous_down(state, wp);
+    case 'kill': return state.score > 0 ? killTileOfState(vacuous_down(state, wp), wp) : vacuous_down(state, wp);
     case 'startSelection': return produce(deselect(state), s => {
       s.mouseState = {
         t: 'drag_selection',
@@ -232,7 +233,8 @@ export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: numbe
         break;
       }
     }
-    const intent = getIntentOfMouseDown(currentTool(state), wp, button, mods, hoverTile);
+    const hoverBlock = getOverlayLayer(state.bonusOverlay, state.bonusLayer, p_in_world_int) == 'block';
+    const intent = getIntentOfMouseDown(currentTool(state), wp, button, mods, hoverTile, hoverBlock);
     return reduceIntent(state, intent, wp);
   }
 
