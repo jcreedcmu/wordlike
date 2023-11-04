@@ -1,4 +1,4 @@
-import { Color, Point } from './types';
+import { Color, Point, Rect } from './types';
 import { vint, vm, vsub } from './vutil';
 
 export type Buffer = {
@@ -57,4 +57,15 @@ export function relpos(e: MouseEvent, c: HTMLElement): Point {
 export function rrelpos(e: React.MouseEvent): Point {
   const rect = e.currentTarget.getBoundingClientRect();
   return vint({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+}
+
+export function fillRect(d: CanvasRenderingContext2D, rect: Rect, color: string) {
+  d.fillStyle = color;
+  d.fillRect(rect.p.x, rect.p.y, rect.sz.x, rect.sz.y);
+}
+
+export function strokeRect(d: CanvasRenderingContext2D, rect: Rect, color: string, width: number = 1) {
+  d.strokeStyle = color;
+  d.lineWidth = width;
+  d.strokeRect(rect.p.x + 0.5, rect.p.y + 0.5, rect.sz.x, rect.sz.y);
 }

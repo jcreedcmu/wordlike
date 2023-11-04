@@ -25,7 +25,6 @@ export const toolbar_bds_in_canvas: Rect = {
 
 export const DEFAULT_TILE_SCALE = 48;
 
-
 export function canvas_from_hand(): SE2 {
   return {
     scale: { x: DEFAULT_TILE_SCALE, y: DEFAULT_TILE_SCALE },
@@ -33,14 +32,33 @@ export function canvas_from_hand(): SE2 {
   };
 }
 
+export function canvas_from_toolbar(): SE2 {
+  return {
+    scale: { x: 1, y: 1 },
+    translate: toolbar_bds_in_canvas.p,
+  };
+}
+
 // p is in the local coordinate system, i.e. "world" or "hand"
 export type WidgetPoint =
   | { t: 'world', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2 }
   | { t: 'hand', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2 }
+  | { t: 'toolbar', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2, toolIndex: number }
   ;
 
 export function getWidgetPoint(state: GameState, p_in_canvas: Point): WidgetPoint {
-  if (pointInRect(p_in_canvas, world_bds_in_canvas)) {
+  if (pointInRect(p_in_canvas, toolbar_bds_in_canvas)) {
+    const toolbar_from_canvas = inverse(canvas_from_toolbar());
+    const p_in_local = apply(toolbar_from_canvas, p_in_canvas);
+    return {
+      t: 'toolbar',
+      p_in_local,
+      p_in_canvas,
+      local_from_canvas: toolbar_from_canvas,
+      toolIndex: Math.floor(p_in_local.y / toolbar_bds_in_canvas.sz.x),
+    }
+  }
+  else if (pointInRect(p_in_canvas, world_bds_in_canvas)) {
     return {
       t: 'world',
       p_in_local: apply(inverse(state.canvas_from_world), p_in_canvas),

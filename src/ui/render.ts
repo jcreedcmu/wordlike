@@ -4,6 +4,7 @@ import { LocatedWord, getGrid } from "../core/grid";
 import { getOverlay, getOverlayLayer, overlayForEach } from "../core/layer";
 import { GameState, Tile, TileEntity } from "../core/state";
 import { getTileId, get_hand_tiles, get_main_tiles, get_tiles, isSelectedForDrag } from "../core/tile-helpers";
+import { fillRect, strokeRect } from "../util/dutil";
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
@@ -11,7 +12,7 @@ import { boundRect } from "../util/util";
 import { vadd, vm, vscale, vsub, vtrans } from "../util/vutil";
 import { CanvasInfo } from "./use-canvas";
 import { canvas_from_drag_tile, pan_canvas_from_world_of_state } from "./view-helpers";
-import { canvas_bds_in_canvas, canvas_from_hand, hand_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
+import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, hand_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
 
 export function paintWithScale(ci: CanvasInfo, state: GameState) {
   const { d } = ci;
@@ -44,8 +45,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   }
 
   function drawWorld() {
-    d.fillStyle = 'white';
-    d.fillRect(world_bds_in_canvas.p.x, world_bds_in_canvas.p.y, world_bds_in_canvas.sz.x, world_bds_in_canvas.sz.y);
+    fillRect(d, world_bds_in_canvas, 'white');
 
     d.save();
     d.clip(worldClip);
@@ -117,11 +117,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
             break;
           case 'block': {
             const rect_in_canvas = apply_to_rect(pan_canvas_from_world, { p, sz: { x: 1, y: 1 } });
-            d.fillStyle = "gray";
-            d.fillRect(
-              rect_in_canvas.p.x, rect_in_canvas.p.y,
-              rect_in_canvas.sz.x, rect_in_canvas.sz.y
-            );
+            fillRect(d, rect_in_canvas, 'gray');
           } break;
         }
       }
@@ -143,17 +139,22 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   }
 
   function drawToolbar() {
-    d.fillStyle = backgroundGray;
-    d.fillRect(toolbar_bds_in_canvas.p.x, toolbar_bds_in_canvas.p.y, toolbar_bds_in_canvas.sz.x, toolbar_bds_in_canvas.sz.y);
+    fillRect(d, toolbar_bds_in_canvas, backgroundGray);
     const toolbarImg = getAssets().toolbarImg;
     d.imageSmoothingEnabled = false;
-    d.drawImage(toolbarImg, 0, 0, toolbar_bds_in_canvas.sz.x, toolbarImg.height / toolbarImg.width * toolbar_bds_in_canvas.sz.x);
+    const S = toolbar_bds_in_canvas.sz.x;
+    d.drawImage(toolbarImg, 0, 0, S, toolbarImg.height / toolbarImg.width * S);
+
+    // indicate current tool
+    const rect_in_canvas = apply_to_rect(
+      canvas_from_toolbar(),
+      { p: { x: 0, y: S * state.toolIndex }, sz: { x: S, y: S } }
+    );
+    fillRect(d, rect_in_canvas, 'rgba(255, 255, 0, 0.5)');
   }
 
   function drawHand() {
-    d.fillStyle = backgroundGray;
-    d.fillRect(hand_bds_in_canvas.p.x, hand_bds_in_canvas.p.y, hand_bds_in_canvas.sz.x, hand_bds_in_canvas.sz.y);
-
+    fillRect(d, hand_bds_in_canvas, backgroundGray);
 
     // draw hand tiles
     get_hand_tiles(state).forEach(tile => {
@@ -211,12 +212,10 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
           y: PANIC_THICK,
         }
       };
-      d.fillStyle = panic_fraction < 0.5 ? 'green' :
+      fillRect(d,
+        panic_rect_in_canvas, panic_fraction < 0.5 ? 'green' :
         panic_fraction < 0.75 ? 'yellow' :
-          panic_fraction < 0.875 ? 'orange' : 'red';
-      d.fillRect(
-        panic_rect_in_canvas.p.x, panic_rect_in_canvas.p.y,
-        panic_rect_in_canvas.sz.x, panic_rect_in_canvas.sz.y
+          panic_fraction < 0.875 ? 'orange' : 'red'
       );
     }
 
@@ -274,16 +273,17 @@ function drawInvalidWord(d: CanvasRenderingContext2D, canvas_from_world: SE2, wo
     rect_in_canvas.sz.x - 2 * OFF, rect_in_canvas.sz.y - 2 * OFF);
 }
 
+function halfOff(r: Rect): Rect {
+  return { p: { x: r.p.x + 0.5, y: r.p.y + 0.5 }, sz: r.sz };
+}
+
 function drawTile(d: CanvasRenderingContext2D, canvas_from_tile: SE2, tile: TileEntity, opts?: { connected?: boolean, selected?: boolean }) {
   const rect_in_tile: Rect = { p: { x: 0, y: 0 }, sz: { x: 1, y: 1 } };
   const rect_in_canvas = apply_to_rect(canvas_from_tile, rect_in_tile);
 
   const { fg, bg } = colorsOfTile(opts);
-  d.fillStyle = bg;
-  d.fillRect(rect_in_canvas.p.x + 0.5, rect_in_canvas.p.y + 0.5, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
-  d.strokeStyle = fg;
-  d.lineWidth = 1;
-  d.strokeRect(rect_in_canvas.p.x + 0.5, rect_in_canvas.p.y + 0.5, rect_in_canvas.sz.x, rect_in_canvas.sz.y);
+  fillRect(d, halfOff(rect_in_canvas), bg);
+  strokeRect(d, halfOff(rect_in_canvas), fg);
 
   d.fillStyle = fg;
   d.textBaseline = 'middle';

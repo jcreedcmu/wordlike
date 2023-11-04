@@ -72,6 +72,7 @@ export type SelectionState = {
 };
 
 export type GameState = {
+  toolIndex: number,
   tile_entities: Record<string, TileEntity>,
   invalidWords: LocatedWord[],
   connectedSet: Grid<boolean>,
@@ -100,6 +101,7 @@ export function mkGameSceneState(seed?: number): SceneState {
 export function mkGameState(seed?: number): GameState {
   seed = seed ?? 12345678;
   return {
+    toolIndex: 0,
     tile_entities: {},
     invalidWords: [],
     connectedSet: mkGridOf([]),

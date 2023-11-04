@@ -14,6 +14,7 @@ import { Overlay, mkOverlay, mkOverlayFrom, overlayPoints, setOverlay } from './
 import { GameState, Location, SceneState, SelectionState, mkGameSceneState } from './state';
 import { addWorldTiles, checkValid, drawOfState, isCollision, isOccupied, killTileOfState } from './state-helpers';
 import { getTileId, get_hand_tiles, get_main_tiles, get_tiles, putTileInHand, putTileInWorld, removeAllTiles, setTileLoc } from "./tile-helpers";
+import { toolOfIndex } from './tools';
 
 function resolveMouseup(state: GameState): GameState {
   // FIXME: Setting the mouse state to up *before* calling
@@ -160,66 +161,80 @@ export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: numbe
     return produce(state, s => { s.mouseState = { t: 'down', p_in_canvas: wp.p_in_canvas }; });
   }
 
-  switch (wp.t) {
-    case 'world': {
-      if (mods.has('ctrl')) {
-        return produce(deselect(state), s => {
-          s.mouseState = {
-            t: 'drag_selection',
-            orig_p: wp.p_in_canvas,
-            p_in_canvas: wp.p_in_canvas,
-          }
-        });
-      }
-      const p_in_world_int = vm(wp.p_in_local, Math.floor);
-      if (button == 1) {
-        let i = 0;
-
-        for (const tile of get_main_tiles(state)) {
-          if (vequal(p_in_world_int, tile.loc.p_in_world_int)) {
-            if (vequal(p_in_world_int, { x: 0, y: 0 })) {
-              return drag_world();
-            }
-
-            return produce(state, s => {
-              s.mouseState = {
-                t: 'drag_tile',
-                orig_loc: { t: 'world', p_in_world_int },
-                id: tile.id!,
-                orig_p_in_canvas: wp.p_in_canvas,
-                p_in_canvas: wp.p_in_canvas,
-              }
-            });
-          }
-          i++;
+  function reduceMouseDownInWorld(): GameState {
+    if (mods.has('ctrl')) {
+      return produce(deselect(state), s => {
+        s.mouseState = {
+          t: 'drag_selection',
+          orig_p: wp.p_in_canvas,
+          p_in_canvas: wp.p_in_canvas,
         }
-        return deselect(drag_world());
-      }
-      else if (button == 2) {
-        return deselect(drag_world());
-      }
-      else {
-        return vacuous_down();
-      }
-    } break;
-
-    case 'hand': {
-      const p_in_hand_int = vm(wp.p_in_local, Math.floor);
-      const tiles = get_hand_tiles(state);
-      if (p_in_hand_int.x == 0 && p_in_hand_int.y >= 0 && p_in_hand_int.y < tiles.length) {
-        return produce(deselect(state), s => {
-          s.mouseState = {
-            t: 'drag_tile',
-            orig_loc: { t: 'hand', p_in_hand_int },
-            id: tiles[p_in_hand_int.y].id,
-            orig_p_in_canvas: wp.p_in_canvas,
-            p_in_canvas: wp.p_in_canvas,
-          }
-        });
-      }
-      else
-        return drawOfState(deselect(state));
+      });
     }
+    const p_in_world_int = vm(wp.p_in_local, Math.floor);
+    if (button == 1) {
+      let i = 0;
+
+      for (const tile of get_main_tiles(state)) {
+        if (vequal(p_in_world_int, tile.loc.p_in_world_int)) {
+          if (vequal(p_in_world_int, { x: 0, y: 0 })) {
+            return drag_world();
+          }
+
+          return produce(state, s => {
+            s.mouseState = {
+              t: 'drag_tile',
+              orig_loc: { t: 'world', p_in_world_int },
+              id: tile.id!,
+              orig_p_in_canvas: wp.p_in_canvas,
+              p_in_canvas: wp.p_in_canvas,
+            }
+          });
+        }
+        i++;
+      }
+      return deselect(drag_world());
+    }
+    else if (button == 2) {
+      return deselect(drag_world());
+    }
+    else {
+      return vacuous_down();
+    }
+  }
+
+  function reduceMouseDownInHand(): GameState {
+    const p_in_hand_int = vm(wp.p_in_local, Math.floor);
+    const tiles = get_hand_tiles(state);
+    if (p_in_hand_int.x == 0 && p_in_hand_int.y >= 0 && p_in_hand_int.y < tiles.length) {
+      return produce(deselect(state), s => {
+        s.mouseState = {
+          t: 'drag_tile',
+          orig_loc: { t: 'hand', p_in_hand_int },
+          id: tiles[p_in_hand_int.y].id,
+          orig_p_in_canvas: wp.p_in_canvas,
+          p_in_canvas: wp.p_in_canvas,
+        }
+      });
+    }
+    else
+      return drawOfState(deselect(state));
+  }
+
+  function reduceMouseDownInToolbar(toolIndex: number): GameState {
+    const tool = toolOfIndex(toolIndex);
+    if (tool !== undefined) {
+      return produce(vacuous_down(), s => { s.toolIndex = toolIndex; });
+    }
+    else {
+      return vacuous_down();
+    }
+  }
+
+  switch (wp.t) {
+    case 'world': return reduceMouseDownInWorld();
+    case 'hand': return reduceMouseDownInHand();
+    case 'toolbar': return reduceMouseDownInToolbar(wp.toolIndex);
   }
 }
 

@@ -87,6 +87,8 @@ export function killTileOfState(state: GameState, wp: WidgetPoint): GameState {
         return state;
       }
     }
+    case 'toolbar':
+      return state;
   }
 }
 
