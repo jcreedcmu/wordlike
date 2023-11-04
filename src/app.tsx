@@ -2,7 +2,8 @@ import * as React from 'react';
 import { useEffect } from 'react';
 import { Action, Dispatch, Effect } from './core/action';
 import { reduce } from './core/reduce';
-import { GameState, MouseState, SceneState, mkSceneState } from './core/state';
+import { GameState, SceneState, mkSceneState } from './core/state';
+import { currentTool } from './core/tools';
 import { Instructions } from './ui/instructions';
 import { key } from './ui/key';
 import { paintWithScale } from './ui/render';
@@ -129,8 +130,15 @@ export function Game(props: GameProps): JSX.Element {
   }, []);
 
   type CursorType = React.CSSProperties['cursor'];
-  function cursorOfMouseState(ms: MouseState): CursorType {
-    switch (ms.t) {
+  function cursorOfState(state: GameState): CursorType {
+    const tool = currentTool(state);
+    if (tool == 'dynamite') {
+      return 'url(/assets/dynamite-cursor.png) 16 16, pointer';
+    }
+    if (tool == 'hand') {
+      return 'grab';
+    }
+    switch (state.mouseState.t) {
       case 'up': return undefined;
       case 'drag_world': return 'grab';
       case 'drag_tile': return 'pointer';
@@ -138,7 +146,9 @@ export function Game(props: GameProps): JSX.Element {
   }
 
   const style: React.CSSProperties =
-    { cursor: cursorOfMouseState(state.mouseState) };
+  {
+    cursor: cursorOfState(state)
+  };
   return <div>
     <canvas
       style={style}
