@@ -109,7 +109,7 @@ export function Game(props: GameProps): JSX.Element {
     document.addEventListener('keydown', keyListener);
     window.addEventListener('resize', handleResize);
     window.addEventListener('resize', handleResize);
-    interval = setInterval(intervalHandler, 200);
+    interval = window.setInterval(intervalHandler, 200);
 
     return () => {
       document.removeEventListener('mouseup', mouseUpListener);

@@ -10,7 +10,7 @@ import { boundRect } from "../util/util";
 import { vadd, vm, vscale, vsub, vtrans } from "../util/vutil";
 import { CanvasInfo } from "./use-canvas";
 import { canvas_from_drag_tile, pan_canvas_from_world_of_state } from "./view-helpers";
-import { canvas_bds_in_canvas, canvas_from_hand, hand_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
+import { canvas_bds_in_canvas, canvas_from_hand, hand_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
 
 export function paintWithScale(ci: CanvasInfo, state: GameState) {
   const { d } = ci;
@@ -31,11 +31,19 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   const ms = state.mouseState;
   const pan_canvas_from_world = pan_canvas_from_world_of_state(state);
 
+  const gray = '#eeeeee';
+  d.fillStyle = gray;
+  d.fillRect(toolbar_bds_in_canvas.p.x, toolbar_bds_in_canvas.p.y, toolbar_bds_in_canvas.sz.x, toolbar_bds_in_canvas.sz.y);
+
   d.fillStyle = 'white';
   d.fillRect(world_bds_in_canvas.p.x, world_bds_in_canvas.p.y, world_bds_in_canvas.sz.x, world_bds_in_canvas.sz.y);
 
-  const top_left_in_world = vm(apply(inverse(pan_canvas_from_world), { x: 0, y: 0 }), Math.floor);
-  const bot_right_in_world = vm(apply(inverse(pan_canvas_from_world), world_bds_in_canvas.sz), Math.ceil);
+  d.save();
+  d.clip(worldClip);
+  const top_left_in_canvas = world_bds_in_canvas.p;
+  const bot_right_in_canvas = vadd(world_bds_in_canvas.p, world_bds_in_canvas.sz);
+  const top_left_in_world = vm(apply(inverse(pan_canvas_from_world), top_left_in_canvas), Math.floor);
+  const bot_right_in_world = vm(apply(inverse(pan_canvas_from_world), bot_right_in_canvas), Math.ceil);
 
   for (let i = top_left_in_world.x; i <= bot_right_in_world.x; i++) {
     for (let j = top_left_in_world.y; j <= bot_right_in_world.y; j++) {
@@ -55,9 +63,10 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
       d.stroke();
     }
   }
+  d.restore();
 
   // draw hand
-  d.fillStyle = '#eeeeee';
+  d.fillStyle = gray;
   d.fillRect(hand_bds_in_canvas.p.x, hand_bds_in_canvas.p.y, hand_bds_in_canvas.sz.x, hand_bds_in_canvas.sz.y);
 
   function canvas_from_tile(tile: TileEntity): SE2 {
