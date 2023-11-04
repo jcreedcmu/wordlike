@@ -51,6 +51,10 @@ export function drawOfState(state: GameState): GameState {
 
 export function killTileOfState(state: GameState, wp: WidgetPoint): GameState {
 
+  // Definitely want to clear the selection, because invariants get
+  // violated if a tileId gets deleted but remains in the selection
+  state = produce(state, s => { s.selected = undefined });
+
   switch (wp.t) {
     case 'world': {
       const p_in_world_int = vint(wp.p_in_local);
