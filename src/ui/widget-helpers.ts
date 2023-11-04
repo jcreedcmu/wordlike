@@ -11,7 +11,7 @@ export const hand_bds_in_canvas: Rect = {
   sz: { x: HAND_WIDTH, y: canvas_bds_in_canvas.sz.y }
 };
 
-export const TOOLBAR_WIDTH = 32;
+export const TOOLBAR_WIDTH = 64;
 
 export const world_bds_in_canvas: Rect = {
   p: { x: TOOLBAR_WIDTH, y: 0 },

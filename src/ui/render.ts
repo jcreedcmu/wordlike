@@ -1,3 +1,4 @@
+import { getAssets } from "../core/assets";
 import { getPanicFraction } from "../core/clock";
 import { LocatedWord, getGrid } from "../core/grid";
 import { getOverlay, getOverlayLayer, overlayForEach } from "../core/layer";
@@ -34,6 +35,9 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   const gray = '#eeeeee';
   d.fillStyle = gray;
   d.fillRect(toolbar_bds_in_canvas.p.x, toolbar_bds_in_canvas.p.y, toolbar_bds_in_canvas.sz.x, toolbar_bds_in_canvas.sz.y);
+  const toolbarImg = getAssets().toolbarImg;
+  d.imageSmoothingEnabled = false;
+  d.drawImage(toolbarImg, 0, 0, toolbar_bds_in_canvas.sz.x, toolbarImg.height / toolbarImg.width * toolbar_bds_in_canvas.sz.x);
 
   d.fillStyle = 'white';
   d.fillRect(world_bds_in_canvas.p.x, world_bds_in_canvas.p.y, world_bds_in_canvas.sz.x, world_bds_in_canvas.sz.y);
