@@ -2,13 +2,13 @@ import { WidgetPoint } from "../ui/widget-helpers";
 import { logger } from "../util/debug";
 import { produce } from "../util/produce";
 import { Point } from "../util/types";
-import { vequal, vint } from "../util/vutil";
+import { vadd, vequal, vint } from "../util/vutil";
 import { getAssets } from "./assets";
 import { Bonus } from "./bonus";
 import { getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
-import { Layer, Overlay, getOverlayLayer, setOverlay } from "./layer";
-import { GameState, Tile, TileEntity } from "./state";
+import { Layer, Overlay, getOverlayLayer, overlayAny, overlayPoints, setOverlay } from "./layer";
+import { Animation, GameState, Location, SelectionState, Tile, TileEntity } from "./state";
 import { addHandTile, addWorldTile, ensureTileId, get_hand_tiles, get_main_tiles, get_tiles, removeTile } from "./tile-helpers";
 
 export function addWorldTiles(state: GameState, tiles: Tile[]): GameState {
@@ -65,11 +65,18 @@ function killTileOfState(state: GameState, wp: WidgetPoint): GameState {
   switch (wp.t) {
     case 'world': {
       const p_in_world_int = vint(wp.p_in_local);
+      const anim: Animation = {
+        t: 'explosion',
+        center_in_world: vadd(p_in_world_int, { x: 0.5, y: 0.5 }),
+        duration_ms: 500,
+        start_ms: Date.now(),
+      }
       const tile = get_main_tiles(state).find(tile => vequal(tile.loc.p_in_world_int, p_in_world_int));
       if (tile != undefined) {
 
         return checkValid(produce(removeTile(state, tile.id), s => {
           s.score--;
+          s.animations.push(anim);
         }));
 
       }
@@ -77,6 +84,7 @@ function killTileOfState(state: GameState, wp: WidgetPoint): GameState {
         return checkValid(produce(state, s => {
           setOverlay(s.bonusOverlay, p_in_world_int, 'empty');
           s.score--;
+          s.animations.push(anim);
         }));
       }
       else {
@@ -144,4 +152,18 @@ export function checkValid(state: GameState): GameState {
     s.invalidWords = invalidWords;
     s.connectedSet = connectedSet;
   });
+}
+
+
+export function isTilePinned(state: GameState, tileId: string, loc: Location & { t: 'world' }): boolean {
+  if (state.selected && state.selected.selectedIds.includes(tileId)) {
+    return overlayAny(state.selected.overlay, p => vequal(p, { x: 0, y: 0 }));
+  }
+  else {
+    return vequal(loc.p_in_world_int, { x: 0, y: 0 });
+  }
+}
+
+export function filterExpiredAnimations(now_ms: number, anims: Animation[]): Animation[] {
+  return anims.filter(anim => now_ms <= anim.start_ms + anim.duration_ms);
 }

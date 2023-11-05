@@ -63,6 +63,15 @@ export function overlayPoints<T>(layer: Overlay<T>): Point[] {
   return Object.keys(layer.cells).map(k => parseCoord(k));
 }
 
+export function overlayAny<T>(layer: Overlay<T>, predicate: (p: Point) => boolean): boolean {
+  for (const k of Object.keys(layer.cells)) {
+    if (predicate(parseCoord(k))) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export function mkOverlayFrom(points: Point[]): Overlay<boolean> {
   const layer: Overlay<boolean> = mkOverlay();
   points.forEach(p => {

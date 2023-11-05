@@ -76,6 +76,7 @@ function render(ci: CanvasInfo, props: CanvasProps) {
 
 function exampleState(): GameState {
   const state: GameState = {
+    animations: [],
     toolIndex: 0,
     invalidWords: [],
     connectedSet: mkGridOf([]),

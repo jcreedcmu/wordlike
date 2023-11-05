@@ -1,9 +1,9 @@
 import { getAssets } from "../core/assets";
 import { getPanicFraction } from "../core/clock";
 import { LocatedWord, getGrid } from "../core/grid";
-import { getOverlay, getOverlayLayer, overlayForEach } from "../core/layer";
-import { GameState, Tile, TileEntity } from "../core/state";
-import { getTileId, get_hand_tiles, get_main_tiles, get_tiles, isSelectedForDrag } from "../core/tile-helpers";
+import { getOverlay, getOverlayLayer } from "../core/layer";
+import { Animation, GameState, TileEntity } from "../core/state";
+import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from "../core/tile-helpers";
 import { fillRect, strokeRect } from "../util/dutil";
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
@@ -23,6 +23,29 @@ export function paintWithScale(ci: CanvasInfo, state: GameState) {
 }
 
 const backgroundGray = '#eeeeee';
+
+function drawAnimation(d: CanvasRenderingContext2D, pan_canvas_from_world: SE2, time_ms: number, anim: Animation): void {
+  switch (anim.t) {
+    case 'explosion': {
+      const radius_in_world = 3 * (time_ms - anim.start_ms) / anim.duration_ms;
+      const radvec: Point = { x: radius_in_world, y: radius_in_world };
+      const rect_in_canvas = apply_to_rect(pan_canvas_from_world, {
+        p: vsub(anim.center_in_world, radvec), sz: vscale(radvec, 2)
+      });
+      d.strokeStyle = '#ff0000';
+      d.lineWidth = 3;
+      d.beginPath();
+      d.arc(rect_in_canvas.p.x + rect_in_canvas.sz.x / 2,
+        rect_in_canvas.p.y + rect_in_canvas.sz.y / 2,
+        rect_in_canvas.sz.y / 2,
+        0, 360,
+      );
+      d.stroke();
+
+    } break;
+  }
+
+}
 
 export function rawPaint(ci: CanvasInfo, state: GameState) {
 
@@ -232,10 +255,17 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     }
   }
 
+  function drawAnimations(time_ms: number) {
+    state.animations.forEach(anim => {
+      drawAnimation(d, pan_canvas_from_world, time_ms, anim);
+    });
+  }
+
   drawToolbar();
   drawWorld();
   drawHand();
   drawOtherUi();
+  drawAnimations(Date.now());
 }
 
 export class RenderPane {

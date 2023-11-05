@@ -12,7 +12,7 @@ import { Action, Effect, GameAction } from './action';
 import { getPanicFraction } from './clock';
 import { Overlay, getOverlayLayer, mkOverlay, mkOverlayFrom, overlayPoints, setOverlay } from './layer';
 import { GameState, Location, SceneState, SelectionState, TileEntity, mkGameSceneState } from './state';
-import { addWorldTiles, checkValid, drawOfState, isCollision, isOccupied, tryKillTileOfState } from './state-helpers';
+import { addWorldTiles, checkValid, drawOfState, filterExpiredAnimations, isCollision, isOccupied, isTilePinned, tryKillTileOfState } from './state-helpers';
 import { getTileId, get_hand_tiles, get_main_tiles, get_tiles, putTileInHand, putTileInWorld, removeAllTiles, setTileLoc } from "./tile-helpers";
 import { Tool, currentTool, toolOfIndex } from './tools';
 
@@ -156,14 +156,14 @@ export type Intent =
   | { t: 'startSelection' }
   ;
 
-function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number, mods: Set<string>, hoverTile: TileEntity | undefined, hoverBlock: boolean): Intent {
+function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number, mods: Set<string>, hoverTile: TileEntity | undefined, hoverBlock: boolean, pinned: boolean): Intent {
   if (button == 2)
     return { t: 'panWorld' };
 
   switch (tool) {
     case 'pointer':
       if (hoverTile) {
-        if (hoverTile.loc.t == 'world' && vequal(hoverTile.loc.p_in_world_int, { x: 0, y: 0 }))
+        if (pinned)
           return { t: 'panWorld' };
         return { t: 'dragTile', id: hoverTile.id };
       }
@@ -232,7 +232,9 @@ function reduceMouseDownInWorld(state: GameState, wp: WidgetPoint, button: numbe
     }
   }
   const hoverBlock = getOverlayLayer(state.bonusOverlay, state.bonusLayer, p_in_world_int) == 'block';
-  const intent = getIntentOfMouseDown(currentTool(state), wp, button, mods, hoverTile, hoverBlock);
+  let pinned =
+    (hoverTile && hoverTile.loc.t == 'world') ? isTilePinned(state, hoverTile.id, hoverTile.loc) : false;
+  const intent = getIntentOfMouseDown(currentTool(state), wp, button, mods, hoverTile, hoverBlock, pinned);
   return reduceIntent(state, intent, wp);
 }
 
@@ -316,11 +318,16 @@ function reduceGameAction(state: GameState, action: GameAction): effectful.Resul
       s.mouseState.p_in_canvas = action.p;
     }));
     case 'repaint':
+      const now = Date.now();
+      const newAnimations = filterExpiredAnimations(now, state.animations);
+      state = produce(state, s => {
+        s.animations = newAnimations;
+      });
       if (state.panic !== undefined) {
         if (getPanicFraction(state.panic) > 1) {
           return { state: { t: 'menu' }, effects: [] };
         }
-        return gs(produce(state, s => { s.panic!.currentTime = Date.now(); }));
+        return gs(produce(state, s => { s.panic!.currentTime = now; }));
       }
       else {
         return gs(state);
