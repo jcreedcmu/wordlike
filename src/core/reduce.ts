@@ -222,58 +222,57 @@ function vacuous_down(state: GameState, wp: WidgetPoint): GameState {
   return produce(state, s => { s.mouseState = { t: 'down', p_in_canvas: wp.p_in_canvas }; });
 }
 
-export function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number, mods: Set<string>): GameState {
+function reduceMouseDownInWorld(state: GameState, wp: WidgetPoint, button: number, mods: Set<string>): GameState {
+  let hoverTile: TileEntity | undefined = undefined;
+  const p_in_world_int = vm(wp.p_in_local, Math.floor);
+  for (const tile of get_main_tiles(state)) {
+    if (vequal(p_in_world_int, tile.loc.p_in_world_int)) {
+      hoverTile = tile;
+      break;
+    }
+  }
+  const hoverBlock = getOverlayLayer(state.bonusOverlay, state.bonusLayer, p_in_world_int) == 'block';
+  const intent = getIntentOfMouseDown(currentTool(state), wp, button, mods, hoverTile, hoverBlock);
+  return reduceIntent(state, intent, wp);
+}
 
-  function reduceMouseDownInWorld(): GameState {
-    let hoverTile: TileEntity | undefined = undefined;
-    const p_in_world_int = vm(wp.p_in_local, Math.floor);
-    for (const tile of get_main_tiles(state)) {
-      if (vequal(p_in_world_int, tile.loc.p_in_world_int)) {
-        hoverTile = tile;
-        break;
+function reduceMouseDownInHand(state: GameState, wp: WidgetPoint, button: number, mods: Set<string>): GameState {
+  const p_in_hand_int = vm(wp.p_in_local, Math.floor);
+  const tiles = get_hand_tiles(state);
+  if (p_in_hand_int.x == 0 && p_in_hand_int.y >= 0 && p_in_hand_int.y < tiles.length) {
+    return produce(deselect(state), s => {
+      s.mouseState = {
+        t: 'drag_tile',
+        orig_loc: { t: 'hand', p_in_hand_int },
+        id: tiles[p_in_hand_int.y].id,
+        orig_p_in_canvas: wp.p_in_canvas,
+        p_in_canvas: wp.p_in_canvas,
       }
-    }
-    const hoverBlock = getOverlayLayer(state.bonusOverlay, state.bonusLayer, p_in_world_int) == 'block';
-    const intent = getIntentOfMouseDown(currentTool(state), wp, button, mods, hoverTile, hoverBlock);
-    return reduceIntent(state, intent, wp);
+    });
   }
+  else
+    return drawOfState(deselect(state));
+}
 
-  function reduceMouseDownInHand(): GameState {
-    const p_in_hand_int = vm(wp.p_in_local, Math.floor);
-    const tiles = get_hand_tiles(state);
-    if (p_in_hand_int.x == 0 && p_in_hand_int.y >= 0 && p_in_hand_int.y < tiles.length) {
-      return produce(deselect(state), s => {
-        s.mouseState = {
-          t: 'drag_tile',
-          orig_loc: { t: 'hand', p_in_hand_int },
-          id: tiles[p_in_hand_int.y].id,
-          orig_p_in_canvas: wp.p_in_canvas,
-          p_in_canvas: wp.p_in_canvas,
-        }
-      });
-    }
-    else
-      return drawOfState(deselect(state));
+function reduceMouseDownInToolbar(state: GameState, wp: WidgetPoint & { t: 'toolbar' }, button: number, mods: Set<string>): GameState {
+  const tool = toolOfIndex(wp.toolIndex);
+  if (tool !== undefined) {
+    return produce(vacuous_down(state, wp), s => { s.toolIndex = wp.toolIndex; });
   }
-
-  function reduceMouseDownInToolbar(toolIndex: number): GameState {
-    const tool = toolOfIndex(toolIndex);
-    if (tool !== undefined) {
-      return produce(vacuous_down(state, wp), s => { s.toolIndex = toolIndex; });
-    }
-    else {
-      return vacuous_down(state, wp);
-    }
-  }
-
-  switch (wp.t) {
-    case 'world': return reduceMouseDownInWorld();
-    case 'hand': return reduceMouseDownInHand();
-    case 'toolbar': return reduceMouseDownInToolbar(wp.toolIndex);
+  else {
+    return vacuous_down(state, wp);
   }
 }
 
-export function reduceGameAction(state: GameState, action: GameAction): effectful.Result<SceneState, Effect> {
+function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number, mods: Set<string>): GameState {
+  switch (wp.t) {
+    case 'world': return reduceMouseDownInWorld(state, wp, button, mods);
+    case 'hand': return reduceMouseDownInHand(state, wp, button, mods);
+    case 'toolbar': return reduceMouseDownInToolbar(state, wp, button, mods);
+  }
+}
+
+function reduceGameAction(state: GameState, action: GameAction): effectful.Result<SceneState, Effect> {
   function gs(state: GameState): effectful.Result<SceneState, Effect> {
     return { state: { t: 'game', gameState: state, revision: 0 }, effects: [] };
   }
