@@ -44,7 +44,7 @@ export function canvas_from_drag_tile(state: GameState, ms: MouseState): SE2 {
   switch (ms.t) {
     case 'drag_tile':
       const wp0 = getWidgetPoint(state, ms.orig_p_in_canvas);
-      const wp1 = getWidgetPoint(state, ms.p_in_canvas);
+      const wp1 = getWidgetPoint(state, ms.p_in_canvas, true);
       const local1_from_canvas = wp1.local_from_canvas;
       const local0_from_tile0 = translate(vm(wp0.p_in_local, Math.floor));
       const tile0_from_canvas = compose(inverse(local0_from_tile0), wp0.local_from_canvas);

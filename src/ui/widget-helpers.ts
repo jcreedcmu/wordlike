@@ -46,8 +46,8 @@ export type WidgetPoint =
   | { t: 'toolbar', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2, toolIndex: number }
   ;
 
-export function getWidgetPoint(state: GameState, p_in_canvas: Point): WidgetPoint {
-  if (pointInRect(p_in_canvas, toolbar_bds_in_canvas)) {
+export function getWidgetPoint(state: GameState, p_in_canvas: Point, dragging?: boolean): WidgetPoint {
+  if (pointInRect(p_in_canvas, toolbar_bds_in_canvas) && !dragging) {
     const toolbar_from_canvas = inverse(canvas_from_toolbar());
     const p_in_local = apply(toolbar_from_canvas, p_in_canvas);
     return {
