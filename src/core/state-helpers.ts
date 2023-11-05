@@ -49,7 +49,14 @@ export function drawOfState(state: GameState): GameState {
   }));
 }
 
-export function killTileOfState(state: GameState, wp: WidgetPoint): GameState {
+export function tryKillTileOfState(state: GameState, wp: WidgetPoint): GameState {
+  if (state.score > 0)
+    return killTileOfState(state, wp);
+  else
+    return state;
+}
+
+function killTileOfState(state: GameState, wp: WidgetPoint): GameState {
 
   // Definitely want to clear the selection, because invariants get
   // violated if a tileId gets deleted but remains in the selection
