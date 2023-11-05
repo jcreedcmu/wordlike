@@ -294,7 +294,9 @@ function reduceGameAction(state: GameState, action: GameAction): effectful.Resul
         return gs(tryKillTileOfState(state, getWidgetPoint(state, state.mouseState.p_in_canvas)));
       }
       if (action.code == 'd') {
-        return gs(checkValid(addWorldTiles(removeAllTiles(state), debugTiles())));
+        return gs(checkValid(produce(addWorldTiles(removeAllTiles(state), debugTiles()), s => {
+          s.score = 1000;
+        })));
       }
       return gs(state);
     }
