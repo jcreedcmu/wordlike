@@ -1,5 +1,5 @@
 import { Point, Rect } from "./types";
-import { vsub } from "./vutil";
+import { vm2, vsub } from "./vutil";
 
 export function mapval<T, U>(m: { [k: string]: T }, f: (x: T, k?: string) => U): { [k: string]: U } {
   return Object.fromEntries(Object.entries(m).map(([k, v]) => [k, f(v, k)]));
@@ -87,4 +87,8 @@ export function point_hash(p: Point): number {
   for (let i = 0; i < 10; i++)
     z();
   return z();
+}
+
+export function midpointOfRect(rect: Rect): Point {
+  return vm2(rect.p, rect.sz, (p, s) => p + s / 2);
 }

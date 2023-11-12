@@ -24,7 +24,7 @@ export const toolbar_bds_in_canvas: Rect = {
 };
 
 export const pause_button_bds_in_canvas: Rect = {
-  p: { x: 0, y: canvas_bds_in_canvas.sz.y },
+  p: { x: 0, y: canvas_bds_in_canvas.sz.y - TOOLBAR_WIDTH },
   sz: { x: TOOLBAR_WIDTH, y: TOOLBAR_WIDTH }
 };
 
@@ -55,7 +55,13 @@ export type WidgetPoint =
   ;
 
 export function getWidgetPoint(state: GameState, p_in_canvas: Point): WidgetPoint {
-  if (pointInRect(p_in_canvas, toolbar_bds_in_canvas)) {
+  if (pointInRect(p_in_canvas, pause_button_bds_in_canvas)) {
+    return {
+      t: 'pauseButton',
+      p_in_canvas,
+    };
+  }
+  else if (pointInRect(p_in_canvas, toolbar_bds_in_canvas)) {
     const toolbar_from_canvas = inverse(canvas_from_toolbar());
     const p_in_local = apply(toolbar_from_canvas, p_in_canvas);
     return {
@@ -65,12 +71,6 @@ export function getWidgetPoint(state: GameState, p_in_canvas: Point): WidgetPoin
       local_from_canvas: toolbar_from_canvas,
       toolIndex: Math.floor(p_in_local.y / toolbar_bds_in_canvas.sz.x),
     }
-  }
-  else if (pointInRect(p_in_canvas, pause_button_bds_in_canvas)) {
-    return {
-      t: 'pauseButton',
-      p_in_canvas,
-    };
   }
   else return getDragWidgetPoint(state, p_in_canvas);
 }

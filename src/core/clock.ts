@@ -3,6 +3,10 @@ export type PanicData = {
   currentTime: number, // ms since epoch
 };
 
+export type PauseData = {
+  pauseTime: number, // ms since epoch
+}
+
 export const PANIC_INTERVAL_MS = 90000;
 
 export function getPanicFraction(panic: PanicData) {

@@ -1,7 +1,7 @@
 import { SE2 } from '../util/se2';
 import { Point } from '../util/types';
 import { Bonus, bonusGenerator } from './bonus';
-import { PanicData } from './clock';
+import { PanicData, PauseData } from './clock';
 import { Energies, initialEnergies } from './distribution';
 import { Grid, LocatedWord, mkGridOf } from './grid';
 import { Layer, Overlay, mkLayer, mkOverlay } from './layer';
@@ -89,6 +89,7 @@ export type GameState = {
   selected?: SelectionState,
   score: number,
   panic: PanicData | undefined,
+  paused: PauseData | undefined,
 };
 
 export function mkSceneState(): SceneState {
@@ -121,5 +122,6 @@ export function mkGameState(seed?: number): GameState {
     bonusOverlay: mkOverlay<Bonus>(),
     score: 0,
     panic: undefined,
+    paused: undefined,
   };
 }

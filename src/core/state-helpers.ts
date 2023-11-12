@@ -5,6 +5,7 @@ import { Point } from "../util/types";
 import { vadd, vequal, vint } from "../util/vutil";
 import { getAssets } from "./assets";
 import { Bonus } from "./bonus";
+import { PanicData, PauseData } from "./clock";
 import { getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
 import { Layer, Overlay, getOverlayLayer, overlayAny, overlayPoints, setOverlay } from "./layer";
@@ -164,4 +165,17 @@ export function isTilePinned(state: GameState, tileId: string, loc: Location & {
 
 export function filterExpiredAnimations(now_ms: number, anims: Animation[]): Animation[] {
   return anims.filter(anim => now_ms <= anim.start_ms + anim.duration_ms);
+}
+
+export function unpauseState(state: GameState, pause: PauseData): GameState {
+  if (state.panic) {
+    const newPanic: PanicData = {
+      currentTime: Date.now(),
+      lastClear: state.panic.lastClear + Date.now() - pause.pauseTime,
+    };
+    return produce(state, s => { s.panic = newPanic; s.paused = undefined; });
+  }
+  else {
+    return produce(state, s => { s.paused = undefined; });
+  }
 }

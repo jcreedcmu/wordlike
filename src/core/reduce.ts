@@ -12,7 +12,7 @@ import { Action, Effect, GameAction } from './action';
 import { getPanicFraction } from './clock';
 import { Overlay, getOverlayLayer, mkOverlay, mkOverlayFrom, overlayPoints, setOverlay } from './layer';
 import { GameState, Location, SceneState, SelectionState, TileEntity, mkGameSceneState } from './state';
-import { addWorldTiles, checkValid, drawOfState, filterExpiredAnimations, isCollision, isOccupied, isTilePinned, tryKillTileOfState } from './state-helpers';
+import { addWorldTiles, checkValid, drawOfState, filterExpiredAnimations, isCollision, isOccupied, isTilePinned, tryKillTileOfState, unpauseState } from './state-helpers';
 import { getTileId, get_hand_tiles, get_main_tiles, get_tiles, putTileInHand, putTileInWorld, removeAllTiles, setTileLoc } from "./tile-helpers";
 import { Tool, currentTool, toolOfIndex } from './tools';
 
@@ -279,10 +279,13 @@ function reduceMouseDownInToolbar(state: GameState, wp: WidgetPoint & { t: 'tool
 }
 
 function reducePauseButton(state: GameState, wp: WidgetPoint): GameState {
-  return vacuous_down(state, wp);
+  return produce(vacuous_down(state, wp), s => { s.paused = { pauseTime: Date.now() }; });
 }
 
 function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number, mods: Set<string>): GameState {
+  if (state.paused) {
+    return unpauseState(vacuous_down(state, wp), state.paused);
+  }
   switch (wp.t) {
     case 'world': return reduceMouseDownInWorld(state, wp, button, mods);
     case 'hand': return reduceMouseDownInHand(state, wp, button, mods);

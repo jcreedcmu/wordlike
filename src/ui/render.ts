@@ -4,15 +4,16 @@ import { LocatedWord, getGrid } from "../core/grid";
 import { getOverlay, getOverlayLayer } from "../core/layer";
 import { Animation, GameState, TileEntity } from "../core/state";
 import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from "../core/tile-helpers";
+import { debugOnce, logOnce } from "../util/debug";
 import { fillRect, fillText, strokeRect } from "../util/dutil";
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
-import { boundRect } from "../util/util";
+import { boundRect, midpointOfRect } from "../util/util";
 import { vadd, vm, vscale, vsub, vtrans } from "../util/vutil";
 import { CanvasInfo } from "./use-canvas";
 import { canvas_from_drag_tile, pan_canvas_from_world_of_state } from "./view-helpers";
-import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, hand_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
+import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, hand_bds_in_canvas, pause_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
 
 export function paintWithScale(ci: CanvasInfo, state: GameState) {
   const { d } = ci;
@@ -47,8 +48,22 @@ function drawAnimation(d: CanvasRenderingContext2D, pan_canvas_from_world: SE2, 
 
 }
 
+export function drawPausedScreen(ci: CanvasInfo, state: GameState) {
+  const { d } = ci;
+
+  fillRect(d, canvas_bds_in_canvas, 'white');
+
+  d.textAlign = 'center';
+  d.textBaseline = 'middle';
+  fillText(d, "paused", midpointOfRect(canvas_bds_in_canvas), 'black', '48px sans-serif');
+}
+
 export function rawPaint(ci: CanvasInfo, state: GameState) {
 
+  if (state.paused) {
+    drawPausedScreen(ci, state);
+    return;
+  }
 
   const worldClip = new Path2D();
   worldClip.rect(world_bds_in_canvas.p.x, world_bds_in_canvas.p.y,
@@ -175,10 +190,9 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     );
     fillRect(d, rect_in_canvas, 'rgba(255, 255, 0, 0.5)');
 
-    const p_in_canvas = { x: S / 2, y: canvas_bds_in_canvas.sz.y - S / 2 };
     d.textAlign = 'center';
     d.textBaseline = 'middle';
-    fillText(d, "⏸", p_in_canvas, 'black', '48px sans-serif');
+    fillText(d, "⏸", midpointOfRect(pause_button_bds_in_canvas), 'black', '48px sans-serif');
   }
 
   function drawHand() {
