@@ -69,3 +69,9 @@ export function strokeRect(d: CanvasRenderingContext2D, rect: Rect, color: strin
   d.lineWidth = width;
   d.strokeRect(rect.p.x + 0.5, rect.p.y + 0.5, rect.sz.x, rect.sz.y);
 }
+
+export function fillText(d: CanvasRenderingContext2D, text: string, p: Point, color: string, font: string) {
+  d.fillStyle = color;
+  d.font = font;
+  d.fillText(text, p.x, p.y);
+}

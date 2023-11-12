@@ -4,7 +4,7 @@ import { LocatedWord, getGrid } from "../core/grid";
 import { getOverlay, getOverlayLayer } from "../core/layer";
 import { Animation, GameState, TileEntity } from "../core/state";
 import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from "../core/tile-helpers";
-import { fillRect, strokeRect } from "../util/dutil";
+import { fillRect, fillText, strokeRect } from "../util/dutil";
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
@@ -174,6 +174,11 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
       { p: { x: 0, y: S * state.toolIndex }, sz: { x: S, y: S } }
     );
     fillRect(d, rect_in_canvas, 'rgba(255, 255, 0, 0.5)');
+
+    const p_in_canvas = { x: S / 2, y: canvas_bds_in_canvas.sz.y - S / 2 };
+    d.textAlign = 'center';
+    d.textBaseline = 'middle';
+    fillText(d, "⏸", p_in_canvas, 'black', '48px sans-serif');
   }
 
   function drawHand() {
