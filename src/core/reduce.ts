@@ -244,6 +244,9 @@ function reduceMouseDownInWorld(state: GameState, wp: WidgetPoint & { t: 'world'
 }
 
 function reduceMouseDownInHand(state: GameState, wp: WidgetPoint & { t: 'hand' }, button: number, mods: Set<string>): GameState {
+  if (state.lost)
+    return vacuous_down(state, wp);
+
   const p_in_hand_int = vm(wp.p_in_local, Math.floor);
   const tiles = get_hand_tiles(state);
   const tool = currentTool(state);
@@ -326,7 +329,10 @@ function reduceGameAction(state: GameState, action: GameAction): effectful.Resul
       }));
     }
     case 'mouseDown': {
-      return gs(reduceMouseDown(state, getWidgetPoint(state, action.p), action.button, action.mods));
+      const wp = getWidgetPoint(state, action.p);
+      if (state.lost && wp.t == 'pauseButton')
+        return { state: { t: 'menu' }, effects: [] };
+      return gs(reduceMouseDown(state, wp, action.button, action.mods));
     }
     case 'mouseUp': return gs(resolveMouseup(state));
     case 'mouseMove': return gs(produce(state, s => {
@@ -340,7 +346,9 @@ function reduceGameAction(state: GameState, action: GameAction): effectful.Resul
       });
       if (state.panic !== undefined) {
         if (getPanicFraction(state.panic) > 1) {
-          return { state: { t: 'menu' }, effects: [] };
+          return gs(produce(state, s => {
+            s.lost = true;
+          }));
         }
         return gs(produce(state, s => { s.panic!.currentTime = now; }));
       }

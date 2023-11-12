@@ -189,10 +189,17 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
       { p: { x: 0, y: S * state.toolIndex }, sz: { x: S, y: S } }
     );
     fillRect(d, rect_in_canvas, 'rgba(255, 255, 0, 0.5)');
+  }
 
+  function drawPauseButton() {
     d.textAlign = 'center';
     d.textBaseline = 'middle';
-    fillText(d, "⏸", midpointOfRect(pause_button_bds_in_canvas), 'black', '48px sans-serif');
+    if (!state.lost) {
+      fillText(d, "⏸", midpointOfRect(pause_button_bds_in_canvas), 'black', '48px sans-serif');
+    }
+    else {
+      fillText(d, "⟳", midpointOfRect(pause_button_bds_in_canvas), 'black', '48px sans-serif');
+    }
   }
 
   function drawHand() {
@@ -280,11 +287,21 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     });
   }
 
-  drawToolbar();
+  if (!state.lost)
+    drawToolbar();
+  else {
+    fillRect(d, toolbar_bds_in_canvas, backgroundGray);
+  }
+  drawPauseButton();
   drawWorld();
   drawHand();
-  drawOtherUi();
-  drawAnimations(Date.now());
+  if (!state.lost) {
+    drawOtherUi();
+    drawAnimations(Date.now());
+  }
+  else {
+    fillText(d, "You lost :(", midpointOfRect(canvas_bds_in_canvas), 'rgba(0,0,0,0.3)', '96px sans-serif');
+  }
 }
 
 export class RenderPane {

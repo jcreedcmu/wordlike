@@ -143,6 +143,7 @@ function exampleState(): GameState {
       }
     },
     score: 7,
+    lost: false,
     panic: { currentTime: Date.now(), lastClear: Date.now() - PANIC_INTERVAL_MS / 3 },
     paused: undefined,
   };

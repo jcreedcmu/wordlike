@@ -17,6 +17,9 @@ export function indexOfTool(tool: Tool): number {
 }
 
 export function currentTool(state: GameState): Tool {
+  if (state.lost) {
+    return 'hand';
+  }
   // state should be responsible for maintaining the invariant that
   // tool index is always valid. Maybe instead I should store Tool in
   // state, not toolIndex, idk.

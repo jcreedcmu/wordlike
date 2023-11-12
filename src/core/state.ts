@@ -88,6 +88,7 @@ export type GameState = {
   bonusOverlay: Overlay<Bonus>,
   selected?: SelectionState,
   score: number,
+  lost: boolean,
   panic: PanicData | undefined,
   paused: PauseData | undefined,
 };
@@ -121,6 +122,7 @@ export function mkGameState(seed?: number): GameState {
     bonusLayer: mkLayer(bonusGenerator),
     bonusOverlay: mkOverlay<Bonus>(),
     score: 0,
+    lost: false,
     panic: undefined,
     paused: undefined,
   };
