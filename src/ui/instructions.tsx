@@ -69,8 +69,8 @@ function render(ci: CanvasInfo, props: CanvasProps) {
   drawBubble(ci, `Click in this space (or hit [spacebar])\n to get more tiles.`,
     { x: 670, y: 347 }, { x: 732, y: 290 });
 
-  drawBubble(ci, `This is the panic bar. If it\nfills up all the way to\nthe right, you lose!`,
-    { x: 133, y: 513 }, { x: 221, y: 593 });
+  drawBubble(ci, `This is the panic bar. If it\nfills up all the way to\nthe right, you lose!\nYou\x27re safe when your hand is\nempty, and all tiles form words.`,
+    { x: 133, y: 453 }, { x: 221, y: 593 });
   d.restore();
 }
 
@@ -130,6 +130,9 @@ function exampleState(): GameState {
     bonusLayer: mkLayer(bonusGenerator),
     bonusOverlay: {
       cells: {
+        "12,0": "empty",
+        "11,-4": "empty",
+        "8,3": "empty",
         "5,6": "empty",
         "7,1": "empty",
         "5,1": "empty",
