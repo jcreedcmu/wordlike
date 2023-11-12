@@ -246,11 +246,11 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
       const panic_fraction = getPanicFraction(state.panic);
       const panic_rect_in_canvas: Rect = {
         p: {
-          x: canvas_bds_in_canvas.p.x,
+          x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x * panic_fraction,
           y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - PANIC_THICK,
         },
         sz: {
-          x: canvas_bds_in_canvas.sz.x * panic_fraction,
+          x: canvas_bds_in_canvas.sz.x * (1 - panic_fraction),
           y: PANIC_THICK,
         }
       };
