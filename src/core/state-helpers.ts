@@ -1,4 +1,4 @@
-import { WidgetPoint } from "../ui/widget-helpers";
+import { DragWidgetPoint, WidgetPoint } from "../ui/widget-helpers";
 import { logger } from "../util/debug";
 import { produce } from "../util/produce";
 import { Point } from "../util/types";
@@ -50,13 +50,13 @@ export function drawOfState(state: GameState): GameState {
 }
 
 export function tryKillTileOfState(state: GameState, wp: WidgetPoint): GameState {
-  if (state.score > 0)
+  if (state.score > 0 && (wp.t == 'world' || wp.t == 'hand'))
     return killTileOfState(state, wp);
   else
     return state;
 }
 
-function killTileOfState(state: GameState, wp: WidgetPoint): GameState {
+function killTileOfState(state: GameState, wp: DragWidgetPoint): GameState {
 
   // Definitely want to clear the selection, because invariants get
   // violated if a tileId gets deleted but remains in the selection
@@ -106,8 +106,6 @@ function killTileOfState(state: GameState, wp: WidgetPoint): GameState {
         return state;
       }
     }
-    case 'toolbar':
-      return state;
   }
 }
 

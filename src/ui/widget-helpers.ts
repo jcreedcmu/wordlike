@@ -23,6 +23,11 @@ export const toolbar_bds_in_canvas: Rect = {
   sz: { x: TOOLBAR_WIDTH, y: canvas_bds_in_canvas.sz.y }
 };
 
+export const pause_button_bds_in_canvas: Rect = {
+  p: { x: 0, y: canvas_bds_in_canvas.sz.y },
+  sz: { x: TOOLBAR_WIDTH, y: TOOLBAR_WIDTH }
+};
+
 export const DEFAULT_TILE_SCALE = 48;
 
 export function canvas_from_hand(): SE2 {
@@ -40,14 +45,17 @@ export function canvas_from_toolbar(): SE2 {
 }
 
 // p is in the local coordinate system, i.e. "world" or "hand"
-export type WidgetPoint =
+export type DragWidgetPoint =
   | { t: 'world', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2 }
   | { t: 'hand', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2 }
+export type WidgetPoint =
+  | DragWidgetPoint
   | { t: 'toolbar', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2, toolIndex: number }
+  | { t: 'pauseButton', p_in_canvas: Point }
   ;
 
-export function getWidgetPoint(state: GameState, p_in_canvas: Point, dragging?: boolean): WidgetPoint {
-  if (pointInRect(p_in_canvas, toolbar_bds_in_canvas) && !dragging) {
+export function getWidgetPoint(state: GameState, p_in_canvas: Point): WidgetPoint {
+  if (pointInRect(p_in_canvas, toolbar_bds_in_canvas)) {
     const toolbar_from_canvas = inverse(canvas_from_toolbar());
     const p_in_local = apply(toolbar_from_canvas, p_in_canvas);
     return {
@@ -58,7 +66,17 @@ export function getWidgetPoint(state: GameState, p_in_canvas: Point, dragging?: 
       toolIndex: Math.floor(p_in_local.y / toolbar_bds_in_canvas.sz.x),
     }
   }
-  else if (pointInRect(p_in_canvas, world_bds_in_canvas)) {
+  else if (pointInRect(p_in_canvas, pause_button_bds_in_canvas)) {
+    return {
+      t: 'pauseButton',
+      p_in_canvas,
+    };
+  }
+  else return getDragWidgetPoint(state, p_in_canvas);
+}
+
+export function getDragWidgetPoint(state: GameState, p_in_canvas: Point): DragWidgetPoint {
+  if (pointInRect(p_in_canvas, world_bds_in_canvas)) {
     return {
       t: 'world',
       p_in_local: apply(inverse(state.canvas_from_world), p_in_canvas),

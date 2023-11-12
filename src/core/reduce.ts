@@ -180,9 +180,10 @@ function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number, mods:
 }
 
 function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint): GameState {
-  const p_in_world_int = vm(wp.p_in_local, Math.floor);
   switch (intent.t) {
     case 'dragTile':
+      if (wp.t != 'world' && wp.t != 'hand') return vacuous_down(state, wp);
+      const p_in_world_int = vm(wp.p_in_local, Math.floor);
       let state2 = state;
       if (state.selected) {
         // If we start dragging a tile not in the selection, we should deselect it first
@@ -200,21 +201,25 @@ function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint): GameSt
         };
       });
     case 'vacuous': return vacuous_down(state, wp);
-    case 'panWorld': return produce(state, s => {
-      s.mouseState = {
-        t: 'drag_world',
-        orig_p: wp.p_in_canvas,
-        p_in_canvas: wp.p_in_canvas,
-      }
-    });
+    case 'panWorld':
+      if (wp.t != 'world') return vacuous_down(state, wp);
+      return produce(state, s => {
+        s.mouseState = {
+          t: 'drag_world',
+          orig_p: wp.p_in_canvas,
+          p_in_canvas: wp.p_in_canvas,
+        }
+      });
     case 'kill': return tryKillTileOfState(vacuous_down(state, wp), wp);
-    case 'startSelection': return produce(deselect(state), s => {
-      s.mouseState = {
-        t: 'drag_selection',
-        orig_p: wp.p_in_canvas,
-        p_in_canvas: wp.p_in_canvas,
-      }
-    });
+    case 'startSelection':
+      if (wp.t != 'world') return vacuous_down(state, wp);
+      return produce(deselect(state), s => {
+        s.mouseState = {
+          t: 'drag_selection',
+          orig_p: wp.p_in_canvas,
+          p_in_canvas: wp.p_in_canvas,
+        }
+      });
   }
 }
 
@@ -222,7 +227,7 @@ function vacuous_down(state: GameState, wp: WidgetPoint): GameState {
   return produce(state, s => { s.mouseState = { t: 'down', p_in_canvas: wp.p_in_canvas }; });
 }
 
-function reduceMouseDownInWorld(state: GameState, wp: WidgetPoint, button: number, mods: Set<string>): GameState {
+function reduceMouseDownInWorld(state: GameState, wp: WidgetPoint & { t: 'world' }, button: number, mods: Set<string>): GameState {
   let hoverTile: TileEntity | undefined = undefined;
   const p_in_world_int = vm(wp.p_in_local, Math.floor);
   for (const tile of get_main_tiles(state)) {
@@ -238,7 +243,7 @@ function reduceMouseDownInWorld(state: GameState, wp: WidgetPoint, button: numbe
   return reduceIntent(state, intent, wp);
 }
 
-function reduceMouseDownInHand(state: GameState, wp: WidgetPoint, button: number, mods: Set<string>): GameState {
+function reduceMouseDownInHand(state: GameState, wp: WidgetPoint & { t: 'hand' }, button: number, mods: Set<string>): GameState {
   const p_in_hand_int = vm(wp.p_in_local, Math.floor);
   const tiles = get_hand_tiles(state);
   const tool = currentTool(state);
@@ -273,11 +278,16 @@ function reduceMouseDownInToolbar(state: GameState, wp: WidgetPoint & { t: 'tool
   }
 }
 
+function reducePauseButton(state: GameState, wp: WidgetPoint): GameState {
+  return vacuous_down(state, wp);
+}
+
 function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number, mods: Set<string>): GameState {
   switch (wp.t) {
     case 'world': return reduceMouseDownInWorld(state, wp, button, mods);
     case 'hand': return reduceMouseDownInHand(state, wp, button, mods);
     case 'toolbar': return reduceMouseDownInToolbar(state, wp, button, mods);
+    case 'pauseButton': return reducePauseButton(state, wp);
   }
 }
 

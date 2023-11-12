@@ -2,7 +2,7 @@ import { apply, compose, ident, inverse, SE2, translate } from '../util/se2';
 import { vm, vsub } from '../util/vutil';
 import { GameState, MouseState } from '../core/state';
 import { Point } from '../util/types';
-import { getWidgetPoint } from './widget-helpers';
+import { getDragWidgetPoint, getWidgetPoint } from './widget-helpers';
 import { matchScale } from '../util/se2-extra';
 
 export function pan_canvas_from_canvas_of_mouse_state(state: MouseState): SE2 {
@@ -43,8 +43,8 @@ export function drag_canvas_from_canvas_of_mouse_state(state: MouseState): SE2 {
 export function canvas_from_drag_tile(state: GameState, ms: MouseState): SE2 {
   switch (ms.t) {
     case 'drag_tile':
-      const wp0 = getWidgetPoint(state, ms.orig_p_in_canvas);
-      const wp1 = getWidgetPoint(state, ms.p_in_canvas, true);
+      const wp0 = getDragWidgetPoint(state, ms.orig_p_in_canvas);
+      const wp1 = getDragWidgetPoint(state, ms.p_in_canvas);
       const local1_from_canvas = wp1.local_from_canvas;
       const local0_from_tile0 = translate(vm(wp0.p_in_local, Math.floor));
       const tile0_from_canvas = compose(inverse(local0_from_tile0), wp0.local_from_canvas);
