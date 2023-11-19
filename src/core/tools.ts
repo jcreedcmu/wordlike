@@ -4,6 +4,7 @@ const tools = [
   'pointer',
   'hand',
   'dynamite',
+  'bomb',
 ] as const;
 
 export type Tool = (typeof tools)[number];

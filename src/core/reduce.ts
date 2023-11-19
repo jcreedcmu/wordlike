@@ -153,9 +153,12 @@ export type Intent =
   | { t: 'dragTile', id: string }
   | { t: 'vacuous' }
   | { t: 'panWorld' }
-  | { t: 'kill' }
+  | { t: 'kill', radius: number, cost: number }
   | { t: 'startSelection' }
   ;
+
+const dynamiteIntent: Intent = { t: 'kill', radius: 0, cost: 1 };
+const bombIntent: Intent = { t: 'kill', radius: 1, cost: 3 };
 
 function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number, mods: Set<string>, hoverTile: TileEntity | undefined, hoverBlock: boolean, pinned: boolean): Intent {
   if (button == 2)
@@ -172,7 +175,14 @@ function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number, mods:
     case 'hand': return { t: 'panWorld' };
     case 'dynamite':
       if (hoverTile || hoverBlock) {
-        return { t: 'kill' };
+        return dynamiteIntent;
+      }
+      else {
+        return { t: 'vacuous' };
+      }
+    case 'bomb':
+      if (hoverTile || hoverBlock) {
+        return bombIntent;
       }
       else {
         return { t: 'vacuous' };
@@ -211,7 +221,7 @@ function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint): GameSt
           p_in_canvas: wp.p_in_canvas,
         }
       });
-    case 'kill': return tryKillTileOfState(vacuous_down(state, wp), wp);
+    case 'kill': return tryKillTileOfState(vacuous_down(state, wp), wp, intent.radius, intent.cost);
     case 'startSelection':
       if (wp.t != 'world') return vacuous_down(state, wp);
       return produce(deselect(state), s => {
@@ -251,9 +261,8 @@ function reduceMouseDownInHand(state: GameState, wp: WidgetPoint & { t: 'hand' }
   const p_in_hand_int = vm(wp.p_in_local, Math.floor);
   const tiles = get_hand_tiles(state);
   const tool = currentTool(state);
-  if (tool == 'dynamite') {
-    return tryKillTileOfState(vacuous_down(state, wp), wp);
-  }
+  if (tool == 'dynamite') return reduceIntent(state, dynamiteIntent, wp);
+  else if (tool == 'bomb') return reduceIntent(state, bombIntent, wp);
   else {
     const hoverTile = p_in_hand_int.x == 0 && p_in_hand_int.y >= 0 && p_in_hand_int.y < tiles.length;
     if (hoverTile) {
@@ -308,7 +317,7 @@ function reduceGameAction(state: GameState, action: GameAction): effectful.Resul
         return gs(drawOfState(state));
       }
       if (action.code == 'k') {
-        return gs(tryKillTileOfState(state, getWidgetPoint(state, state.mouseState.p_in_canvas)));
+        return gs(tryKillTileOfState(state, getWidgetPoint(state, state.mouseState.p_in_canvas), 0, 1));
       }
       if (action.code == 'd') {
         return gs(checkValid(produce(addWorldTiles(removeAllTiles(state), debugTiles()), s => {

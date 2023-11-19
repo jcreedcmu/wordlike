@@ -137,6 +137,9 @@ export function Game(props: GameProps): JSX.Element {
     if (tool == 'dynamite') {
       return 'url(assets/dynamite-cursor.png) 16 16, pointer';
     }
+    if (tool == 'bomb') {
+      return 'url(assets/bomb-cursor.png) 16 16, pointer';
+    }
     if (tool == 'hand') {
       return 'grab';
     }

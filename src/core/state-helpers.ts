@@ -9,7 +9,7 @@ import { PanicData, PauseData } from "./clock";
 import { getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
 import { Layer, Overlay, getOverlayLayer, overlayAny, overlayPoints, setOverlay } from "./layer";
-import { Animation, GameState, Location, SelectionState, Tile, TileEntity } from "./state";
+import { Animation, GameState, Location, MainTile, SelectionState, Tile, TileEntity } from "./state";
 import { addHandTile, addWorldTile, ensureTileId, get_hand_tiles, get_main_tiles, get_tiles, removeTile } from "./tile-helpers";
 
 export function addWorldTiles(state: GameState, tiles: Tile[]): GameState {
@@ -50,14 +50,26 @@ export function drawOfState(state: GameState): GameState {
   }));
 }
 
-export function tryKillTileOfState(state: GameState, wp: WidgetPoint): GameState {
-  if (state.coreState.score > 0 && (wp.t == 'world' || wp.t == 'hand'))
-    return killTileOfState(state, wp);
+export function tryKillTileOfState(state: GameState, wp: WidgetPoint, radius: number, cost: number): GameState {
+  if (state.coreState.score >= cost && (wp.t == 'world' || wp.t == 'hand'))
+    return killTileOfState(state, wp, radius, cost);
   else
     return state;
 }
 
-function killTileOfState(state: GameState, wp: DragWidgetPoint): GameState {
+function splashDamage(center: Point, radius: number): Point[] {
+  if (radius == 0)
+    return [center];
+  const pts: Point[] = [];
+  for (let x = -radius; x <= radius; x++) {
+    for (let y = -radius; y <= radius; y++) {
+      pts.push({ x: center.x + x, y: center.y + y });
+    }
+  }
+  return pts;
+}
+
+function killTileOfState(state: GameState, wp: DragWidgetPoint, radius: number, cost: number): GameState {
 
   // Definitely want to clear the selection, because invariants get
   // violated if a tileId gets deleted but remains in the selection
@@ -69,22 +81,36 @@ function killTileOfState(state: GameState, wp: DragWidgetPoint): GameState {
       const anim: Animation = {
         t: 'explosion',
         center_in_world: vadd(p_in_world_int, { x: 0.5, y: 0.5 }),
-        duration_ms: 500,
+        duration_ms: (radius + 1) * 250,
         start_ms: Date.now(),
+        radius,
       }
-      const tile = get_main_tiles(state).find(tile => vequal(tile.loc.p_in_world_int, p_in_world_int));
-      if (tile != undefined) {
 
-        return checkValid(produce(removeTile(state, tile.id), s => {
-          s.coreState.score--;
-          s.coreState.animations.push(anim);
-        }));
-
+      function tileAt(p: Point): MainTile | undefined {
+        return get_main_tiles(state).find(tile => vequal(tile.loc.p_in_world_int, p));
       }
-      else if (getOverlayLayer(state.coreState.bonusOverlay, bonusLayer, p_in_world_int) == 'block') {
+      function blockAt(p: Point) {
+        return getOverlayLayer(state.coreState.bonusOverlay, bonusLayer, p) == 'block';
+      }
+
+      if (tileAt(p_in_world_int) || blockAt(p_in_world_int)) {
+        const tilesToDestroy: Point[] = splashDamage(p_in_world_int, radius);
+        // remove all tiles in radius
+        tilesToDestroy.forEach(p => {
+          const tileAtP = tileAt(p);
+          if (tileAtP !== undefined)
+            state = removeTile(state, tileAtP.id);
+        });
+        // remove all bonuses in radius
+        state = produce(state, s => {
+          tilesToDestroy.forEach(p => {
+            if (blockAt(p))
+              setOverlay(s.coreState.bonusOverlay, p, 'empty');
+          });
+        });
+
         return checkValid(produce(state, s => {
-          setOverlay(s.coreState.bonusOverlay, p_in_world_int, 'empty');
-          s.coreState.score--;
+          s.coreState.score -= cost;
           s.coreState.animations.push(anim);
         }));
       }

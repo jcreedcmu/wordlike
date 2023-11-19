@@ -29,7 +29,7 @@ const backgroundGray = '#eeeeee';
 function drawAnimation(d: CanvasRenderingContext2D, pan_canvas_from_world: SE2, time_ms: number, anim: Animation): void {
   switch (anim.t) {
     case 'explosion': {
-      const radius_in_world = 3 * (time_ms - anim.start_ms) / anim.duration_ms;
+      const radius_in_world = (2 * anim.radius + 1) * 0.5 * (time_ms - anim.start_ms) / anim.duration_ms;
       const radvec: Point = { x: radius_in_world, y: radius_in_world };
       const rect_in_canvas = apply_to_rect(pan_canvas_from_world, {
         p: vsub(anim.center_in_world, radvec), sz: vscale(radvec, 2)
