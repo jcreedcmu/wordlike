@@ -13,6 +13,8 @@ import { useEffectfulReducer } from './ui/use-effectful-reducer';
 import { DEBUG } from './util/debug';
 import { relpos } from './util/dutil';
 
+const ANIMATION_INTERVAL_MS = 35;
+
 export type GameProps = {
   state: GameState,
   dispatch: Dispatch,
@@ -63,7 +65,7 @@ export function App(props: {}): JSX.Element {
 export function Game(props: GameProps): JSX.Element {
   const { state, dispatch } = props;
   const [cref, mc] = useCanvas<CanvasProps>(
-    { main: state }, render, [state], ci => {
+    { main: state }, render, [state.coreState], ci => {
       dispatch({ t: 'resize', vd: resizeView(ci.c) });
     });
 
@@ -114,7 +116,7 @@ export function Game(props: GameProps): JSX.Element {
     document.addEventListener('keydown', keyListener);
     window.addEventListener('resize', handleResize);
     window.addEventListener('resize', handleResize);
-    interval = window.setInterval(intervalHandler, 200);
+    interval = window.setInterval(intervalHandler, ANIMATION_INTERVAL_MS);
 
     return () => {
       document.removeEventListener('mouseup', mouseUpListener);
