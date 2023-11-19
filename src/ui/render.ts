@@ -60,8 +60,9 @@ export function drawPausedScreen(ci: CanvasInfo, state: GameState) {
 }
 
 export function rawPaint(ci: CanvasInfo, state: GameState) {
+  const cs = state.coreState;
 
-  if (state.coreState.paused) {
+  if (cs.paused) {
     drawPausedScreen(ci, state);
     return;
   }
@@ -121,8 +122,8 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
       let opts = undefined;
 
       opts = {
-        connected: getGrid(state.coreState.connectedSet, tile.loc.p_in_world_int) ?? false,
-        selected: state.coreState.selected ? getOverlay(state.coreState.selected.overlay, tile.loc.p_in_world_int) : undefined
+        connected: getGrid(cs.connectedSet, tile.loc.p_in_world_int) ?? false,
+        selected: cs.selected ? getOverlay(cs.selected.overlay, tile.loc.p_in_world_int) : undefined
       };
       drawTile(d, canvas_from_tile(tile), tile, opts);
     });
@@ -130,7 +131,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
 
     // draw invalid words
     if (ms.t == 'up') {
-      state.coreState.invalidWords.forEach(lw => {
+      cs.invalidWords.forEach(lw => {
         drawInvalidWord(d, pan_canvas_from_world, lw);
       });
     }
@@ -139,7 +140,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     for (let i = top_left_in_world.x; i <= bot_right_in_world.x; i++) {
       for (let j = top_left_in_world.y; j <= bot_right_in_world.y; j++) {
         const p: Point = { x: i, y: j };
-        switch (getOverlayLayer(state.coreState.bonusOverlay, bonusLayer, p)) {
+        switch (getOverlayLayer(cs.bonusOverlay, bonusLayer, p)) {
           case 'bonus': {
             const rect_in_canvas = apply_to_rect(pan_canvas_from_world, { p, sz: { x: 1, y: 1 } });
             d.strokeStyle = 'rgba(0,0,255,0.5)';
@@ -187,7 +188,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     // indicate current tool
     const rect_in_canvas = apply_to_rect(
       canvas_from_toolbar(),
-      { p: { x: 0, y: S * state.coreState.toolIndex }, sz: { x: S, y: S } }
+      { p: { x: 0, y: S * cs.toolIndex }, sz: { x: S, y: S } }
     );
     fillRect(d, rect_in_canvas, 'rgba(255, 255, 0, 0.5)');
   }
@@ -195,7 +196,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   function drawPauseButton() {
     d.textAlign = 'center';
     d.textBaseline = 'middle';
-    if (!state.coreState.lost) {
+    if (!cs.lost) {
       fillText(d, "⏸", midpointOfRect(pause_button_bds_in_canvas), 'black', '48px sans-serif');
     }
     else {
@@ -217,9 +218,9 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   function drawOtherUi() {
     // draw dragged tile on top
     if (ms.t == 'drag_tile') {
-      if (state.coreState.selected) {
+      if (cs.selected) {
         const tile0 = getTileId(state, ms.id);
-        state.coreState.selected.selectedIds.forEach(id => {
+        cs.selected.selectedIds.forEach(id => {
           const tile = getTileId(state, id);
           if (tile.loc.t == 'world' && tile0.loc.t == 'world') {
             drawTile(d,
@@ -246,12 +247,12 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     d.textAlign = 'right';
     const fontSize = 40;
     d.font = `bold ${fontSize}px sans-serif`;
-    d.fillText(`${state.coreState.score}`, scoreLoc.x, scoreLoc.y);
+    d.fillText(`${cs.score}`, scoreLoc.x, scoreLoc.y);
 
     // draw panic bar
     const PANIC_THICK = 15;
-    if (state.coreState.panic !== undefined) {
-      const panic_fraction = getPanicFraction(state.coreState.panic);
+    if (cs.panic !== undefined) {
+      const panic_fraction = getPanicFraction(cs.panic);
       const panic_rect_in_canvas: Rect = {
         p: {
           x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x * panic_fraction,
@@ -283,12 +284,12 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   }
 
   function drawAnimations(time_ms: number) {
-    state.coreState.animations.forEach(anim => {
+    cs.animations.forEach(anim => {
       drawAnimation(d, pan_canvas_from_world, time_ms, anim);
     });
   }
 
-  if (!state.coreState.lost)
+  if (!cs.lost)
     drawToolbar();
   else {
     fillRect(d, toolbar_bds_in_canvas, backgroundGray);
@@ -296,7 +297,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   drawPauseButton();
   drawWorld();
   drawHand();
-  if (!state.coreState.lost) {
+  if (!cs.lost) {
     drawOtherUi();
     drawAnimations(Date.now());
   }
