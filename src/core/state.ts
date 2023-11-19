@@ -74,8 +74,13 @@ export type SelectionState = {
 export type Animation =
   | { t: 'explosion', start_ms: number, duration_ms: number, center_in_world: Point };
 
+export type CoreState = {
+
+};
+
 export type GameState = {
   animations: Animation[],
+  coreState: CoreState,
   toolIndex: number,
   tile_entities: Record<string, TileEntity>,
   invalidWords: LocatedWord[],
@@ -107,6 +112,7 @@ export function mkGameState(seed?: number): GameState {
   seed = seed ?? 12345678;
   return {
     animations: [],
+    coreState: {},
     toolIndex: 0,
     tile_entities: {},
     invalidWords: [],
