@@ -17,7 +17,7 @@ export function indexOfTool(tool: Tool): number {
 }
 
 export function currentTool(state: GameState): Tool {
-  if (state.lost) {
+  if (state.coreState.lost) {
     return 'hand';
   }
   // state should be responsible for maintaining the invariant that

@@ -135,6 +135,10 @@ function exampleState(): GameState {
           "8,4": "empty"
         }
       },
+      score: 7,
+      lost: false,
+      panic: { currentTime: Date.now(), lastClear: Date.now() - PANIC_INTERVAL_MS / 3 },
+      paused: undefined,
     },
     mouseState: {
       t: "up",
@@ -143,10 +147,6 @@ function exampleState(): GameState {
         y: 88
       }
     },
-    score: 7,
-    lost: false,
-    panic: { currentTime: Date.now(), lastClear: Date.now() - PANIC_INTERVAL_MS / 3 },
-    paused: undefined,
   };
 
   const tiles: Tile[] = [

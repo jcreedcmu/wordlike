@@ -51,7 +51,7 @@ export function drawOfState(state: GameState): GameState {
 }
 
 export function tryKillTileOfState(state: GameState, wp: WidgetPoint): GameState {
-  if (state.score > 0 && (wp.t == 'world' || wp.t == 'hand'))
+  if (state.coreState.score > 0 && (wp.t == 'world' || wp.t == 'hand'))
     return killTileOfState(state, wp);
   else
     return state;
@@ -61,7 +61,7 @@ function killTileOfState(state: GameState, wp: DragWidgetPoint): GameState {
 
   // Definitely want to clear the selection, because invariants get
   // violated if a tileId gets deleted but remains in the selection
-  state = produce(state, s => { s.selected = undefined });
+  state = produce(state, s => { s.coreState.selected = undefined });
 
   switch (wp.t) {
     case 'world': {
@@ -76,7 +76,7 @@ function killTileOfState(state: GameState, wp: DragWidgetPoint): GameState {
       if (tile != undefined) {
 
         return checkValid(produce(removeTile(state, tile.id), s => {
-          s.score--;
+          s.coreState.score--;
           s.coreState.animations.push(anim);
         }));
 
@@ -84,7 +84,7 @@ function killTileOfState(state: GameState, wp: DragWidgetPoint): GameState {
       else if (getOverlayLayer(state.coreState.bonusOverlay, bonusLayer, p_in_world_int) == 'block') {
         return checkValid(produce(state, s => {
           setOverlay(s.coreState.bonusOverlay, p_in_world_int, 'empty');
-          s.score--;
+          s.coreState.score--;
           s.coreState.animations.push(anim);
         }));
       }
@@ -100,7 +100,7 @@ function killTileOfState(state: GameState, wp: DragWidgetPoint): GameState {
         if (tile == undefined)
           return state;
         return checkValid(produce(removeTile(state, tile.id), s => {
-          s.score--;
+          s.coreState.score--;
         }));
       }
       else {
@@ -124,7 +124,7 @@ function resolveValid(state: GameState): GameState {
   return produce(state, s => {
     scorings.forEach(p => {
       setOverlay(s.coreState.bonusOverlay, p, 'empty');
-      s.score++;
+      s.coreState.score++;
     });
   });
 }
@@ -141,13 +141,13 @@ export function checkValid(state: GameState): GameState {
     allValid = true;
   }
 
-  let panic = state.panic;
+  let panic = state.coreState.panic;
   if (allValid) panic = undefined;
   if (!allValid && panic === undefined)
     panic = { currentTime: Date.now(), lastClear: Date.now() };
 
   return produce(state, s => {
-    s.panic = panic;
+    s.coreState.panic = panic;
     s.coreState.invalidWords = invalidWords;
     s.coreState.connectedSet = connectedSet;
   });
@@ -155,8 +155,8 @@ export function checkValid(state: GameState): GameState {
 
 
 export function isTilePinned(state: GameState, tileId: string, loc: Location & { t: 'world' }): boolean {
-  if (state.selected && state.selected.selectedIds.includes(tileId)) {
-    return overlayAny(state.selected.overlay, p => vequal(p, { x: 0, y: 0 }));
+  if (state.coreState.selected && state.coreState.selected.selectedIds.includes(tileId)) {
+    return overlayAny(state.coreState.selected.overlay, p => vequal(p, { x: 0, y: 0 }));
   }
   else {
     return vequal(loc.p_in_world_int, { x: 0, y: 0 });
@@ -168,14 +168,14 @@ export function filterExpiredAnimations(now_ms: number, anims: Animation[]): Ani
 }
 
 export function unpauseState(state: GameState, pause: PauseData): GameState {
-  if (state.panic) {
+  if (state.coreState.panic) {
     const newPanic: PanicData = {
       currentTime: Date.now(),
-      lastClear: state.panic.lastClear + Date.now() - pause.pauseTime,
+      lastClear: state.coreState.panic.lastClear + Date.now() - pause.pauseTime,
     };
-    return produce(state, s => { s.panic = newPanic; s.paused = undefined; });
+    return produce(state, s => { s.coreState.panic = newPanic; s.coreState.paused = undefined; });
   }
   else {
-    return produce(state, s => { s.paused = undefined; });
+    return produce(state, s => { s.coreState.paused = undefined; });
   }
 }

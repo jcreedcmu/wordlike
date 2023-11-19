@@ -84,15 +84,15 @@ export type CoreState = {
   canvas_from_world: SE2,
   seed: number,
   bonusOverlay: Overlay<Bonus>,
-};
-
-export type GameState = {
-  coreState: CoreState,
   selected?: SelectionState,
   score: number,
   lost: boolean,
   panic: PanicData | undefined,
   paused: PauseData | undefined,
+};
+
+export type GameState = {
+  coreState: CoreState,
   mouseState: MouseState,
 };
 
@@ -123,11 +123,11 @@ export function mkGameState(seed?: number): GameState {
       connectedSet: mkGridOf([]),
       energies: initialEnergies(),
       seed,
+      score: 0,
+      lost: false,
+      panic: undefined,
+      paused: undefined,
     },
     mouseState: { t: 'up', p_in_canvas: { x: 0, y: 0 } },
-    score: 0,
-    lost: false,
-    panic: undefined,
-    paused: undefined,
   };
 }

@@ -61,7 +61,7 @@ export function drawPausedScreen(ci: CanvasInfo, state: GameState) {
 
 export function rawPaint(ci: CanvasInfo, state: GameState) {
 
-  if (state.paused) {
+  if (state.coreState.paused) {
     drawPausedScreen(ci, state);
     return;
   }
@@ -122,7 +122,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
 
       opts = {
         connected: getGrid(state.coreState.connectedSet, tile.loc.p_in_world_int) ?? false,
-        selected: state.selected ? getOverlay(state.selected.overlay, tile.loc.p_in_world_int) : undefined
+        selected: state.coreState.selected ? getOverlay(state.coreState.selected.overlay, tile.loc.p_in_world_int) : undefined
       };
       drawTile(d, canvas_from_tile(tile), tile, opts);
     });
@@ -195,7 +195,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   function drawPauseButton() {
     d.textAlign = 'center';
     d.textBaseline = 'middle';
-    if (!state.lost) {
+    if (!state.coreState.lost) {
       fillText(d, "⏸", midpointOfRect(pause_button_bds_in_canvas), 'black', '48px sans-serif');
     }
     else {
@@ -217,9 +217,9 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   function drawOtherUi() {
     // draw dragged tile on top
     if (ms.t == 'drag_tile') {
-      if (state.selected) {
+      if (state.coreState.selected) {
         const tile0 = getTileId(state, ms.id);
-        state.selected.selectedIds.forEach(id => {
+        state.coreState.selected.selectedIds.forEach(id => {
           const tile = getTileId(state, id);
           if (tile.loc.t == 'world' && tile0.loc.t == 'world') {
             drawTile(d,
@@ -246,12 +246,12 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     d.textAlign = 'right';
     const fontSize = 40;
     d.font = `bold ${fontSize}px sans-serif`;
-    d.fillText(`${state.score}`, scoreLoc.x, scoreLoc.y);
+    d.fillText(`${state.coreState.score}`, scoreLoc.x, scoreLoc.y);
 
     // draw panic bar
     const PANIC_THICK = 15;
-    if (state.panic !== undefined) {
-      const panic_fraction = getPanicFraction(state.panic);
+    if (state.coreState.panic !== undefined) {
+      const panic_fraction = getPanicFraction(state.coreState.panic);
       const panic_rect_in_canvas: Rect = {
         p: {
           x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x * panic_fraction,
@@ -288,7 +288,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     });
   }
 
-  if (!state.lost)
+  if (!state.coreState.lost)
     drawToolbar();
   else {
     fillRect(d, toolbar_bds_in_canvas, backgroundGray);
@@ -296,7 +296,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   drawPauseButton();
   drawWorld();
   drawHand();
-  if (!state.lost) {
+  if (!state.coreState.lost) {
     drawOtherUi();
     drawAnimations(Date.now());
   }

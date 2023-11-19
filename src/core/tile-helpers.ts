@@ -141,10 +141,10 @@ export function removeAllTiles(state: GameState): GameState {
 export function isSelectedForDrag(state: GameState, tile: TileEntity): boolean {
   if (state.mouseState.t != 'drag_tile')
     return false;
-  if (state.selected === undefined) {
+  if (state.coreState.selected === undefined) {
     return state.mouseState.id == tile.id;
   }
   else {
-    return state.mouseState.id == tile.id || tile.loc.t == 'world' && state.selected.selectedIds.includes(tile.id);
+    return state.mouseState.id == tile.id || tile.loc.t == 'world' && state.coreState.selected.selectedIds.includes(tile.id);
   }
 }
