@@ -2,10 +2,11 @@ import { Point } from "../util/types";
 
 // Implements a lazily-evaluated, cached, immutable sparse map from coordinates to T
 
-// FIXME(#26): the fact that this is global is bad
+// This is global
 const cache: Record<string, any> = {};
 
 export type Layer<T> = {
+  name: string,
   func: (p: Point) => T,
 };
 
@@ -15,15 +16,19 @@ export type Overlay<T> = {
 
 function parseCoord(x: string): Point {
   const parts = x.split(',');
-  return { x: parseInt(parts[0]), y: parseInt(parts[1]) };
+  return { x: parseInt(parts[1]), y: parseInt(parts[2]) };
+}
+
+function unparseNamedCoord(name: string, p: Point): string {
+  return `${name},${p.x},${p.y}`;
 }
 
 function unparseCoord(p: Point): string {
-  return `${p.x},${p.y}`;
+  return `${name},${p.x},${p.y}`;
 }
 
-export function mkLayer<T>(func: (p: Point) => T): Layer<T> {
-  return { func };
+export function mkLayer<T>(name: string, func: (p: Point) => T): Layer<T> {
+  return { name, func };
 }
 
 export function mkOverlay<T>(): Overlay<T> {
@@ -31,7 +36,7 @@ export function mkOverlay<T>(): Overlay<T> {
 }
 
 export function getLayer<T>(layer: Layer<T>, p: Point): T {
-  const upc = unparseCoord(p);
+  const upc = unparseNamedCoord(layer.name, p);
   if (cache[upc] === undefined) {
     cache[upc] = layer.func(p);
   }

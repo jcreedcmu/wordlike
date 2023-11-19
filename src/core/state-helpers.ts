@@ -4,7 +4,7 @@ import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { vadd, vequal, vint } from "../util/vutil";
 import { getAssets } from "./assets";
-import { Bonus } from "./bonus";
+import { Bonus, bonusLayer } from "./bonus";
 import { PanicData, PauseData } from "./clock";
 import { getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
@@ -33,7 +33,7 @@ export function isCollision(tiles: TileEntity[], points: Point[], bonusOverlay: 
 }
 
 export function isOccupied(state: GameState, p: Point): boolean {
-  return isOccupiedTiles(get_tiles(state), p) || getOverlayLayer(state.bonusOverlay, state.bonusLayer, p) == 'block';
+  return isOccupiedTiles(get_tiles(state), p) || getOverlayLayer(state.bonusOverlay, bonusLayer, p) == 'block';
 }
 
 export function isOccupiedTiles(tiles: TileEntity[], p: Point): boolean {
@@ -81,7 +81,7 @@ function killTileOfState(state: GameState, wp: DragWidgetPoint): GameState {
         }));
 
       }
-      else if (getOverlayLayer(state.bonusOverlay, state.bonusLayer, p_in_world_int) == 'block') {
+      else if (getOverlayLayer(state.bonusOverlay, bonusLayer, p_in_world_int) == 'block') {
         return checkValid(produce(state, s => {
           setOverlay(s.bonusOverlay, p_in_world_int, 'empty');
           s.score--;
@@ -114,7 +114,7 @@ function resolveValid(state: GameState): GameState {
   const tiles = get_main_tiles(state);
   logger('words', 'grid valid');
   const scorings = tiles.flatMap(tile => {
-    if (getOverlayLayer(state.bonusOverlay, state.bonusLayer, tile.loc.p_in_world_int) == 'bonus') {
+    if (getOverlayLayer(state.bonusOverlay, bonusLayer, tile.loc.p_in_world_int) == 'bonus') {
       return [tile.loc.p_in_world_int];
     }
     else {

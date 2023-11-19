@@ -127,7 +127,6 @@ function exampleState(): GameState {
         y: 88
       }
     },
-    bonusLayer: mkLayer(bonusGenerator),
     bonusOverlay: {
       cells: {
         "12,0": "empty",

@@ -1,5 +1,6 @@
 import { Point } from '../util/types';
 import { point_hash } from '../util/util';
+import { Layer, mkLayer } from './layer';
 
 export type Bonus =
   | 'bonus'
@@ -15,3 +16,5 @@ export function bonusGenerator(p: Point): Bonus {
   }
   return 'empty';
 }
+
+export const bonusLayer: Layer<Bonus> = mkLayer('bonus', bonusGenerator);

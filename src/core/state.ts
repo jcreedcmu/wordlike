@@ -84,7 +84,6 @@ export type GameState = {
   canvas_from_world: SE2,
   mouseState: MouseState,
   seed: number,
-  bonusLayer: Layer<Bonus>,
   bonusOverlay: Overlay<Bonus>,
   selected?: SelectionState,
   score: number,
@@ -119,7 +118,6 @@ export function mkGameState(seed?: number): GameState {
       translate: { x: 200, y: 240 }
     },
     mouseState: { t: 'up', p_in_canvas: { x: 0, y: 0 } },
-    bonusLayer: mkLayer(bonusGenerator),
     bonusOverlay: mkOverlay<Bonus>(),
     score: 0,
     lost: false,
