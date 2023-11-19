@@ -130,7 +130,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
 
     // draw invalid words
     if (ms.t == 'up') {
-      state.invalidWords.forEach(lw => {
+      state.coreState.invalidWords.forEach(lw => {
         drawInvalidWord(d, pan_canvas_from_world, lw);
       });
     }
@@ -187,7 +187,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     // indicate current tool
     const rect_in_canvas = apply_to_rect(
       canvas_from_toolbar(),
-      { p: { x: 0, y: S * state.toolIndex }, sz: { x: S, y: S } }
+      { p: { x: 0, y: S * state.coreState.toolIndex }, sz: { x: S, y: S } }
     );
     fillRect(d, rect_in_canvas, 'rgba(255, 255, 0, 0.5)');
   }
@@ -283,7 +283,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   }
 
   function drawAnimations(time_ms: number) {
-    state.animations.forEach(anim => {
+    state.coreState.animations.forEach(anim => {
       drawAnimation(d, pan_canvas_from_world, time_ms, anim);
     });
   }

@@ -76,10 +76,12 @@ function render(ci: CanvasInfo, props: CanvasProps) {
 
 function exampleState(): GameState {
   const state: GameState = {
-    animations: [],
-    coreState: {},
-    toolIndex: 0,
-    invalidWords: [],
+    coreState: {
+      animations: [],
+      toolIndex: 0,
+      invalidWords: [],
+      tile_entities: {},
+    },
     connectedSet: mkGridOf([]),
     energies: [
       -0.20972339977922094,
@@ -110,7 +112,6 @@ function exampleState(): GameState {
       0
     ],
     seed: 1533311107,
-    tile_entities: {},
     canvas_from_world: {
       scale: {
         x: 39.6694214876033,

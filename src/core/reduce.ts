@@ -275,7 +275,7 @@ function reduceMouseDownInHand(state: GameState, wp: WidgetPoint & { t: 'hand' }
 function reduceMouseDownInToolbar(state: GameState, wp: WidgetPoint & { t: 'toolbar' }, button: number, mods: Set<string>): GameState {
   const tool = toolOfIndex(wp.toolIndex);
   if (tool !== undefined) {
-    return produce(vacuous_down(state, wp), s => { s.toolIndex = wp.toolIndex; });
+    return produce(vacuous_down(state, wp), s => { s.coreState.toolIndex = wp.toolIndex; });
   }
   else {
     return vacuous_down(state, wp);
@@ -341,9 +341,9 @@ function reduceGameAction(state: GameState, action: GameAction): effectful.Resul
     }));
     case 'repaint':
       const now = Date.now();
-      const newAnimations = filterExpiredAnimations(now, state.animations);
+      const newAnimations = filterExpiredAnimations(now, state.coreState.animations);
       state = produce(state, s => {
-        s.animations = newAnimations;
+        s.coreState.animations = newAnimations;
       });
       if (state.panic !== undefined) {
         if (getPanicFraction(state.panic) > 1) {

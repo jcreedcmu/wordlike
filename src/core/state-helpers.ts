@@ -77,7 +77,7 @@ function killTileOfState(state: GameState, wp: DragWidgetPoint): GameState {
 
         return checkValid(produce(removeTile(state, tile.id), s => {
           s.score--;
-          s.animations.push(anim);
+          s.coreState.animations.push(anim);
         }));
 
       }
@@ -85,7 +85,7 @@ function killTileOfState(state: GameState, wp: DragWidgetPoint): GameState {
         return checkValid(produce(state, s => {
           setOverlay(s.bonusOverlay, p_in_world_int, 'empty');
           s.score--;
-          s.animations.push(anim);
+          s.coreState.animations.push(anim);
         }));
       }
       else {
@@ -148,7 +148,7 @@ export function checkValid(state: GameState): GameState {
 
   return produce(state, s => {
     s.panic = panic;
-    s.invalidWords = invalidWords;
+    s.coreState.invalidWords = invalidWords;
     s.connectedSet = connectedSet;
   });
 }

@@ -75,15 +75,14 @@ export type Animation =
   | { t: 'explosion', start_ms: number, duration_ms: number, center_in_world: Point };
 
 export type CoreState = {
-
-};
-
-export type GameState = {
   animations: Animation[],
-  coreState: CoreState,
   toolIndex: number,
   tile_entities: Record<string, TileEntity>,
   invalidWords: LocatedWord[],
+};
+
+export type GameState = {
+  coreState: CoreState,
   connectedSet: Grid<boolean>,
   energies: Energies,
   canvas_from_world: SE2,
@@ -111,11 +110,12 @@ export function mkGameSceneState(seed?: number): SceneState {
 export function mkGameState(seed?: number): GameState {
   seed = seed ?? 12345678;
   return {
-    animations: [],
-    coreState: {},
-    toolIndex: 0,
-    tile_entities: {},
-    invalidWords: [],
+    coreState: {
+      animations: [],
+      toolIndex: 0,
+      tile_entities: {},
+      invalidWords: [],
+    },
     connectedSet: mkGridOf([]),
     energies: initialEnergies(),
     seed,

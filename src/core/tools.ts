@@ -23,5 +23,5 @@ export function currentTool(state: GameState): Tool {
   // state should be responsible for maintaining the invariant that
   // tool index is always valid. Maybe instead I should store Tool in
   // state, not toolIndex, idk.
-  return toolOfIndex(state.toolIndex)!;
+  return toolOfIndex(state.coreState.toolIndex)!;
 }
