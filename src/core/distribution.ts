@@ -1,7 +1,7 @@
 import { DEBUG } from "../util/debug";
 import { produce } from "../util/produce";
 import { next_rand } from "../util/util";
-import { GameState } from "./state";
+import { CoreState, GameState } from "./state";
 
 // contains 26 values. The probability of a letter being picked next
 // is proportional to e^{-βE}
@@ -15,11 +15,6 @@ const default_beta = 2;
 
 // proportionality constant for how much to adjust energies by
 const default_increment = 4;
-
-// returns a 26-length list of probabilities
-export function currentDistribution(state: GameState): Probs {
-  return distributionOf(state.energies, default_beta);
-}
 
 export function distributionOf(energies: Energies, beta: number): Probs {
   const unnormalizedProbs = energies.map(energy => Math.exp(-beta * energy));

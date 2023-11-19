@@ -32,7 +32,7 @@ function resolveMouseupInner(state: GameState): GameState {
   switch (ms.t) {
     case 'drag_selection': {
       const small_rect_in_canvas = boundRect([ms.orig_p, ms.p_in_canvas]);
-      const small_rect_in_world = apply_to_rect(inverse(state.canvas_from_world), small_rect_in_canvas);
+      const small_rect_in_world = apply_to_rect(inverse(state.coreState.canvas_from_world), small_rect_in_canvas);
       const rect_in_world = {
         p: vsub(small_rect_in_world.p, { x: 1, y: 1 }),
         sz: vadd(small_rect_in_world.sz, { x: 1, y: 1 }),
@@ -54,10 +54,10 @@ function resolveMouseupInner(state: GameState): GameState {
     }
     case 'drag_world': {
 
-      const new_canvas_from_world = compose(pan_canvas_from_canvas_of_mouse_state(ms), state.canvas_from_world);
+      const new_canvas_from_world = compose(pan_canvas_from_canvas_of_mouse_state(ms), state.coreState.canvas_from_world);
 
       return produce(state, s => {
-        s.canvas_from_world = new_canvas_from_world;
+        s.coreState.canvas_from_world = new_canvas_from_world;
       });
     }
 
@@ -73,7 +73,7 @@ function resolveMouseupInner(state: GameState): GameState {
           const remainingTiles = get_tiles(state).filter(tile => !selected.selectedIds.includes(tile.id));
 
           const new_tile_in_world_int: Point = vm(compose(
-            inverse(state.canvas_from_world),
+            inverse(state.coreState.canvas_from_world),
             canvas_from_drag_tile(state, ms)).translate,
             Math.round);
           const old_tile_loc: Location = ms.orig_loc;
@@ -94,7 +94,7 @@ function resolveMouseupInner(state: GameState): GameState {
           });
 
           const tgts = moves.map(x => x.p_in_world_int);
-          if (isCollision(remainingTiles, tgts, state.bonusOverlay, bonusLayer)) {
+          if (isCollision(remainingTiles, tgts, state.coreState.bonusOverlay, bonusLayer)) {
             return state;
           }
 
@@ -108,7 +108,7 @@ function resolveMouseupInner(state: GameState): GameState {
         }
         else {
           const new_tile_in_world_int: Point = vm(compose(
-            inverse(state.canvas_from_world),
+            inverse(state.coreState.canvas_from_world),
             canvas_from_drag_tile(state, ms)).translate,
             Math.round);
 
@@ -237,7 +237,7 @@ function reduceMouseDownInWorld(state: GameState, wp: WidgetPoint & { t: 'world'
       break;
     }
   }
-  const hoverBlock = getOverlayLayer(state.bonusOverlay, bonusLayer, p_in_world_int) == 'block';
+  const hoverBlock = getOverlayLayer(state.coreState.bonusOverlay, bonusLayer, p_in_world_int) == 'block';
   let pinned =
     (hoverTile && hoverTile.loc.t == 'world') ? isTilePinned(state, hoverTile.id, hoverTile.loc) : false;
   const intent = getIntentOfMouseDown(currentTool(state), wp, button, mods, hoverTile, hoverBlock, pinned);
@@ -326,7 +326,7 @@ function reduceGameAction(state: GameState, action: GameAction): effectful.Resul
         translate(vscale(action.p, -1)),
       );
       return gs(produce(state, s => {
-        s.canvas_from_world = compose(zoomed_canvas_of_unzoomed_canvas, s.canvas_from_world);
+        s.coreState.canvas_from_world = compose(zoomed_canvas_of_unzoomed_canvas, s.coreState.canvas_from_world);
       }));
     }
     case 'mouseDown': {

@@ -121,7 +121,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
       let opts = undefined;
 
       opts = {
-        connected: getGrid(state.connectedSet, tile.loc.p_in_world_int) ?? false,
+        connected: getGrid(state.coreState.connectedSet, tile.loc.p_in_world_int) ?? false,
         selected: state.selected ? getOverlay(state.selected.overlay, tile.loc.p_in_world_int) : undefined
       };
       drawTile(d, canvas_from_tile(tile), tile, opts);
@@ -139,7 +139,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     for (let i = top_left_in_world.x; i <= bot_right_in_world.x; i++) {
       for (let j = top_left_in_world.y; j <= bot_right_in_world.y; j++) {
         const p: Point = { x: i, y: j };
-        switch (getOverlayLayer(state.bonusOverlay, bonusLayer, p)) {
+        switch (getOverlayLayer(state.coreState.bonusOverlay, bonusLayer, p)) {
           case 'bonus': {
             const rect_in_canvas = apply_to_rect(pan_canvas_from_world, { p, sz: { x: 1, y: 1 } });
             d.strokeStyle = 'rgba(0,0,255,0.5)';

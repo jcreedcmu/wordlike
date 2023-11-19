@@ -79,21 +79,21 @@ export type CoreState = {
   toolIndex: number,
   tile_entities: Record<string, TileEntity>,
   invalidWords: LocatedWord[],
+  connectedSet: Grid<boolean>,
+  energies: Energies,
+  canvas_from_world: SE2,
+  seed: number,
+  bonusOverlay: Overlay<Bonus>,
 };
 
 export type GameState = {
   coreState: CoreState,
-  connectedSet: Grid<boolean>,
-  energies: Energies,
-  canvas_from_world: SE2,
-  mouseState: MouseState,
-  seed: number,
-  bonusOverlay: Overlay<Bonus>,
   selected?: SelectionState,
   score: number,
   lost: boolean,
   panic: PanicData | undefined,
   paused: PauseData | undefined,
+  mouseState: MouseState,
 };
 
 export function mkSceneState(): SceneState {
@@ -115,16 +115,16 @@ export function mkGameState(seed?: number): GameState {
       toolIndex: 0,
       tile_entities: {},
       invalidWords: [],
-    },
-    connectedSet: mkGridOf([]),
-    energies: initialEnergies(),
-    seed,
-    canvas_from_world: {
-      scale: { x: 48, y: 48 },
-      translate: { x: 200, y: 240 }
+      bonusOverlay: mkOverlay<Bonus>(),
+      canvas_from_world: {
+        scale: { x: 48, y: 48 },
+        translate: { x: 200, y: 240 }
+      },
+      connectedSet: mkGridOf([]),
+      energies: initialEnergies(),
+      seed,
     },
     mouseState: { t: 'up', p_in_canvas: { x: 0, y: 0 } },
-    bonusOverlay: mkOverlay<Bonus>(),
     score: 0,
     lost: false,
     panic: undefined,

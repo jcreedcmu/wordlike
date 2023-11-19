@@ -33,7 +33,7 @@ export function isCollision(tiles: TileEntity[], points: Point[], bonusOverlay: 
 }
 
 export function isOccupied(state: GameState, p: Point): boolean {
-  return isOccupiedTiles(get_tiles(state), p) || getOverlayLayer(state.bonusOverlay, bonusLayer, p) == 'block';
+  return isOccupiedTiles(get_tiles(state), p) || getOverlayLayer(state.coreState.bonusOverlay, bonusLayer, p) == 'block';
 }
 
 export function isOccupiedTiles(tiles: TileEntity[], p: Point): boolean {
@@ -42,10 +42,10 @@ export function isOccupiedTiles(tiles: TileEntity[], p: Point): boolean {
 
 export function drawOfState(state: GameState): GameState {
   const handLength = get_hand_tiles(state).length;
-  const { letter, energies, seed } = getLetterSample(state.seed, state.energies);
+  const { letter, energies, seed } = getLetterSample(state.coreState.seed, state.coreState.energies);
   return checkValid(produce(state, s => {
-    s.seed = seed;
-    s.energies = energies;
+    s.coreState.seed = seed;
+    s.coreState.energies = energies;
     addHandTile(s, ensureTileId({ letter, p_in_world_int: { x: 0, y: handLength } }));
   }));
 }
@@ -81,9 +81,9 @@ function killTileOfState(state: GameState, wp: DragWidgetPoint): GameState {
         }));
 
       }
-      else if (getOverlayLayer(state.bonusOverlay, bonusLayer, p_in_world_int) == 'block') {
+      else if (getOverlayLayer(state.coreState.bonusOverlay, bonusLayer, p_in_world_int) == 'block') {
         return checkValid(produce(state, s => {
-          setOverlay(s.bonusOverlay, p_in_world_int, 'empty');
+          setOverlay(s.coreState.bonusOverlay, p_in_world_int, 'empty');
           s.score--;
           s.coreState.animations.push(anim);
         }));
@@ -114,7 +114,7 @@ function resolveValid(state: GameState): GameState {
   const tiles = get_main_tiles(state);
   logger('words', 'grid valid');
   const scorings = tiles.flatMap(tile => {
-    if (getOverlayLayer(state.bonusOverlay, bonusLayer, tile.loc.p_in_world_int) == 'bonus') {
+    if (getOverlayLayer(state.coreState.bonusOverlay, bonusLayer, tile.loc.p_in_world_int) == 'bonus') {
       return [tile.loc.p_in_world_int];
     }
     else {
@@ -123,7 +123,7 @@ function resolveValid(state: GameState): GameState {
   });
   return produce(state, s => {
     scorings.forEach(p => {
-      setOverlay(s.bonusOverlay, p, 'empty');
+      setOverlay(s.coreState.bonusOverlay, p, 'empty');
       s.score++;
     });
   });
@@ -149,7 +149,7 @@ export function checkValid(state: GameState): GameState {
   return produce(state, s => {
     s.panic = panic;
     s.coreState.invalidWords = invalidWords;
-    s.connectedSet = connectedSet;
+    s.coreState.connectedSet = connectedSet;
   });
 }
 

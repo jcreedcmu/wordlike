@@ -16,7 +16,7 @@ export function pan_canvas_from_canvas_of_mouse_state(state: MouseState): SE2 {
 
 export function pan_canvas_from_world_of_state(state: GameState): SE2 {
   return compose(pan_canvas_from_canvas_of_mouse_state(state.mouseState),
-    state.canvas_from_world);
+    state.coreState.canvas_from_world);
 }
 
 export function drag_canvas_from_canvas_of_mouse_state(state: MouseState): SE2 {

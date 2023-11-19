@@ -79,9 +79,9 @@ export function getDragWidgetPoint(state: GameState, p_in_canvas: Point): DragWi
   if (pointInRect(p_in_canvas, world_bds_in_canvas)) {
     return {
       t: 'world',
-      p_in_local: apply(inverse(state.canvas_from_world), p_in_canvas),
+      p_in_local: apply(inverse(state.coreState.canvas_from_world), p_in_canvas),
       p_in_canvas,
-      local_from_canvas: inverse(state.canvas_from_world),
+      local_from_canvas: inverse(state.coreState.canvas_from_world),
     };
   }
   else {
