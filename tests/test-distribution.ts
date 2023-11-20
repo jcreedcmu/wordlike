@@ -1,4 +1,4 @@
-import { distributionOf, getLetterSampleOf, getSample, initialEnergiesOf } from '../src/core/distribution';
+import { Energies, distributionOf, getClass, getLetterSampleOf, getSample, initialEnergiesOf } from '../src/core/distribution';
 
 describe('getSample', () => {
 
@@ -25,7 +25,7 @@ describe('getSample', () => {
 describe('currentDistributionOf', () => {
 
   test(`should work as expected`, () => {
-    expect(distributionOf(initialEnergiesOf({ 'a': 1, 'e': 4 }, 1), 1)).toEqual([0.2, 0.8]);
+    expect(distributionOf(initialEnergiesOf([1, 4], 1), 1)).toEqual([0.2, 0.8]);
   });
 
 });
@@ -35,30 +35,39 @@ describe('getLetterSample', () => {
   test(`should work approximately as expected`, () => {
 
     const samples = [];
-    let energies = [10, 0];
-    const letterDistribution = { a: 3, b: 1 };
-    const alphabet = ['a', 'b'];
-    let seed = 124;
+    let energies: Energies = { byLetter: [0, 0, 0, 0, 0], byClass: [1, 1] };
+    const letterDistribution = { A: 1, B: 3, C: 2, D: 1, E: 3 };
+    const classDistribution = [
+      1, // vowels,
+      2, // consonants,
+    ];
+    const alphabet = ['A', 'B', 'C', 'D', 'E'];
+    const counts: Record<string, number> = {};
+    let seed = 121;
     let sample = 0;
-    for (let i = 0; i < 40; i++) {
-      const b = getLetterSampleOf(seed, energies, letterDistribution, alphabet, 1, 1);
+    for (let i = 0; i < 1000; i++) {
+      const b = getLetterSampleOf(seed, energies, letterDistribution, classDistribution, alphabet, 1, 10);
       seed = b.seed;
       energies = b.energies;
       samples.push(b.letter);
+      counts[b.letter] = (counts[b.letter] ?? 0) + 1;
     }
-    expect(samples).toEqual([
-      // We heavily biased the energy vector in b's favor so we see a
-      // bunch of b's initially
-      'b', 'b', 'b', 'b', 'b', 'b', 'b', 'b', 'b', 'b',
-      // But eventually that bias runs out and we see roughly a 3-to-1
-      // ratio of a's to b's after we catch up
-      'a', 'b', 'a', 'a', 'a',
-      'a', 'b', 'a', 'a', 'b',
-      'a', 'a', 'b', 'a', 'a',
-      'a', 'b', 'b', 'a', 'a',
-      'a', 'b', 'a', 'a', 'b',
-      'a', 'a', 'a', 'a', 'a'
-    ]);
 
+    expect(Math.abs(3 - counts.E / counts.A)).toBeLessThan(0.1);
+    expect(Math.abs(2 - (counts.B + counts.C + counts.D) / (counts.A + counts.E))).toBeLessThan(0.1);
+
+
+  });
+});
+
+describe('getClass', () => {
+  describe('should be correct', () => {
+    expect(getClass('A'.charCodeAt(0) - 65)).toBe(0);
+    expect(getClass('E'.charCodeAt(0) - 65)).toBe(0);
+    expect(getClass('I'.charCodeAt(0) - 65)).toBe(0);
+    expect(getClass('O'.charCodeAt(0) - 65)).toBe(0);
+    expect(getClass('U'.charCodeAt(0) - 65)).toBe(0);
+    expect(getClass('Y'.charCodeAt(0) - 65)).toBe(1);
+    expect(getClass('C'.charCodeAt(0) - 65)).toBe(1);
   });
 });

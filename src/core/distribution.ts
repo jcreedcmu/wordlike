@@ -3,9 +3,19 @@ import { produce } from "../util/produce";
 import { next_rand } from "../util/util";
 import { CoreState, GameState } from "./state";
 
-// contains 26 values. The probability of a letter being picked next
-// is proportional to e^{-βE}
-export type Energies = number[];
+type LetterClass = 0 | 1;
+
+export function getClass(index: number): LetterClass {
+  return [0, 4, 8, 14, 20].includes(index) ? 0 : 1;
+}
+
+export type Energies =
+  {
+    // contains 26 values. The probability of a letter being picked next
+    // is proportional to e^{-βE}
+    byLetter: number[],
+    byClass: number[], // vowel, consonant
+  }
 
 // contains 26 values, which sum to 1
 export type Probs = number[];
@@ -16,13 +26,16 @@ const default_beta = 2;
 // proportionality constant for how much to adjust energies by
 const default_increment = 4;
 
-export function distributionOf(energies: Energies, beta: number): Probs {
-  const unnormalizedProbs = energies.map(energy => Math.exp(-beta * energy));
+// Takes in a list of energies, returns a list of probabilities
+export function distributionOf(energies: number[], beta: number): number[] {
+  const minEnergy = Math.min(...energies);
+  const calibratedEnergies = energies.map(e => e - minEnergy);
+  const unnormalizedProbs = calibratedEnergies.map(energy => Math.exp(-beta * energy));
   const sum = unnormalizedProbs.reduce((a, b) => a + b);
   return unnormalizedProbs.map(prob => prob / sum);
 }
 
-export const letterDistribution: Record<string, number> = {
+const letterDistribution: Record<string, number> = {
   a: 10,
   b: 3,
   c: 4,
@@ -52,16 +65,28 @@ export const letterDistribution: Record<string, number> = {
 };
 
 const alphabet = Object.keys(letterDistribution).sort();
+const letterDistributionNumbers = alphabet.map(letter => letterDistribution[letter]);
 
-export function initialEnergies(): Energies {
-  return initialEnergiesOf(letterDistribution, default_beta);
+function mkClassDistribution(): number[] {
+  let counts = [0, 0];
+  Object.keys(letterDistribution).forEach(k => {
+    counts[getClass(k.charCodeAt(0) - 97)] += letterDistribution[k]
+  });
+  return counts;
 }
 
-export function initialEnergiesOf(letterDistribution: Record<string, number>, beta: number): Energies {
+const classDistribution = mkClassDistribution();
+
+export function initialEnergies(): Energies {
+  return {
+    byLetter: initialEnergiesOf(letterDistributionNumbers, default_beta),
+    byClass: initialEnergiesOf(classDistribution, default_beta),
+  };
+}
+
+export function initialEnergiesOf(distribution: number[], beta: number): number[] {
   const energies: number[] = [];
-  return Object.keys(letterDistribution).sort().map(letter =>
-    (1 / beta) * Math.log(1 / letterDistribution[letter])
-  );
+  return distribution.map(v => (1 / beta) * Math.log(1 / v));
 }
 
 export function getSample(seed0: number, probs: Probs): { sample: number, seed: number } {
@@ -88,13 +113,20 @@ export function getSample(seed0: number, probs: Probs): { sample: number, seed: 
   return { sample, seed };
 }
 
-export function getLetterSampleOf(seed0: number, energies0: Energies, letterDistribution: Record<string, number>, alphabet: string[], beta: number, increment: number): { seed: number, letter: string, energies: Energies } {
-  const { seed, sample } = getSample(seed0, distributionOf(energies0, beta));
-  const letter = alphabet[sample];
-  const energies = produce(energies0, e => { e[sample] += increment / letterDistribution[letter] });
-  return { seed, energies, letter };
+export function getLetterSampleOf(seed0: number, energies0: Energies, letterDistribution: Record<string, number>, classDistribution: number[], alphabet: string[], beta: number, increment: number): { seed: number, letter: string, energies: Energies } {
+
+  const { seed: seed1, sample: classSample } = getSample(seed0, distributionOf(energies0.byClass, beta));
+  const modifiedLetterEnergies = energies0.byLetter.map((energy, ix) => getClass(ix) == classSample ? energy : Infinity);
+  const { seed: seed2, sample: letterSample } = getSample(seed1, distributionOf(modifiedLetterEnergies, beta));
+  const letter = alphabet[letterSample];
+  const energies = produce(energies0, e => {
+    e.byClass[classSample] += increment / classDistribution[classSample];
+    e.byLetter[letterSample] += increment / letterDistribution[letter];
+  });
+
+  return { seed: seed2, energies, letter };
 }
 
 export function getLetterSample(seed0: number, energies0: Energies): { seed: number, letter: string, energies: Energies } {
-  return getLetterSampleOf(seed0, energies0, letterDistribution, alphabet, default_beta, default_increment);
+  return getLetterSampleOf(seed0, energies0, letterDistribution, classDistribution, alphabet, default_beta, default_increment);
 }
