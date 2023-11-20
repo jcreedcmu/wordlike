@@ -10,8 +10,8 @@ import { fillRect, fillText, strokeRect } from "../util/dutil";
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
-import { boundRect, midpointOfRect } from "../util/util";
-import { vadd, vm, vscale, vsub, vtrans } from "../util/vutil";
+import { boundRect, midpointOfRect, unreachable } from "../util/util";
+import { vadd, vequal, vm, vscale, vsub, vtrans } from "../util/vutil";
 import { CanvasInfo } from "./use-canvas";
 import { canvas_from_drag_tile, pan_canvas_from_world_of_state } from "./view-helpers";
 import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, hand_bds_in_canvas, pause_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
@@ -43,10 +43,15 @@ function drawAnimation(d: CanvasRenderingContext2D, pan_canvas_from_world: SE2, 
         0, 360,
       );
       d.stroke();
-
+      return;
+    } break;
+    case 'point-decay': {
+      const fraction = Math.min(1, Math.max(0, 1 - (time_ms - anim.start_ms) / anim.duration_ms));
+      drawBonus(d, pan_canvas_from_world, anim.p_in_world_int, fraction);
+      return;
     } break;
   }
-
+  unreachable(anim);
 }
 
 export function drawPausedScreen(ci: CanvasInfo, state: GameState) {
@@ -57,6 +62,21 @@ export function drawPausedScreen(ci: CanvasInfo, state: GameState) {
   d.textAlign = 'center';
   d.textBaseline = 'middle';
   fillText(d, "paused", midpointOfRect(canvas_bds_in_canvas), 'black', '48px sans-serif');
+}
+
+function drawBonus(d: CanvasRenderingContext2D, pan_canvas_from_world: SE2, p: Point, fraction: number = 1) {
+  const rect_in_canvas = apply_to_rect(pan_canvas_from_world, { p, sz: { x: 1, y: 1 } });
+  d.fillStyle = 'rgba(0,0,255,0.5)';
+  d.beginPath();
+  const m = midpointOfRect(rect_in_canvas);
+  d.moveTo(m.x, m.y);
+  d.arc(rect_in_canvas.p.x + rect_in_canvas.sz.x / 2,
+    rect_in_canvas.p.y + rect_in_canvas.sz.y / 2,
+    rect_in_canvas.sz.y * 0.4,
+    0, 2 * Math.PI * fraction,
+  );
+  d.fill();
+
 }
 
 export function rawPaint(ci: CanvasInfo, state: GameState) {
@@ -141,18 +161,9 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
       for (let j = top_left_in_world.y; j <= bot_right_in_world.y; j++) {
         const p: Point = { x: i, y: j };
         switch (getOverlayLayer(cs.bonusOverlay, bonusLayer, p)) {
-          case 'bonus': {
-            const rect_in_canvas = apply_to_rect(pan_canvas_from_world, { p, sz: { x: 1, y: 1 } });
-            d.strokeStyle = 'rgba(0,0,255,0.5)';
-            d.lineWidth = 3;
-            d.beginPath();
-            d.arc(rect_in_canvas.p.x + rect_in_canvas.sz.x / 2,
-              rect_in_canvas.p.y + rect_in_canvas.sz.y / 2,
-              rect_in_canvas.sz.y * 0.4,
-              0, 360,
-            );
-            d.stroke();
-          } break;
+          case 'bonus':
+            drawBonus(d, pan_canvas_from_world, p);
+            break;
           case 'empty':
             break;
           case 'block': {
@@ -284,9 +295,14 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   }
 
   function drawAnimations(time_ms: number) {
-    cs.animations.forEach(anim => {
-      drawAnimation(d, pan_canvas_from_world, time_ms, anim);
-    });
+    if (cs.animations.length > 0) {
+      d.save();
+      d.clip(worldClip);
+      cs.animations.forEach(anim => {
+        drawAnimation(d, pan_canvas_from_world, time_ms, anim);
+      });
+      d.restore();
+    }
   }
 
   if (!cs.lost)

@@ -8,7 +8,7 @@ import { Bonus, bonusLayer } from "./bonus";
 import { PanicData, PauseData } from "./clock";
 import { getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
-import { Layer, Overlay, getOverlayLayer, overlayAny, overlayPoints, setOverlay } from "./layer";
+import { Layer, Overlay, getOverlay, getOverlayLayer, mkOverlayFrom, overlayAny, overlayForEach, overlayPoints, setOverlay } from "./layer";
 import { Animation, GameState, Location, MainTile, SelectionState, Tile, TileEntity } from "./state";
 import { addHandTile, addWorldTile, ensureTileId, get_hand_tiles, get_main_tiles, get_tiles, removeTile } from "./tile-helpers";
 
@@ -33,7 +33,10 @@ export function isCollision(tiles: TileEntity[], points: Point[], bonusOverlay: 
 }
 
 export function isOccupied(state: GameState, p: Point): boolean {
-  return isOccupiedTiles(get_tiles(state), p) || getOverlayLayer(state.coreState.bonusOverlay, bonusLayer, p) == 'block';
+  if (isOccupiedTiles(get_tiles(state), p))
+    return true;
+  const bonus = getOverlayLayer(state.coreState.bonusOverlay, bonusLayer, p);
+  return bonus == 'block' || bonus == 'bonus';
 }
 
 export function isOccupiedTiles(tiles: TileEntity[], p: Point): boolean {
@@ -136,21 +139,35 @@ function killTileOfState(state: GameState, wp: DragWidgetPoint, radius: number, 
   }
 }
 
+const directions: Point[] = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([x, y]) => ({ x, y }));
+
 function resolveValid(state: GameState): GameState {
   const tiles = get_main_tiles(state);
   logger('words', 'grid valid');
-  const scorings = tiles.flatMap(tile => {
-    if (getOverlayLayer(state.coreState.bonusOverlay, bonusLayer, tile.loc.p_in_world_int) == 'bonus') {
-      return [tile.loc.p_in_world_int];
-    }
-    else {
-      return [];
+  const layer = mkOverlayFrom([]);
+
+  tiles.forEach(tile => {
+    directions.forEach(d => {
+      const p = vadd(tile.loc.p_in_world_int, d);
+      setOverlay(layer, p, true);
+    });
+  });
+  const scorings: Point[] = [];
+  overlayForEach(layer, p => {
+    if (getOverlayLayer(state.coreState.bonusOverlay, bonusLayer, p) == 'bonus') {
+      scorings.push(p);
     }
   });
   return produce(state, s => {
     scorings.forEach(p => {
       setOverlay(s.coreState.bonusOverlay, p, 'empty');
       s.coreState.score++;
+      s.coreState.animations.push({
+        t: 'point-decay',
+        duration_ms: 1000,
+        p_in_world_int: p,
+        start_ms: Date.now(),
+      });
     });
   });
 }

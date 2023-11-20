@@ -72,7 +72,9 @@ export type SelectionState = {
 };
 
 export type Animation =
-  | { t: 'explosion', start_ms: number, duration_ms: number, center_in_world: Point, radius: number };
+  | { t: 'explosion', start_ms: number, duration_ms: number, center_in_world: Point, radius: number }
+  | { t: 'point-decay', start_ms: number, duration_ms: number, p_in_world_int: Point }
+  ;
 
 export type CoreState = {
   animations: Animation[],
