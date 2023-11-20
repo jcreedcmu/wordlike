@@ -65,3 +65,7 @@ export function vfpart(v: Point): Point {
 export function vtrans(v: Point): Point {
   return { x: v.y, y: v.x };
 }
+
+export function vsnorm(v: Point): number {
+  return v.x * v.x + v.y * v.y;
+}

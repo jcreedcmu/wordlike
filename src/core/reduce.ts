@@ -9,10 +9,9 @@ import { Point } from '../util/types';
 import { boundRect, pointInRect } from '../util/util';
 import { vadd, vequal, vm, vscale, vsub } from '../util/vutil';
 import { Action, Effect, GameAction } from './action';
-import { bonusLayer } from './bonus';
 import { getPanicFraction } from './clock';
 import { Overlay, getOverlayLayer, mkOverlay, mkOverlayFrom, overlayPoints, setOverlay } from './layer';
-import { GameState, Location, SceneState, SelectionState, TileEntity, mkGameSceneState } from './state';
+import { GameState, Location, SceneState, SelectionState, TileEntity, getBonusLayer, mkGameSceneState } from './state';
 import { addWorldTiles, checkValid, drawOfState, filterExpiredAnimations, isCollision, isOccupied, isTilePinned, tryKillTileOfState, unpauseState } from './state-helpers';
 import { getTileId, get_hand_tiles, get_main_tiles, get_tiles, putTileInHand, putTileInWorld, removeAllTiles, setTileLoc } from "./tile-helpers";
 import { Tool, currentTool, toolOfIndex } from './tools';
@@ -94,7 +93,7 @@ function resolveMouseupInner(state: GameState): GameState {
           });
 
           const tgts = moves.map(x => x.p_in_world_int);
-          if (isCollision(remainingTiles, tgts, state.coreState.bonusOverlay, bonusLayer)) {
+          if (isCollision(remainingTiles, tgts, state.coreState.bonusOverlay, getBonusLayer())) {
             return state;
           }
 
@@ -247,7 +246,7 @@ function reduceMouseDownInWorld(state: GameState, wp: WidgetPoint & { t: 'world'
       break;
     }
   }
-  const hoverBlock = getOverlayLayer(state.coreState.bonusOverlay, bonusLayer, p_in_world_int) == 'block';
+  const hoverBlock = getOverlayLayer(state.coreState.bonusOverlay, getBonusLayer(), p_in_world_int) == 'block';
   let pinned =
     (hoverTile && hoverTile.loc.t == 'world') ? isTilePinned(state, hoverTile.id, hoverTile.loc) : false;
   const intent = getIntentOfMouseDown(currentTool(state), wp, button, mods, hoverTile, hoverBlock, pinned);

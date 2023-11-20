@@ -4,12 +4,12 @@ import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { vadd, vequal, vint } from "../util/vutil";
 import { getAssets } from "./assets";
-import { Bonus, bonusLayer } from "./bonus";
+import { Bonus } from "./bonus";
 import { PanicData, PauseData } from "./clock";
 import { getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
 import { Layer, Overlay, getOverlay, getOverlayLayer, mkOverlayFrom, overlayAny, overlayForEach, overlayPoints, setOverlay } from "./layer";
-import { Animation, GameState, Location, MainTile, SelectionState, Tile, TileEntity } from "./state";
+import { Animation, GameState, Location, MainTile, SelectionState, Tile, TileEntity, getBonusLayer } from "./state";
 import { addHandTile, addWorldTile, ensureTileId, get_hand_tiles, get_main_tiles, get_tiles, removeTile } from "./tile-helpers";
 
 export function addWorldTiles(state: GameState, tiles: Tile[]): GameState {
@@ -35,7 +35,7 @@ export function isCollision(tiles: TileEntity[], points: Point[], bonusOverlay: 
 export function isOccupied(state: GameState, p: Point): boolean {
   if (isOccupiedTiles(get_tiles(state), p))
     return true;
-  const bonus = getOverlayLayer(state.coreState.bonusOverlay, bonusLayer, p);
+  const bonus = getOverlayLayer(state.coreState.bonusOverlay, getBonusLayer(), p);
   return bonus == 'block' || bonus == 'bonus';
 }
 
@@ -93,7 +93,7 @@ function killTileOfState(state: GameState, wp: DragWidgetPoint, radius: number, 
         return get_main_tiles(state).find(tile => vequal(tile.loc.p_in_world_int, p));
       }
       function blockAt(p: Point) {
-        return getOverlayLayer(state.coreState.bonusOverlay, bonusLayer, p) == 'block';
+        return getOverlayLayer(state.coreState.bonusOverlay, getBonusLayer(), p) == 'block';
       }
 
       if (tileAt(p_in_world_int) || blockAt(p_in_world_int)) {
@@ -154,7 +154,7 @@ function resolveValid(state: GameState): GameState {
   });
   const scorings: Point[] = [];
   overlayForEach(layer, p => {
-    if (getOverlayLayer(state.coreState.bonusOverlay, bonusLayer, p) == 'bonus') {
+    if (getOverlayLayer(state.coreState.bonusOverlay, getBonusLayer(), p) == 'bonus') {
       scorings.push(p);
     }
   });

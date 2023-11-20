@@ -1,17 +1,15 @@
 import { getAssets } from "../core/assets";
-import { bonusLayer } from "../core/bonus";
 import { getPanicFraction } from "../core/clock";
 import { LocatedWord, getGrid } from "../core/grid";
 import { getOverlay, getOverlayLayer } from "../core/layer";
-import { Animation, GameState, TileEntity } from "../core/state";
+import { Animation, GameState, TileEntity, getBonusLayer } from "../core/state";
 import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from "../core/tile-helpers";
-import { debugOnce, logOnce } from "../util/debug";
 import { fillRect, fillText, strokeRect } from "../util/dutil";
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
 import { boundRect, midpointOfRect, unreachable } from "../util/util";
-import { vadd, vequal, vm, vscale, vsub, vtrans } from "../util/vutil";
+import { vadd, vm, vscale, vsub, vtrans } from "../util/vutil";
 import { CanvasInfo } from "./use-canvas";
 import { canvas_from_drag_tile, pan_canvas_from_world_of_state } from "./view-helpers";
 import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, hand_bds_in_canvas, pause_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
@@ -160,7 +158,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     for (let i = top_left_in_world.x; i <= bot_right_in_world.x; i++) {
       for (let j = top_left_in_world.y; j <= bot_right_in_world.y; j++) {
         const p: Point = { x: i, y: j };
-        switch (getOverlayLayer(cs.bonusOverlay, bonusLayer, p)) {
+        switch (getOverlayLayer(cs.bonusOverlay, getBonusLayer(), p)) {
           case 'bonus':
             drawBonus(d, pan_canvas_from_world, p);
             break;

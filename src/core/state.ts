@@ -1,6 +1,6 @@
 import { SE2 } from '../util/se2';
 import { Point } from '../util/types';
-import { Bonus, bonusGenerator } from './bonus';
+import { Bonus, bonusGenerator, mkBonusLayer } from './bonus';
 import { PanicData, PauseData } from './clock';
 import { Energies, initialEnergies } from './distribution';
 import { Grid, LocatedWord, mkGridOf } from './grid';
@@ -132,4 +132,13 @@ export function mkGameState(seed?: number): GameState {
     },
     mouseState: { t: 'up', p_in_canvas: { x: 0, y: 0 } },
   };
+}
+
+let _cachedBonusLayer: Layer<Bonus> | undefined = undefined;
+
+export function getBonusLayer(): Layer<Bonus> {
+  if (_cachedBonusLayer == undefined) {
+    _cachedBonusLayer = mkBonusLayer(Date.now());
+  }
+  return _cachedBonusLayer;
 }
