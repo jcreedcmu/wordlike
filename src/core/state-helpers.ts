@@ -1,3 +1,4 @@
+import { mkPointDecayAnimation, Animation, mkExplosionAnimation } from './animations';
 import { DragWidgetPoint, WidgetPoint } from "../ui/widget-helpers";
 import { logger } from "../util/debug";
 import { produce } from "../util/produce";
@@ -9,7 +10,7 @@ import { PanicData, PauseData } from "./clock";
 import { getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
 import { Layer, Overlay, getOverlay, getOverlayLayer, mkOverlayFrom, overlayAny, overlayForEach, overlayPoints, setOverlay } from "./layer";
-import { Animation, GameState, Location, MainTile, SelectionState, Tile, TileEntity, getBonusLayer } from "./state";
+import { GameState, Location, MainTile, SelectionState, Tile, TileEntity, getBonusLayer } from "./state";
 import { addHandTile, addWorldTile, ensureTileId, get_hand_tiles, get_main_tiles, get_tiles, removeTile } from "./tile-helpers";
 
 export function addWorldTiles(state: GameState, tiles: Tile[]): GameState {
@@ -81,13 +82,7 @@ function killTileOfState(state: GameState, wp: DragWidgetPoint, radius: number, 
   switch (wp.t) {
     case 'world': {
       const p_in_world_int = vint(wp.p_in_local);
-      const anim: Animation = {
-        t: 'explosion',
-        center_in_world: vadd(p_in_world_int, { x: 0.5, y: 0.5 }),
-        duration_ms: (radius + 1) * 250,
-        start_ms: Date.now(),
-        radius,
-      }
+      const anim: Animation = mkExplosionAnimation(p_in_world_int, radius);
 
       function tileAt(p: Point): MainTile | undefined {
         return get_main_tiles(state).find(tile => vequal(tile.loc.p_in_world_int, p));
@@ -162,12 +157,7 @@ function resolveValid(state: GameState): GameState {
     scorings.forEach(p => {
       setOverlay(s.coreState.bonusOverlay, p, 'empty');
       s.coreState.score++;
-      s.coreState.animations.push({
-        t: 'point-decay',
-        duration_ms: 1000,
-        p_in_world_int: p,
-        start_ms: Date.now(),
-      });
+      s.coreState.animations.push(mkPointDecayAnimation(p));
     });
   });
 }

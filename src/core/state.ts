@@ -1,3 +1,4 @@
+import { Animation } from './animations';
 import { SE2 } from '../util/se2';
 import { Point } from '../util/types';
 import { Bonus, bonusGenerator, mkBonusLayer } from './bonus';
@@ -70,11 +71,6 @@ export type SelectionState = {
   overlay: Overlay<boolean>,
   selectedIds: string[],
 };
-
-export type Animation =
-  | { t: 'explosion', start_ms: number, duration_ms: number, center_in_world: Point, radius: number }
-  | { t: 'point-decay', start_ms: number, duration_ms: number, p_in_world_int: Point }
-  ;
 
 export type CoreState = {
   animations: Animation[],
