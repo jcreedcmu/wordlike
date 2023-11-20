@@ -9,7 +9,7 @@ export type Animation =
 export function mkPointDecayAnimation(p: Point): Animation {
   return {
     t: 'point-decay',
-    duration_ms: 500,
+    duration_ms: 250,
     p_in_world_int: p,
     start_ms: Date.now(),
   };
