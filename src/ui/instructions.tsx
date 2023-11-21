@@ -202,7 +202,6 @@ function exampleState(): GameState {
   ].map(ensureTileId);
   const almost = resolveValid(checkValid(addHandTiles(addWorldTiles(state, tiles), handTiles)));
   return produce(almost, s => {
-    console.log(almost.coreState.animations);
     s.coreState.animations = [];
   });
 }
