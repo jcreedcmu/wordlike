@@ -14,7 +14,7 @@ import { Overlay, getOverlayLayer, mkOverlay, mkOverlayFrom, overlayPoints, setO
 import { GameState, HAND_TILE_LIMIT, Location, SceneState, SelectionState, TileEntity, getBonusLayer, mkGameSceneState } from './state';
 import { addWorldTiles, checkValid, drawOfState, filterExpiredAnimations, isCollision, isOccupied, isTilePinned, tryKillTileOfState, unpauseState } from './state-helpers';
 import { getTileId, get_hand_tiles, get_main_tiles, get_tiles, putTileInHand, putTileInWorld, putTilesInHand, removeAllTiles, setTileLoc } from "./tile-helpers";
-import { Tool, getCurrentTool, toolOfIndex } from './tools';
+import { Tool, bombIntent, dynamiteIntent, getCurrentTool, toolOfIndex } from './tools';
 
 function resolveMouseup(state: GameState): GameState {
   // FIXME: Setting the mouse state to up *before* calling
@@ -167,9 +167,6 @@ export type Intent =
   | { t: 'kill', radius: number, cost: number }
   | { t: 'startSelection' }
   ;
-
-const dynamiteIntent: Intent = { t: 'kill', radius: 0, cost: 1 };
-const bombIntent: Intent = { t: 'kill', radius: 1, cost: 3 };
 
 function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number, mods: Set<string>, hoverTile: TileEntity | undefined, hoverBlock: boolean, pinned: boolean): Intent {
   if (button == 2)

@@ -1,3 +1,4 @@
+import { Intent } from "./reduce";
 import { GameState, State } from "./state";
 
 export const TOOL_IMAGE_WIDTH = 32;
@@ -26,15 +27,18 @@ export function getCurrentTool(state: GameState): Tool {
   return state.coreState.currentTool;
 }
 
+export const dynamiteIntent: Intent & { t: 'kill' } = { t: 'kill', radius: 0, cost: 1 };
+export const bombIntent: Intent & { t: 'kill' } = { t: 'kill', radius: 1, cost: 3 };
+
 export function getCurrentTools(state: GameState): Tool[] {
   if (state.coreState.lost) {
     return [];
   }
   const tools: Tool[] = ['pointer', 'hand'];
-  if (state.coreState.score >= 1) {
+  if (state.coreState.score >= dynamiteIntent.cost) {
     tools.push('dynamite');
   }
-  if (state.coreState.score >= 3) {
+  if (state.coreState.score >= bombIntent.cost) {
     tools.push('bomb');
   }
   return tools;
