@@ -13,6 +13,7 @@ import { Layer, Overlay, getOverlay, getOverlayLayer, mkOverlayFrom, overlayAny,
 import { GameState, HAND_TILE_LIMIT, Location, MainTile, SelectionState, Tile, TileEntity, getBonusLayer } from "./state";
 import { addHandTile, addWorldTile, ensureTileId, get_hand_tiles, get_main_tiles, get_tiles, removeTile } from "./tile-helpers";
 import { apply, compose, translate } from '../util/se1';
+import { Intent, KillIntent } from './reduce';
 
 export function addWorldTiles(state: GameState, tiles: Tile[]): GameState {
   return produce(state, s => {
@@ -56,11 +57,28 @@ export function drawOfState(state: GameState): GameState {
   }));
 }
 
-export function tryKillTileOfState(state: GameState, wp: WidgetPoint, radius: number, cost: number): GameState {
-  if (state.coreState.score >= cost && (wp.t == 'world' || wp.t == 'hand'))
-    return killTileOfState(state, wp, radius, cost);
-  else
+function eligibleKillIntent(state: GameState, intent: KillIntent): boolean {
+  switch (intent.t) {
+    case 'kill': return state.coreState.score >= intent.cost;
+    case 'bomb': return state.coreState.inventory.bombs >= 1;
+  }
+}
+
+function spendKillIntent(state: GameState, intent: KillIntent): GameState {
+  switch (intent.t) {
+    case 'kill': return produce(state, s => { s.coreState.score -= intent.cost; });
+    case 'bomb': return produce(state, s => { s.coreState.inventory.bombs--; });
+  }
+}
+
+export function tryKillTileOfState(state: GameState, wp: WidgetPoint, intent: KillIntent): GameState {
+  if (!eligibleKillIntent(state, intent))
     return state;
+
+  if (!(wp.t == 'world' || wp.t == 'hand'))
+    return state;
+
+  return killTileOfState(state, wp, intent);
 }
 
 function splashDamage(center: Point, radius: number): Point[] {
@@ -75,7 +93,8 @@ function splashDamage(center: Point, radius: number): Point[] {
   return pts;
 }
 
-function killTileOfState(state: GameState, wp: DragWidgetPoint, radius: number, cost: number): GameState {
+function killTileOfState(state: GameState, wp: DragWidgetPoint, intent: KillIntent): GameState {
+  const radius = intent.t == 'kill' ? intent.radius : 1;
 
   // Definitely want to clear the selection, because invariants get
   // violated if a tileId gets deleted but remains in the selection
@@ -108,8 +127,7 @@ function killTileOfState(state: GameState, wp: DragWidgetPoint, radius: number, 
         });
       });
 
-      return checkValid(produce(state, s => {
-        s.coreState.score -= cost;
+      return checkValid(produce(spendKillIntent(state, intent), s => {
         s.coreState.animations.push(anim);
       }));
     }

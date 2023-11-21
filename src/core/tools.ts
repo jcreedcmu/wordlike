@@ -29,7 +29,7 @@ export function getCurrentTool(state: GameState): Tool {
 }
 
 export const dynamiteIntent: Intent & { t: 'kill' } = { t: 'kill', radius: 0, cost: 1 };
-export const bombIntent: Intent & { t: 'kill' } = { t: 'kill', radius: 1, cost: 3 };
+export const bombIntent: Intent & { t: 'bomb' } = { t: 'bomb' };
 
 export function getCurrentTools(state: GameState): Tool[] {
   if (state.coreState.lost) {
@@ -39,7 +39,7 @@ export function getCurrentTools(state: GameState): Tool[] {
   if (state.coreState.score >= dynamiteIntent.cost) {
     tools.push('dynamite');
   }
-  if (state.coreState.score >= bombIntent.cost) {
+  if (state.coreState.inventory.bombs > 0) {
     tools.push('bomb');
   }
   return tools;

@@ -161,13 +161,17 @@ function deselect(state: GameState): GameState {
 }
 
 
+export type KillIntent =
+  | { t: 'kill', radius: number, cost: number }
+  | { t: 'bomb' }
+  ;
 
 export type Intent =
   | { t: 'dragTile', id: string }
   | { t: 'vacuous' }
   | { t: 'panWorld' }
-  | { t: 'kill', radius: number, cost: number }
   | { t: 'startSelection' }
+  | KillIntent
   ;
 
 function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number, mods: Set<string>, hoverTile: TileEntity | undefined, hoverBlock: boolean, pinned: boolean): Intent {
@@ -226,7 +230,8 @@ function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint): GameSt
           p_in_canvas: wp.p_in_canvas,
         }
       });
-    case 'kill': return tryKillTileOfState(vacuous_down(state, wp), wp, intent.radius, intent.cost);
+    case 'kill': return tryKillTileOfState(vacuous_down(state, wp), wp, intent);
+    case 'bomb': return tryKillTileOfState(vacuous_down(state, wp), wp, intent);
     case 'startSelection':
       if (wp.t != 'world') return vacuous_down(state, wp);
       return produce(deselect(state), s => {
@@ -340,7 +345,7 @@ function reduceGameAction(state: GameState, action: GameAction): effectful.Resul
         return gs(drawOfState(state));
       }
       if (action.code == 'k') {
-        return gs(tryKillTileOfState(state, getWidgetPoint(state, state.mouseState.p_in_canvas), 0, 1));
+        return gs(tryKillTileOfState(state, getWidgetPoint(state, state.mouseState.p_in_canvas), dynamiteIntent));
       }
       if (action.code == 'd') {
         return gs(checkValid(produce(addWorldTiles(removeAllTiles(state), debugTiles()), s => {
