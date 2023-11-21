@@ -6,7 +6,7 @@ import { produce } from '../util/produce';
 import { SE2, apply, compose, composen, inverse, scale, translate } from '../util/se2';
 import { apply_to_rect } from '../util/se2-extra';
 import { Point } from '../util/types';
-import { boundRect, pointInRect } from '../util/util';
+import { boundRect, getRandomOrder, pointInRect } from '../util/util';
 import { vadd, vequal, vm, vscale, vsub } from '../util/vutil';
 import { Action, Effect, GameAction } from './action';
 import { getPanicFraction } from './clock';
@@ -294,6 +294,17 @@ function reducePauseButton(state: GameState, wp: WidgetPoint): GameState {
   return produce(vacuous_down(state, wp), s => { s.coreState.paused = { pauseTime: Date.now() }; });
 }
 
+function reduceShuffleButton(state: GameState, wp: WidgetPoint): GameState {
+  const hs = get_hand_tiles(state);
+  const randomOrder = getRandomOrder(hs.length);
+  const newLocs: { id: string, loc: Location }[] = hs.map((h, ix) => {
+    return { id: h.id, loc: { t: 'hand', p_in_hand_int: { x: 0, y: randomOrder[ix] } } };
+  });
+  return produce(vacuous_down(state, wp), s => {
+    newLocs.forEach(({ id, loc }) => { setTileLoc(s, id, loc); });
+  });
+}
+
 function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number, mods: Set<string>): GameState {
   if (state.coreState.paused) {
     return unpauseState(vacuous_down(state, wp), state.coreState.paused);
@@ -303,6 +314,7 @@ function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number, mods
     case 'hand': return reduceMouseDownInHand(state, wp, button, mods);
     case 'toolbar': return reduceMouseDownInToolbar(state, wp, button, mods);
     case 'pauseButton': return reducePauseButton(state, wp);
+    case 'shuffleButton': return reduceShuffleButton(state, wp);
   }
 }
 

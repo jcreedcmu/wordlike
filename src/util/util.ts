@@ -92,3 +92,13 @@ export function point_hash(p: Point, seed: number): number {
 export function midpointOfRect(rect: Rect): Point {
   return vm2(rect.p, rect.sz, (p, s) => p + s / 2);
 }
+
+// Returns a random permutation of [0,...,length-1].
+export function getRandomOrder(length: number): number[] {
+  const rv: [number, number][] = [];
+  for (let i = 0; i < length; i++) {
+    rv.push([i, Math.random()]);
+  }
+  rv.sort((a, b) => a[1] - b[1]);
+  return rv.map(a => a[0]);
+}

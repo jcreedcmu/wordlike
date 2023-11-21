@@ -15,7 +15,7 @@ import { drawAnimation } from "./drawAnimation";
 import { drawBonus } from "./drawBonus";
 import { CanvasInfo } from "./use-canvas";
 import { canvas_from_drag_tile, pan_canvas_from_world_of_state } from "./view-helpers";
-import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, hand_bds_in_canvas, pause_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
+import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, hand_bds_in_canvas, shuffle_button_bds_in_canvas, pause_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
 
 export function paintWithScale(ci: CanvasInfo, state: GameState) {
   const { d } = ci;
@@ -190,6 +190,14 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     }
   }
 
+  function drawShuffleButton() {
+    d.textAlign = 'center';
+    d.textBaseline = 'middle';
+    if (!cs.lost) {
+      fillText(d, "🔀", midpointOfRect(shuffle_button_bds_in_canvas), 'black', '48px sans-serif');
+    }
+  }
+
   function drawHand() {
     fillRect(d, hand_bds_in_canvas, backgroundGray);
 
@@ -288,6 +296,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   drawPauseButton();
   drawWorld();
   drawHand();
+  drawShuffleButton();
   if (!cs.lost) {
     drawOtherUi();
     drawAnimations(Date.now());

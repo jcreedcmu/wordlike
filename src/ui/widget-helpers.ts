@@ -29,6 +29,14 @@ export const pause_button_bds_in_canvas: Rect = {
   sz: { x: TOOLBAR_WIDTH, y: TOOLBAR_WIDTH }
 };
 
+export const shuffle_button_bds_in_canvas: Rect = {
+  p: {
+    x: canvas_bds_in_canvas.sz.x - HAND_WIDTH,
+    y: canvas_bds_in_canvas.sz.y - 2 * TOOLBAR_WIDTH
+  },
+  sz: { x: HAND_WIDTH, y: TOOLBAR_WIDTH }
+};
+
 export const DEFAULT_TILE_SCALE = 48;
 
 export function canvas_from_hand(): SE2 {
@@ -49,10 +57,12 @@ export function canvas_from_toolbar(): SE2 {
 export type DragWidgetPoint =
   | { t: 'world', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2 }
   | { t: 'hand', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2 }
+
 export type WidgetPoint =
   | DragWidgetPoint
   | { t: 'toolbar', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2, tool: Tool }
   | { t: 'pauseButton', p_in_canvas: Point }
+  | { t: 'shuffleButton', p_in_canvas: Point }
   ;
 
 export function getWidgetPoint(state: GameState, p_in_canvas: Point): WidgetPoint {
@@ -62,6 +72,13 @@ export function getWidgetPoint(state: GameState, p_in_canvas: Point): WidgetPoin
       p_in_canvas,
     };
   }
+  if (pointInRect(p_in_canvas, shuffle_button_bds_in_canvas)) {
+    return {
+      t: 'shuffleButton',
+      p_in_canvas,
+    };
+  }
+
   else if (pointInRect(p_in_canvas, toolbar_bds_in_canvas)) {
     const toolbar_from_canvas = inverse(canvas_from_toolbar());
     const p_in_local = apply(toolbar_from_canvas, p_in_canvas);
