@@ -93,30 +93,25 @@ function killTileOfState(state: GameState, wp: DragWidgetPoint, radius: number, 
         return getOverlayLayer(state.coreState.bonusOverlay, getBonusLayer(), p) == 'block';
       }
 
-      if (tileAt(p_in_world_int) || blockAt(p_in_world_int)) {
-        const tilesToDestroy: Point[] = splashDamage(p_in_world_int, radius);
-        // remove all tiles in radius
+      const tilesToDestroy: Point[] = splashDamage(p_in_world_int, radius);
+      // remove all tiles in radius
+      tilesToDestroy.forEach(p => {
+        const tileAtP = tileAt(p);
+        if (tileAtP !== undefined)
+          state = removeTile(state, tileAtP.id);
+      });
+      // remove all blocks in radius
+      state = produce(state, s => {
         tilesToDestroy.forEach(p => {
-          const tileAtP = tileAt(p);
-          if (tileAtP !== undefined)
-            state = removeTile(state, tileAtP.id);
+          if (blockAt(p))
+            setOverlay(s.coreState.bonusOverlay, p, 'empty');
         });
-        // remove all bonuses in radius
-        state = produce(state, s => {
-          tilesToDestroy.forEach(p => {
-            if (blockAt(p))
-              setOverlay(s.coreState.bonusOverlay, p, 'empty');
-          });
-        });
+      });
 
-        return checkValid(produce(state, s => {
-          s.coreState.score -= cost;
-          s.coreState.animations.push(anim);
-        }));
-      }
-      else {
-        return state;
-      }
+      return checkValid(produce(state, s => {
+        s.coreState.score -= cost;
+        s.coreState.animations.push(anim);
+      }));
     }
     case 'hand': {
       const p_in_hand_int = vint(wp.p_in_local);

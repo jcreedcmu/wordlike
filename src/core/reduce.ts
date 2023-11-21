@@ -192,12 +192,7 @@ function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number, mods:
         return { t: 'vacuous' };
       }
     case 'bomb':
-      if (hoverTile || hoverBlock) {
-        return bombIntent;
-      }
-      else {
-        return { t: 'vacuous' };
-      }
+      return bombIntent;
   }
 }
 
