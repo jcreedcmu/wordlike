@@ -302,7 +302,12 @@ function reducePauseButton(state: GameState, wp: WidgetPoint): GameState {
 
 function reduceShuffleButton(state: GameState, wp: WidgetPoint): GameState {
   const hs = get_hand_tiles(state);
-  const randomOrder = getRandomOrder(hs.length);
+  let randomOrder = getRandomOrder(hs.length);
+  let retries = 0;
+  while (randomOrder.every((v, i) => hs[v].letter == hs[i].letter) && retries < 5) {
+    randomOrder = getRandomOrder(hs.length);
+    retries++;
+  }
   const newLocs: { id: string, loc: Location }[] = hs.map((h, ix) => {
     return { id: h.id, loc: { t: 'hand', p_in_hand_int: { x: 0, y: randomOrder[ix] } } };
   });
