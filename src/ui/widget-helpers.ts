@@ -53,7 +53,9 @@ export function canvas_from_toolbar(): SE2 {
   };
 }
 
-// p is in the local coordinate system, i.e. "world" or "hand"
+// The crucial thing about DragWidgetPoint is that it must define the
+// field p_in_local. Semantically it is a potentially valid drag
+// target.
 export type DragWidgetPoint =
   | { t: 'world', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2 }
   | { t: 'hand', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2 }
@@ -63,6 +65,7 @@ export type WidgetPoint =
   | { t: 'toolbar', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2, tool: Tool }
   | { t: 'pauseButton', p_in_canvas: Point }
   | { t: 'shuffleButton', p_in_canvas: Point }
+  | { t: 'nowhere', p_in_canvas: Point } // outside canvas bounds
   ;
 
 export function getWidgetPoint(state: GameState, p_in_canvas: Point): WidgetPoint {
@@ -78,7 +81,6 @@ export function getWidgetPoint(state: GameState, p_in_canvas: Point): WidgetPoin
       p_in_canvas,
     };
   }
-
   else if (pointInRect(p_in_canvas, toolbar_bds_in_canvas)) {
     const toolbar_from_canvas = inverse(canvas_from_toolbar());
     const p_in_local = apply(toolbar_from_canvas, p_in_canvas);
@@ -91,7 +93,11 @@ export function getWidgetPoint(state: GameState, p_in_canvas: Point): WidgetPoin
       tool: tool,
     }
   }
-  else return getDragWidgetPoint(state, p_in_canvas);
+  else if (!pointInRect(p_in_canvas, canvas_bds_in_canvas)) {
+    return { t: 'nowhere', p_in_canvas };
+  }
+  else
+    return getDragWidgetPoint(state, p_in_canvas);
 }
 
 export function getDragWidgetPoint(state: GameState, p_in_canvas: Point): DragWidgetPoint {

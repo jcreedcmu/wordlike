@@ -120,7 +120,7 @@ function resolveMouseupInner(state: GameState): GameState {
 
 
       }
-      else {
+      else if (wp.t == 'hand') {
         const handTiles = get_hand_tiles(state);
         const new_tile_in_hand_int: Point = vm(compose(
           inverse(canvas_from_hand()),
@@ -146,10 +146,11 @@ function resolveMouseupInner(state: GameState): GameState {
             : state;
         }
       }
-
+      else {
+        // we dragged somewhere other than world or hand
+        return state;
+      }
     }
-
-
     case 'up': return state; // no drag to resolve
     case 'down': return state;
   }
@@ -320,6 +321,7 @@ function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number, mods
     case 'toolbar': return reduceMouseDownInToolbar(state, wp, button, mods);
     case 'pauseButton': return reducePauseButton(state, wp);
     case 'shuffleButton': return reduceShuffleButton(state, wp);
+    case 'nowhere': return vacuous_down(state, wp);
   }
 }
 
