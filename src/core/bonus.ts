@@ -24,3 +24,7 @@ export function bonusGenerator(p: Point, seed: number): Bonus {
 export function mkBonusLayer(seed: number): Layer<Bonus> {
   return mkLayer('bonus', p => bonusGenerator(p, seed));
 }
+
+export function isBlocking(bonus: Bonus): boolean {
+  return bonus != 'empty';
+}

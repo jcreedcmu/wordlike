@@ -5,7 +5,7 @@ import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { vadd, vequal, vint } from "../util/vutil";
 import { getAssets } from "./assets";
-import { Bonus } from "./bonus";
+import { Bonus, isBlocking } from "./bonus";
 import { PanicData, PauseData } from "./clock";
 import { getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
@@ -30,14 +30,13 @@ export function addHandTiles(state: GameState, tiles: Tile[]): GameState {
 }
 
 export function isCollision(tiles: TileEntity[], points: Point[], bonusOverlay: Overlay<Bonus>, bonusLayer: Layer<Bonus>) {
-  return points.some(p => isOccupiedTiles(tiles, p) || getOverlayLayer(bonusOverlay, bonusLayer, p) == 'block');
+  return points.some(p => isOccupiedTiles(tiles, p) || isBlocking(getOverlayLayer(bonusOverlay, bonusLayer, p)));
 }
 
 export function isOccupied(state: GameState, p: Point): boolean {
   if (isOccupiedTiles(get_tiles(state), p))
     return true;
-  const bonus = getOverlayLayer(state.coreState.bonusOverlay, getBonusLayer(), p);
-  return bonus == 'block' || bonus == 'bonus';
+  return isBlocking(getOverlayLayer(state.coreState.bonusOverlay, getBonusLayer(), p));
 }
 
 export function isOccupiedTiles(tiles: TileEntity[], p: Point): boolean {
