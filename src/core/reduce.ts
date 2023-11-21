@@ -357,8 +357,15 @@ function reduceGameAction(state: GameState, action: GameAction): effectful.Resul
         scale({ x: sf, y: sf }),
         translate(vscale(action.p, -1)),
       );
+      const canvas_from_world = compose(zoomed_canvas_of_unzoomed_canvas, state.coreState.canvas_from_world);
+      const MAX_ZOOM_OUT = 7.5;
+      const MAX_ZOOM_IN = 150;
+      if (canvas_from_world.scale.x < MAX_ZOOM_OUT || canvas_from_world.scale.y < MAX_ZOOM_OUT
+        || canvas_from_world.scale.x > MAX_ZOOM_IN || canvas_from_world.scale.y > MAX_ZOOM_IN) {
+        return gs(state);
+      }
       return gs(produce(state, s => {
-        s.coreState.canvas_from_world = compose(zoomed_canvas_of_unzoomed_canvas, s.coreState.canvas_from_world);
+        s.coreState.canvas_from_world = canvas_from_world;
       }));
     }
     case 'mouseDown': {
