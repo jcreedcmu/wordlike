@@ -1,8 +1,9 @@
 import { getAssets } from "../core/assets";
 import { getPanicFraction, now_in_game } from "../core/clock";
 import { LocatedWord, getGrid } from "../core/grid";
-import { getOverlay, getOverlayLayer } from "../core/layer";
-import { GameState, TileEntity, getBonusLayer } from "../core/state";
+import { getOverlay } from "../core/layer";
+import { GameState, TileEntity } from "../core/state";
+import { bonusOfStatePoint } from "../core/state-helpers";
 import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from "../core/tile-helpers";
 import { getCurrentTool, getCurrentTools, rectOfTool } from "../core/tools";
 import { drawImage, fillRect, fillText, pathRectCircle, strokeRect } from "../util/dutil";
@@ -160,7 +161,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     for (let i = top_left_in_world.x; i <= bot_right_in_world.x; i++) {
       for (let j = top_left_in_world.y; j <= bot_right_in_world.y; j++) {
         const p: Point = { x: i, y: j };
-        switch (getOverlayLayer(cs.bonusOverlay, getBonusLayer(), p)) {
+        switch (bonusOfStatePoint(cs, p)) {
           case 'bonus':
             drawBonus(d, pan_canvas_from_world, p);
             break;

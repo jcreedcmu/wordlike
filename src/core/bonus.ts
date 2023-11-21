@@ -36,3 +36,14 @@ export function mkBonusLayer(seed: number): Layer<Bonus> {
 export function isBlocking(bonus: Bonus): boolean {
   return bonus != 'empty';
 }
+
+export type BonusLayerId = string;
+const _cachedBonusLayer: Record<BonusLayerId, Layer<Bonus>> = {};
+
+const DETERMINISTIC_SEED = 46;
+export function getBonusLayer(name: string): Layer<Bonus> {
+  if (_cachedBonusLayer[name] == undefined) {
+    _cachedBonusLayer[name] = mkBonusLayer(name == 'game' ? Date.now() : DETERMINISTIC_SEED);
+  }
+  return _cachedBonusLayer[name];
+}

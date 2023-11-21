@@ -1,20 +1,19 @@
 import * as React from 'react';
-import * as SE1 from '../util/se1';
 import { useEffect } from 'react';
 import { Dispatch } from '../core/action';
-import { bonusGenerator } from '../core/bonus';
 import { PANIC_INTERVAL_MS } from '../core/clock';
 import { mkGridOf } from '../core/grid';
-import { mkLayer } from '../core/layer';
 import { GameState, Tile } from '../core/state';
-import { checkValid, addWorldTiles, addHandTiles } from '../core/state-helpers';
-import { addHandTile, ensureTileId } from "../core/tile-helpers";
+import { addHandTiles, addWorldTiles, checkValid, resolveValid } from '../core/state-helpers';
+import { ensureTileId } from "../core/tile-helpers";
 import { DEBUG } from '../util/debug';
 import { relpos } from '../util/dutil';
+import * as SE1 from '../util/se1';
 import { Point } from '../util/types';
 import { rawPaint } from './render';
 import { resizeView } from './ui-helpers';
 import { CanvasInfo, useCanvas } from './use-canvas';
+import { produce } from '../util/produce';
 
 export type ForRenderState = GameState;
 type CanvasProps = {
@@ -78,6 +77,7 @@ function render(ci: CanvasInfo, props: CanvasProps) {
 function exampleState(): GameState {
   const state: GameState = {
     coreState: {
+      bonusLayerName: 'instructions',
       animations: [],
       currentTool: 'pointer',
       invalidWords: [],
@@ -128,16 +128,7 @@ function exampleState(): GameState {
       game_from_clock: SE1.ident(),
       bonusOverlay: {
         cells: {
-          "12,0": "empty",
-          "11,-4": "empty",
-          "8,3": "empty",
-          "5,6": "empty",
-          "7,1": "empty",
-          "5,1": "empty",
-          "8,0": "empty",
-          "9,-1": "empty",
-          "2,7": "empty",
-          "8,4": "empty"
+
         }
       },
       score: 7,
@@ -209,7 +200,11 @@ function exampleState(): GameState {
     { letter: "t", p_in_world_int: { x: 0, y: 1 } },
     { letter: "a", p_in_world_int: { x: 0, y: 2 } },
   ].map(ensureTileId);
-  return checkValid(addHandTiles(addWorldTiles(state, tiles), handTiles));
+  const almost = resolveValid(checkValid(addHandTiles(addWorldTiles(state, tiles), handTiles)));
+  return produce(almost, s => {
+    console.log(almost.coreState.animations);
+    s.coreState.animations = [];
+  });
 }
 
 function drawBubble(ci: CanvasInfo, text: string, textCenter: Point, coneApex: Point): void {

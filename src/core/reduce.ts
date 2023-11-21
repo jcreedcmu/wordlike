@@ -4,18 +4,18 @@ import { WidgetPoint, canvas_from_hand, getWidgetPoint } from '../ui/widget-help
 import { debugTiles } from '../util/debug';
 import { produce } from '../util/produce';
 import { SE2, apply, compose, composen, inverse, scale, translate } from '../util/se2';
-import * as SE1 from '../util/se1';
 import { apply_to_rect } from '../util/se2-extra';
 import { Point } from '../util/types';
 import { boundRect, getRandomOrder, pointInRect } from '../util/util';
 import { vadd, vequal, vm, vscale, vsub } from '../util/vutil';
 import { Action, Effect, GameAction } from './action';
+import { getBonusLayer } from './bonus';
 import { getPanicFraction, now_in_game } from './clock';
-import { Overlay, getOverlayLayer, mkOverlay, mkOverlayFrom, overlayPoints, setOverlay } from './layer';
-import { GameState, HAND_TILE_LIMIT, Location, SceneState, SelectionState, TileEntity, getBonusLayer, mkGameSceneState } from './state';
-import { addWorldTiles, checkValid, drawOfState, filterExpiredAnimations, isCollision, isOccupied, isTilePinned, tryKillTileOfState, unpauseState } from './state-helpers';
+import { mkOverlay, mkOverlayFrom, setOverlay } from './layer';
+import { GameState, HAND_TILE_LIMIT, Location, SceneState, SelectionState, TileEntity, mkGameSceneState } from './state';
+import { addWorldTiles, bonusOfStatePoint, checkValid, drawOfState, filterExpiredAnimations, isCollision, isOccupied, isTilePinned, tryKillTileOfState, unpauseState } from './state-helpers';
 import { getTileId, get_hand_tiles, get_main_tiles, get_tiles, putTileInHand, putTileInWorld, putTilesInHand, removeAllTiles, setTileLoc } from "./tile-helpers";
-import { Tool, bombIntent, dynamiteIntent, getCurrentTool, toolOfIndex } from './tools';
+import { Tool, bombIntent, dynamiteIntent, getCurrentTool } from './tools';
 
 function resolveMouseup(state: GameState): GameState {
   // FIXME: Setting the mouse state to up *before* calling
@@ -94,7 +94,7 @@ function resolveMouseupInner(state: GameState): GameState {
           });
 
           const tgts = moves.map(x => x.p_in_world_int);
-          if (isCollision(remainingTiles, tgts, state.coreState.bonusOverlay, getBonusLayer())) {
+          if (isCollision(remainingTiles, tgts, state.coreState.bonusOverlay, getBonusLayer(state.coreState.bonusLayerName))) {
             return state;
           }
 
@@ -257,7 +257,7 @@ function reduceMouseDownInWorld(state: GameState, wp: WidgetPoint & { t: 'world'
       break;
     }
   }
-  const hoverBlock = getOverlayLayer(state.coreState.bonusOverlay, getBonusLayer(), p_in_world_int) == 'block';
+  const hoverBlock = bonusOfStatePoint(state.coreState, p_in_world_int) == 'block';
   let pinned =
     (hoverTile && hoverTile.loc.t == 'world') ? isTilePinned(state, hoverTile.id, hoverTile.loc) : false;
   const intent = getIntentOfMouseDown(getCurrentTool(state), wp, button, mods, hoverTile, hoverBlock, pinned);

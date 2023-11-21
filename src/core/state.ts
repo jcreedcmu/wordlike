@@ -96,6 +96,7 @@ export type CoreState = {
   inventory: {
     bombs: number,
   }
+  bonusLayerName: string,
 };
 
 export type GameState = {
@@ -137,17 +138,9 @@ export function mkGameState(seed?: number): GameState {
       game_from_clock: se1.translate(-Date.now()),
       inventory: {
         bombs: 0,
-      }
+      },
+      bonusLayerName: 'game',
     },
     mouseState: { t: 'up', p_in_canvas: { x: 0, y: 0 } },
   };
-}
-
-let _cachedBonusLayer: Layer<Bonus> | undefined = undefined;
-
-export function getBonusLayer(): Layer<Bonus> {
-  if (_cachedBonusLayer == undefined) {
-    _cachedBonusLayer = mkBonusLayer(Date.now());
-  }
-  return _cachedBonusLayer;
 }
