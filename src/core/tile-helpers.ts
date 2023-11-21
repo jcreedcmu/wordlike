@@ -134,6 +134,24 @@ export function putTileInHand(state: GameState, id: string, ix: number): GameSta
   });
 }
 
+export function putTilesInHand(state: GameState, ids: string[], ix: number): GameState {
+  const handTiles = get_hand_tiles(state);
+
+  if (ix > handTiles.length)
+    ix = handTiles.length;
+  if (ix < 0)
+    ix = 0;
+
+  return produce(state, s => {
+    for (let i = ix; i < handTiles.length; i++) {
+      setTileLoc(s, handTiles[i].id, { t: 'hand', p_in_hand_int: { x: 0, y: i + ids.length } });
+    }
+    ids.forEach((id, moved_ix) => {
+      setTileLoc(s, id, { t: 'hand', p_in_hand_int: { x: 0, y: ix + moved_ix } });
+    });
+  });
+}
+
 export function removeAllTiles(state: GameState): GameState {
   return produce(state, s => { s.coreState.tile_entities = {}; });
 }

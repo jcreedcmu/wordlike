@@ -13,7 +13,7 @@ import { getPanicFraction } from './clock';
 import { Overlay, getOverlayLayer, mkOverlay, mkOverlayFrom, overlayPoints, setOverlay } from './layer';
 import { GameState, Location, SceneState, SelectionState, TileEntity, getBonusLayer, mkGameSceneState } from './state';
 import { addWorldTiles, checkValid, drawOfState, filterExpiredAnimations, isCollision, isOccupied, isTilePinned, tryKillTileOfState, unpauseState } from './state-helpers';
-import { getTileId, get_hand_tiles, get_main_tiles, get_tiles, putTileInHand, putTileInWorld, removeAllTiles, setTileLoc } from "./tile-helpers";
+import { getTileId, get_hand_tiles, get_main_tiles, get_tiles, putTileInHand, putTileInWorld, putTilesInHand, removeAllTiles, setTileLoc } from "./tile-helpers";
 import { Tool, getCurrentTool, toolOfIndex } from './tools';
 
 function resolveMouseup(state: GameState): GameState {
@@ -120,18 +120,25 @@ function resolveMouseupInner(state: GameState): GameState {
 
       }
       else {
-        // Can't drag multiple things into hand
-        if (state.coreState.selected)
-          return state;
 
         const new_tile_in_hand_int: Point = vm(compose(
           inverse(canvas_from_hand()),
           canvas_from_drag_tile(state, ms)).translate,
           Math.round);
 
-        return ms.orig_loc.t == 'world'
-          ? checkValid(putTileInHand(state, ms.id, new_tile_in_hand_int.y))
-          : state;
+        if (state.coreState.selected) {
+          // XXX: check hand limit when it exists (#57)
+          const newLocs = state.coreState.selected.selectedIds.map(sel => {
+
+          });
+
+          return checkValid(putTilesInHand(state, state.coreState.selected.selectedIds, new_tile_in_hand_int.y));
+        }
+        else {
+          return ms.orig_loc.t == 'world'
+            ? checkValid(putTileInHand(state, ms.id, new_tile_in_hand_int.y))
+            : state;
+        }
       }
 
     }
