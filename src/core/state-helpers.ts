@@ -10,10 +10,11 @@ import { PanicData, PauseData, now_in_game } from "./clock";
 import { getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
 import { Layer, Overlay, getOverlay, getOverlayLayer, mkOverlayFrom, overlayAny, overlayForEach, overlayPoints, setOverlay } from "./layer";
-import { GameState, HAND_TILE_LIMIT, Location, MainTile, SelectionState, Tile, TileEntity, getBonusLayer } from "./state";
+import { CoreState, GameState, HAND_TILE_LIMIT, Location, MainTile, SelectionState, Tile, TileEntity, getBonusLayer } from "./state";
 import { addHandTile, addWorldTile, ensureTileId, get_hand_tiles, get_main_tiles, get_tiles, removeTile } from "./tile-helpers";
 import { apply, compose, translate } from '../util/se1';
 import { Intent, KillIntent } from './reduce';
+import { Draft } from 'immer';
 
 export function addWorldTiles(state: GameState, tiles: Tile[]): GameState {
   return produce(state, s => {
@@ -151,6 +152,26 @@ function killTileOfState(state: GameState, wp: DragWidgetPoint, intent: KillInte
 
 const directions: Point[] = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([x, y]) => ({ x, y }));
 
+export type Scoring =
+  | { t: 'bonus', p: Point }
+  | { t: 'bomb', p: Point }
+  ;
+
+function scoringOfBonus(bonus: Bonus, p: Point): Scoring[] {
+  switch (bonus) {
+    case 'bonus': return [{ t: 'bonus', p }];
+    case 'bomb': return [{ t: 'bomb', p }];
+    default: return [];
+  }
+}
+
+function resolveScoring(state: Draft<CoreState>, scoring: Scoring): void {
+  switch (scoring.t) {
+    case 'bonus': state.score++;
+    case 'bomb': state.inventory.bombs++;
+  }
+}
+
 function resolveValid(state: GameState): GameState {
   const tiles = get_main_tiles(state);
   logger('words', 'grid valid');
@@ -162,17 +183,15 @@ function resolveValid(state: GameState): GameState {
       setOverlay(layer, p, true);
     });
   });
-  const scorings: Point[] = [];
-  overlayForEach(layer, p => {
-    if (getOverlayLayer(state.coreState.bonusOverlay, getBonusLayer(), p) == 'bonus') {
-      scorings.push(p);
-    }
-  });
+
+  const scorings = overlayPoints(layer)
+    .flatMap(p => scoringOfBonus(getOverlayLayer(state.coreState.bonusOverlay, getBonusLayer(), p), p));
+
   return produce(state, s => {
-    scorings.forEach(p => {
-      setOverlay(s.coreState.bonusOverlay, p, 'empty');
-      s.coreState.score++;
-      s.coreState.animations.push(mkPointDecayAnimation(p, state.coreState.game_from_clock));
+    scorings.forEach(scoring => {
+      setOverlay(s.coreState.bonusOverlay, scoring.p, 'empty');
+      resolveScoring(s.coreState, scoring);
+      s.coreState.animations.push(mkPointDecayAnimation(scoring.p, state.coreState.game_from_clock));
     });
   });
 }
