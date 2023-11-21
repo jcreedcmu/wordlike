@@ -13,7 +13,8 @@ import { getBonusLayer } from './bonus';
 import { getPanicFraction, now_in_game } from './clock';
 import { mkOverlay, mkOverlayFrom, setOverlay } from './layer';
 import { GameState, HAND_TILE_LIMIT, Location, SceneState, SelectionState, TileEntity, mkGameSceneState } from './state';
-import { addWorldTiles, bonusOfStatePoint, checkValid, drawOfState, filterExpiredAnimations, isCollision, isOccupied, isTilePinned, tryKillTileOfState, unpauseState } from './state-helpers';
+import { MoveTile, addWorldTiles, bonusOfStatePoint, checkValid, drawOfState, filterExpiredAnimations, isCollision, isOccupied, isTilePinned, unpauseState } from './state-helpers';
+import { tryKillTileOfState } from './kill-helpers';
 import { getTileId, get_hand_tiles, get_main_tiles, get_tiles, putTileInHand, putTileInWorld, putTilesInHand, removeAllTiles, setTileLoc } from "./tile-helpers";
 import { Tool, bombIntent, dynamiteIntent, getCurrentTool } from './tools';
 
@@ -84,17 +85,17 @@ function resolveMouseupInner(state: GameState): GameState {
           const old_tile_in_world_t = old_tile_loc.p_in_world_int;
           const new_tile_from_old_tile: SE2 = translate(vsub(new_tile_in_world_int, old_tile_in_world_t));
 
-          const moves: { id: string, p_in_world_int: Point }[] = selected.selectedIds.flatMap(id => {
+          const moves: MoveTile[] = selected.selectedIds.flatMap(id => {
             const tile = getTileId(state, id);
             const loc = tile.loc;
             if (loc.t == 'world') {
-              return [{ id, p_in_world_int: apply(new_tile_from_old_tile, loc.p_in_world_int) }];
+              return [{ id, letter: tile.letter, p_in_world_int: apply(new_tile_from_old_tile, loc.p_in_world_int) }];
             }
             else return [];
           });
 
           const tgts = moves.map(x => x.p_in_world_int);
-          if (isCollision(remainingTiles, tgts, state.coreState.bonusOverlay, getBonusLayer(state.coreState.bonusLayerName))) {
+          if (isCollision(remainingTiles, moves, state.coreState.bonusOverlay, getBonusLayer(state.coreState.bonusLayerName))) {
             return state;
           }
 
@@ -107,13 +108,18 @@ function resolveMouseupInner(state: GameState): GameState {
           return checkValid(afterDrop);
         }
         else {
-          const new_tile_in_world_int: Point = vm(compose(
-            inverse(state.coreState.canvas_from_world),
-            canvas_from_drag_tile(state, ms)).translate,
-            Math.round);
 
-          const afterDrop = !isOccupied(state, new_tile_in_world_int)
-            ? putTileInWorld(state, ms.id, new_tile_in_world_int)
+          const moveTile: MoveTile = {
+            p_in_world_int: vm(compose(
+              inverse(state.coreState.canvas_from_world),
+              canvas_from_drag_tile(state, ms)).translate,
+              Math.round),
+            id: ms.id,
+            letter: getTileId(state, ms.id).letter,
+          }
+
+          const afterDrop = !isOccupied(state, moveTile)
+            ? putTileInWorld(state, ms.id, moveTile.p_in_world_int)
             : state;
           return checkValid(afterDrop);
         }

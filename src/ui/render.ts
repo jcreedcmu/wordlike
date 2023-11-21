@@ -6,6 +6,7 @@ import { GameState, TileEntity } from "../core/state";
 import { bonusOfStatePoint } from "../core/state-helpers";
 import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from "../core/tile-helpers";
 import { getCurrentTool, getCurrentTools, rectOfTool } from "../core/tools";
+import { debugOnce, doOnce } from "../util/debug";
 import { drawImage, fillRect, fillText, pathRectCircle, strokeRect } from "../util/dutil";
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
@@ -161,7 +162,8 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     for (let i = top_left_in_world.x; i <= bot_right_in_world.x; i++) {
       for (let j = top_left_in_world.y; j <= bot_right_in_world.y; j++) {
         const p: Point = { x: i, y: j };
-        switch (bonusOfStatePoint(cs, p).t) {
+        const bonus = bonusOfStatePoint(cs, p);
+        switch (bonus.t) {
           case 'bonus':
             drawBonus(d, pan_canvas_from_world, p);
             break;
@@ -173,6 +175,10 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
           case 'block': {
             const rect_in_canvas = apply_to_rect(pan_canvas_from_world, { p, sz: { x: 1, y: 1 } });
             fillRect(d, rect_in_canvas, 'gray');
+          } break;
+          case 'required': {
+            const rect_in_canvas = apply_to_rect(pan_canvas_from_world, { p, sz: { x: 1, y: 1 } });
+            drawTileLetter(d, bonus.letter, rect_in_canvas, '#aaa');
           } break;
         }
       }
@@ -366,13 +372,16 @@ function drawTile(d: CanvasRenderingContext2D, canvas_from_tile: SE2, tile: Tile
   const { fg, bg } = colorsOfTile(opts);
   fillRect(d, halfOff(rect_in_canvas), bg);
   strokeRect(d, halfOff(rect_in_canvas), fg);
+  drawTileLetter(d, tile.letter, rect_in_canvas, fg);
+}
 
-  d.fillStyle = fg;
+export function drawTileLetter(d: CanvasRenderingContext2D, letter: string, rect_in_canvas: Rect, color: string) {
+  d.fillStyle = color;
   d.textBaseline = 'middle';
   d.textAlign = 'center';
-  const fontSize = Math.round(0.6 * canvas_from_tile.scale.x);
+  const fontSize = Math.round(0.6 * rect_in_canvas.sz.x);
   d.font = `bold ${fontSize}px sans-serif`;
-  d.fillText(tile.letter.toUpperCase(), rect_in_canvas.p.x + rect_in_canvas.sz.x / 2 + 0.5,
+  d.fillText(letter.toUpperCase(), rect_in_canvas.p.x + rect_in_canvas.sz.x / 2 + 0.5,
     rect_in_canvas.p.y + rect_in_canvas.sz.y / 2 + 1.5);
 }
 

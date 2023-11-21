@@ -1,13 +1,17 @@
 import { Point } from '../util/types';
 import { point_hash } from '../util/util';
 import { vsnorm } from '../util/vutil';
+import { deterministicLetterSample, getSample } from './distribution';
 import { Layer, mkLayer } from './layer';
+import { Tile, TileEntity } from './state';
+import { MoveTile } from './state-helpers';
 
 export type Bonus =
   | { t: 'bonus' }
   | { t: 'bomb' }
   | { t: 'empty' }
   | { t: 'block' }
+  | { t: 'required', letter: string }
   ;
 
 export function bonusGenerator(p: Point, seed: number): Bonus {
@@ -15,7 +19,8 @@ export function bonusGenerator(p: Point, seed: number): Bonus {
     return { t: 'empty' };
   }
   if (point_hash(p, seed) < 0.1) {
-    if (point_hash(p, seed + 1000) < 0.1)
+    const ph = point_hash(p, seed + 1000);
+    if (ph < 0.1)
       return { t: 'bomb' };
     else
       return { t: 'bonus' };
@@ -25,7 +30,13 @@ export function bonusGenerator(p: Point, seed: number): Bonus {
     return 1 - 1 / (1 + Math.log(1 + x));
   }
   if (point_hash(p, seed) < gradual((p.x * p.x + p.y * p.y) / 1000)) {
-    return { t: 'block' };
+    const ph = point_hash(p, seed + 1000);
+    if (ph < 0.5) {
+      return { t: 'required', letter: deterministicLetterSample(ph * 1e9) };
+    }
+    else {
+      return { t: 'block' };
+    }
   }
   return { t: 'empty' };
 }
@@ -34,8 +45,13 @@ export function mkBonusLayer(seed: number): Layer<Bonus> {
   return mkLayer('bonus', p => bonusGenerator(p, seed));
 }
 
-export function isBlocking(bonus: Bonus): boolean {
-  return bonus.t != 'empty';
+export function isBlocking(tile: MoveTile, bonus: Bonus): boolean {
+  if (bonus.t == 'empty')
+    return false;
+  if (bonus.t == 'required') {
+    return !(bonus.letter == tile.letter);
+  }
+  return true;
 }
 
 export type BonusLayerId = string;

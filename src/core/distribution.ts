@@ -66,6 +66,11 @@ const letterDistribution: Record<string, number> = {
 
 const alphabet = Object.keys(letterDistribution).sort();
 const letterDistributionNumbers = alphabet.map(letter => letterDistribution[letter]);
+const initialLetterProbs = distributionOf(initialEnergiesOf(letterDistributionNumbers, 1), 1);
+
+export function deterministicLetterSample(seed: number): string {
+  return alphabet[getSample(seed, initialLetterProbs).sample];
+}
 
 function mkClassDistribution(): number[] {
   let counts = [0, 0];
