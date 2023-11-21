@@ -136,7 +136,7 @@ function exampleState(): GameState {
       panic: { currentTime_in_game: Date.now(), lastClear_in_game: Date.now() - PANIC_INTERVAL_MS / 3 },
       paused: undefined,
       inventory: {
-        bombs: 0,
+        bombs: 3,
       },
     },
     mouseState: {
