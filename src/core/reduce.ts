@@ -4,12 +4,13 @@ import { WidgetPoint, canvas_from_hand, getWidgetPoint } from '../ui/widget-help
 import { debugTiles } from '../util/debug';
 import { produce } from '../util/produce';
 import { SE2, apply, compose, composen, inverse, scale, translate } from '../util/se2';
+import * as SE1 from '../util/se1';
 import { apply_to_rect } from '../util/se2-extra';
 import { Point } from '../util/types';
 import { boundRect, getRandomOrder, pointInRect } from '../util/util';
 import { vadd, vequal, vm, vscale, vsub } from '../util/vutil';
 import { Action, Effect, GameAction } from './action';
-import { getPanicFraction } from './clock';
+import { getPanicFraction, now_in_game } from './clock';
 import { Overlay, getOverlayLayer, mkOverlay, mkOverlayFrom, overlayPoints, setOverlay } from './layer';
 import { GameState, HAND_TILE_LIMIT, Location, SceneState, SelectionState, TileEntity, getBonusLayer, mkGameSceneState } from './state';
 import { addWorldTiles, checkValid, drawOfState, filterExpiredAnimations, isCollision, isOccupied, isTilePinned, tryKillTileOfState, unpauseState } from './state-helpers';
@@ -295,7 +296,7 @@ function reduceMouseDownInToolbar(state: GameState, wp: WidgetPoint & { t: 'tool
 }
 
 function reducePauseButton(state: GameState, wp: WidgetPoint): GameState {
-  return produce(vacuous_down(state, wp), s => { s.coreState.paused = { pauseTime: Date.now() }; });
+  return produce(vacuous_down(state, wp), s => { s.coreState.paused = { pauseTime_in_clock: Date.now() }; });
 }
 
 function reduceShuffleButton(state: GameState, wp: WidgetPoint): GameState {
@@ -364,18 +365,21 @@ function reduceGameAction(state: GameState, action: GameAction): effectful.Resul
       s.mouseState.p_in_canvas = action.p;
     }));
     case 'repaint':
-      const now = Date.now();
-      const newAnimations = filterExpiredAnimations(now, state.coreState.animations);
+      if (state.coreState.paused)
+        return gs(state);
+
+      const t_in_game = now_in_game(state.coreState.game_from_clock);
+      const newAnimations = filterExpiredAnimations(t_in_game, state.coreState.animations);
       state = produce(state, s => {
         s.coreState.animations = newAnimations;
       });
       if (state.coreState.panic !== undefined) {
-        if (getPanicFraction(state.coreState.panic) > 1) {
+        if (getPanicFraction(state.coreState.panic, state.coreState.game_from_clock) > 1) {
           return gs(produce(state, s => {
             s.coreState.lost = true;
           }));
         }
-        return gs(produce(state, s => { s.coreState.panic!.currentTime = now; }));
+        return gs(produce(state, s => { s.coreState.panic!.currentTime_in_game = t_in_game; }));
       }
       else {
         return gs(state);

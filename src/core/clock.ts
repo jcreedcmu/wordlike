@@ -1,17 +1,30 @@
+// There are two clock domains I care about:
+// game: milliseconds elapsed since game start *not* during a pause
+// clock: milliseconds since epoch
+
+import { SE1, apply } from "../util/se1";
+
 export type PanicData = {
-  lastClear: number, // ms since epoch
-  currentTime: number, // ms since epoch
+  lastClear_in_game: number,
+  currentTime_in_game: number,
 };
 
 export type PauseData = {
-  pauseTime: number, // ms since epoch
+  pauseTime_in_clock: number,
 }
 
 export const PANIC_INTERVAL_MS = 90000;
 
-export function getPanicFraction(panic: PanicData) {
-  return (Date.now() - panic.lastClear) / PANIC_INTERVAL_MS;
+export function getPanicFraction(panic: PanicData, game_from_clock: SE1) {
+  return (now_in_game(game_from_clock) - panic.lastClear_in_game) / PANIC_INTERVAL_MS;
 }
+
+export function now_in_game(game_from_clock: SE1) {
+  return apply(game_from_clock, Date.now());
+}
+
+// XXX Not sure anything below this line is used? //////////////////////
+
 
 // The idea here is that we want to have a clock that ticks every
 // MILLISECONDS_PER_TICK ms, but we also want to manage a timeout that

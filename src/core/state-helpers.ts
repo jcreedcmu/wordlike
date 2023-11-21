@@ -6,12 +6,13 @@ import { Point } from "../util/types";
 import { vadd, vequal, vint } from "../util/vutil";
 import { getAssets } from "./assets";
 import { Bonus, isBlocking } from "./bonus";
-import { PanicData, PauseData } from "./clock";
+import { PanicData, PauseData, now_in_game } from "./clock";
 import { getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
 import { Layer, Overlay, getOverlay, getOverlayLayer, mkOverlayFrom, overlayAny, overlayForEach, overlayPoints, setOverlay } from "./layer";
 import { GameState, HAND_TILE_LIMIT, Location, MainTile, SelectionState, Tile, TileEntity, getBonusLayer } from "./state";
 import { addHandTile, addWorldTile, ensureTileId, get_hand_tiles, get_main_tiles, get_tiles, removeTile } from "./tile-helpers";
+import { apply, compose, translate } from '../util/se1';
 
 export function addWorldTiles(state: GameState, tiles: Tile[]): GameState {
   return produce(state, s => {
@@ -83,7 +84,7 @@ function killTileOfState(state: GameState, wp: DragWidgetPoint, radius: number, 
   switch (wp.t) {
     case 'world': {
       const p_in_world_int = vint(wp.p_in_local);
-      const anim: Animation = mkExplosionAnimation(p_in_world_int, radius);
+      const anim: Animation = mkExplosionAnimation(p_in_world_int, radius, state.coreState.game_from_clock);
 
       function tileAt(p: Point): MainTile | undefined {
         return get_main_tiles(state).find(tile => vequal(tile.loc.p_in_world_int, p));
@@ -153,7 +154,7 @@ function resolveValid(state: GameState): GameState {
     scorings.forEach(p => {
       setOverlay(s.coreState.bonusOverlay, p, 'empty');
       s.coreState.score++;
-      s.coreState.animations.push(mkPointDecayAnimation(p));
+      s.coreState.animations.push(mkPointDecayAnimation(p, state.coreState.game_from_clock));
     });
   });
 }
@@ -172,8 +173,10 @@ export function checkValid(state: GameState): GameState {
 
   let panic = state.coreState.panic;
   if (allValid) panic = undefined;
-  if (!allValid && panic === undefined)
-    panic = { currentTime: Date.now(), lastClear: Date.now() };
+  if (!allValid && panic === undefined) {
+    const currentTime_in_game = now_in_game(state.coreState.game_from_clock);
+    panic = { currentTime_in_game, lastClear_in_game: currentTime_in_game };
+  }
 
   return produce(state, s => {
     s.coreState.panic = panic;
@@ -193,18 +196,14 @@ export function isTilePinned(state: GameState, tileId: string, loc: Location & {
 }
 
 export function filterExpiredAnimations(now_ms: number, anims: Animation[]): Animation[] {
-  return anims.filter(anim => now_ms <= anim.start_ms + anim.duration_ms);
+  return anims.filter(anim => now_ms <= anim.start_in_game + anim.duration_ms);
 }
 
 export function unpauseState(state: GameState, pause: PauseData): GameState {
-  if (state.coreState.panic) {
-    const newPanic: PanicData = {
-      currentTime: Date.now(),
-      lastClear: state.coreState.panic.lastClear + Date.now() - pause.pauseTime,
-    };
-    return produce(state, s => { s.coreState.panic = newPanic; s.coreState.paused = undefined; });
-  }
-  else {
-    return produce(state, s => { s.coreState.paused = undefined; });
-  }
+  const newGame_from_clock = compose(translate(pause.pauseTime_in_clock - Date.now()), state.coreState.game_from_clock);
+  return produce(state, s => {
+    s.coreState.paused = undefined;
+    s.coreState.game_from_clock = newGame_from_clock;
+  });
+
 }

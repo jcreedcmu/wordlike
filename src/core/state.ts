@@ -1,11 +1,13 @@
-import { Animation } from './animations';
+import * as se1 from '../util/se1';
+import { SE1 } from '../util/se1';
 import { SE2 } from '../util/se2';
 import { Point } from '../util/types';
-import { Bonus, bonusGenerator, mkBonusLayer } from './bonus';
+import { Animation } from './animations';
+import { Bonus, mkBonusLayer } from './bonus';
 import { PanicData, PauseData } from './clock';
 import { Energies, initialEnergies } from './distribution';
 import { Grid, LocatedWord, mkGridOf } from './grid';
-import { Layer, Overlay, mkLayer, mkOverlay } from './layer';
+import { Layer, Overlay, mkOverlay } from './layer';
 import { Tool } from './tools';
 
 export type MouseState =
@@ -90,6 +92,7 @@ export type CoreState = {
   lost: boolean,
   panic: PanicData | undefined,
   paused: PauseData | undefined,
+  game_from_clock: SE1,
 };
 
 export type GameState = {
@@ -128,6 +131,7 @@ export function mkGameState(seed?: number): GameState {
       lost: false,
       panic: undefined,
       paused: undefined,
+      game_from_clock: se1.translate(-Date.now()),
     },
     mouseState: { t: 'up', p_in_canvas: { x: 0, y: 0 } },
   };

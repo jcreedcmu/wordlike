@@ -1,5 +1,5 @@
 import { getAssets } from "../core/assets";
-import { getPanicFraction } from "../core/clock";
+import { getPanicFraction, now_in_game } from "../core/clock";
 import { LocatedWord, getGrid } from "../core/grid";
 import { getOverlay, getOverlayLayer } from "../core/layer";
 import { GameState, TileEntity, getBonusLayer } from "../core/state";
@@ -246,7 +246,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     // draw panic bar
     const PANIC_THICK = 15;
     if (cs.panic !== undefined) {
-      const panic_fraction = getPanicFraction(cs.panic);
+      const panic_fraction = getPanicFraction(cs.panic, cs.game_from_clock);
       const panic_rect_in_canvas: Rect = {
         p: {
           x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x * panic_fraction,
@@ -299,7 +299,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   drawShuffleButton();
   if (!cs.lost) {
     drawOtherUi();
-    drawAnimations(Date.now());
+    drawAnimations(now_in_game(cs.game_from_clock));
   }
   else {
     fillText(d, "You lost :(", midpointOfRect(canvas_bds_in_canvas), 'rgba(0,0,0,0.3)', '96px sans-serif');

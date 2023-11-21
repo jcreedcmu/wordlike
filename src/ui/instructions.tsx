@@ -1,4 +1,5 @@
 import * as React from 'react';
+import * as SE1 from '../util/se1';
 import { useEffect } from 'react';
 import { Dispatch } from '../core/action';
 import { bonusGenerator } from '../core/bonus';
@@ -124,6 +125,7 @@ function exampleState(): GameState {
           y: 215.56198347107437
         }
       },
+      game_from_clock: SE1.ident(),
       bonusOverlay: {
         cells: {
           "12,0": "empty",
@@ -140,7 +142,7 @@ function exampleState(): GameState {
       },
       score: 7,
       lost: false,
-      panic: { currentTime: Date.now(), lastClear: Date.now() - PANIC_INTERVAL_MS / 3 },
+      panic: { currentTime_in_game: Date.now(), lastClear_in_game: Date.now() - PANIC_INTERVAL_MS / 3 },
       paused: undefined,
     },
     mouseState: {

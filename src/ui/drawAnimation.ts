@@ -9,7 +9,7 @@ import { drawBonus } from "./drawBonus";
 export function drawAnimation(d: CanvasRenderingContext2D, pan_canvas_from_world: SE2, time_ms: number, anim: Animation): void {
   switch (anim.t) {
     case 'explosion': {
-      const radius_in_world = (2 * anim.radius + 1) * 0.5 * (time_ms - anim.start_ms) / anim.duration_ms;
+      const radius_in_world = (2 * anim.radius + 1) * 0.5 * (time_ms - anim.start_in_game) / anim.duration_ms;
       const radvec: Point = { x: radius_in_world, y: radius_in_world };
       const rect_in_canvas = apply_to_rect(pan_canvas_from_world, {
         p: vsub(anim.center_in_world, radvec), sz: vscale(radvec, 2)
@@ -26,7 +26,7 @@ export function drawAnimation(d: CanvasRenderingContext2D, pan_canvas_from_world
       return;
     } break;
     case 'point-decay': {
-      const fraction = Math.min(1, Math.max(0, 1 - (time_ms - anim.start_ms) / anim.duration_ms));
+      const fraction = Math.min(1, Math.max(0, 1 - (time_ms - anim.start_in_game) / anim.duration_ms));
       drawBonus(d, pan_canvas_from_world, anim.p_in_world_int, fraction);
       return;
     } break;
