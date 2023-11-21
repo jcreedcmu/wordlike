@@ -194,7 +194,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     d.textAlign = 'center';
     d.textBaseline = 'middle';
     if (!cs.lost) {
-      fillText(d, "🔀", midpointOfRect(shuffle_button_bds_in_canvas), 'black', '48px sans-serif');
+      fillText(d, "🔀", midpointOfRect(shuffle_button_bds_in_canvas), 'black', '36px sans-serif');
     }
   }
 

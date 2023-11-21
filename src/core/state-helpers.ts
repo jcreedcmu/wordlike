@@ -10,7 +10,7 @@ import { PanicData, PauseData } from "./clock";
 import { getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
 import { Layer, Overlay, getOverlay, getOverlayLayer, mkOverlayFrom, overlayAny, overlayForEach, overlayPoints, setOverlay } from "./layer";
-import { GameState, Location, MainTile, SelectionState, Tile, TileEntity, getBonusLayer } from "./state";
+import { GameState, HAND_TILE_LIMIT, Location, MainTile, SelectionState, Tile, TileEntity, getBonusLayer } from "./state";
 import { addHandTile, addWorldTile, ensureTileId, get_hand_tiles, get_main_tiles, get_tiles, removeTile } from "./tile-helpers";
 
 export function addWorldTiles(state: GameState, tiles: Tile[]): GameState {
@@ -46,6 +46,8 @@ export function isOccupiedTiles(tiles: TileEntity[], p: Point): boolean {
 
 export function drawOfState(state: GameState): GameState {
   const handLength = get_hand_tiles(state).length;
+  if (handLength >= HAND_TILE_LIMIT)
+    return state;
   const { letter, energies, seed } = getLetterSample(state.coreState.seed, state.coreState.energies);
   return checkValid(produce(state, s => {
     s.coreState.seed = seed;

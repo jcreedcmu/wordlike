@@ -32,7 +32,7 @@ export const pause_button_bds_in_canvas: Rect = {
 export const shuffle_button_bds_in_canvas: Rect = {
   p: {
     x: canvas_bds_in_canvas.sz.x - HAND_WIDTH,
-    y: canvas_bds_in_canvas.sz.y - 2 * TOOLBAR_WIDTH
+    y: canvas_bds_in_canvas.sz.y - 1.9 * TOOLBAR_WIDTH
   },
   sz: { x: HAND_WIDTH, y: TOOLBAR_WIDTH }
 };

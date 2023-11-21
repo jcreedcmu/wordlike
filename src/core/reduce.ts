@@ -11,7 +11,7 @@ import { vadd, vequal, vm, vscale, vsub } from '../util/vutil';
 import { Action, Effect, GameAction } from './action';
 import { getPanicFraction } from './clock';
 import { Overlay, getOverlayLayer, mkOverlay, mkOverlayFrom, overlayPoints, setOverlay } from './layer';
-import { GameState, Location, SceneState, SelectionState, TileEntity, getBonusLayer, mkGameSceneState } from './state';
+import { GameState, HAND_TILE_LIMIT, Location, SceneState, SelectionState, TileEntity, getBonusLayer, mkGameSceneState } from './state';
 import { addWorldTiles, checkValid, drawOfState, filterExpiredAnimations, isCollision, isOccupied, isTilePinned, tryKillTileOfState, unpauseState } from './state-helpers';
 import { getTileId, get_hand_tiles, get_main_tiles, get_tiles, putTileInHand, putTileInWorld, putTilesInHand, removeAllTiles, setTileLoc } from "./tile-helpers";
 import { Tool, getCurrentTool, toolOfIndex } from './tools';
@@ -120,21 +120,26 @@ function resolveMouseupInner(state: GameState): GameState {
 
       }
       else {
-
+        const handTiles = get_hand_tiles(state);
         const new_tile_in_hand_int: Point = vm(compose(
           inverse(canvas_from_hand()),
           canvas_from_drag_tile(state, ms)).translate,
           Math.round);
 
         if (state.coreState.selected) {
-          // XXX: check hand limit when it exists (#57)
-          const newLocs = state.coreState.selected.selectedIds.map(sel => {
+          const selectedIds = state.coreState.selected.selectedIds;
 
-          });
+          // check hand size limit
+          if (selectedIds.length + handTiles.length > HAND_TILE_LIMIT)
+            return state;
 
-          return checkValid(putTilesInHand(state, state.coreState.selected.selectedIds, new_tile_in_hand_int.y));
+          return checkValid(putTilesInHand(state, selectedIds, new_tile_in_hand_int.y));
         }
         else {
+          // check hand size limit
+          if (handTiles.length >= HAND_TILE_LIMIT)
+            return state;
+
           return ms.orig_loc.t == 'world'
             ? checkValid(putTileInHand(state, ms.id, new_tile_in_hand_int.y))
             : state;
