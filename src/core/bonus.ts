@@ -5,6 +5,7 @@ import { Layer, mkLayer } from './layer';
 
 export type Bonus =
   | 'bonus'
+  | 'bomb'
   | 'empty'
   | 'block';
 
@@ -13,7 +14,10 @@ export function bonusGenerator(p: Point, seed: number): Bonus {
     return 'empty';
   }
   if (point_hash(p, seed) < 0.1) {
-    return 'bonus';
+    if (point_hash(p, seed + 1000) < 0.1)
+      return 'bomb';
+    else
+      return 'bonus';
   }
   function gradual(x: number): number {
     // graph in desmos: 1-\frac{1}{\log\left(1+x^{2}\right)+1}

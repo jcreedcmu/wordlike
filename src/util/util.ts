@@ -84,7 +84,7 @@ export function point_hash(p: Point, seed: number): number {
     c = seed;
     return float;
   };
-  for (let i = 0; i < 10; i++)
+  for (let i = 0; i < 20; i++)
     z();
   return z();
 }

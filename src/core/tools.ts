@@ -1,3 +1,4 @@
+import { Rect } from "../util/types";
 import { Intent } from "./reduce";
 import { GameState, State } from "./state";
 
@@ -42,4 +43,10 @@ export function getCurrentTools(state: GameState): Tool[] {
     tools.push('bomb');
   }
   return tools;
+}
+
+export function rectOfTool(tool: Tool): Rect {
+  const S_in_image = TOOL_IMAGE_WIDTH;
+  const ix_in_image = indexOfTool(tool);
+  return { p: { x: 0, y: S_in_image * ix_in_image }, sz: { x: S_in_image, y: S_in_image } };
 }

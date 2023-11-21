@@ -75,3 +75,10 @@ export function fillText(d: CanvasRenderingContext2D, text: string, p: Point, co
   d.font = font;
   d.fillText(text, p.x, p.y);
 }
+
+export function drawImage(d: CanvasRenderingContext2D, img: CanvasImageSource, srcRect: Rect, dstRect: Rect) {
+  d.drawImage(img,
+    srcRect.p.x, srcRect.p.y, srcRect.sz.x, srcRect.sz.y,
+    dstRect.p.x, dstRect.p.y, dstRect.sz.x, dstRect.sz.y,
+  );
+}

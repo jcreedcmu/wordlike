@@ -1,3 +1,6 @@
+import { getAssets } from '../core/assets';
+import { rectOfTool } from '../core/tools';
+import { drawImage } from '../util/dutil';
 import { SE2 } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
 import { Point } from "../util/types";
@@ -16,4 +19,10 @@ export function drawBonus(d: CanvasRenderingContext2D, pan_canvas_from_world: SE
   );
   d.fill();
 
+}
+
+export function drawBonusBomb(d: CanvasRenderingContext2D, pan_canvas_from_world: SE2, p: Point, fraction: number = 1) {
+  const rect_in_canvas = apply_to_rect(pan_canvas_from_world, { p, sz: { x: 1, y: 1 } });
+  const toolbarImg = getAssets().toolbarImg;
+  drawImage(d, toolbarImg, rectOfTool('bomb'), rect_in_canvas);
 }
