@@ -4,6 +4,7 @@ import { LocatedWord, getGrid } from "../core/grid";
 import { getOverlay, getOverlayLayer } from "../core/layer";
 import { GameState, TileEntity, getBonusLayer } from "../core/state";
 import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from "../core/tile-helpers";
+import { TOOL_IMAGE_WIDTH, getCurrentTool, getCurrentTools, indexOfTool } from "../core/tools";
 import { fillRect, fillText, strokeRect } from "../util/dutil";
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
@@ -150,15 +151,32 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     fillRect(d, toolbar_bds_in_canvas, backgroundGray);
     const toolbarImg = getAssets().toolbarImg;
     d.imageSmoothingEnabled = false;
-    const S = toolbar_bds_in_canvas.sz.x;
-    d.drawImage(toolbarImg, 0, 0, S, toolbarImg.height / toolbarImg.width * S);
 
-    // indicate current tool
-    const rect_in_canvas = apply_to_rect(
-      canvas_from_toolbar(),
-      { p: { x: 0, y: S * cs.toolIndex }, sz: { x: S, y: S } }
-    );
-    fillRect(d, rect_in_canvas, 'rgba(255, 255, 0, 0.5)');
+    const tools = getCurrentTools(state);
+    const currentTool = getCurrentTool(state);
+    tools.forEach((tool, ix_in_toolbar) => {
+      const S_in_canvas = toolbar_bds_in_canvas.sz.x;
+      const S_in_image = TOOL_IMAGE_WIDTH;
+      const rect_in_canvas = apply_to_rect(
+        canvas_from_toolbar(),
+        { p: { x: 0, y: S_in_canvas * ix_in_toolbar }, sz: { x: S_in_canvas, y: S_in_canvas } }
+      );
+
+      const ix_in_image = indexOfTool(tool);
+      const rect_in_image =
+        { p: { x: 0, y: S_in_image * ix_in_image }, sz: { x: S_in_image, y: S_in_image } };
+
+
+      d.drawImage(toolbarImg,
+        rect_in_image.p.x, rect_in_image.p.y, rect_in_image.sz.x, rect_in_image.sz.y,
+        rect_in_canvas.p.x, rect_in_canvas.p.y, rect_in_canvas.sz.x, rect_in_canvas.sz.y,
+      );
+
+      // indicate current tool
+      if (tool == currentTool) {
+        fillRect(d, rect_in_canvas, 'rgba(255, 255, 0, 0.5)');
+      }
+    });
   }
 
   function drawPauseButton() {

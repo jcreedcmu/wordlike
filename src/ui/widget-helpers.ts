@@ -2,6 +2,7 @@ import { Point, Rect } from "../util/types";
 import { SE2, apply, inverse } from "../util/se2";
 import { pointInRect } from "../util/util";
 import { GameState } from "../core/state";
+import { Tool, getCurrentTools } from "../core/tools";
 
 export const HAND_WIDTH = 100;
 
@@ -50,7 +51,7 @@ export type DragWidgetPoint =
   | { t: 'hand', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2 }
 export type WidgetPoint =
   | DragWidgetPoint
-  | { t: 'toolbar', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2, toolIndex: number }
+  | { t: 'toolbar', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2, tool: Tool }
   | { t: 'pauseButton', p_in_canvas: Point }
   ;
 
@@ -64,12 +65,13 @@ export function getWidgetPoint(state: GameState, p_in_canvas: Point): WidgetPoin
   else if (pointInRect(p_in_canvas, toolbar_bds_in_canvas)) {
     const toolbar_from_canvas = inverse(canvas_from_toolbar());
     const p_in_local = apply(toolbar_from_canvas, p_in_canvas);
+    const tool = getCurrentTools(state)[Math.floor(p_in_local.y / toolbar_bds_in_canvas.sz.x)];
     return {
       t: 'toolbar',
       p_in_local,
       p_in_canvas,
       local_from_canvas: toolbar_from_canvas,
-      toolIndex: Math.floor(p_in_local.y / toolbar_bds_in_canvas.sz.x),
+      tool: tool,
     }
   }
   else return getDragWidgetPoint(state, p_in_canvas);

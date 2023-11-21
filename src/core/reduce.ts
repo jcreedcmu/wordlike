@@ -14,7 +14,7 @@ import { Overlay, getOverlayLayer, mkOverlay, mkOverlayFrom, overlayPoints, setO
 import { GameState, Location, SceneState, SelectionState, TileEntity, getBonusLayer, mkGameSceneState } from './state';
 import { addWorldTiles, checkValid, drawOfState, filterExpiredAnimations, isCollision, isOccupied, isTilePinned, tryKillTileOfState, unpauseState } from './state-helpers';
 import { getTileId, get_hand_tiles, get_main_tiles, get_tiles, putTileInHand, putTileInWorld, removeAllTiles, setTileLoc } from "./tile-helpers";
-import { Tool, currentTool, toolOfIndex } from './tools';
+import { Tool, getCurrentTool, toolOfIndex } from './tools';
 
 function resolveMouseup(state: GameState): GameState {
   // FIXME: Setting the mouse state to up *before* calling
@@ -249,7 +249,7 @@ function reduceMouseDownInWorld(state: GameState, wp: WidgetPoint & { t: 'world'
   const hoverBlock = getOverlayLayer(state.coreState.bonusOverlay, getBonusLayer(), p_in_world_int) == 'block';
   let pinned =
     (hoverTile && hoverTile.loc.t == 'world') ? isTilePinned(state, hoverTile.id, hoverTile.loc) : false;
-  const intent = getIntentOfMouseDown(currentTool(state), wp, button, mods, hoverTile, hoverBlock, pinned);
+  const intent = getIntentOfMouseDown(getCurrentTool(state), wp, button, mods, hoverTile, hoverBlock, pinned);
   return reduceIntent(state, intent, wp);
 }
 
@@ -259,7 +259,7 @@ function reduceMouseDownInHand(state: GameState, wp: WidgetPoint & { t: 'hand' }
 
   const p_in_hand_int = vm(wp.p_in_local, Math.floor);
   const tiles = get_hand_tiles(state);
-  const tool = currentTool(state);
+  const tool = getCurrentTool(state);
   if (tool == 'dynamite') return reduceIntent(state, dynamiteIntent, wp);
   else if (tool == 'bomb') return reduceIntent(state, bombIntent, wp);
   else {
@@ -281,9 +281,9 @@ function reduceMouseDownInHand(state: GameState, wp: WidgetPoint & { t: 'hand' }
 }
 
 function reduceMouseDownInToolbar(state: GameState, wp: WidgetPoint & { t: 'toolbar' }, button: number, mods: Set<string>): GameState {
-  const tool = toolOfIndex(wp.toolIndex);
+  const tool = wp.tool;
   if (tool !== undefined) {
-    return produce(vacuous_down(state, wp), s => { s.coreState.toolIndex = wp.toolIndex; });
+    return produce(vacuous_down(state, wp), s => { s.coreState.currentTool = wp.tool; });
   }
   else {
     return vacuous_down(state, wp);

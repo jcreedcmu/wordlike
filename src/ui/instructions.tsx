@@ -78,7 +78,7 @@ function exampleState(): GameState {
   const state: GameState = {
     coreState: {
       animations: [],
-      toolIndex: 0,
+      currentTool: 'pointer',
       invalidWords: [],
       tile_entities: {},
       connectedSet: mkGridOf([]),

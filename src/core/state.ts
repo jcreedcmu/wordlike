@@ -6,6 +6,7 @@ import { PanicData, PauseData } from './clock';
 import { Energies, initialEnergies } from './distribution';
 import { Grid, LocatedWord, mkGridOf } from './grid';
 import { Layer, Overlay, mkLayer, mkOverlay } from './layer';
+import { Tool } from './tools';
 
 export type MouseState =
   | { t: 'up', p_in_canvas: Point }
@@ -74,7 +75,7 @@ export type SelectionState = {
 
 export type CoreState = {
   animations: Animation[],
-  toolIndex: number,
+  currentTool: Tool,
   tile_entities: Record<string, TileEntity>,
   invalidWords: LocatedWord[],
   connectedSet: Grid<boolean>,
@@ -110,7 +111,7 @@ export function mkGameState(seed?: number): GameState {
   return {
     coreState: {
       animations: [],
-      toolIndex: 0,
+      currentTool: 'pointer',
       tile_entities: {},
       invalidWords: [],
       bonusOverlay: mkOverlay<Bonus>(),
