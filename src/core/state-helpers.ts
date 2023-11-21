@@ -15,6 +15,7 @@ import { addHandTile, addWorldTile, ensureTileId, get_hand_tiles, get_main_tiles
 import { apply, compose, translate } from '../util/se1';
 import { Intent, KillIntent } from './reduce';
 import { Draft } from 'immer';
+import { BOMB_RADIUS } from './tools';
 
 export function addWorldTiles(state: GameState, tiles: Tile[]): GameState {
   return produce(state, s => {
@@ -95,7 +96,7 @@ function splashDamage(center: Point, radius: number): Point[] {
 }
 
 function killTileOfState(state: GameState, wp: DragWidgetPoint, intent: KillIntent): GameState {
-  const radius = intent.t == 'kill' ? intent.radius : 1;
+  const radius = intent.t == 'kill' ? intent.radius : BOMB_RADIUS;
 
   // Definitely want to clear the selection, because invariants get
   // violated if a tileId gets deleted but remains in the selection
@@ -167,8 +168,8 @@ function scoringOfBonus(bonus: Bonus, p: Point): Scoring[] {
 
 function resolveScoring(state: Draft<CoreState>, scoring: Scoring): void {
   switch (scoring.t) {
-    case 'bonus': state.score++;
-    case 'bomb': state.inventory.bombs++;
+    case 'bonus': state.score++; break;
+    case 'bomb': state.inventory.bombs++; break;
   }
 }
 

@@ -29,6 +29,7 @@ export function getCurrentTool(state: GameState): Tool {
 }
 
 export const dynamiteIntent: Intent & { t: 'kill' } = { t: 'kill', radius: 0, cost: 1 };
+export const BOMB_RADIUS = 2;
 export const bombIntent: Intent & { t: 'bomb' } = { t: 'bomb' };
 
 export function getCurrentTools(state: GameState): Tool[] {
