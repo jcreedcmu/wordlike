@@ -144,6 +144,9 @@ function exampleState(): GameState {
       lost: false,
       panic: { currentTime_in_game: Date.now(), lastClear_in_game: Date.now() - PANIC_INTERVAL_MS / 3 },
       paused: undefined,
+      inventory: {
+        bombs: 0,
+      },
     },
     mouseState: {
       t: "up",

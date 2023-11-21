@@ -93,6 +93,9 @@ export type CoreState = {
   panic: PanicData | undefined,
   paused: PauseData | undefined,
   game_from_clock: SE1,
+  inventory: {
+    bombs: number,
+  }
 };
 
 export type GameState = {
@@ -132,6 +135,9 @@ export function mkGameState(seed?: number): GameState {
       panic: undefined,
       paused: undefined,
       game_from_clock: se1.translate(-Date.now()),
+      inventory: {
+        bombs: 0,
+      }
     },
     mouseState: { t: 'up', p_in_canvas: { x: 0, y: 0 } },
   };
