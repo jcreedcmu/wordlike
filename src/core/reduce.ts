@@ -257,7 +257,7 @@ function reduceMouseDownInWorld(state: GameState, wp: WidgetPoint & { t: 'world'
       break;
     }
   }
-  const hoverBlock = bonusOfStatePoint(state.coreState, p_in_world_int) == 'block';
+  const hoverBlock = bonusOfStatePoint(state.coreState, p_in_world_int).t == 'block';
   let pinned =
     (hoverTile && hoverTile.loc.t == 'world') ? isTilePinned(state, hoverTile.id, hoverTile.loc) : false;
   const intent = getIntentOfMouseDown(getCurrentTool(state), wp, button, mods, hoverTile, hoverBlock, pinned);

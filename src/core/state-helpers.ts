@@ -113,7 +113,7 @@ function killTileOfState(state: GameState, wp: DragWidgetPoint, intent: KillInte
         return get_main_tiles(state).find(tile => vequal(tile.loc.p_in_world_int, p));
       }
       function blockAt(p: Point) {
-        return bonusOfStatePoint(state.coreState, p) == 'block';
+        return bonusOfStatePoint(state.coreState, p).t == 'block';
       }
 
       const tilesToDestroy: Point[] = splashDamage(p_in_world_int, radius);
@@ -127,7 +127,7 @@ function killTileOfState(state: GameState, wp: DragWidgetPoint, intent: KillInte
       state = produce(state, s => {
         tilesToDestroy.forEach(p => {
           if (blockAt(p))
-            setOverlay(s.coreState.bonusOverlay, p, 'empty');
+            setOverlay(s.coreState.bonusOverlay, p, { t: 'empty' });
         });
       });
 
@@ -161,7 +161,7 @@ export type Scoring =
   ;
 
 function scoringOfBonus(bonus: Bonus, p: Point): Scoring[] {
-  switch (bonus) {
+  switch (bonus.t) {
     case 'bonus': return [{ t: 'bonus', p }];
     case 'bomb': return [{ t: 'bomb', p }];
     default: return [];
@@ -192,7 +192,7 @@ export function resolveValid(state: GameState): GameState {
 
   return produce(state, s => {
     scorings.forEach(scoring => {
-      setOverlay(s.coreState.bonusOverlay, scoring.p, 'empty');
+      setOverlay(s.coreState.bonusOverlay, scoring.p, { t: 'empty' });
       resolveScoring(s.coreState, scoring);
       s.coreState.animations.push(mkPointDecayAnimation(scoring.p, state.coreState.game_from_clock));
     });

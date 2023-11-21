@@ -161,7 +161,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     for (let i = top_left_in_world.x; i <= bot_right_in_world.x; i++) {
       for (let j = top_left_in_world.y; j <= bot_right_in_world.y; j++) {
         const p: Point = { x: i, y: j };
-        switch (bonusOfStatePoint(cs, p)) {
+        switch (bonusOfStatePoint(cs, p).t) {
           case 'bonus':
             drawBonus(d, pan_canvas_from_world, p);
             break;
