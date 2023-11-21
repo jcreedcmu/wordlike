@@ -21,7 +21,7 @@ export function mkExplosionAnimation(p: Point, radius: number, game_from_clock: 
   return {
     t: 'explosion',
     center_in_world: vadd(p, { x: 0.5, y: 0.5 }),
-    duration_ms: (radius + 1) * 2500,
+    duration_ms: (radius + 1) * 250,
     start_in_game: now_in_game(game_from_clock),
     radius,
   }
