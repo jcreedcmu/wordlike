@@ -30,5 +30,12 @@ export function getCurrentTools(state: GameState): Tool[] {
   if (state.coreState.lost) {
     return [];
   }
-  return ['pointer', 'hand', 'dynamite', 'bomb'];
+  const tools: Tool[] = ['pointer', 'hand'];
+  if (state.coreState.score >= 1) {
+    tools.push('dynamite');
+  }
+  if (state.coreState.score >= 3) {
+    tools.push('bomb');
+  }
+  return tools;
 }
