@@ -82,3 +82,12 @@ export function drawImage(d: CanvasRenderingContext2D, img: CanvasImageSource, s
     dstRect.p.x, dstRect.p.y, dstRect.sz.x, dstRect.sz.y,
   );
 }
+
+export function pathRectCircle(d: CanvasRenderingContext2D, rect: Rect) {
+  d.beginPath();
+  d.arc(rect.p.x + rect.sz.x / 2,
+    rect.p.y + rect.sz.y / 2,
+    rect.sz.y / 2,
+    0, 360,
+  );
+}

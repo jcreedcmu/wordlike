@@ -1,5 +1,5 @@
 import { Point, Rect } from "./types";
-import { vm2, vsub } from "./vutil";
+import { vm2, vscale, vsub } from "./vutil";
 
 export function mapval<T, U>(m: { [k: string]: T }, f: (x: T, k?: string) => U): { [k: string]: U } {
   return Object.fromEntries(Object.entries(m).map(([k, v]) => [k, f(v, k)]));
@@ -91,6 +91,13 @@ export function point_hash(p: Point, seed: number): number {
 
 export function midpointOfRect(rect: Rect): Point {
   return vm2(rect.p, rect.sz, (p, s) => p + s / 2);
+}
+
+export function scaleRectToCenter(rect: Rect, s: number): Rect {
+  return {
+    p: vm2(rect.p, rect.sz, (p, sz) => (s * (p - (p + sz / 2)) + (p + sz / 2))),
+    sz: vscale(rect.sz, s),
+  }
 }
 
 // Returns a random permutation of [0,...,length-1].

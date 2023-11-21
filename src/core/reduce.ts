@@ -350,6 +350,7 @@ function reduceGameAction(state: GameState, action: GameAction): effectful.Resul
       if (action.code == 'd') {
         return gs(checkValid(produce(addWorldTiles(removeAllTiles(state), debugTiles()), s => {
           s.coreState.score = 1000;
+          s.coreState.inventory.bombs = 15;
         })));
       }
       return gs(state);

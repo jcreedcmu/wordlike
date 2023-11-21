@@ -4,18 +4,18 @@ import { LocatedWord, getGrid } from "../core/grid";
 import { getOverlay, getOverlayLayer } from "../core/layer";
 import { GameState, TileEntity, getBonusLayer } from "../core/state";
 import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from "../core/tile-helpers";
-import { TOOL_IMAGE_WIDTH, getCurrentTool, getCurrentTools, indexOfTool, rectOfTool } from "../core/tools";
-import { drawImage, fillRect, fillText, strokeRect } from "../util/dutil";
+import { getCurrentTool, getCurrentTools, rectOfTool } from "../core/tools";
+import { drawImage, fillRect, fillText, pathRectCircle, strokeRect } from "../util/dutil";
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
-import { boundRect, midpointOfRect } from "../util/util";
-import { vadd, vm, vscale, vsub, vtrans } from "../util/vutil";
+import { boundRect, midpointOfRect, scaleRectToCenter } from "../util/util";
+import { vadd, vdiv, vm, vscale, vsub, vtrans } from "../util/vutil";
 import { drawAnimation } from "./drawAnimation";
 import { drawBonus, drawBonusBomb } from "./drawBonus";
 import { CanvasInfo } from "./use-canvas";
 import { canvas_from_drag_tile, pan_canvas_from_world_of_state } from "./view-helpers";
-import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, hand_bds_in_canvas, shuffle_button_bds_in_canvas, pause_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
+import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, hand_bds_in_canvas, pause_button_bds_in_canvas, shuffle_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
 
 export function paintWithScale(ci: CanvasInfo, state: GameState) {
   const { d } = ci;
@@ -35,6 +35,48 @@ export function drawPausedScreen(ci: CanvasInfo, state: GameState) {
   d.textAlign = 'center';
   d.textBaseline = 'middle';
   fillText(d, "paused", midpointOfRect(canvas_bds_in_canvas), 'black', '48px sans-serif');
+}
+
+function drawToolbarCount(d: CanvasRenderingContext2D, rect: Rect, count: number): void {
+  d.textAlign = 'center';
+  d.textBaseline = 'middle';
+  const newRect: Rect = scaleRectToCenter({ p: vadd(rect.p, vdiv(rect.sz, 2)), sz: vdiv(rect.sz, 2) }, 0.7);
+  d.fillStyle = 'white';
+  d.strokeStyle = 'black';
+  d.lineWidth = 2;
+  pathRectCircle(d, newRect);
+  d.fill();
+  d.stroke();
+  const countTxt = `${count}`;
+  const fontSize = countTxt.length > 1 ? 12 : 16;
+  fillText(d, countTxt, vadd(midpointOfRect(newRect), { x: 0, y: 1 }), 'black', `bold ${fontSize}px sans-serif`);
+}
+
+function drawToolbar(d: CanvasRenderingContext2D, state: GameState): void {
+  fillRect(d, toolbar_bds_in_canvas, backgroundGray);
+  const toolbarImg = getAssets().toolbarImg;
+  d.imageSmoothingEnabled = false;
+
+  const tools = getCurrentTools(state);
+  const currentTool = getCurrentTool(state);
+  tools.forEach((tool, ix_in_toolbar) => {
+    const S_in_canvas = toolbar_bds_in_canvas.sz.x;
+    const rect_in_canvas = apply_to_rect(
+      canvas_from_toolbar(),
+      { p: { x: 0, y: S_in_canvas * ix_in_toolbar }, sz: { x: S_in_canvas, y: S_in_canvas } }
+    );
+
+    drawImage(d, toolbarImg, rectOfTool(tool), rect_in_canvas);
+
+    if (tool == 'bomb') {
+      drawToolbarCount(d, rect_in_canvas, state.coreState.inventory.bombs);
+    }
+
+    // indicate current tool
+    if (tool == currentTool) {
+      fillRect(d, rect_in_canvas, 'rgba(255, 255, 0, 0.5)');
+    }
+  });
 }
 
 export function rawPaint(ci: CanvasInfo, state: GameState) {
@@ -150,28 +192,6 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     d.restore();
   }
 
-  function drawToolbar() {
-    fillRect(d, toolbar_bds_in_canvas, backgroundGray);
-    const toolbarImg = getAssets().toolbarImg;
-    d.imageSmoothingEnabled = false;
-
-    const tools = getCurrentTools(state);
-    const currentTool = getCurrentTool(state);
-    tools.forEach((tool, ix_in_toolbar) => {
-      const S_in_canvas = toolbar_bds_in_canvas.sz.x;
-      const rect_in_canvas = apply_to_rect(
-        canvas_from_toolbar(),
-        { p: { x: 0, y: S_in_canvas * ix_in_toolbar }, sz: { x: S_in_canvas, y: S_in_canvas } }
-      );
-
-      drawImage(d, toolbarImg, rectOfTool(tool), rect_in_canvas);
-      // indicate current tool
-      if (tool == currentTool) {
-        fillRect(d, rect_in_canvas, 'rgba(255, 255, 0, 0.5)');
-      }
-    });
-  }
-
   function drawPauseButton() {
     d.textAlign = 'center';
     d.textBaseline = 'middle';
@@ -282,7 +302,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   }
 
   if (!cs.lost)
-    drawToolbar();
+    drawToolbar(d, state);
   else {
     fillRect(d, toolbar_bds_in_canvas, backgroundGray);
   }
