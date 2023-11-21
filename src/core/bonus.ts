@@ -15,7 +15,11 @@ export function bonusGenerator(p: Point, seed: number): Bonus {
   if (point_hash(p, seed) < 0.1) {
     return 'bonus';
   }
-  if (point_hash(p, seed) < 0.1 + (p.x * p.x + p.y * p.y) / 1000) {
+  function gradual(x: number): number {
+    // graph in desmos: 1-\frac{1}{\log\left(1+x^{2}\right)+1}
+    return 1 - 1 / (1 + Math.log(1 + x));
+  }
+  if (point_hash(p, seed) < gradual((p.x * p.x + p.y * p.y) / 1000)) {
     return 'block';
   }
   return 'empty';
