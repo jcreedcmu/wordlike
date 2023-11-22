@@ -17,7 +17,7 @@ import { MoveTile, addWorldTiles, bonusOfStatePoint, checkValid, drawOfState, fi
 import { tryKillTileOfState } from './kill-helpers';
 import { getTileId, get_hand_tiles, get_main_tiles, get_tiles, putTileInHand, putTileInWorld, putTilesInHand, removeAllTiles, setTileLoc } from "./tile-helpers";
 import { Tool, bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect } from './tools';
-import { resolveSelection } from './selection';
+import { SelectionOperation, resolveSelection, selectionOperationOfMods } from './selection';
 
 function resolveMouseup(state: GameState): GameState {
   // FIXME: Setting the mouse state to up *before* calling
@@ -159,7 +159,7 @@ export type Intent =
   | { t: 'dragTile', id: string }
   | { t: 'vacuous' }
   | { t: 'panWorld' }
-  | { t: 'startSelection' }
+  | { t: 'startSelection', opn: SelectionOperation }
   | KillIntent
   ;
 
@@ -174,7 +174,7 @@ function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number, mods:
           return { t: 'panWorld' };
         return { t: 'dragTile', id: hoverTile.id };
       }
-      return { t: 'startSelection' };
+      return { t: 'startSelection', opn: selectionOperationOfMods(mods) };
     case 'hand': return { t: 'panWorld' };
     case 'dynamite':
       if (hoverTile || hoverBlock) {
@@ -199,7 +199,7 @@ function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint): GameSt
       if (state.coreState.selected) {
         // If we start dragging a tile not in the selection, we should deselect it first
         if (!state.coreState.selected.selectedIds.includes(intent.id)) {
-          state2 = produce(state, s => { s.coreState.selected = undefined; });
+          state2 = deselect(state);
         }
       }
       return produce(state2, s => {
@@ -225,13 +225,12 @@ function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint): GameSt
     case 'bomb': return tryKillTileOfState(vacuous_down(state, wp), wp, intent);
     case 'startSelection':
       if (wp.t != 'world') return vacuous_down(state, wp);
-      return produce(deselect(state), s => {
+      return produce(state, s => {
         s.mouseState = {
           t: 'drag_selection',
           orig_p: wp.p_in_canvas,
           p_in_canvas: wp.p_in_canvas,
-          // XXX generalize to different operations depending on modifier keys
-          opn: 'set',
+          opn: intent.opn,
         }
       });
   }
@@ -315,6 +314,7 @@ function reduceShuffleButton(state: GameState, wp: WidgetPoint): GameState {
 }
 
 function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number, mods: Set<string>): GameState {
+  console.log('reduceMouseDown!');
   if (state.coreState.paused) {
     return unpauseState(vacuous_down(state, wp), state.coreState.paused);
   }

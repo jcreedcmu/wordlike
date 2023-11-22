@@ -74,9 +74,16 @@ export function Game(props: GameProps): JSX.Element {
   }
 
   function mouseDownListener(e: MouseEvent) {
+    console.log('mouse down!');
     const mods = new Set<string>();
     if (e.ctrlKey)
       mods.add('ctrl');
+    if (e.shiftKey)
+      mods.add('shift');
+    if (e.altKey)
+      mods.add('meta');
+    if (e.metaKey)
+      mods.add('meta');
     dispatch({ t: 'mouseDown', button: e.buttons, p: relpos(e, mc.current!.c), mods })
     e.preventDefault();
     e.stopPropagation();
@@ -87,6 +94,10 @@ export function Game(props: GameProps): JSX.Element {
     e.preventDefault();
   }
 
+  function dblclickListener(e: MouseEvent) {
+    e.stopPropagation();
+    e.preventDefault();
+  }
   function mouseUpListener(e: MouseEvent) {
     dispatch({ t: 'mouseUp', p: relpos(e, mc.current!.c) })
   }
@@ -108,6 +119,7 @@ export function Game(props: GameProps): JSX.Element {
   let interval: number | undefined = undefined;
   useEffect(() => {
 
+    document.addEventListener('dblclick', dblclickListener);
     document.addEventListener('mouseup', mouseUpListener);
     document.addEventListener('mousemove', mouseMoveListener);
     document.addEventListener('mousedown', mouseDownListener);
@@ -119,6 +131,7 @@ export function Game(props: GameProps): JSX.Element {
     interval = window.setInterval(intervalHandler, ANIMATION_INTERVAL_MS);
 
     return () => {
+      document.removeEventListener('dblclick', dblclickListener);
       document.removeEventListener('mouseup', mouseUpListener);
       document.removeEventListener('mousemove', mouseMoveListener);
       document.removeEventListener('mousedown', mouseDownListener);

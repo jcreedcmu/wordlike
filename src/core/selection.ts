@@ -5,7 +5,7 @@ import { boundRect, pointInRect } from "../util/util";
 import { vadd, vsub } from "../util/vutil";
 import { Overlay, mkOverlay, setOverlay } from "./layer";
 import { CoreState, MouseState } from "./state";
-import { get_main_tiles } from "./tile-helpers";
+import { getTileId, get_main_tiles } from "./tile-helpers";
 
 export type SelectionOperation =
   | 'set'
@@ -20,25 +20,56 @@ export type SelectionState = {
 };
 
 export function resolveSelection(state: CoreState, ms: MouseState & { t: 'drag_selection' }): CoreState {
-
   const small_rect_in_canvas = boundRect([ms.orig_p, ms.p_in_canvas]);
   const small_rect_in_world = apply_to_rect(inverse(state.canvas_from_world), small_rect_in_canvas);
   const rect_in_world = {
     p: vsub(small_rect_in_world.p, { x: 1, y: 1 }),
     sz: vadd(small_rect_in_world.sz, { x: 1, y: 1 }),
   };
+  const newSelectedIds =
+    get_main_tiles(state)
+      .filter(tile => pointInRect(tile.loc.p_in_world_int, rect_in_world))
+      .map(tile => tile.id);
+  const oldSelectedIds = state.selected == undefined ? [] : state.selected.selectedIds;
+
+  const computedIds = evalSelectionOperation(ms.opn, oldSelectedIds, newSelectedIds);
+
   const selected: SelectionState = {
     overlay: mkOverlay(),
-    selectedIds: []
+    selectedIds: computedIds,
   };
-  get_main_tiles(state).forEach(tile => {
-    if (pointInRect(tile.loc.p_in_world_int, rect_in_world)) {
+
+  computedIds.forEach(id => {
+    const tile = getTileId(state, id);
+    if (tile.loc.t == 'world') {
       setOverlay(selected.overlay, tile.loc.p_in_world_int, true);
-      selected.selectedIds.push(tile.id);
     }
   });
+
   const realSelected = selected.selectedIds.length == 0 ? undefined : selected;
   return produce(state, s => {
     s.selected = realSelected;
   });
+}
+
+function evalSelectionOperation(opn: SelectionOperation, a: string[], b: string[]): string[] {
+  switch (opn) {
+    case 'set': return b;
+    case 'union': return [...new Set([...a, ...b])];
+    case 'intersection': return a.filter(x => b.includes(x));
+    case 'subtract': return a.filter(x => !b.includes(x));
+  }
+}
+
+export function selectionOperationOfMods(mods: Set<string>): SelectionOperation {
+  if (mods.has('shift') && mods.has('ctrl')) {
+    return 'intersection';
+  }
+  if (mods.has('shift')) {
+    return 'union';
+  }
+  if (mods.has('ctrl')) {
+    return 'subtract';
+  }
+  return 'set';
 }
