@@ -1,14 +1,14 @@
 import { reduce } from "../src/core/reduce";
 import { GameState, mkGameState } from "../src/core/state";
-import { checkValid, addWorldTiles } from "../src/core/state-helpers";
+import { checkValid, addWorldTiles, withCoreState } from "../src/core/state-helpers";
 import { addWorldTile, removeTile, putTileInWorld } from "../src/core/tile-helpers";
 import { debugTiles } from "../src/util/debug";
 import { produce } from "../src/util/produce";
 
 function twoTileState(): GameState {
   let state = mkGameState();
-  state = produce(state, s => addWorldTile(s, { letter: 'A', p_in_world_int: { x: 0, y: 0 }, id: '1' }));
-  state = produce(state, s => addWorldTile(s, { letter: 'B', p_in_world_int: { x: 1, y: 0 }, id: '2' }));
+  state = produce(state, s => addWorldTile(s.coreState, { letter: 'A', p_in_world_int: { x: 0, y: 0 }, id: '1' }));
+  state = produce(state, s => addWorldTile(s.coreState, { letter: 'B', p_in_world_int: { x: 1, y: 0 }, id: '2' }));
   return state;
 }
 
@@ -44,8 +44,8 @@ describe('addWorldTile', () => {
 
   test('should generate ids correctly', () => {
     let state = mkGameState();
-    state = produce(state, s => addWorldTile(s, { letter: 'A', p_in_world_int: { x: 0, y: 0 } }));
-    state = produce(state, s => addWorldTile(s, { letter: 'B', p_in_world_int: { x: 1, y: 0 } }));
+    state = produce(state, s => addWorldTile(s.coreState, { letter: 'A', p_in_world_int: { x: 0, y: 0 } }));
+    state = produce(state, s => addWorldTile(s.coreState, { letter: 'B', p_in_world_int: { x: 1, y: 0 } }));
     expect(Object.keys(state.coreState.tile_entities).length).toBe(2);
   });
 });
@@ -53,7 +53,7 @@ describe('addWorldTile', () => {
 describe('moveTile', () => {
   test('should work correctly', () => {
     let state = twoTileState();
-    state = putTileInWorld(state, '2', { x: 3, y: 3 });
+    state = withCoreState(state, cs => putTileInWorld(cs, '2', { x: 3, y: 3 }));
     expect(state.coreState.tile_entities).toEqual({
       '1': {
         id: '1',
@@ -84,8 +84,8 @@ describe('moveTile', () => {
 
 describe('removeTile', () => {
   test('should work correctly', () => {
-    const state = checkValid(addWorldTiles(mkGameState(), debugTiles()));
-    const state2 = removeTile(state, Object.keys(state.coreState.tile_entities)[0]);
-    expect(Object.keys(state2.coreState.tile_entities).length).toBe(Object.keys(state.coreState.tile_entities).length - 1);
+    const state = withCoreState(mkGameState(), cs => checkValid(addWorldTiles(cs, debugTiles())));
+    const state2 = removeTile(state.coreState, Object.keys(state.coreState.tile_entities)[0]);
+    expect(Object.keys(state2.tile_entities).length).toBe(Object.keys(state.coreState.tile_entities).length - 1);
   });
 });

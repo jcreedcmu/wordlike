@@ -1,8 +1,8 @@
-import { Point, Rect } from "../util/types";
-import { SE2, apply, inverse } from "../util/se2";
-import { pointInRect } from "../util/util";
-import { GameState } from "../core/state";
+import { CoreState } from "../core/state";
 import { Tool, getCurrentTools } from "../core/tools";
+import { SE2, apply, inverse } from "../util/se2";
+import { Point, Rect } from "../util/types";
+import { pointInRect } from "../util/util";
 
 export const HAND_WIDTH = 100;
 
@@ -68,7 +68,7 @@ export type WidgetPoint =
   | { t: 'nowhere', p_in_canvas: Point } // outside canvas bounds
   ;
 
-export function getWidgetPoint(state: GameState, p_in_canvas: Point): WidgetPoint {
+export function getWidgetPoint(state: CoreState, p_in_canvas: Point): WidgetPoint {
   if (pointInRect(p_in_canvas, pause_button_bds_in_canvas)) {
     return {
       t: 'pauseButton',
@@ -100,13 +100,13 @@ export function getWidgetPoint(state: GameState, p_in_canvas: Point): WidgetPoin
     return getDragWidgetPoint(state, p_in_canvas);
 }
 
-export function getDragWidgetPoint(state: GameState, p_in_canvas: Point): DragWidgetPoint {
+export function getDragWidgetPoint(state: CoreState, p_in_canvas: Point): DragWidgetPoint {
   if (pointInRect(p_in_canvas, world_bds_in_canvas)) {
     return {
       t: 'world',
-      p_in_local: apply(inverse(state.coreState.canvas_from_world), p_in_canvas),
+      p_in_local: apply(inverse(state.canvas_from_world), p_in_canvas),
       p_in_canvas,
-      local_from_canvas: inverse(state.coreState.canvas_from_world),
+      local_from_canvas: inverse(state.canvas_from_world),
     };
   }
   else {

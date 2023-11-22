@@ -1,6 +1,6 @@
 import { apply, compose, ident, inverse, SE2, translate } from '../util/se2';
 import { vm, vsub } from '../util/vutil';
-import { GameState, MouseState } from '../core/state';
+import { CoreState, GameState, MouseState } from '../core/state';
 import { Point } from '../util/types';
 import { getDragWidgetPoint, getWidgetPoint } from './widget-helpers';
 import { matchScale } from '../util/se2-extra';
@@ -40,7 +40,7 @@ export function drag_canvas_from_canvas_of_mouse_state(state: MouseState): SE2 {
 //
 // tile is synonymous with tile0: it's the coordinate system of the tile before it was dragged
 // drag_tile is synonymous with tile1: it's the coordinate system of the tile being dragged
-export function canvas_from_drag_tile(state: GameState, ms: MouseState): SE2 {
+export function canvas_from_drag_tile(state: CoreState, ms: MouseState): SE2 {
   switch (ms.t) {
     case 'drag_tile':
       const wp0 = getDragWidgetPoint(state, ms.orig_p_in_canvas);

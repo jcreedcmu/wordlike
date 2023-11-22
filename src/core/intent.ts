@@ -6,6 +6,7 @@ import { tryKillTileOfState } from './kill-helpers';
 import { Tool, bombIntent, dynamiteIntent } from './tools';
 import { SelectionOperation, selectionOperationOfMods } from './selection';
 import { vacuous_down, deselect } from './reduce';
+import { withCoreState } from './state-helpers';
 
 export type KillIntent =
   | { t: 'kill', radius: number, cost: number }
@@ -61,7 +62,7 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
       if (state.coreState.selected) {
         // If we start dragging a tile not in the selection, we should deselect it first
         if (!state.coreState.selected.selectedIds.includes(intent.id)) {
-          state2 = deselect(state);
+          state2 = withCoreState(state, cs => deselect(cs));
         }
       }
       return produce(state2, s => {
@@ -97,8 +98,8 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
           p_in_canvas: wp.p_in_canvas,
         };
       });
-    case 'kill': return tryKillTileOfState(vacuous_down(state, wp), wp, intent);
-    case 'bomb': return tryKillTileOfState(vacuous_down(state, wp), wp, intent);
+    case 'kill': return withCoreState(vacuous_down(state, wp), cs => tryKillTileOfState(cs, wp, intent));
+    case 'bomb': return withCoreState(vacuous_down(state, wp), cs => tryKillTileOfState(cs, wp, intent));
     case 'startSelection':
       if (wp.t != 'world') return vacuous_down(state, wp);
       return produce(state, s => {

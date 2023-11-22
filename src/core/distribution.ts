@@ -1,7 +1,6 @@
 import { DEBUG } from "../util/debug";
 import { produce } from "../util/produce";
 import { next_rand } from "../util/util";
-import { CoreState, GameState } from "./state";
 
 type LetterClass = 0 | 1;
 

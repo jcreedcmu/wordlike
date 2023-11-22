@@ -4,7 +4,7 @@ import { Dispatch } from '../core/action';
 import { PANIC_INTERVAL_MS } from '../core/clock';
 import { mkGridOf } from '../core/grid';
 import { GameState, Tile } from '../core/state';
-import { addHandTiles, addWorldTiles, checkValid, resolveValid } from '../core/state-helpers';
+import { addHandTiles, addWorldTiles, checkValid, resolveValid, withCoreState } from '../core/state-helpers';
 import { ensureTileId } from "../core/tile-helpers";
 import { DEBUG } from '../util/debug';
 import { relpos } from '../util/dutil';
@@ -202,7 +202,7 @@ function exampleState(): GameState {
     { letter: "t", p_in_world_int: { x: 0, y: 1 } },
     { letter: "a", p_in_world_int: { x: 0, y: 2 } },
   ].map(ensureTileId);
-  const almost = resolveValid(checkValid(addHandTiles(addWorldTiles(state, tiles), handTiles)));
+  const almost = withCoreState(state, cs => resolveValid(checkValid(addHandTiles(addWorldTiles(cs, tiles), handTiles))));
   return produce(almost, s => {
     s.coreState.animations = [];
   });

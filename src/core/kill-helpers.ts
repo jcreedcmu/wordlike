@@ -3,27 +3,27 @@ import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { vequal, vint } from "../util/vutil";
 import { Animation, mkExplosionAnimation } from './animations';
-import { setOverlay } from "./layer";
 import { KillIntent } from './intent';
-import { GameState, MainTile } from "./state";
+import { setOverlay } from "./layer";
+import { CoreState, MainTile } from "./state";
 import { bonusOfStatePoint, checkValid } from './state-helpers';
 import { get_hand_tiles, get_main_tiles, removeTile } from "./tile-helpers";
 import { BOMB_RADIUS } from './tools';
 
-function eligibleKillIntent(state: GameState, intent: KillIntent): boolean {
+function eligibleKillIntent(state: CoreState, intent: KillIntent): boolean {
   switch (intent.t) {
-    case 'kill': return state.coreState.score >= intent.cost;
-    case 'bomb': return state.coreState.inventory.bombs >= 1;
+    case 'kill': return state.score >= intent.cost;
+    case 'bomb': return state.inventory.bombs >= 1;
   }
 }
-function spendKillIntent(state: GameState, intent: KillIntent): GameState {
+function spendKillIntent(state: CoreState, intent: KillIntent): CoreState {
   switch (intent.t) {
-    case 'kill': return produce(state, s => { s.coreState.score -= intent.cost; });
-    case 'bomb': return produce(state, s => { s.coreState.inventory.bombs--; });
+    case 'kill': return produce(state, s => { s.score -= intent.cost; });
+    case 'bomb': return produce(state, s => { s.inventory.bombs--; });
   }
 }
 
-export function tryKillTileOfState(state: GameState, wp: WidgetPoint, intent: KillIntent): GameState {
+export function tryKillTileOfState(state: CoreState, wp: WidgetPoint, intent: KillIntent): CoreState {
   if (!eligibleKillIntent(state, intent))
     return state;
 
@@ -43,23 +43,23 @@ function splashDamage(center: Point, radius: number): Point[] {
   }
   return pts;
 }
-function killTileOfState(state: GameState, wp: DragWidgetPoint, intent: KillIntent): GameState {
+function killTileOfState(state: CoreState, wp: DragWidgetPoint, intent: KillIntent): CoreState {
   const radius = intent.t == 'kill' ? intent.radius : BOMB_RADIUS;
 
   // Definitely want to clear the selection, because invariants get
   // violated if a tileId gets deleted but remains in the selection
-  state = produce(state, s => { s.coreState.selected = undefined; });
+  state = produce(state, s => { s.selected = undefined; });
 
   switch (wp.t) {
     case 'world': {
       const p_in_world_int = vint(wp.p_in_local);
-      const anim: Animation = mkExplosionAnimation(p_in_world_int, radius, state.coreState.game_from_clock);
+      const anim: Animation = mkExplosionAnimation(p_in_world_int, radius, state.game_from_clock);
 
       function tileAt(p: Point): MainTile | undefined {
-        return get_main_tiles(state.coreState).find(tile => vequal(tile.loc.p_in_world_int, p));
+        return get_main_tiles(state).find(tile => vequal(tile.loc.p_in_world_int, p));
       }
       function killableBonusAt(p: Point) {
-        return ['block', 'required'].includes(bonusOfStatePoint(state.coreState, p).t);
+        return ['block', 'required'].includes(bonusOfStatePoint(state, p).t);
       }
 
       const tilesToDestroy: Point[] = splashDamage(p_in_world_int, radius);
@@ -73,12 +73,12 @@ function killTileOfState(state: GameState, wp: DragWidgetPoint, intent: KillInte
       state = produce(state, s => {
         tilesToDestroy.forEach(p => {
           if (killableBonusAt(p))
-            setOverlay(s.coreState.bonusOverlay, p, { t: 'empty' });
+            setOverlay(s.bonusOverlay, p, { t: 'empty' });
         });
       });
 
       return checkValid(produce(spendKillIntent(state, intent), s => {
-        s.coreState.animations.push(anim);
+        s.animations.push(anim);
       }));
     }
     case 'hand': {
@@ -89,7 +89,7 @@ function killTileOfState(state: GameState, wp: DragWidgetPoint, intent: KillInte
         if (tile == undefined)
           return state;
         return checkValid(produce(removeTile(state, tile.id), s => {
-          s.coreState.score--;
+          s.score--;
         }));
       }
       else {

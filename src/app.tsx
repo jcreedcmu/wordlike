@@ -146,7 +146,7 @@ export function Game(props: GameProps): JSX.Element {
 
   type CursorType = React.CSSProperties['cursor'];
   function cursorOfState(state: GameState): CursorType {
-    const tool = getCurrentTool(state);
+    const tool = getCurrentTool(state.coreState);
     if (tool == 'dynamite') {
       return 'url(assets/dynamite-cursor.png) 16 16, pointer';
     }

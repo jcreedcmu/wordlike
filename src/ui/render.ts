@@ -2,7 +2,7 @@ import { getAssets } from "../core/assets";
 import { getPanicFraction, now_in_game } from "../core/clock";
 import { LocatedWord, getGrid } from "../core/grid";
 import { getOverlay } from "../core/layer";
-import { GameState, TileEntity } from "../core/state";
+import { CoreState, GameState, TileEntity } from "../core/state";
 import { bonusOfStatePoint } from "../core/state-helpers";
 import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from "../core/tile-helpers";
 import { getCurrentTool, getCurrentTools, rectOfTool } from "../core/tools";
@@ -30,7 +30,7 @@ export function paintWithScale(ci: CanvasInfo, state: GameState) {
 
 const backgroundGray = '#eeeeee';
 
-export function drawPausedScreen(ci: CanvasInfo, state: GameState) {
+export function drawPausedScreen(ci: CanvasInfo) {
   const { d } = ci;
 
   fillRect(d, canvas_bds_in_canvas, 'white');
@@ -55,7 +55,7 @@ function drawToolbarCount(d: CanvasRenderingContext2D, rect: Rect, count: number
   fillText(d, countTxt, vadd(midpointOfRect(newRect), { x: 0, y: 1 }), 'black', `bold ${fontSize}px sans-serif`);
 }
 
-function drawToolbar(d: CanvasRenderingContext2D, state: GameState): void {
+function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
   fillRect(d, toolbar_bds_in_canvas, backgroundGray);
   const toolbarImg = getAssets().toolbarImg;
   d.imageSmoothingEnabled = false;
@@ -72,13 +72,13 @@ function drawToolbar(d: CanvasRenderingContext2D, state: GameState): void {
     drawImage(d, toolbarImg, rectOfTool(tool), rect_in_canvas);
 
     if (tool == 'bomb') {
-      drawToolbarCount(d, rect_in_canvas, state.coreState.inventory.bombs);
+      drawToolbarCount(d, rect_in_canvas, state.inventory.bombs);
     }
     else if (tool == 'vowel') {
-      drawToolbarCount(d, rect_in_canvas, state.coreState.inventory.vowels);
+      drawToolbarCount(d, rect_in_canvas, state.inventory.vowels);
     }
     else if (tool == 'consonant') {
-      drawToolbarCount(d, rect_in_canvas, state.coreState.inventory.consonants);
+      drawToolbarCount(d, rect_in_canvas, state.inventory.consonants);
     }
 
     // indicate current tool
@@ -92,7 +92,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   const cs = state.coreState;
 
   if (cs.paused) {
-    drawPausedScreen(ci, state);
+    drawPausedScreen(ci);
     return;
   }
 
@@ -145,7 +145,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
 
     // draw world tiles
 
-    get_main_tiles(state.coreState).forEach(tile => {
+    get_main_tiles(cs).forEach(tile => {
       if (isSelectedForDrag(state, tile))
         return;
       let opts = undefined;
@@ -212,7 +212,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     fillRect(d, hand_bds_in_canvas, backgroundGray);
 
     // draw hand tiles
-    get_hand_tiles(state).forEach(tile => {
+    get_hand_tiles(cs).forEach(tile => {
       if (isSelectedForDrag(state, tile))
         return;
       drawTile(d, canvas_from_tile(tile), tile);
@@ -234,20 +234,20 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     // draw dragged tile
     if (ms.t == 'drag_tile') {
       if (cs.selected) {
-        const tile0 = getTileId(state.coreState, ms.id);
+        const tile0 = getTileId(cs, ms.id);
         cs.selected.selectedIds.forEach(id => {
-          const tile = getTileId(state.coreState, id);
+          const tile = getTileId(cs, id);
           if (tile.loc.t == 'world' && tile0.loc.t == 'world') {
             drawTile(d,
-              compose(canvas_from_drag_tile(state, ms), translate(vsub(tile.loc.p_in_world_int, tile0.loc.p_in_world_int))),
+              compose(canvas_from_drag_tile(cs, ms), translate(vsub(tile.loc.p_in_world_int, tile0.loc.p_in_world_int))),
               tile);
           }
         });
       }
 
-      const tile = getTileId(state.coreState, ms.id);
+      const tile = getTileId(cs, ms.id);
       drawTile(d,
-        canvas_from_drag_tile(state, state.mouseState),
+        canvas_from_drag_tile(cs, state.mouseState),
         tile);
 
     }
@@ -310,7 +310,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   }
 
   if (!cs.lost)
-    drawToolbar(d, state);
+    drawToolbar(d, cs);
   else {
     fillRect(d, toolbar_bds_in_canvas, backgroundGray);
   }

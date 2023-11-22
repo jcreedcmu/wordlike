@@ -17,16 +17,16 @@ export function getTileId(state: CoreState, id: string): TileEntity {
   return state.tile_entities[id];
 }
 
-export function getTileLoc(state: GameState, id: string): Location {
-  return state.coreState.tile_entities[id].loc;
+export function getTileLoc(state: CoreState, id: string): Location {
+  return state.tile_entities[id].loc;
 }
 
-export function setTileLoc(state: Draft<GameState>, id: string, loc: Location): void {
-  state.coreState.tile_entities[id].loc = loc;
+export function setTileLoc(state: Draft<CoreState>, id: string, loc: Location): void {
+  state.tile_entities[id].loc = loc;
 }
 
-export function get_tiles(state: GameState): TileEntity[] {
-  return Object.values(state.coreState.tile_entities);
+export function get_tiles(state: CoreState): TileEntity[] {
+  return Object.values(state.tile_entities);
 }
 
 export function get_main_tiles(state: CoreState): MainTile[] {
@@ -43,9 +43,9 @@ export function get_main_tiles(state: CoreState): MainTile[] {
   return keys.flatMap(mainTilesOfString);
 }
 
-export function get_hand_tiles(state: GameState): HandTile[] {
-  return Object.keys(state.coreState.tile_entities).flatMap(k => {
-    const tile = getTileId(state.coreState, k);
+export function get_hand_tiles(state: CoreState): HandTile[] {
+  return Object.keys(state.tile_entities).flatMap(k => {
+    const tile = getTileId(state, k);
     const loc = tile.loc;
     if (loc.t == 'hand')
       return [{ ...tile, loc }];
@@ -54,12 +54,12 @@ export function get_hand_tiles(state: GameState): HandTile[] {
   }).sort((a, b) => a.loc.p_in_hand_int.y - b.loc.p_in_hand_int.y);
 }
 
-export function removeTile(state: GameState, id: string): GameState {
+export function removeTile(state: CoreState, id: string): CoreState {
   const loc = getTileLoc(state, id);
   switch (loc.t) {
     case 'world':
       return produce(state, s => {
-        delete s.coreState.tile_entities[id];
+        delete s.tile_entities[id];
       });
     case 'hand':
       const handTiles = get_hand_tiles(state);
@@ -67,7 +67,7 @@ export function removeTile(state: GameState, id: string): GameState {
         for (let i = loc.p_in_hand_int.y; i < handTiles.length; i++) {
           setTileLoc(s, handTiles[i].id, { t: 'hand', p_in_hand_int: { x: 0, y: i - 1 } });
         }
-        delete s.coreState.tile_entities[id];
+        delete s.tile_entities[id];
       });
   }
 }
@@ -82,23 +82,23 @@ export function ensureTileId(tile: TileOptionalId): Tile {
   return { ...tile, id };
 }
 
-export function addWorldTile(state: Draft<GameState>, tile: TileOptionalId): void {
+export function addWorldTile(state: Draft<CoreState>, tile: TileOptionalId): void {
   const newTile: TileEntity = ensureId({
     id: tile.id,
     letter: tile.letter, loc: { t: 'world', p_in_world_int: tile.p_in_world_int }
   });
-  state.coreState.tile_entities[newTile.id] = newTile;
+  state.tile_entities[newTile.id] = newTile;
 }
 
-export function addHandTile(state: Draft<GameState>, tile: Tile): void {
+export function addHandTile(state: Draft<CoreState>, tile: Tile): void {
   const newTile: TileEntity = ensureId({
     id: tile.id,
     letter: tile.letter, loc: { t: 'hand', p_in_hand_int: tile.p_in_world_int }
   });
-  state.coreState.tile_entities[newTile.id] = newTile;
+  state.tile_entities[newTile.id] = newTile;
 }
 
-export function putTileInWorld(state: GameState, id: string, p_in_world_int: Point): GameState {
+export function putTileInWorld(state: CoreState, id: string, p_in_world_int: Point): CoreState {
   const loc = getTileLoc(state, id);
   const handTiles = get_hand_tiles(state);
   switch (loc.t) {
@@ -118,7 +118,7 @@ export function putTileInWorld(state: GameState, id: string, p_in_world_int: Poi
 }
 
 // XXX: assumes tile was in world before
-export function putTileInHand(state: GameState, id: string, ix: number): GameState {
+export function putTileInHand(state: CoreState, id: string, ix: number): CoreState {
   const handTiles = get_hand_tiles(state);
 
   if (ix > handTiles.length)
@@ -134,7 +134,7 @@ export function putTileInHand(state: GameState, id: string, ix: number): GameSta
   });
 }
 
-export function putTilesInHand(state: GameState, ids: string[], ix: number): GameState {
+export function putTilesInHand(state: CoreState, ids: string[], ix: number): CoreState {
   const handTiles = get_hand_tiles(state);
 
   if (ix > handTiles.length)
@@ -152,8 +152,8 @@ export function putTilesInHand(state: GameState, ids: string[], ix: number): Gam
   });
 }
 
-export function removeAllTiles(state: GameState): GameState {
-  return produce(state, s => { s.coreState.tile_entities = {}; });
+export function removeAllTiles(state: CoreState): CoreState {
+  return produce(state, s => { s.tile_entities = {}; });
 }
 
 export function isSelectedForDrag(state: GameState, tile: TileEntity): boolean {
@@ -167,10 +167,10 @@ export function isSelectedForDrag(state: GameState, tile: TileEntity): boolean {
   }
 }
 
-export function tileAtPoint(state: GameState, p_in_world: Point): TileEntity | undefined {
+export function tileAtPoint(state: CoreState, p_in_world: Point): TileEntity | undefined {
   let hoverTile: TileEntity | undefined = undefined;
   const p_in_world_int = vm(p_in_world, Math.floor);
-  for (const tile of get_main_tiles(state.coreState)) {
+  for (const tile of get_main_tiles(state)) {
     if (vequal(p_in_world_int, tile.loc.p_in_world_int)) {
       return tile;
     }

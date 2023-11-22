@@ -14,8 +14,8 @@ import { getIntentOfMouseDown, reduceIntent } from './intent';
 import { tryKillTileOfState } from './kill-helpers';
 import { mkOverlayFrom } from './layer';
 import { resolveSelection } from './selection';
-import { GameState, HAND_TILE_LIMIT, Location, SceneState, mkGameSceneState } from './state';
-import { MoveTile, addWorldTiles, bonusOfStatePoint, checkValid, drawOfState, filterExpiredAnimations, isCollision, isOccupied, isTilePinned, unpauseState } from './state-helpers';
+import { CoreState, GameState, HAND_TILE_LIMIT, Location, SceneState, mkGameSceneState } from './state';
+import { MoveTile, addWorldTiles, bonusOfStatePoint, checkValid, drawOfState, filterExpiredAnimations, isCollision, isOccupied, isTilePinned, unpauseState, withCoreState } from './state-helpers';
 import { getTileId, get_hand_tiles, get_tiles, putTileInHand, putTileInWorld, putTilesInHand, removeAllTiles, setTileLoc, tileAtPoint } from "./tile-helpers";
 import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect } from './tools';
 
@@ -47,18 +47,18 @@ function resolveMouseupInner(state: GameState): GameState {
 
     case 'drag_tile': {
 
-      const wp = getWidgetPoint(state, ms.p_in_canvas);
+      const wp = getWidgetPoint(state.coreState, ms.p_in_canvas);
       if (wp.t == 'world') {
 
         const selected = state.coreState.selected;
         if (selected) {
 
           // FIXME: ensure the dragged tile is in the selection
-          const remainingTiles = get_tiles(state).filter(tile => !selected.selectedIds.includes(tile.id));
+          const remainingTiles = get_tiles(state.coreState).filter(tile => !selected.selectedIds.includes(tile.id));
 
           const new_tile_in_world_int: Point = vm(compose(
             inverse(state.coreState.canvas_from_world),
-            canvas_from_drag_tile(state, ms)).translate,
+            canvas_from_drag_tile(state.coreState, ms)).translate,
             Math.round);
           const old_tile_loc: Location = ms.orig_loc;
           if (old_tile_loc.t != 'world') {
@@ -84,36 +84,36 @@ function resolveMouseupInner(state: GameState): GameState {
 
           const afterDrop = produce(state, s => {
             moves.forEach(({ id, p_in_world_int }) => {
-              setTileLoc(s, id, { t: 'world', p_in_world_int });
+              setTileLoc(s.coreState, id, { t: 'world', p_in_world_int });
             });
             s.coreState.selected = { overlay: mkOverlayFrom(tgts), selectedIds: selected.selectedIds };
           });
-          return checkValid(afterDrop);
+          return withCoreState(afterDrop, cs => checkValid(cs));
         }
         else {
 
           const moveTile: MoveTile = {
             p_in_world_int: vm(compose(
               inverse(state.coreState.canvas_from_world),
-              canvas_from_drag_tile(state, ms)).translate,
+              canvas_from_drag_tile(state.coreState, ms)).translate,
               Math.round),
             id: ms.id,
             letter: getTileId(state.coreState, ms.id).letter,
           }
 
-          const afterDrop = !isOccupied(state, moveTile)
-            ? putTileInWorld(state, ms.id, moveTile.p_in_world_int)
+          const afterDrop = !isOccupied(state.coreState, moveTile)
+            ? withCoreState(state, cs => putTileInWorld(cs, ms.id, moveTile.p_in_world_int))
             : state;
-          return checkValid(afterDrop);
+          return withCoreState(afterDrop, cs => checkValid(cs));
         }
 
 
       }
       else if (wp.t == 'hand') {
-        const handTiles = get_hand_tiles(state);
+        const handTiles = get_hand_tiles(state.coreState);
         const new_tile_in_hand_int: Point = vm(compose(
           inverse(canvas_from_hand()),
-          canvas_from_drag_tile(state, ms)).translate,
+          canvas_from_drag_tile(state.coreState, ms)).translate,
           Math.round);
 
         if (state.coreState.selected) {
@@ -123,7 +123,7 @@ function resolveMouseupInner(state: GameState): GameState {
           if (selectedIds.length + handTiles.length > HAND_TILE_LIMIT)
             return state;
 
-          return checkValid(putTilesInHand(state, selectedIds, new_tile_in_hand_int.y));
+          return withCoreState(state, cs => checkValid(putTilesInHand(cs, selectedIds, new_tile_in_hand_int.y)));
         }
         else {
           // check hand size limit
@@ -131,7 +131,7 @@ function resolveMouseupInner(state: GameState): GameState {
             return state;
 
           return ms.orig_loc.t == 'world'
-            ? checkValid(putTileInHand(state, ms.id, new_tile_in_hand_int.y))
+            ? withCoreState(state, cs => checkValid(putTileInHand(cs, ms.id, new_tile_in_hand_int.y)))
             : state;
         }
       }
@@ -141,20 +141,20 @@ function resolveMouseupInner(state: GameState): GameState {
       }
     }
     case 'exchange_tiles': {
-      const wp = getWidgetPoint(state, ms.p_in_canvas);
+      const wp = getWidgetPoint(state.coreState, ms.p_in_canvas);
       if (wp.t != 'world')
         return state;
       const id0 = ms.id;
       const loc0 = getTileId(state.coreState, id0).loc;
-      const tile = tileAtPoint(state, wp.p_in_local);
+      const tile = tileAtPoint(state.coreState, wp.p_in_local);
       if (tile == undefined)
         return state;
       const id1 = tile.id;
       const loc1 = getTileId(state.coreState, id1).loc;
-      return checkValid(produce(state, s => {
+      return withCoreState(state, cs => checkValid(produce(cs, s => {
         setTileLoc(s, id0, loc1);
         setTileLoc(s, id1, loc0);
-      }));
+      })));
     }
 
     case 'up': return state; // no drag to resolve
@@ -162,22 +162,21 @@ function resolveMouseupInner(state: GameState): GameState {
   }
 }
 
-export function deselect(state: GameState): GameState {
-  return produce(state, s => { s.coreState.selected = undefined; });
+export function deselect(state: CoreState): CoreState {
+  return produce(state, s => { s.selected = undefined; });
 }
-
 
 export function vacuous_down(state: GameState, wp: WidgetPoint): GameState {
   return produce(state, s => { s.mouseState = { t: 'down', p_in_canvas: wp.p_in_canvas }; });
 }
 
 function reduceMouseDownInWorld(state: GameState, wp: WidgetPoint & { t: 'world' }, button: number, mods: Set<string>): GameState {
-  const hoverTile = tileAtPoint(state, wp.p_in_local);
+  const hoverTile = tileAtPoint(state.coreState, wp.p_in_local);
   const p_in_world_int = vm(wp.p_in_local, Math.floor);
   const hoverBlock = bonusOfStatePoint(state.coreState, p_in_world_int).t == 'block';
   let pinned =
-    (hoverTile && hoverTile.loc.t == 'world') ? isTilePinned(state, hoverTile.id, hoverTile.loc) : false;
-  const intent = getIntentOfMouseDown(getCurrentTool(state), wp, button, mods, hoverTile, hoverBlock, pinned);
+    (hoverTile && hoverTile.loc.t == 'world') ? isTilePinned(state.coreState, hoverTile.id, hoverTile.loc) : false;
+  const intent = getIntentOfMouseDown(getCurrentTool(state.coreState), wp, button, mods, hoverTile, hoverBlock, pinned);
   return reduceIntent(state, intent, wp);
 }
 
@@ -186,14 +185,14 @@ function reduceMouseDownInHand(state: GameState, wp: WidgetPoint & { t: 'hand' }
     return vacuous_down(state, wp);
 
   const p_in_hand_int = vm(wp.p_in_local, Math.floor);
-  const tiles = get_hand_tiles(state);
-  const tool = getCurrentTool(state);
+  const tiles = get_hand_tiles(state.coreState);
+  const tool = getCurrentTool(state.coreState);
   if (tool == 'dynamite') return reduceIntent(state, dynamiteIntent, wp);
   else if (tool == 'bomb') return reduceIntent(state, bombIntent, wp);
   else {
     const hoverTile = p_in_hand_int.x == 0 && p_in_hand_int.y >= 0 && p_in_hand_int.y < tiles.length;
     if (hoverTile) {
-      return produce(deselect(state), s => {
+      return produce(withCoreState(state, deselect), s => {
         s.mouseState = {
           t: 'drag_tile',
           orig_loc: { t: 'hand', p_in_hand_int },
@@ -204,14 +203,14 @@ function reduceMouseDownInHand(state: GameState, wp: WidgetPoint & { t: 'hand' }
       });
     }
     else
-      return drawOfState(deselect(state));
+      return withCoreState(state, cs => drawOfState(deselect(cs)));
   }
 }
 
 function reduceMouseDownInToolbar(state: GameState, wp: WidgetPoint & { t: 'toolbar' }, button: number, mods: Set<string>): GameState {
   const tool = wp.tool;
   if (tool !== undefined) {
-    return reduceToolSelect(vacuous_down(state, wp), wp.tool);
+    return withCoreState(vacuous_down(state, wp), cs => reduceToolSelect(cs, wp.tool));
   }
   else {
     return vacuous_down(state, wp);
@@ -223,7 +222,7 @@ function reducePauseButton(state: GameState, wp: WidgetPoint): GameState {
 }
 
 function reduceShuffleButton(state: GameState, wp: WidgetPoint): GameState {
-  const hs = get_hand_tiles(state);
+  const hs = get_hand_tiles(state.coreState);
   let randomOrder = getRandomOrder(hs.length);
   let retries = 0;
   while (randomOrder.every((v, i) => hs[v].letter == hs[i].letter) && retries < 5) {
@@ -234,14 +233,14 @@ function reduceShuffleButton(state: GameState, wp: WidgetPoint): GameState {
     return { id: h.id, loc: { t: 'hand', p_in_hand_int: { x: 0, y: randomOrder[ix] } } };
   });
   return produce(vacuous_down(state, wp), s => {
-    newLocs.forEach(({ id, loc }) => { setTileLoc(s, id, loc); });
+    newLocs.forEach(({ id, loc }) => { setTileLoc(s.coreState, id, loc); });
   });
 }
 
 function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number, mods: Set<string>): GameState {
-  console.log('reduceMouseDown!');
-  if (state.coreState.paused) {
-    return unpauseState(vacuous_down(state, wp), state.coreState.paused);
+  const paused = state.coreState.paused;
+  if (paused) {
+    return withCoreState(vacuous_down(state, wp), cs => unpauseState(cs, paused));
   }
   switch (wp.t) {
     case 'world': return reduceMouseDownInWorld(state, wp, button, mods);
@@ -260,18 +259,18 @@ function reduceGameAction(state: GameState, action: GameAction): effectful.Resul
   switch (action.t) {
     case 'key': {
       if (action.code == '<space>') {
-        return gs(drawOfState(state));
+        return gs(withCoreState(state, cs => drawOfState(cs)));
       }
       if (action.code == 'k') {
-        return gs(tryKillTileOfState(state, getWidgetPoint(state, state.mouseState.p_in_canvas), dynamiteIntent));
+        return gs(withCoreState(state, cs => tryKillTileOfState(cs, getWidgetPoint(cs, state.mouseState.p_in_canvas), dynamiteIntent)));
       }
       if (action.code == 'd') {
-        return gs(checkValid(produce(addWorldTiles(removeAllTiles(state), debugTiles()), s => {
-          s.coreState.score = 1000;
-          s.coreState.inventory.bombs = 15;
-          s.coreState.inventory.vowels = 15;
-          s.coreState.inventory.consonants = 15;
-        })));
+        return gs(withCoreState(state, cs => checkValid(produce(addWorldTiles(removeAllTiles(cs), debugTiles()), s => {
+          s.score = 1000;
+          s.inventory.bombs = 15;
+          s.inventory.vowels = 15;
+          s.inventory.consonants = 15;
+        }))));
       }
       return gs(state);
     }
@@ -295,7 +294,7 @@ function reduceGameAction(state: GameState, action: GameAction): effectful.Resul
       }));
     }
     case 'mouseDown': {
-      const wp = getWidgetPoint(state, action.p);
+      const wp = getWidgetPoint(state.coreState, action.p);
       if (state.coreState.lost && wp.t == 'pauseButton')
         return { state: { t: 'menu' }, effects: [] };
       return gs(reduceMouseDown(state, wp, action.button, action.mods));
