@@ -67,7 +67,7 @@ export function drawOfState(state: GameState, drawForce?: DrawForce): GameState 
 const directions: Point[] = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([x, y]) => ({ x, y }));
 
 export function resolveValid(state: GameState): GameState {
-  const tiles = get_main_tiles(state);
+  const tiles = get_main_tiles(state.coreState);
   logger('words', 'grid valid');
   const layer = mkOverlayFrom([]);
 
@@ -98,7 +98,7 @@ export function resolveValid(state: GameState): GameState {
 }
 
 export function checkValid(state: GameState): GameState {
-  const tiles = get_main_tiles(state);
+  const tiles = get_main_tiles(state.coreState);
   const grid = mkGridOfMainTiles(tiles);
 
   const { validWords, invalidWords } = checkGridWords(grid, word => getAssets().dictionary[word]);

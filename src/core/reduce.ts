@@ -69,7 +69,7 @@ function resolveMouseupInner(state: GameState): GameState {
           const new_tile_from_old_tile: SE2 = translate(vsub(new_tile_in_world_int, old_tile_in_world_t));
 
           const moves: MoveTile[] = selected.selectedIds.flatMap(id => {
-            const tile = getTileId(state, id);
+            const tile = getTileId(state.coreState, id);
             const loc = tile.loc;
             if (loc.t == 'world') {
               return [{ id, letter: tile.letter, p_in_world_int: apply(new_tile_from_old_tile, loc.p_in_world_int) }];
@@ -98,7 +98,7 @@ function resolveMouseupInner(state: GameState): GameState {
               canvas_from_drag_tile(state, ms)).translate,
               Math.round),
             id: ms.id,
-            letter: getTileId(state, ms.id).letter,
+            letter: getTileId(state.coreState, ms.id).letter,
           }
 
           const afterDrop = !isOccupied(state, moveTile)
@@ -244,7 +244,7 @@ function vacuous_down(state: GameState, wp: WidgetPoint): GameState {
 function reduceMouseDownInWorld(state: GameState, wp: WidgetPoint & { t: 'world' }, button: number, mods: Set<string>): GameState {
   let hoverTile: TileEntity | undefined = undefined;
   const p_in_world_int = vm(wp.p_in_local, Math.floor);
-  for (const tile of get_main_tiles(state)) {
+  for (const tile of get_main_tiles(state.coreState)) {
     if (vequal(p_in_world_int, tile.loc.p_in_world_int)) {
       hoverTile = tile;
       break;

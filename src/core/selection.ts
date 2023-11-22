@@ -4,8 +4,8 @@ import { apply_to_rect } from "../util/se2-extra";
 import { boundRect, pointInRect } from "../util/util";
 import { vadd, vsub } from "../util/vutil";
 import { Overlay, mkOverlay, setOverlay } from "./layer";
-import { CoreState, GameState, MouseState } from "./state";
-import { get_main_tiles, get_main_tiles_corestate } from "./tile-helpers";
+import { CoreState, MouseState } from "./state";
+import { get_main_tiles } from "./tile-helpers";
 
 export type SelectionOperation =
   | 'set'
@@ -31,7 +31,7 @@ export function resolveSelection(state: CoreState, ms: MouseState & { t: 'drag_s
     overlay: mkOverlay(),
     selectedIds: []
   };
-  get_main_tiles_corestate(state).forEach(tile => {
+  get_main_tiles(state).forEach(tile => {
     if (pointInRect(tile.loc.p_in_world_int, rect_in_world)) {
       setOverlay(selected.overlay, tile.loc.p_in_world_int, true);
       selected.selectedIds.push(tile.id);

@@ -6,15 +6,14 @@ import { GameState, TileEntity } from "../core/state";
 import { bonusOfStatePoint } from "../core/state-helpers";
 import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from "../core/tile-helpers";
 import { getCurrentTool, getCurrentTools, rectOfTool } from "../core/tools";
-import { debugOnce, doOnce } from "../util/debug";
 import { drawImage, fillRect, fillText, pathRectCircle, strokeRect } from "../util/dutil";
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
-import { boundRect, midpointOfRect, scaleRectToCenter, unreachable } from "../util/util";
+import { boundRect, midpointOfRect, scaleRectToCenter } from "../util/util";
 import { vadd, vdiv, vm, vscale, vsub, vtrans } from "../util/vutil";
 import { drawAnimation } from "./drawAnimation";
-import { drawBonusPoint, drawBonusBomb, drawBonus } from "./drawBonus";
+import { drawBonus } from "./drawBonus";
 import { CanvasInfo } from "./use-canvas";
 import { canvas_from_drag_tile, pan_canvas_from_world_of_state } from "./view-helpers";
 import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, hand_bds_in_canvas, pause_button_bds_in_canvas, shuffle_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
@@ -144,7 +143,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
 
     // draw world tiles
 
-    get_main_tiles(state).forEach(tile => {
+    get_main_tiles(state.coreState).forEach(tile => {
       if (isSelectedForDrag(state, tile))
         return;
       let opts = undefined;
@@ -222,9 +221,9 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     // draw dragged tile on top
     if (ms.t == 'drag_tile') {
       if (cs.selected) {
-        const tile0 = getTileId(state, ms.id);
+        const tile0 = getTileId(state.coreState, ms.id);
         cs.selected.selectedIds.forEach(id => {
-          const tile = getTileId(state, id);
+          const tile = getTileId(state.coreState, id);
           if (tile.loc.t == 'world' && tile0.loc.t == 'world') {
             drawTile(d,
               compose(canvas_from_drag_tile(state, ms), translate(vsub(tile.loc.p_in_world_int, tile0.loc.p_in_world_int))),
@@ -233,7 +232,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
         });
       }
 
-      const tile = getTileId(state, ms.id);
+      const tile = getTileId(state.coreState, ms.id);
       drawTile(d,
         canvas_from_drag_tile(state, state.mouseState),
         tile);

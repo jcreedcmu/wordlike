@@ -13,12 +13,7 @@ function tileOfTileEntity(tile: TileEntity): Tile {
   }
 }
 
-// XXX deprecated in favor of _corestate variant
-export function getTileId(state: GameState, id: string): TileEntity {
-  return state.coreState.tile_entities[id];
-}
-
-export function getTileId_corestate(state: CoreState, id: string): TileEntity {
+export function getTileId(state: CoreState, id: string): TileEntity {
   return state.tile_entities[id];
 }
 
@@ -34,25 +29,10 @@ export function get_tiles(state: GameState): TileEntity[] {
   return Object.values(state.coreState.tile_entities);
 }
 
-// XXX deprecated in favor of _corestate variant
-export function get_main_tiles(state: GameState): MainTile[] {
-  const keys: string[] = Object.keys(state.coreState.tile_entities);
-  function mainTilesOfString(k: string): MainTile[] {
-    const tile = getTileId(state, k);
-    const loc = tile.loc;
-    if (loc.t == 'world') {
-      return [{ ...tile, loc }];
-    }
-    else
-      return [];
-  }
-  return keys.flatMap(mainTilesOfString);
-}
-
-export function get_main_tiles_corestate(state: CoreState): MainTile[] {
+export function get_main_tiles(state: CoreState): MainTile[] {
   const keys: string[] = Object.keys(state.tile_entities);
   function mainTilesOfString(k: string): MainTile[] {
-    const tile = getTileId_corestate(state, k);
+    const tile = getTileId(state, k);
     const loc = tile.loc;
     if (loc.t == 'world') {
       return [{ ...tile, loc }];
@@ -65,7 +45,7 @@ export function get_main_tiles_corestate(state: CoreState): MainTile[] {
 
 export function get_hand_tiles(state: GameState): HandTile[] {
   return Object.keys(state.coreState.tile_entities).flatMap(k => {
-    const tile = getTileId(state, k);
+    const tile = getTileId(state.coreState, k);
     const loc = tile.loc;
     if (loc.t == 'hand')
       return [{ ...tile, loc }];

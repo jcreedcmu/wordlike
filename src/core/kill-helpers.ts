@@ -56,7 +56,7 @@ function killTileOfState(state: GameState, wp: DragWidgetPoint, intent: KillInte
       const anim: Animation = mkExplosionAnimation(p_in_world_int, radius, state.coreState.game_from_clock);
 
       function tileAt(p: Point): MainTile | undefined {
-        return get_main_tiles(state).find(tile => vequal(tile.loc.p_in_world_int, p));
+        return get_main_tiles(state.coreState).find(tile => vequal(tile.loc.p_in_world_int, p));
       }
       function killableBonusAt(p: Point) {
         return ['block', 'required'].includes(bonusOfStatePoint(state.coreState, p).t);
