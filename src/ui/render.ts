@@ -3,9 +3,9 @@ import { getPanicFraction, now_in_game } from "../core/clock";
 import { LocatedWord, getGrid } from "../core/grid";
 import { getOverlay } from "../core/layer";
 import { CoreState, GameState, TileEntity } from "../core/state";
-import { bonusOfStatePoint, tileFall } from "../core/state-helpers";
+import { bonusOfStatePoint, pointFall, tileFall } from "../core/state-helpers";
 import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from "../core/tile-helpers";
-import { getCurrentTool, getCurrentTools, rectOfTool } from "../core/tools";
+import { BOMB_RADIUS, bombIntent, getCurrentTool, getCurrentTools, rectOfTool } from "../core/tools";
 import { drawImage, fillRect, fillText, lineTo, moveTo, pathRectCircle, strokeRect } from "../util/dutil";
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
@@ -220,19 +220,11 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     });
   }
 
-  function drawOtherUi() {
+  function drawShadows() {
 
-    // draw exchange guide
-    if (ms.t == 'exchange_tiles') {
-      d.strokeStyle = interfaceCyanColor;
-      d.lineWidth = 2;
-      d.beginPath();
-      moveTo(d, ms.orig_p_in_canvas);
-      lineTo(d, ms.p_in_canvas);
-      d.stroke();
-    }
+    d.save();
+    d.clip(worldClip);
 
-    // draw dragged tile
     if (ms.t == 'drag_tile') {
       if (cs.selected) {
         const tile0 = getTileId(cs, ms.id);
@@ -250,6 +242,44 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
             fillRect(d, cell_in_canvas(thisFall, pan_canvas_from_world), shadowColor);
           }
         });
+      }
+      else {
+        // draw shadow
+        fillRect(d, cell_in_canvas(tileFall(cs, ms), pan_canvas_from_world), shadowColor);
+      }
+    }
+
+    const currentTool = getCurrentTool(cs);
+    if (currentTool == 'bomb') {
+
+      const radius = BOMB_RADIUS;
+      for (let x = -radius; x <= radius; x++) {
+        for (let y = -radius; y <= radius; y++) {
+          fillRect(d, cell_in_canvas(vadd({ x, y }, pointFall(cs, ms.p_in_canvas)), pan_canvas_from_world), shadowColor);
+        }
+      }
+    }
+
+    d.restore();
+  }
+
+  function drawOtherUi() {
+
+    // draw exchange guide
+    if (ms.t == 'exchange_tiles') {
+      d.strokeStyle = interfaceCyanColor;
+      d.lineWidth = 2;
+      d.beginPath();
+      moveTo(d, ms.orig_p_in_canvas);
+      lineTo(d, ms.p_in_canvas);
+      d.stroke();
+    }
+
+    // draw dragged tile
+    if (ms.t == 'drag_tile') {
+      if (cs.selected) {
+        const tile0 = getTileId(cs, ms.id);
+        const tiles = cs.selected.selectedIds.map(id => getTileId(cs, id));
 
         // draw tiles
         tiles.forEach(tile => {
@@ -261,9 +291,6 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
         });
       }
       else {
-        // draw shadow
-        fillRect(d, cell_in_canvas(tileFall(cs, ms), pan_canvas_from_world), shadowColor);
-
         const tile = getTileId(cs, ms.id);
         drawTile(d,
           canvas_from_drag_tile(cs, state.mouseState),
@@ -335,6 +362,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   }
   drawPauseButton();
   drawWorld();
+  drawShadows();
   drawHand();
   drawShuffleButton();
   if (!cs.lost) {

@@ -2,7 +2,7 @@ import { canvas_from_drag_tile } from "../ui/view-helpers";
 import { logger } from "../util/debug";
 import { produce } from "../util/produce";
 import * as se1 from '../util/se1';
-import { compose, inverse } from '../util/se2';
+import { apply, compose, inverse } from '../util/se2';
 import { Point } from "../util/types";
 import { vadd, vequal, vm } from "../util/vutil";
 import { Animation, mkPointDecayAnimation } from './animations';
@@ -155,6 +155,11 @@ export function tileFall(state: CoreState, ms: MouseState): Point {
     inverse(state.canvas_from_world),
     canvas_from_drag_tile(state, ms)).translate,
     Math.round);
+}
+
+export function pointFall(state: CoreState, p_in_canvas: Point): Point {
+  return vm(apply(inverse(state.canvas_from_world), p_in_canvas),
+    Math.floor);
 }
 
 export function withCoreState(state: GameState, k: (cs: CoreState) => CoreState): GameState {
