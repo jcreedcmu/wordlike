@@ -1,9 +1,9 @@
 import { apply, compose, ident, inverse, SE2, translate } from '../util/se2';
 import { vm, vsub } from '../util/vutil';
 import { CoreState, GameState, MouseState } from '../core/state';
-import { Point } from '../util/types';
+import { Point, Rect } from '../util/types';
 import { getDragWidgetPoint, getWidgetPoint } from './widget-helpers';
-import { matchScale } from '../util/se2-extra';
+import { apply_to_rect, matchScale } from '../util/se2-extra';
 
 export function pan_canvas_from_canvas_of_mouse_state(state: MouseState): SE2 {
   if (state.t == 'drag_world') {
@@ -53,4 +53,8 @@ export function canvas_from_drag_tile(state: CoreState, ms: MouseState): SE2 {
       break;
     default: return ident();
   }
+}
+
+export function cell_in_canvas(p: Point, canvas_from_world: SE2): Rect {
+  return apply_to_rect(canvas_from_world, { p, sz: { x: 1, y: 1 } });
 }

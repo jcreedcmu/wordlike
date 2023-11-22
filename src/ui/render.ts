@@ -3,7 +3,7 @@ import { getPanicFraction, now_in_game } from "../core/clock";
 import { LocatedWord, getGrid } from "../core/grid";
 import { getOverlay } from "../core/layer";
 import { CoreState, GameState, TileEntity } from "../core/state";
-import { bonusOfStatePoint } from "../core/state-helpers";
+import { bonusOfStatePoint, tileFall } from "../core/state-helpers";
 import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from "../core/tile-helpers";
 import { getCurrentTool, getCurrentTools, rectOfTool } from "../core/tools";
 import { drawImage, fillRect, fillText, lineTo, moveTo, pathRectCircle, strokeRect } from "../util/dutil";
@@ -15,10 +15,11 @@ import { vadd, vdiv, vm, vscale, vsub, vtrans } from "../util/vutil";
 import { drawAnimation } from "./drawAnimation";
 import { drawBonus } from "./drawBonus";
 import { CanvasInfo } from "./use-canvas";
-import { canvas_from_drag_tile, pan_canvas_from_world_of_state } from "./view-helpers";
+import { canvas_from_drag_tile, cell_in_canvas, pan_canvas_from_world_of_state } from "./view-helpers";
 import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, hand_bds_in_canvas, pause_button_bds_in_canvas, shuffle_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
 
-const interfaceCyan = 'rgb(0,255,255,0.5)';
+const interfaceCyanColor = 'rgb(0,255,255,0.5)';
+const shadowColor = 'rgb(128,128,100,0.4)';
 
 export function paintWithScale(ci: CanvasInfo, state: GameState) {
   const { d } = ci;
@@ -223,7 +224,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
 
     // draw exchange guide
     if (ms.t == 'exchange_tiles') {
-      d.strokeStyle = interfaceCyan;
+      d.strokeStyle = interfaceCyanColor;
       d.lineWidth = 2;
       d.beginPath();
       moveTo(d, ms.orig_p_in_canvas);
@@ -235,8 +236,23 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     if (ms.t == 'drag_tile') {
       if (cs.selected) {
         const tile0 = getTileId(cs, ms.id);
-        cs.selected.selectedIds.forEach(id => {
-          const tile = getTileId(cs, id);
+
+        const fall = tileFall(cs, ms);
+        const tiles = cs.selected.selectedIds.map(id => getTileId(cs, id));
+
+        // draw shadows
+        tiles.forEach(tile => {
+          if (tile.loc.t == 'world' && tile0.loc.t == 'world') {
+            const thisFall = apply(
+              translate(vsub(tile.loc.p_in_world_int, tile0.loc.p_in_world_int)),
+              fall
+            );
+            fillRect(d, cell_in_canvas(thisFall, pan_canvas_from_world), shadowColor);
+          }
+        });
+
+        // draw tiles
+        tiles.forEach(tile => {
           if (tile.loc.t == 'world' && tile0.loc.t == 'world') {
             drawTile(d,
               compose(canvas_from_drag_tile(cs, ms), translate(vsub(tile.loc.p_in_world_int, tile0.loc.p_in_world_int))),
@@ -244,12 +260,15 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
           }
         });
       }
+      else {
+        // draw shadow
+        fillRect(d, cell_in_canvas(tileFall(cs, ms), pan_canvas_from_world), shadowColor);
 
-      const tile = getTileId(cs, ms.id);
-      drawTile(d,
-        canvas_from_drag_tile(cs, state.mouseState),
-        tile);
-
+        const tile = getTileId(cs, ms.id);
+        drawTile(d,
+          canvas_from_drag_tile(cs, state.mouseState),
+          tile);
+      }
     }
 
     // draw score
@@ -288,7 +307,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     // draw selection
     if (ms.t == 'drag_selection') {
       const sel_rect_in_canvas: Rect = boundRect([ms.orig_p, ms.p_in_canvas]);
-      d.strokeStyle = interfaceCyan;
+      d.strokeStyle = interfaceCyanColor;
       d.lineWidth = 2;
       d.strokeRect(
         sel_rect_in_canvas.p.x, sel_rect_in_canvas.p.y,

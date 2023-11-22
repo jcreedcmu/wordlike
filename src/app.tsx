@@ -74,7 +74,6 @@ export function Game(props: GameProps): JSX.Element {
   }
 
   function mouseDownListener(e: MouseEvent) {
-    console.log('mouse down!');
     const mods = new Set<string>();
     if (e.ctrlKey)
       mods.add('ctrl');
