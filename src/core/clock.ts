@@ -2,6 +2,7 @@
 // game: milliseconds elapsed since game start *not* during a pause
 // clock: milliseconds since epoch
 
+import { DEBUG } from "../util/debug";
 import { SE1, apply } from "../util/se1";
 
 export type PanicData = {
@@ -13,7 +14,7 @@ export type PauseData = {
   pauseTime_in_clock: number,
 }
 
-export const PANIC_INTERVAL_MS = 90000;
+export const PANIC_INTERVAL_MS = DEBUG.acceleratePanic ? 10000 : 90000;
 
 export function getPanicFraction(panic: PanicData, game_from_clock: SE1) {
   return (now_in_game(game_from_clock) - panic.lastClear_in_game) / PANIC_INTERVAL_MS;

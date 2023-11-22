@@ -11,6 +11,8 @@ export const DEBUG = {
   words: false,
   stateExporter: true,
   instructions: false,
+  skipAheadPanic: false,
+  acceleratePanic: false,
 };
 
 export type DebugLevel = keyof (typeof DEBUG);

@@ -22,7 +22,6 @@ export function lerpSpline(spline: Spline, t: number): number[] {
         throw new Error(`illegal duplication of points in spline`);
       }
       const progress = (t - before.t) / (after.t - before.t);
-      console.log(`t ${t} before.t ${before.t} after.t ${after.t} progress ${progress}`)
       if (before.vec.length != after.vec.length) {
         throw new Error(`mismatch of vector lengths in spine`);
       }
