@@ -1,6 +1,6 @@
 import { produce } from "../util/produce";
 import { Rect } from "../util/types";
-import { Intent } from "./reduce";
+import { Intent } from './intent';
 import { GameState, State } from "./state";
 import { drawOfState } from "./state-helpers";
 

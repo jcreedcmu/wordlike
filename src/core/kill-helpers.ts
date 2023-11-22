@@ -4,7 +4,7 @@ import { Point } from "../util/types";
 import { vequal, vint } from "../util/vutil";
 import { Animation, mkExplosionAnimation } from './animations';
 import { setOverlay } from "./layer";
-import { KillIntent } from './reduce';
+import { KillIntent } from './intent';
 import { GameState, MainTile } from "./state";
 import { bonusOfStatePoint, checkValid } from './state-helpers';
 import { get_hand_tiles, get_main_tiles, removeTile } from "./tile-helpers";
