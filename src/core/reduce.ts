@@ -16,7 +16,7 @@ import { GameState, HAND_TILE_LIMIT, Location, SceneState, SelectionState, TileE
 import { MoveTile, addWorldTiles, bonusOfStatePoint, checkValid, drawOfState, filterExpiredAnimations, isCollision, isOccupied, isTilePinned, unpauseState } from './state-helpers';
 import { tryKillTileOfState } from './kill-helpers';
 import { getTileId, get_hand_tiles, get_main_tiles, get_tiles, putTileInHand, putTileInWorld, putTilesInHand, removeAllTiles, setTileLoc } from "./tile-helpers";
-import { Tool, bombIntent, dynamiteIntent, getCurrentTool } from './tools';
+import { Tool, bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect } from './tools';
 
 function resolveMouseup(state: GameState): GameState {
   // FIXME: Setting the mouse state to up *before* calling
@@ -202,6 +202,8 @@ function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number, mods:
       }
     case 'bomb':
       return bombIntent;
+    case 'vowel': throw new Error(`shoudn't be able have vowel tool active`);
+    case 'consonant': throw new Error(`shoudn't be able have consonant tool active`);
   }
 }
 
@@ -300,7 +302,7 @@ function reduceMouseDownInHand(state: GameState, wp: WidgetPoint & { t: 'hand' }
 function reduceMouseDownInToolbar(state: GameState, wp: WidgetPoint & { t: 'toolbar' }, button: number, mods: Set<string>): GameState {
   const tool = wp.tool;
   if (tool !== undefined) {
-    return produce(vacuous_down(state, wp), s => { s.coreState.currentTool = wp.tool; });
+    return reduceToolSelect(vacuous_down(state, wp), wp.tool);
   }
   else {
     return vacuous_down(state, wp);
@@ -357,6 +359,8 @@ function reduceGameAction(state: GameState, action: GameAction): effectful.Resul
         return gs(checkValid(produce(addWorldTiles(removeAllTiles(state), debugTiles()), s => {
           s.coreState.score = 1000;
           s.coreState.inventory.bombs = 15;
+          s.coreState.inventory.vowels = 15;
+          s.coreState.inventory.consonants = 15;
         })));
       }
       return gs(state);

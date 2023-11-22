@@ -5,6 +5,8 @@ import { CoreState, GameState } from "./state";
 
 type LetterClass = 0 | 1;
 
+export type DrawForce = undefined | 'vowel' | 'consonant';
+
 export function getClass(index: number): LetterClass {
   return [0, 4, 8, 14, 20].includes(index) ? 0 : 1;
 }
@@ -118,20 +120,30 @@ export function getSample(seed0: number, probs: Probs): { sample: number, seed: 
   return { sample, seed };
 }
 
-export function getLetterSampleOf(seed0: number, energies0: Energies, letterDistribution: Record<string, number>, classDistribution: number[], alphabet: string[], beta: number, increment: number): { seed: number, letter: string, energies: Energies } {
+function forceClassSample(classSample: number, drawForce: DrawForce): number {
+  if (drawForce === undefined)
+    return classSample;
+  switch (drawForce) {
+    case 'vowel': return 0;
+    case 'consonant': return 1;
+  }
+}
+
+export function getLetterSampleOf(seed0: number, energies0: Energies, letterDistribution: Record<string, number>, classDistribution: number[], alphabet: string[], beta: number, increment: number, drawForce: DrawForce): { seed: number, letter: string, energies: Energies } {
 
   const { seed: seed1, sample: classSample } = getSample(seed0, distributionOf(energies0.byClass, beta));
-  const modifiedLetterEnergies = energies0.byLetter.map((energy, ix) => getClass(ix) == classSample ? energy : Infinity);
+  const forcedClassSample = forceClassSample(classSample, drawForce);
+  const modifiedLetterEnergies = energies0.byLetter.map((energy, ix) => getClass(ix) == forcedClassSample ? energy : Infinity);
   const { seed: seed2, sample: letterSample } = getSample(seed1, distributionOf(modifiedLetterEnergies, beta));
   const letter = alphabet[letterSample];
   const energies = produce(energies0, e => {
-    e.byClass[classSample] += increment / classDistribution[classSample];
+    e.byClass[forcedClassSample] += increment / classDistribution[forcedClassSample];
     e.byLetter[letterSample] += increment / letterDistribution[letter];
   });
 
   return { seed: seed2, energies, letter };
 }
 
-export function getLetterSample(seed0: number, energies0: Energies): { seed: number, letter: string, energies: Energies } {
-  return getLetterSampleOf(seed0, energies0, letterDistribution, classDistribution, alphabet, default_beta, default_increment);
+export function getLetterSample(seed0: number, energies0: Energies, drawForce: DrawForce): { seed: number, letter: string, energies: Energies } {
+  return getLetterSampleOf(seed0, energies0, letterDistribution, classDistribution, alphabet, default_beta, default_increment, drawForce);
 }

@@ -3,12 +3,13 @@ import { logger } from "../util/debug";
 import { produce } from "../util/produce";
 import { compose, translate } from '../util/se1';
 import { Point } from "../util/types";
+import { unreachable } from '../util/util';
 import { vadd, vequal } from "../util/vutil";
 import { Animation, mkPointDecayAnimation } from './animations';
 import { getAssets } from "./assets";
-import { Bonus, getBonusLayer, isBlocking } from "./bonus";
+import { Bonus, adjacentScoringOfBonus, getBonusLayer, isBlocking, overlapScoringOfBonus, resolveScoring } from "./bonus";
 import { PauseData, now_in_game } from "./clock";
-import { getLetterSample } from "./distribution";
+import { DrawForce, getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
 import { Layer, Overlay, getOverlayLayer, mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
 import { CoreState, GameState, HAND_TILE_LIMIT, Location, Tile, TileEntity } from "./state";
@@ -51,11 +52,11 @@ export function isOccupiedTiles(tiles: TileEntity[], p: Point): boolean {
   return tiles.some(tile => tile.loc.t == 'world' && vequal(tile.loc.p_in_world_int, p));
 }
 
-export function drawOfState(state: GameState): GameState {
+export function drawOfState(state: GameState, drawForce?: DrawForce): GameState {
   const handLength = get_hand_tiles(state).length;
   if (handLength >= HAND_TILE_LIMIT)
     return state;
-  const { letter, energies, seed } = getLetterSample(state.coreState.seed, state.coreState.energies);
+  const { letter, energies, seed } = getLetterSample(state.coreState.seed, state.coreState.energies, drawForce);
   return checkValid(produce(state, s => {
     s.coreState.seed = seed;
     s.coreState.energies = energies;
@@ -64,35 +65,6 @@ export function drawOfState(state: GameState): GameState {
 }
 
 const directions: Point[] = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([x, y]) => ({ x, y }));
-
-export type Scoring =
-  | { t: 'bonus', p: Point }
-  | { t: 'bomb', p: Point }
-  | { t: 'required', p: Point }
-  ;
-
-function adjacentScoringOfBonus(bonus: Bonus, p: Point): Scoring[] {
-  switch (bonus.t) {
-    case 'bonus': return [{ t: 'bonus', p }];
-    case 'bomb': return [{ t: 'bomb', p }];
-    default: return [];
-  }
-}
-
-function overlapScoringOfBonus(bonus: Bonus, p: Point): Scoring[] {
-  switch (bonus.t) {
-    case 'required': return [{ t: 'required', p }];
-    default: return [];
-  }
-}
-
-function resolveScoring(state: Draft<CoreState>, scoring: Scoring): void {
-  switch (scoring.t) {
-    case 'bonus': state.score++; break;
-    case 'bomb': state.inventory.bombs++; break;
-    case 'required': state.score += 10; break;
-  }
-}
 
 export function resolveValid(state: GameState): GameState {
   const tiles = get_main_tiles(state);

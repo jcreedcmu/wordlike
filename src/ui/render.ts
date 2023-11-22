@@ -11,10 +11,10 @@ import { drawImage, fillRect, fillText, pathRectCircle, strokeRect } from "../ut
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
-import { boundRect, midpointOfRect, scaleRectToCenter } from "../util/util";
+import { boundRect, midpointOfRect, scaleRectToCenter, unreachable } from "../util/util";
 import { vadd, vdiv, vm, vscale, vsub, vtrans } from "../util/vutil";
 import { drawAnimation } from "./drawAnimation";
-import { drawBonus, drawBonusBomb } from "./drawBonus";
+import { drawBonusPoint, drawBonusBomb, drawBonus } from "./drawBonus";
 import { CanvasInfo } from "./use-canvas";
 import { canvas_from_drag_tile, pan_canvas_from_world_of_state } from "./view-helpers";
 import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, hand_bds_in_canvas, pause_button_bds_in_canvas, shuffle_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
@@ -72,6 +72,12 @@ function drawToolbar(d: CanvasRenderingContext2D, state: GameState): void {
 
     if (tool == 'bomb') {
       drawToolbarCount(d, rect_in_canvas, state.coreState.inventory.bombs);
+    }
+    else if (tool == 'vowel') {
+      drawToolbarCount(d, rect_in_canvas, state.coreState.inventory.vowels);
+    }
+    else if (tool == 'consonant') {
+      drawToolbarCount(d, rect_in_canvas, state.coreState.inventory.consonants);
     }
 
     // indicate current tool
@@ -163,24 +169,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
       for (let j = top_left_in_world.y; j <= bot_right_in_world.y; j++) {
         const p: Point = { x: i, y: j };
         const bonus = bonusOfStatePoint(cs, p);
-        switch (bonus.t) {
-          case 'bonus':
-            drawBonus(d, pan_canvas_from_world, p);
-            break;
-          case 'bomb':
-            drawBonusBomb(d, pan_canvas_from_world, p);
-            break;
-          case 'empty':
-            break;
-          case 'block': {
-            const rect_in_canvas = apply_to_rect(pan_canvas_from_world, { p, sz: { x: 1, y: 1 } });
-            fillRect(d, rect_in_canvas, 'gray');
-          } break;
-          case 'required': {
-            const rect_in_canvas = apply_to_rect(pan_canvas_from_world, { p, sz: { x: 1, y: 1 } });
-            drawTileLetter(d, bonus.letter, rect_in_canvas, '#aaa');
-          } break;
-        }
+        drawBonus(d, bonus, pan_canvas_from_world, p);
       }
     }
 

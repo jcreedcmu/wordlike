@@ -4,7 +4,7 @@ import { apply_to_rect } from "../util/se2-extra";
 import { Point } from "../util/types";
 import { unreachable } from "../util/util";
 import { vscale, vsub } from "../util/vutil";
-import { drawBonus } from "./drawBonus";
+import { drawBonusPoint } from "./drawBonus";
 
 export function drawAnimation(d: CanvasRenderingContext2D, pan_canvas_from_world: SE2, time_ms: number, anim: Animation): void {
   switch (anim.t) {
@@ -27,7 +27,7 @@ export function drawAnimation(d: CanvasRenderingContext2D, pan_canvas_from_world
     } break;
     case 'point-decay': {
       const fraction = Math.min(1, Math.max(0, 1 - (time_ms - anim.start_in_game) / anim.duration_ms));
-      drawBonus(d, pan_canvas_from_world, anim.p_in_world_int, fraction);
+      drawBonusPoint(d, pan_canvas_from_world, anim.p_in_world_int, fraction);
       return;
     } break;
   }

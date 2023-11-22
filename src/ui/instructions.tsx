@@ -137,6 +137,8 @@ function exampleState(): GameState {
       paused: undefined,
       inventory: {
         bombs: 3,
+        vowels: 0,
+        consonants: 0,
       },
     },
     mouseState: {

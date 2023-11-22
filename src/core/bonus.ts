@@ -1,9 +1,10 @@
+import { Draft } from 'immer';
 import { Point } from '../util/types';
-import { point_hash } from '../util/util';
+import { point_hash, unreachable } from '../util/util';
 import { vsnorm } from '../util/vutil';
 import { deterministicLetterSample, getSample } from './distribution';
 import { Layer, mkLayer } from './layer';
-import { Tile, TileEntity } from './state';
+import { CoreState, Tile, TileEntity } from './state';
 import { MoveTile } from './state-helpers';
 
 export type Bonus =
@@ -12,6 +13,8 @@ export type Bonus =
   | { t: 'empty' }
   | { t: 'block' }
   | { t: 'required', letter: string }
+  | { t: 'consonant' }
+  | { t: 'vowel' }
   ;
 
 export function bonusGenerator(p: Point, seed: number): Bonus {
@@ -20,8 +23,15 @@ export function bonusGenerator(p: Point, seed: number): Bonus {
   }
   if (point_hash(p, seed) < 0.1) {
     const ph = point_hash(p, seed + 1000);
-    if (ph < 0.1)
+    if (ph < 0.1) {
       return { t: 'bomb' };
+    }
+    else if (ph < 0.15) {
+      return { t: 'consonant' };
+    }
+    else if (ph < 0.2) {
+      return { t: 'vowel' };
+    }
     else
       return { t: 'bonus' };
   }
@@ -53,6 +63,44 @@ export function isBlocking(tile: MoveTile, bonus: Bonus): boolean {
   }
   return true;
 }
+
+type Scoring =
+  | { t: 'bonus', p: Point }
+  | { t: 'bomb', p: Point }
+  | { t: 'required', p: Point }
+  | { t: 'vowel', p: Point }
+  | { t: 'consonant', p: Point }
+  ;
+
+export function adjacentScoringOfBonus(bonus: Bonus, p: Point): Scoring[] {
+  switch (bonus.t) {
+    case 'bonus': return [{ t: 'bonus', p }];
+    case 'bomb': return [{ t: 'bomb', p }];
+    case 'vowel': return [{ t: 'vowel', p }];
+    case 'consonant': return [{ t: 'consonant', p }];
+    default: return [];
+  }
+}
+
+export function overlapScoringOfBonus(bonus: Bonus, p: Point): Scoring[] {
+  switch (bonus.t) {
+    case 'required': return [{ t: 'required', p }];
+    default: return [];
+  }
+}
+
+export function resolveScoring(state: Draft<CoreState>, scoring: Scoring): void {
+  switch (scoring.t) {
+    case 'bonus': state.score++; return;
+    case 'bomb': state.inventory.bombs++; return;
+    case 'required': state.score += 10; return;
+    case 'vowel': state.inventory.vowels += 5; return
+    case 'consonant': state.inventory.consonants += 5; return
+  }
+  unreachable(scoring);
+}
+
+// Bonus Layer Generation
 
 export type BonusLayerId = string;
 const _cachedBonusLayer: Record<BonusLayerId, Layer<Bonus>> = {};

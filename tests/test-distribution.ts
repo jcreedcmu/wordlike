@@ -46,7 +46,7 @@ describe('getLetterSample', () => {
     let seed = 121;
     let sample = 0;
     for (let i = 0; i < 1000; i++) {
-      const b = getLetterSampleOf(seed, energies, letterDistribution, classDistribution, alphabet, 1, 10);
+      const b = getLetterSampleOf(seed, energies, letterDistribution, classDistribution, alphabet, 1, 10, undefined);
       seed = b.seed;
       energies = b.energies;
       samples.push(b.letter);

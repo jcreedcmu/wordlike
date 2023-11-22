@@ -95,6 +95,8 @@ export type CoreState = {
   game_from_clock: SE1,
   inventory: {
     bombs: number,
+    vowels: number,
+    consonants: number,
   }
   bonusLayerName: string,
 };
@@ -138,6 +140,8 @@ export function mkGameState(seed?: number): GameState {
       game_from_clock: se1.translate(-Date.now()),
       inventory: {
         bombs: 0,
+        vowels: 0,
+        consonants: 0,
       },
       bonusLayerName: 'game',
     },
