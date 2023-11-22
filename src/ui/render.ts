@@ -16,10 +16,13 @@ import { drawAnimation } from "./drawAnimation";
 import { drawBonus } from "./drawBonus";
 import { CanvasInfo } from "./use-canvas";
 import { canvas_from_drag_tile, cell_in_canvas, pan_canvas_from_world_of_state } from "./view-helpers";
-import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, hand_bds_in_canvas, pause_button_bds_in_canvas, shuffle_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
+import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, getWidgetPoint, hand_bds_in_canvas, pause_button_bds_in_canvas, shuffle_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
 
 const interfaceCyanColor = 'rgb(0,255,255,0.5)';
 const shadowColor = 'rgb(128,128,100,0.4)';
+const backgroundGray = '#eeeeee';
+
+const DRAW_TILE_SHADOWS = false;
 
 export function paintWithScale(ci: CanvasInfo, state: GameState) {
   const { d } = ci;
@@ -28,8 +31,6 @@ export function paintWithScale(ci: CanvasInfo, state: GameState) {
   rawPaint(ci, state);
   d.restore();
 }
-
-const backgroundGray = '#eeeeee';
 
 export function drawPausedScreen(ci: CanvasInfo) {
   const { d } = ci;
@@ -225,32 +226,34 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     d.save();
     d.clip(worldClip);
 
-    if (ms.t == 'drag_tile') {
-      if (cs.selected) {
-        const tile0 = getTileId(cs, ms.id);
+    if (DRAW_TILE_SHADOWS) {
+      if (ms.t == 'drag_tile') {
+        if (cs.selected) {
+          const tile0 = getTileId(cs, ms.id);
 
-        const fall = tileFall(cs, ms);
-        const tiles = cs.selected.selectedIds.map(id => getTileId(cs, id));
+          const fall = tileFall(cs, ms);
+          const tiles = cs.selected.selectedIds.map(id => getTileId(cs, id));
 
-        // draw shadows
-        tiles.forEach(tile => {
-          if (tile.loc.t == 'world' && tile0.loc.t == 'world') {
-            const thisFall = apply(
-              translate(vsub(tile.loc.p_in_world_int, tile0.loc.p_in_world_int)),
-              fall
-            );
-            fillRect(d, cell_in_canvas(thisFall, pan_canvas_from_world), shadowColor);
-          }
-        });
-      }
-      else {
-        // draw shadow
-        fillRect(d, cell_in_canvas(tileFall(cs, ms), pan_canvas_from_world), shadowColor);
+          // draw shadows
+          tiles.forEach(tile => {
+            if (tile.loc.t == 'world' && tile0.loc.t == 'world') {
+              const thisFall = apply(
+                translate(vsub(tile.loc.p_in_world_int, tile0.loc.p_in_world_int)),
+                fall
+              );
+              fillRect(d, cell_in_canvas(thisFall, pan_canvas_from_world), shadowColor);
+            }
+          });
+        }
+        else {
+          // draw shadow
+          fillRect(d, cell_in_canvas(tileFall(cs, ms), pan_canvas_from_world), shadowColor);
+        }
       }
     }
 
     const currentTool = getCurrentTool(cs);
-    if (currentTool == 'bomb') {
+    if (currentTool == 'bomb' && getWidgetPoint(cs, ms.p_in_canvas).t == 'world') {
 
       const radius = BOMB_RADIUS;
       for (let x = -radius; x <= radius; x++) {
