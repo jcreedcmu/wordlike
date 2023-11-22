@@ -12,11 +12,12 @@ import { Action, Effect, GameAction } from './action';
 import { getBonusLayer } from './bonus';
 import { getPanicFraction, now_in_game } from './clock';
 import { mkOverlay, mkOverlayFrom, setOverlay } from './layer';
-import { GameState, HAND_TILE_LIMIT, Location, SceneState, SelectionState, TileEntity, mkGameSceneState } from './state';
+import { GameState, HAND_TILE_LIMIT, Location, SceneState, TileEntity, mkGameSceneState } from './state';
 import { MoveTile, addWorldTiles, bonusOfStatePoint, checkValid, drawOfState, filterExpiredAnimations, isCollision, isOccupied, isTilePinned, unpauseState } from './state-helpers';
 import { tryKillTileOfState } from './kill-helpers';
 import { getTileId, get_hand_tiles, get_main_tiles, get_tiles, putTileInHand, putTileInWorld, putTilesInHand, removeAllTiles, setTileLoc } from "./tile-helpers";
 import { Tool, bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect } from './tools';
+import { resolveSelection } from './selection';
 
 function resolveMouseup(state: GameState): GameState {
   // FIXME: Setting the mouse state to up *before* calling
@@ -32,26 +33,8 @@ function resolveMouseupInner(state: GameState): GameState {
 
   switch (ms.t) {
     case 'drag_selection': {
-      const small_rect_in_canvas = boundRect([ms.orig_p, ms.p_in_canvas]);
-      const small_rect_in_world = apply_to_rect(inverse(state.coreState.canvas_from_world), small_rect_in_canvas);
-      const rect_in_world = {
-        p: vsub(small_rect_in_world.p, { x: 1, y: 1 }),
-        sz: vadd(small_rect_in_world.sz, { x: 1, y: 1 }),
-      };
-      const selected: SelectionState = {
-        overlay: mkOverlay(),
-        selectedIds: []
-      };
-      get_main_tiles(state).forEach(tile => {
-        if (pointInRect(tile.loc.p_in_world_int, rect_in_world)) {
-          setOverlay(selected.overlay, tile.loc.p_in_world_int, true);
-          selected.selectedIds.push(tile.id);
-        }
-      });
-      const realSelected = selected.selectedIds.length == 0 ? undefined : selected;
-      return produce(state, s => {
-        s.coreState.selected = realSelected;
-      });
+      const newCs = resolveSelection(state.coreState, ms);
+      return produce(state, s => { s.coreState = newCs; });
     }
     case 'drag_world': {
 
@@ -247,6 +230,8 @@ function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint): GameSt
           t: 'drag_selection',
           orig_p: wp.p_in_canvas,
           p_in_canvas: wp.p_in_canvas,
+          // XXX generalize to different operations depending on modifier keys
+          opn: 'set',
         }
       });
   }

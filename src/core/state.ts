@@ -3,18 +3,19 @@ import { SE1 } from '../util/se1';
 import { SE2 } from '../util/se2';
 import { Point } from '../util/types';
 import { Animation } from './animations';
-import { Bonus, mkBonusLayer } from './bonus';
+import { Bonus } from './bonus';
 import { PanicData, PauseData } from './clock';
 import { Energies, initialEnergies } from './distribution';
 import { Grid, LocatedWord, mkGridOf } from './grid';
-import { Layer, Overlay, mkOverlay } from './layer';
+import { Overlay, mkOverlay } from './layer';
+import { SelectionOperation, SelectionState } from './selection';
 import { Tool } from './tools';
 
 export type MouseState =
   | { t: 'up', p_in_canvas: Point }
   | { t: 'down', p_in_canvas: Point }
   | { t: 'drag_world', orig_p: Point, p_in_canvas: Point }
-  | { t: 'drag_selection', orig_p: Point, p_in_canvas: Point }
+  | { t: 'drag_selection', orig_p: Point, p_in_canvas: Point, opn: SelectionOperation }
   | { t: 'drag_tile', orig_loc: Location, orig_p_in_canvas: Point, p_in_canvas: Point, id: string }
   ;
 
@@ -70,11 +71,6 @@ export type TileEntityOptionalId = {
   id: string | undefined,
   loc: Location,
   letter: string,
-};
-
-export type SelectionState = {
-  overlay: Overlay<boolean>,
-  selectedIds: string[],
 };
 
 export type CoreState = {
