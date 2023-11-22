@@ -3,6 +3,7 @@ import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { vequal, vint } from "../util/vutil";
 import { Animation, mkExplosionAnimation } from './animations';
+import { Bonus } from "./bonus";
 import { KillIntent } from './intent';
 import { setOverlay } from "./layer";
 import { CoreState, MainTile } from "./state";
@@ -59,7 +60,8 @@ function killTileOfState(state: CoreState, wp: DragWidgetPoint, intent: KillInte
         return get_main_tiles(state).find(tile => vequal(tile.loc.p_in_world_int, p));
       }
       function killableBonusAt(p: Point) {
-        return ['block', 'required'].includes(bonusOfStatePoint(state, p).t);
+        // FIXME: any unbombable ones? Maybe 'water', in the future?
+        return bonusOfStatePoint(state, p).t != 'empty';
       }
 
       const tilesToDestroy: Point[] = splashDamage(p_in_world_int, radius);
