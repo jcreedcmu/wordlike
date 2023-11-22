@@ -15,7 +15,7 @@ import { tryKillTileOfState } from './kill-helpers';
 import { mkOverlayFrom } from './layer';
 import { resolveSelection } from './selection';
 import { CoreState, GameState, HAND_TILE_LIMIT, Location, SceneState, mkGameSceneState } from './state';
-import { MoveTile, addWorldTiles, bonusOfStatePoint, checkValid, drawOfState, filterExpiredAnimations, isCollision, isOccupied, isTilePinned, unpauseState, withCoreState } from './state-helpers';
+import { MoveTile, addWorldTiles, bonusOfStatePoint, checkValid, drawOfState, filterExpiredAnimations, isCollision, isOccupied, isTilePinned, tileFall, unpauseState, withCoreState } from './state-helpers';
 import { getTileId, get_hand_tiles, get_tiles, putTileInHand, putTileInWorld, putTilesInHand, removeAllTiles, setTileLoc, tileAtPoint } from "./tile-helpers";
 import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect } from './tools';
 
@@ -56,10 +56,7 @@ function resolveMouseupInner(state: GameState): GameState {
           // FIXME: ensure the dragged tile is in the selection
           const remainingTiles = get_tiles(state.coreState).filter(tile => !selected.selectedIds.includes(tile.id));
 
-          const new_tile_in_world_int: Point = vm(compose(
-            inverse(state.coreState.canvas_from_world),
-            canvas_from_drag_tile(state.coreState, ms)).translate,
-            Math.round);
+          const new_tile_in_world_int: Point = tileFall(state.coreState, ms);
           const old_tile_loc: Location = ms.orig_loc;
           if (old_tile_loc.t != 'world') {
             console.error(`Unexpected non-world tile`);

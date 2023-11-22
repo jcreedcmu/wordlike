@@ -1,8 +1,10 @@
+import { canvas_from_drag_tile } from "../ui/view-helpers";
 import { logger } from "../util/debug";
 import { produce } from "../util/produce";
-import { compose, translate } from '../util/se1';
+import * as se1 from '../util/se1';
+import { compose, inverse } from '../util/se2';
 import { Point } from "../util/types";
-import { vadd, vequal } from "../util/vutil";
+import { vadd, vequal, vm } from "../util/vutil";
 import { Animation, mkPointDecayAnimation } from './animations';
 import { getAssets } from "./assets";
 import { Bonus, adjacentScoringOfBonus, getBonusLayer, isBlocking, overlapScoringOfBonus, resolveScoring } from "./bonus";
@@ -10,7 +12,7 @@ import { PauseData, now_in_game } from "./clock";
 import { DrawForce, getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
 import { Layer, Overlay, getOverlayLayer, mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
-import { CoreState, GameState, HAND_TILE_LIMIT, Location, Tile, TileEntity } from "./state";
+import { CoreState, GameState, HAND_TILE_LIMIT, Location, MouseState, Tile, TileEntity } from "./state";
 import { addHandTile, addWorldTile, ensureTileId, get_hand_tiles, get_main_tiles, get_tiles } from "./tile-helpers";
 
 export function addWorldTiles(state: CoreState, tiles: Tile[]): CoreState {
@@ -136,7 +138,7 @@ export function filterExpiredAnimations(now_ms: number, anims: Animation[]): Ani
 }
 
 export function unpauseState(state: CoreState, pause: PauseData): CoreState {
-  const newGame_from_clock = compose(translate(pause.pauseTime_in_clock - Date.now()), state.game_from_clock);
+  const newGame_from_clock = se1.compose(se1.translate(pause.pauseTime_in_clock - Date.now()), state.game_from_clock);
   return produce(state, s => {
     s.paused = undefined;
     s.game_from_clock = newGame_from_clock;
@@ -146,6 +148,13 @@ export function unpauseState(state: CoreState, pause: PauseData): CoreState {
 
 export function bonusOfStatePoint(cs: CoreState, p: Point): Bonus {
   return getOverlayLayer(cs.bonusOverlay, getBonusLayer(cs.bonusLayerName), p);
+}
+
+export function tileFall(state: CoreState, ms: MouseState): Point {
+  return vm(compose(
+    inverse(state.canvas_from_world),
+    canvas_from_drag_tile(state, ms)).translate,
+    Math.round);
 }
 
 export function withCoreState(state: GameState, k: (cs: CoreState) => CoreState): GameState {
