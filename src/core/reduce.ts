@@ -4,21 +4,20 @@ import { WidgetPoint, canvas_from_hand, getWidgetPoint } from '../ui/widget-help
 import { debugTiles } from '../util/debug';
 import { produce } from '../util/produce';
 import { SE2, apply, compose, composen, inverse, scale, translate } from '../util/se2';
-import { apply_to_rect } from '../util/se2-extra';
 import { Point } from '../util/types';
-import { boundRect, getRandomOrder, pointInRect } from '../util/util';
-import { vadd, vequal, vm, vscale, vsub } from '../util/vutil';
+import { getRandomOrder } from '../util/util';
+import { vm, vscale, vsub } from '../util/vutil';
 import { Action, Effect, GameAction } from './action';
 import { getBonusLayer } from './bonus';
 import { getPanicFraction, now_in_game } from './clock';
-import { mkOverlay, mkOverlayFrom, setOverlay } from './layer';
-import { GameState, HAND_TILE_LIMIT, Location, SceneState, TileEntity, mkGameSceneState } from './state';
-import { MoveTile, addWorldTiles, bonusOfStatePoint, checkValid, drawOfState, filterExpiredAnimations, isCollision, isOccupied, isTilePinned, unpauseState } from './state-helpers';
-import { tryKillTileOfState } from './kill-helpers';
-import { getTileId, get_hand_tiles, get_main_tiles, get_tiles, putTileInHand, putTileInWorld, putTilesInHand, removeAllTiles, setTileLoc } from "./tile-helpers";
-import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect } from './tools';
-import { resolveSelection } from './selection';
 import { getIntentOfMouseDown, reduceIntent } from './intent';
+import { tryKillTileOfState } from './kill-helpers';
+import { mkOverlayFrom } from './layer';
+import { resolveSelection } from './selection';
+import { GameState, HAND_TILE_LIMIT, Location, SceneState, mkGameSceneState } from './state';
+import { MoveTile, addWorldTiles, bonusOfStatePoint, checkValid, drawOfState, filterExpiredAnimations, isCollision, isOccupied, isTilePinned, unpauseState } from './state-helpers';
+import { getTileId, get_hand_tiles, get_tiles, putTileInHand, putTileInWorld, putTilesInHand, removeAllTiles, setTileLoc, tileAtPoint } from "./tile-helpers";
+import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect } from './tools';
 
 function resolveMouseup(state: GameState): GameState {
   // FIXME: Setting the mouse state to up *before* calling
@@ -141,6 +140,23 @@ function resolveMouseupInner(state: GameState): GameState {
         return state;
       }
     }
+    case 'exchange_tiles': {
+      const wp = getWidgetPoint(state, ms.p_in_canvas);
+      if (wp.t != 'world')
+        return state;
+      const id0 = ms.id;
+      const loc0 = getTileId(state.coreState, id0).loc;
+      const tile = tileAtPoint(state, wp.p_in_local);
+      if (tile == undefined)
+        return state;
+      const id1 = tile.id;
+      const loc1 = getTileId(state.coreState, id1).loc;
+      return checkValid(produce(state, s => {
+        setTileLoc(s, id0, loc1);
+        setTileLoc(s, id1, loc0);
+      }));
+    }
+
     case 'up': return state; // no drag to resolve
     case 'down': return state;
   }
@@ -156,14 +172,8 @@ export function vacuous_down(state: GameState, wp: WidgetPoint): GameState {
 }
 
 function reduceMouseDownInWorld(state: GameState, wp: WidgetPoint & { t: 'world' }, button: number, mods: Set<string>): GameState {
-  let hoverTile: TileEntity | undefined = undefined;
+  const hoverTile = tileAtPoint(state, wp.p_in_local);
   const p_in_world_int = vm(wp.p_in_local, Math.floor);
-  for (const tile of get_main_tiles(state.coreState)) {
-    if (vequal(p_in_world_int, tile.loc.p_in_world_int)) {
-      hoverTile = tile;
-      break;
-    }
-  }
   const hoverBlock = bonusOfStatePoint(state.coreState, p_in_world_int).t == 'block';
   let pinned =
     (hoverTile && hoverTile.loc.t == 'world') ? isTilePinned(state, hoverTile.id, hoverTile.loc) : false;

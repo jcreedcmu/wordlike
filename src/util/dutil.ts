@@ -91,3 +91,11 @@ export function pathRectCircle(d: CanvasRenderingContext2D, rect: Rect) {
     0, 360,
   );
 }
+
+export function moveTo(d: CanvasRenderingContext2D, p: Point) {
+  d.moveTo(p.x, p.y);
+}
+
+export function lineTo(d: CanvasRenderingContext2D, p: Point) {
+  d.lineTo(p.x, p.y);
+}

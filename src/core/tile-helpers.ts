@@ -1,8 +1,8 @@
 import { Draft } from "immer";
 import { produce } from "../util/produce";
 import { Point } from "../util/types";
+import { vequal, vm } from "../util/vutil";
 import { CoreState, GameState, HandTile, Location, MainTile, Tile, TileEntity, TileEntityOptionalId, TileOptionalId } from "./state";
-import { getOverlay } from "./layer";
 
 // FIXME: global counter
 let tileIdCounter = 1000;
@@ -165,4 +165,15 @@ export function isSelectedForDrag(state: GameState, tile: TileEntity): boolean {
   else {
     return state.mouseState.id == tile.id || tile.loc.t == 'world' && state.coreState.selected.selectedIds.includes(tile.id);
   }
+}
+
+export function tileAtPoint(state: GameState, p_in_world: Point): TileEntity | undefined {
+  let hoverTile: TileEntity | undefined = undefined;
+  const p_in_world_int = vm(p_in_world, Math.floor);
+  for (const tile of get_main_tiles(state.coreState)) {
+    if (vequal(p_in_world_int, tile.loc.p_in_world_int)) {
+      return tile;
+    }
+  }
+  return undefined;
 }

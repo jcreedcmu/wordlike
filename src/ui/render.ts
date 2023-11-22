@@ -6,7 +6,7 @@ import { GameState, TileEntity } from "../core/state";
 import { bonusOfStatePoint } from "../core/state-helpers";
 import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from "../core/tile-helpers";
 import { getCurrentTool, getCurrentTools, rectOfTool } from "../core/tools";
-import { drawImage, fillRect, fillText, pathRectCircle, strokeRect } from "../util/dutil";
+import { drawImage, fillRect, fillText, lineTo, moveTo, pathRectCircle, strokeRect } from "../util/dutil";
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
@@ -17,6 +17,8 @@ import { drawBonus } from "./drawBonus";
 import { CanvasInfo } from "./use-canvas";
 import { canvas_from_drag_tile, pan_canvas_from_world_of_state } from "./view-helpers";
 import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, hand_bds_in_canvas, pause_button_bds_in_canvas, shuffle_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
+
+const interfaceCyan = 'rgb(0,255,255,0.5)';
 
 export function paintWithScale(ci: CanvasInfo, state: GameState) {
   const { d } = ci;
@@ -218,7 +220,18 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   }
 
   function drawOtherUi() {
-    // draw dragged tile on top
+
+    // draw exchange guide
+    if (ms.t == 'exchange_tiles') {
+      d.strokeStyle = interfaceCyan;
+      d.lineWidth = 2;
+      d.beginPath();
+      moveTo(d, ms.orig_p_in_canvas);
+      lineTo(d, ms.p_in_canvas);
+      d.stroke();
+    }
+
+    // draw dragged tile
     if (ms.t == 'drag_tile') {
       if (cs.selected) {
         const tile0 = getTileId(state.coreState, ms.id);
@@ -275,7 +288,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     // draw selection
     if (ms.t == 'drag_selection') {
       const sel_rect_in_canvas: Rect = boundRect([ms.orig_p, ms.p_in_canvas]);
-      d.strokeStyle = "rgb(0,255,255,0.5)";
+      d.strokeStyle = interfaceCyan;
       d.lineWidth = 2;
       d.strokeRect(
         sel_rect_in_canvas.p.x, sel_rect_in_canvas.p.y,
