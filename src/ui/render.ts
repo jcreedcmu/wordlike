@@ -1,22 +1,23 @@
-import { getAssets } from "../core/assets";
-import { getPanicFraction, now_in_game } from "../core/clock";
-import { LocatedWord, getGrid } from "../core/grid";
-import { getOverlay } from "../core/layer";
-import { CoreState, GameState, TileEntity } from "../core/state";
-import { bonusOfStatePoint, pointFall, tileFall } from "../core/state-helpers";
-import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from "../core/tile-helpers";
-import { BOMB_RADIUS, bombIntent, getCurrentTool, getCurrentTools, rectOfTool } from "../core/tools";
-import { drawImage, fillRect, fillText, lineTo, moveTo, pathRectCircle, strokeRect } from "../util/dutil";
+import { getAssets } from '../core/assets';
+import { now_in_game } from '../core/clock';
+import { LocatedWord, getGrid } from '../core/grid';
+import { getOverlay } from '../core/layer';
+import { CoreState, GameState, TileEntity } from '../core/state';
+import { bonusOfStatePoint, pointFall, tileFall } from '../core/state-helpers';
+import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from '../core/tile-helpers';
+import { BOMB_RADIUS, getCurrentTool, getCurrentTools, rectOfTool } from '../core/tools';
+import { drawImage, fillRect, fillText, lineTo, moveTo, pathRectCircle, strokeRect } from '../util/dutil';
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
-import { apply_to_rect } from "../util/se2-extra";
-import { Point, Rect } from "../util/types";
-import { boundRect, midpointOfRect, scaleRectToCenter } from "../util/util";
-import { vadd, vdiv, vm, vscale, vsub, vtrans } from "../util/vutil";
-import { drawAnimation } from "./drawAnimation";
-import { drawBonus } from "./drawBonus";
-import { CanvasInfo } from "./use-canvas";
-import { canvas_from_drag_tile, cell_in_canvas, pan_canvas_from_world_of_state } from "./view-helpers";
-import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, getWidgetPoint, hand_bds_in_canvas, pause_button_bds_in_canvas, shuffle_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
+import { apply_to_rect } from '../util/se2-extra';
+import { Point, Rect } from '../util/types';
+import { boundRect, midpointOfRect, scaleRectToCenter } from '../util/util';
+import { vadd, vdiv, vm, vscale, vsub, vtrans } from '../util/vutil';
+import { drawAnimation } from './drawAnimation';
+import { drawBonus } from './drawBonus';
+import { drawPanicBar } from './drawPanicBar';
+import { CanvasInfo } from './use-canvas';
+import { canvas_from_drag_tile, cell_in_canvas, pan_canvas_from_world_of_state } from './view-helpers';
+import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, getWidgetPoint, hand_bds_in_canvas, pause_button_bds_in_canvas, shuffle_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
 
 const interfaceCyanColor = 'rgb(0,255,255,0.5)';
 const shadowColor = 'rgb(128,128,100,0.4)';
@@ -39,7 +40,7 @@ export function drawPausedScreen(ci: CanvasInfo) {
 
   d.textAlign = 'center';
   d.textBaseline = 'middle';
-  fillText(d, "paused", midpointOfRect(canvas_bds_in_canvas), 'black', '48px sans-serif');
+  fillText(d, 'paused', midpointOfRect(canvas_bds_in_canvas), 'black', '48px sans-serif');
 }
 
 function drawToolbarCount(d: CanvasRenderingContext2D, rect: Rect, count: number): void {
@@ -195,10 +196,10 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     d.textAlign = 'center';
     d.textBaseline = 'middle';
     if (!cs.lost) {
-      fillText(d, "⏸", midpointOfRect(pause_button_bds_in_canvas), 'black', '48px sans-serif');
+      fillText(d, '⏸', midpointOfRect(pause_button_bds_in_canvas), 'black', '48px sans-serif');
     }
     else {
-      fillText(d, "⟳", midpointOfRect(pause_button_bds_in_canvas), 'black', '48px sans-serif');
+      fillText(d, '⟳', midpointOfRect(pause_button_bds_in_canvas), 'black', '48px sans-serif');
     }
   }
 
@@ -206,7 +207,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     d.textAlign = 'center';
     d.textBaseline = 'middle';
     if (!cs.lost) {
-      fillText(d, "🔀", midpointOfRect(shuffle_button_bds_in_canvas), 'black', '36px sans-serif');
+      fillText(d, '🔀', midpointOfRect(shuffle_button_bds_in_canvas), 'black', '36px sans-serif');
     }
   }
 
@@ -314,25 +315,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     d.fillText(`${cs.score}`, scoreLoc.x, scoreLoc.y);
 
     // draw panic bar
-    const PANIC_THICK = 15;
-    if (cs.panic !== undefined) {
-      const panic_fraction = getPanicFraction(cs.panic, cs.game_from_clock);
-      const panic_rect_in_canvas: Rect = {
-        p: {
-          x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x * panic_fraction,
-          y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - PANIC_THICK,
-        },
-        sz: {
-          x: canvas_bds_in_canvas.sz.x * (1 - panic_fraction),
-          y: PANIC_THICK,
-        }
-      };
-      fillRect(d,
-        panic_rect_in_canvas, panic_fraction < 0.5 ? 'green' :
-        panic_fraction < 0.75 ? 'yellow' :
-          panic_fraction < 0.875 ? 'orange' : 'red'
-      );
-    }
+    drawPanicBar(d, cs.panic, cs.game_from_clock);
 
     // draw selection
     if (ms.t == 'drag_selection') {
@@ -373,7 +356,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     drawAnimations(now_in_game(cs.game_from_clock));
   }
   else {
-    fillText(d, "You lost :(", midpointOfRect(canvas_bds_in_canvas), 'rgba(0,0,0,0.3)', '96px sans-serif');
+    fillText(d, 'You lost :(', midpointOfRect(canvas_bds_in_canvas), 'rgba(0,0,0,0.3)', '96px sans-serif');
   }
 }
 
