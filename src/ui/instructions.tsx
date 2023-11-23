@@ -80,6 +80,7 @@ export function Instructions(props: { dispatch: Dispatch, page: number }): JSX.E
         <tr><td><span className="keycap">`</span> or <span className="keycap">/</span></td><td>Flip orientation of dragged tile group</td></tr>
         <tr><td><span className="keycap">space</span></td><td>Draw Tile</td></tr>
         <tr><td>mouse wheel</td><td>Zoom in/out</td></tr>
+        <tr><td>(starting from tile) <span className="keycap">Alt</span>&nbsp;drag</td><td>Swap tiles</td></tr>
         <tr><td><span className="keycap">Shift</span>&nbsp;drag</td><td>Add to selection</td></tr>
         <tr><td><span className="keycap">Ctrl</span>&nbsp;drag</td><td>Subtract from selection</td></tr>
         <tr><td><span className="keycap">Shift</span>&nbsp;<span className="keycap">Ctrl</span>&nbsp;drag</td><td>Intersect with selection</td></tr>
