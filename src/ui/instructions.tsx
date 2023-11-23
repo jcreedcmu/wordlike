@@ -15,19 +15,25 @@ import { resizeView } from './ui-helpers';
 import { CanvasInfo, useCanvas } from './use-canvas';
 import { produce } from '../util/produce';
 
+export const NUM_PAGES = 2;
+
 export type ForRenderState = GameState;
 type CanvasProps = {
   main: ForRenderState,
 };
 
-export function Instructions(props: { dispatch: Dispatch }): JSX.Element {
-  const { dispatch } = props;
+export function Instructions(props: { dispatch: Dispatch, page: number }): JSX.Element {
+  const { dispatch, page } = props;
   function mouseDownListener(e: MouseEvent) {
     if (DEBUG.instructions) {
       console.log(relpos(e, mc.current!.c));
     }
     else {
-      dispatch({ t: 'setSceneState', state: { t: 'menu' } });
+      const nextPage = page + 1;
+      if (nextPage >= NUM_PAGES)
+        dispatch({ t: 'setSceneState', state: { t: 'menu' } });
+      else
+        dispatch({ t: 'setSceneState', state: { t: 'instructions', page: nextPage } });
     }
     e.preventDefault();
     e.stopPropagation();
@@ -47,11 +53,42 @@ export function Instructions(props: { dispatch: Dispatch }): JSX.Element {
       dispatch({ t: 'resize', vd: resizeView(ci.c) });
     });
 
-  return <div>
-    <canvas
-      style={{ cursor: 'pointer' }}
-      ref={cref} />
-  </div>;
+  if (page == 0) {
+    return <div>
+      <canvas
+        style={{ cursor: 'pointer' }}
+        ref={cref} />
+    </div>;
+  }
+  else if (page == 1) {
+    const divStyle: React.CSSProperties = {
+      backgroundColor: 'white',
+      padding: '2em',
+    };
+    return <div style={divStyle}><h2>Shortcuts</h2>
+      <br />
+      <table className="instrTable">
+        <tr><td><span className="keycap">A</span></td><td>Drop first tile from hand where mouse is</td></tr>
+        <tr><td><span className="keycap">K</span></td><td>Delete tile (costs one point)</td></tr>
+        <tr><td><span className="keycap">Esc</span></td><td>Pointer Tool</td></tr>
+        <tr><td><span className="keycap">V</span></td><td>Draw Vowel (if bonus available)</td></tr>
+        <tr><td><span className="keycap">C</span></td><td>Draw Consonant (if bonus available)</td></tr>
+        <tr><td><span className="keycap">X</span></td><td>Copy Tool</td></tr>
+        <tr><td><span className="keycap">D</span></td><td>Dynamite Tool</td></tr>
+        <tr><td><span className="keycap">B</span></td><td>Bomb Tool</td></tr>
+        <tr><td><span className="keycap">Shift</span>&nbsp;<span className="keycap">D</span></td><td>Debug</td></tr>
+        <tr><td><span className="keycap">`</span> or <span className="keycap">/</span></td><td>Flip orientation of dragged tile group</td></tr>
+        <tr><td><span className="keycap">space</span></td><td>Draw Tile</td></tr>
+        <tr><td>mouse wheel</td><td>Zoom in/out</td></tr>
+        <tr><td><span className="keycap">Shift</span>&nbsp;drag</td><td>Add to selection</td></tr>
+        <tr><td><span className="keycap">Ctrl</span>&nbsp;drag</td><td>Subtract from selection</td></tr>
+        <tr><td><span className="keycap">Shift</span>&nbsp;<span className="keycap">Ctrl</span>&nbsp;drag</td><td>Intersect with selection</td></tr>
+      </table>
+    </div>;
+  }
+  else {
+    throw new Error(`undefined instructions page ${page}`);
+  }
 }
 
 function render(ci: CanvasInfo, props: CanvasProps) {

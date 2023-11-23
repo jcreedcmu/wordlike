@@ -31,7 +31,7 @@ export type SceneState =
     revision: number,
   }
   | { t: 'menu' }
-  | { t: 'instructions' }
+  | { t: 'instructions', page: number }
   ;
 
 export type State = {
