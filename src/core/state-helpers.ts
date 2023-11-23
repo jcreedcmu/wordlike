@@ -135,6 +135,9 @@ export function checkValid(state: CoreState): CoreState {
     s.panic = panic;
     s.invalidWords = invalidWords;
     s.connectedSet = connectedSet;
+
+    // XXX: is this the right place to do this?
+    s.currentTool = 'pointer';
   });
 }
 
