@@ -1,7 +1,7 @@
 import { Draft } from 'immer';
 import { Point } from '../util/types';
-import { point_hash, unreachable } from '../util/util';
-import { vsnorm } from '../util/vutil';
+import { lerp, point_hash, unreachable } from '../util/util';
+import { vadd, vdiv, vint, vm, vmn, vsnorm, vsub } from '../util/vutil';
 import { deterministicLetterSample, getSample } from './distribution';
 import { Layer, mkLayer } from './layer';
 import { CoreState, Tile, TileEntity } from './state';
@@ -22,10 +22,33 @@ export type Bonus =
   | { t: 'block' }
   ;
 
+const BLOCK_SIZE = 5;
+
+// maps [0,1] to [0,1], and has zero derivative at 0 and 1
+function smoothStep(x: number): number {
+  return (6 * x * x - 15 * x + 10) * x * x * x;
+}
+
+// fraction should have both coordinates in [0,1]
+export function perlinterpolate(p_int: Point, fraction: Point, seed: number): number {
+  const ps = [
+    point_hash(p_int, seed),
+    point_hash(vadd({ x: 1, y: 0 }, p_int), seed),
+    point_hash(vadd({ x: 0, y: 1 }, p_int), seed),
+    point_hash(vadd({ x: 1, y: 1 }, p_int), seed),
+  ];
+  const ts = vm(fraction, smoothStep);
+  return lerp(lerp(ps[0], ps[1], ts.x), lerp(ps[2], ps[3], ts.x), ts.y);
+}
+
 export function bonusGenerator(p: Point, seed: number): Bonus {
   if (vsnorm(p) <= 25) {
     return { t: 'empty' };
   }
+
+  const dp = vdiv(p, BLOCK_SIZE);
+  const blockOrigin = vint(dp);
+
   if (point_hash(p, seed) < 0.1) {
     const ph = point_hash(p, seed + 1000);
     if (ph < 0.1) {
@@ -44,7 +67,7 @@ export function bonusGenerator(p: Point, seed: number): Bonus {
     // graph in desmos: 1-\frac{1}{\log\left(1+x^{2}\right)+1}
     return 1 - 1 / (1 + Math.log(1 + x));
   }
-  if (point_hash(p, seed) < gradual((p.x * p.x + p.y * p.y) / 1000)) {
+  if (vsnorm(p) > 100 && perlinterpolate(blockOrigin, vsub(dp, blockOrigin), seed) < 0.5) {
     const ph = point_hash(p, seed + 1000);
     if (ph < 0.5) {
       return { t: 'required', letter: deterministicLetterSample(ph * 1e9) };
