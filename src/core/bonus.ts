@@ -31,7 +31,7 @@ export function bonusGenerator(p: Point, seed: number): Bonus {
     if (ph < 0.1) {
       return { t: 'bomb' };
     }
-    else if (ph < 0.15) {
+    else if (ph < 0.12) {
       return { t: 'consonant' };
     }
     else if (ph < 0.2) {
