@@ -17,7 +17,7 @@ export type MouseState =
   | { t: 'drag_world', orig_p: Point, p_in_canvas: Point }
   | { t: 'drag_selection', orig_p: Point, p_in_canvas: Point, opn: SelectionOperation }
   | { t: 'exchange_tiles', orig_loc: Location, orig_p_in_canvas: Point, p_in_canvas: Point, id: string }
-  | { t: 'drag_tile', orig_loc: Location, orig_p_in_canvas: Point, p_in_canvas: Point, id: string }
+  | { t: 'drag_tile', orig_loc: Location, orig_p_in_canvas: Point, p_in_canvas: Point, id: string, flipped: boolean }
   ;
 
 // If I need to add more state around settings, menus, saving, etc.,

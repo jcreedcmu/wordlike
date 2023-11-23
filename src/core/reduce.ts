@@ -63,14 +63,23 @@ function resolveMouseupInner(state: GameState): GameState {
             console.error(`Unexpected non-world tile`);
             return state;
           }
-          const old_tile_in_world_t = old_tile_loc.p_in_world_int;
-          const new_tile_from_old_tile: SE2 = translate(vsub(new_tile_in_world_int, old_tile_in_world_t));
+          const old_tile_in_world_int = old_tile_loc.p_in_world_int;
+          const new_tile_from_old_tile: SE2 = translate(vsub(new_tile_in_world_int, old_tile_in_world_int));
 
           const moves: MoveTile[] = selected.selectedIds.flatMap(id => {
             const tile = getTileId(state.coreState, id);
             const loc = tile.loc;
             if (loc.t == 'world') {
-              return [{ id, letter: tile.letter, p_in_world_int: apply(new_tile_from_old_tile, loc.p_in_world_int) }];
+              let drag_tile_from_other_tile = translate(vsub(loc.p_in_world_int, old_tile_in_world_int));
+              if (ms.flipped) {
+                drag_tile_from_other_tile = {
+                  scale: drag_tile_from_other_tile.scale, translate: {
+                    x: drag_tile_from_other_tile.translate.y,
+                    y: drag_tile_from_other_tile.translate.x,
+                  }
+                };
+              }
+              return [{ id, letter: tile.letter, p_in_world_int: apply(drag_tile_from_other_tile, new_tile_in_world_int) }];
             }
             else return [];
           });
@@ -197,6 +206,7 @@ function reduceMouseDownInHand(state: GameState, wp: WidgetPoint & { t: 'hand' }
           id: tiles[p_in_hand_int.y].id,
           orig_p_in_canvas: wp.p_in_canvas,
           p_in_canvas: wp.p_in_canvas,
+          flipped: false,
         }
       });
     }
@@ -272,7 +282,12 @@ function reduceGameAction(state: GameState, action: GameAction): effectful.Resul
       if (action.code == '<space>') {
         return gs(withCoreState(state, cs => drawOfState(cs)));
       }
-      if (action.code == '/') {
+      if (action.code == '`' || action.code == '/') {
+        const ms = state.mouseState;
+        if (ms.t == 'drag_tile' && state.coreState.selected) {
+          const flippedMs = produce(ms, mss => { mss.flipped = !mss.flipped; });
+          return gs(produce(state, s => { s.mouseState = flippedMs; }));
+        }
         return gs(state);
       }
       if (action.code == 'k') {

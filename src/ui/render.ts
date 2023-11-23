@@ -290,11 +290,20 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
         const tile0 = getTileId(cs, ms.id);
         const tiles = cs.selected.selectedIds.map(id => getTileId(cs, id));
 
-        // draw tiles
+        // draw dragged tiles
         tiles.forEach(tile => {
           if (tile.loc.t == 'world' && tile0.loc.t == 'world') {
+            let drag_tile_from_other_tile = translate(vsub(tile.loc.p_in_world_int, tile0.loc.p_in_world_int));
+            if (ms.flipped) {
+              drag_tile_from_other_tile = {
+                scale: drag_tile_from_other_tile.scale, translate: {
+                  x: drag_tile_from_other_tile.translate.y,
+                  y: drag_tile_from_other_tile.translate.x,
+                }
+              };
+            }
             drawTile(d,
-              compose(canvas_from_drag_tile(cs, ms), translate(vsub(tile.loc.p_in_world_int, tile0.loc.p_in_world_int))),
+              compose(canvas_from_drag_tile(cs, ms), drag_tile_from_other_tile),
               tile);
           }
         });

@@ -75,6 +75,7 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
           id: intent.id,
           orig_p_in_canvas: wp.p_in_canvas,
           p_in_canvas: wp.p_in_canvas,
+          flipped: false,
         };
       });
     case 'exchangeTiles': {
