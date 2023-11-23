@@ -344,5 +344,4 @@ export function reduce(scState: SceneState, action: Action): effectful.Result<Sc
       }
   }
 
-
 }
