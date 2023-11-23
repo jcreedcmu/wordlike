@@ -68,22 +68,24 @@ export function Instructions(props: { dispatch: Dispatch, page: number }): JSX.E
     return <div style={divStyle}><h2>Shortcuts</h2>
       <br />
       <table className="instrTable">
-        <tr><td><span className="keycap">A</span></td><td>Drop first tile from hand where mouse is</td></tr>
-        <tr><td><span className="keycap">K</span></td><td>Delete tile (costs one point)</td></tr>
-        <tr><td><span className="keycap">Esc</span></td><td>Pointer Tool</td></tr>
-        <tr><td><span className="keycap">V</span></td><td>Draw Vowel (if bonus available)</td></tr>
-        <tr><td><span className="keycap">C</span></td><td>Draw Consonant (if bonus available)</td></tr>
-        <tr><td><span className="keycap">X</span></td><td>Copy Tool</td></tr>
-        <tr><td><span className="keycap">D</span></td><td>Dynamite Tool</td></tr>
-        <tr><td><span className="keycap">B</span></td><td>Bomb Tool</td></tr>
-        <tr><td><span className="keycap">Shift</span>&nbsp;<span className="keycap">D</span></td><td>Debug</td></tr>
-        <tr><td><span className="keycap">`</span> or <span className="keycap">/</span></td><td>Flip orientation of dragged tile group</td></tr>
-        <tr><td><span className="keycap">space</span></td><td>Draw Tile</td></tr>
-        <tr><td>mouse wheel</td><td>Zoom in/out</td></tr>
-        <tr><td>(starting from tile) <span className="keycap">Alt</span>&nbsp;drag</td><td>Swap tiles</td></tr>
-        <tr><td><span className="keycap">Shift</span>&nbsp;drag</td><td>Add to selection</td></tr>
-        <tr><td><span className="keycap">Ctrl</span>&nbsp;drag</td><td>Subtract from selection</td></tr>
-        <tr><td><span className="keycap">Shift</span>&nbsp;<span className="keycap">Ctrl</span>&nbsp;drag</td><td>Intersect with selection</td></tr>
+        <tbody>
+          <tr><td><span className="keycap">A</span></td><td>Drop first tile from hand where mouse is</td></tr>
+          <tr><td><span className="keycap">K</span></td><td>Delete tile (costs one point)</td></tr>
+          <tr><td><span className="keycap">Esc</span></td><td>Pointer Tool</td></tr>
+          <tr><td><span className="keycap">V</span></td><td>Draw Vowel (if bonus available)</td></tr>
+          <tr><td><span className="keycap">C</span></td><td>Draw Consonant (if bonus available)</td></tr>
+          <tr><td><span className="keycap">X</span></td><td>Copy Tool</td></tr>
+          <tr><td><span className="keycap">D</span></td><td>Dynamite Tool</td></tr>
+          <tr><td><span className="keycap">B</span></td><td>Bomb Tool</td></tr>
+          <tr><td><span className="keycap">Shift</span>&nbsp;<span className="keycap">D</span></td><td>Debug</td></tr>
+          <tr><td><span className="keycap">`</span> or <span className="keycap">/</span></td><td>Flip orientation of dragged tile group</td></tr>
+          <tr><td><span className="keycap">space</span></td><td>Draw Tile</td></tr>
+          <tr><td>mouse wheel</td><td>Zoom in/out</td></tr>
+          <tr><td>(starting from tile) <span className="keycap">Alt</span>&nbsp;drag</td><td>Swap tiles</td></tr>
+          <tr><td><span className="keycap">Shift</span>&nbsp;drag</td><td>Add to selection</td></tr>
+          <tr><td><span className="keycap">Ctrl</span>&nbsp;drag</td><td>Subtract from selection</td></tr>
+          <tr><td><span className="keycap">Shift</span>&nbsp;<span className="keycap">Ctrl</span>&nbsp;drag</td><td>Intersect with selection</td></tr>
+        </tbody>
       </table>
     </div>;
   }
