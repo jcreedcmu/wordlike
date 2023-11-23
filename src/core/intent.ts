@@ -6,8 +6,8 @@ import { tryKillTileOfState } from './kill-helpers';
 import { Tool, bombIntent, copyIntent, dynamiteIntent } from './tools';
 import { SelectionOperation, selectionOperationOfMods } from './selection';
 import { vacuous_down, deselect } from './reduce';
-import { drawSpecificOfState, withCoreState } from './state-helpers';
-import { tileAtPoint } from './tile-helpers';
+import { checkValid, drawSpecific, withCoreState } from './state-helpers';
+import { addHandTile, tileAtPoint } from './tile-helpers';
 
 export type KillIntent =
   | { t: 'kill', radius: number, cost: number }
@@ -58,7 +58,7 @@ export function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number
 
 export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint): GameState {
   switch (intent.t) {
-    case 'dragTile':
+    case 'dragTile': {
       if (wp.t != 'world' && wp.t != 'hand') return vacuous_down(state, wp);
       const p_in_world_int = vm(wp.p_in_local, Math.floor);
       let state2 = state;
@@ -78,6 +78,7 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
           flipped: false,
         };
       });
+    }
     case 'exchangeTiles': {
       // FIXME: only works for world tiles right now
       if (wp.t != 'world') return vacuous_down(state, wp);
@@ -119,11 +120,25 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
         const hoverTile = tileAtPoint(state.coreState, wp.p_in_local);
         if (hoverTile == undefined)
           return state;
-        const newCs = drawSpecificOfState(state.coreState, hoverTile.letter);
-        if (newCs == state.coreState) return state;
-        return withCoreState(state, cs => produce(newCs, s => {
+        const res = drawSpecific(state.coreState, hoverTile.letter);
+        if (res == undefined)
+          return state;
+        res.cs = produce(res.cs, s => {
+          s.selected = undefined;
           s.inventory.copies--;
-        }));
+        });
+        return produce(state, s => {
+          s.coreState = checkValid(res.cs);
+          s.mouseState = {
+            t: 'drag_tile',
+            orig_loc: { t: 'hand', p_in_hand_int: { x: 0, y: 0 } }, // XXX: Seems like this orig_loc being wrong is harmless?
+            id: res.newId,
+            orig_p_in_canvas: wp.p_in_canvas,
+            p_in_canvas: wp.p_in_canvas,
+            flipped: false,
+          };
+        });
+
       }
       else {
         return state;
