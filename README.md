@@ -7,10 +7,10 @@ Play online: https://jcreedcmu.github.io/wordlike/
 
 [![image](screenshot.png)](https://jcreedcmu.github.io/wordlike/)
 
-This is a prototype of a game idea that is principally a tile-laying
-word game (like scrabble, bananagrams, etc.) with some extra mechanics
-involving getting bonuses that enable expansion across a large grid.
-Some influence coming from roguelikes, tower defense games, etc.
+This is a prototype of a tile-laying word game (like scrabble,
+bananagrams, etc.) with some extra mechanics that enable expansion
+across a large grid. Some influence coming from roguelikes, tower
+defense games, etc.
 
 Development
 ----------
