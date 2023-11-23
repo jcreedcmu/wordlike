@@ -1,3 +1,4 @@
+import { world_bds_in_canvas } from '../ui/widget-helpers';
 import * as se1 from '../util/se1';
 import { SE1 } from '../util/se1';
 import { SE2 } from '../util/se2';
@@ -115,6 +116,8 @@ export function mkGameSceneState(seed?: number): SceneState {
   };
 }
 
+const DEFAULT_SCALE = 48;
+
 export function mkGameState(seed?: number): GameState {
   seed = seed ?? 12345678;
   return {
@@ -125,8 +128,11 @@ export function mkGameState(seed?: number): GameState {
       invalidWords: [],
       bonusOverlay: mkOverlay<Bonus>(),
       canvas_from_world: {
-        scale: { x: 48, y: 48 },
-        translate: { x: 200, y: 240 }
+        scale: { x: DEFAULT_SCALE, y: DEFAULT_SCALE },
+        translate: {
+          x: world_bds_in_canvas.p.x + world_bds_in_canvas.sz.x / 2 - DEFAULT_SCALE / 2,
+          y: world_bds_in_canvas.p.y + world_bds_in_canvas.sz.y / 2 - DEFAULT_SCALE / 2
+        }
       },
       connectedSet: mkGridOf([]),
       energies: initialEnergies(),
