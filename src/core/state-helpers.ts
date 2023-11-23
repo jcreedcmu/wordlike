@@ -1,4 +1,5 @@
 import { canvas_from_drag_tile } from "../ui/view-helpers";
+import { getWidgetPoint } from "../ui/widget-helpers";
 import { DEBUG, logger } from "../util/debug";
 import { produce } from "../util/produce";
 import * as se1 from '../util/se1';
@@ -13,7 +14,7 @@ import { DrawForce, getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
 import { Layer, Overlay, getOverlayLayer, mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
 import { CoreState, GameState, HAND_TILE_LIMIT, Location, MouseState, Tile, TileEntity } from "./state";
-import { addHandTile, addWorldTile, ensureTileId, get_hand_tiles, get_main_tiles, get_tiles } from "./tile-helpers";
+import { addHandTile, addWorldTile, ensureTileId, get_hand_tiles, get_main_tiles, get_tiles, putTileInWorld, removeTile } from "./tile-helpers";
 
 export function addWorldTiles(state: CoreState, tiles: Tile[]): CoreState {
   return produce(state, s => {
@@ -168,4 +169,20 @@ export function withCoreState(state: GameState, k: (cs: CoreState) => CoreState)
   return produce(state, s => {
     s.coreState = ncs;
   });
+}
+
+export function dropTopHandTile(state: GameState): GameState {
+  const cs = state.coreState;
+  const handTiles = get_hand_tiles(cs);
+  if (handTiles.length == 0) {
+    return state;
+  }
+  const tile = handTiles[0];
+  if (state.mouseState.t == 'up' && getWidgetPoint(cs, state.mouseState.p_in_canvas).t == 'world') {
+    const p_in_world_int = pointFall(cs, state.mouseState.p_in_canvas);
+    if (!isOccupied(cs, { id: tile.id, letter: tile.letter, p_in_world_int })) {
+      return withCoreState(state, cs => checkValid(putTileInWorld(cs, tile.id, p_in_world_int)));
+    }
+  }
+  return state;
 }

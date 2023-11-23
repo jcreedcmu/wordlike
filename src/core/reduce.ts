@@ -16,7 +16,7 @@ import { mkOverlayFrom } from './layer';
 import { resolveSelection } from './selection';
 import { tryReduceShortcut } from './shortcuts';
 import { CoreState, GameState, HAND_TILE_LIMIT, Location, SceneState, mkGameSceneState } from './state';
-import { MoveTile, addWorldTiles, bonusOfStatePoint, checkValid, drawOfState, filterExpiredAnimations, isCollision, isOccupied, isTilePinned, tileFall, unpauseState, withCoreState } from './state-helpers';
+import { MoveTile, addWorldTiles, bonusOfStatePoint, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, isCollision, isOccupied, isTilePinned, tileFall, unpauseState, withCoreState } from './state-helpers';
 import { getTileId, get_hand_tiles, get_tiles, putTileInHand, putTileInWorld, putTilesInHand, removeAllTiles, setTileLoc, tileAtPoint } from "./tile-helpers";
 import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect } from './tools';
 
@@ -265,6 +265,9 @@ function reduceGameAction(state: GameState, action: GameAction): effectful.Resul
       }
       if (action.code == 'k') {
         return gs(withCoreState(state, cs => tryKillTileOfState(cs, getWidgetPoint(cs, state.mouseState.p_in_canvas), dynamiteIntent)));
+      }
+      if (action.code == 'a') {
+        return gs(dropTopHandTile(state));
       }
       if (action.code == 'S-d') {
         return gs(withCoreState(state, cs => checkValid(produce(addWorldTiles(removeAllTiles(cs), debugTiles()), s => {
