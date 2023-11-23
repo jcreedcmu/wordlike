@@ -250,6 +250,15 @@ function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number, mods
   }
 }
 
+export function keyCaptured(keyCode: string): boolean {
+  switch (keyCode) {
+    case 'C-S-i': return false;
+    case 'C-S-r': return false;
+    case 'C-r': return false;
+    default: return true;
+  }
+}
+
 function reduceGameAction(state: GameState, action: GameAction): effectful.Result<SceneState, Effect> {
   function gs(state: GameState): effectful.Result<SceneState, Effect> {
     return { state: { t: 'game', gameState: state, revision: 0 }, effects: [] };
@@ -262,6 +271,9 @@ function reduceGameAction(state: GameState, action: GameAction): effectful.Resul
 
       if (action.code == '<space>') {
         return gs(withCoreState(state, cs => drawOfState(cs)));
+      }
+      if (action.code == '/') {
+        return gs(state);
       }
       if (action.code == 'k') {
         return gs(withCoreState(state, cs => tryKillTileOfState(cs, getWidgetPoint(cs, state.mouseState.p_in_canvas), dynamiteIntent)));

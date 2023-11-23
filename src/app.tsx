@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useEffect } from 'react';
 import { Action, Dispatch, Effect } from './core/action';
-import { reduce } from './core/reduce';
+import { keyCaptured, reduce } from './core/reduce';
 import { GameState, SceneState, mkSceneState } from './core/state';
 import { getCurrentTool } from './core/tools';
 import { Instructions } from './ui/instructions';
@@ -108,7 +108,12 @@ export function Game(props: GameProps): JSX.Element {
   }
 
   function keyListener(k: KeyboardEvent) {
-    dispatch({ t: 'key', code: key(k) });
+    const code = key(k);
+    dispatch({ t: 'key', code });
+    if (keyCaptured(code)) {
+      k.preventDefault();
+      k.stopPropagation();
+    }
   }
 
   function intervalHandler() {
