@@ -83,6 +83,9 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
     else if (tool == 'consonant') {
       drawToolbarCount(d, rect_in_canvas, state.inventory.consonants);
     }
+    else if (tool == 'copy') {
+      drawToolbarCount(d, rect_in_canvas, state.inventory.copies);
+    }
 
     // indicate current tool
     if (tool == currentTool) {
@@ -193,13 +196,15 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   }
 
   function drawPauseButton() {
-    d.textAlign = 'center';
-    d.textBaseline = 'middle';
-    if (!cs.lost) {
-      fillText(d, '⏸', midpointOfRect(pause_button_bds_in_canvas), 'black', '48px sans-serif');
-    }
-    else {
-      fillText(d, '⟳', midpointOfRect(pause_button_bds_in_canvas), 'black', '48px sans-serif');
+    if (cs.panic) {
+      d.textAlign = 'center';
+      d.textBaseline = 'middle';
+      if (!cs.lost) {
+        fillText(d, '⏸', midpointOfRect(pause_button_bds_in_canvas), 'black', '48px sans-serif');
+      }
+      else {
+        fillText(d, '⟳', midpointOfRect(pause_button_bds_in_canvas), 'black', '48px sans-serif');
+      }
     }
   }
 

@@ -3,10 +3,11 @@ import { produce } from '../util/produce';
 import { vm } from '../util/vutil';
 import { GameState, TileEntity } from './state';
 import { tryKillTileOfState } from './kill-helpers';
-import { Tool, bombIntent, dynamiteIntent } from './tools';
+import { Tool, bombIntent, copyIntent, dynamiteIntent } from './tools';
 import { SelectionOperation, selectionOperationOfMods } from './selection';
 import { vacuous_down, deselect } from './reduce';
-import { withCoreState } from './state-helpers';
+import { drawSpecificOfState, withCoreState } from './state-helpers';
+import { tileAtPoint } from './tile-helpers';
 
 export type KillIntent =
   | { t: 'kill', radius: number, cost: number }
@@ -18,6 +19,7 @@ export type Intent =
   | { t: 'panWorld' }
   | { t: 'exchangeTiles', id: string }
   | { t: 'startSelection', opn: SelectionOperation }
+  | { t: 'copy' }
   | KillIntent
   ;
 
@@ -50,6 +52,7 @@ export function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number
       return bombIntent;
     case 'vowel': throw new Error(`shoudn't be able have vowel tool active`);
     case 'consonant': throw new Error(`shoudn't be able have consonant tool active`);
+    case 'copy': return copyIntent;
   }
 }
 
@@ -110,5 +113,21 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
           opn: intent.opn,
         };
       });
+    case 'copy': {
+      if (wp.t == 'world') {
+        const hoverTile = tileAtPoint(state.coreState, wp.p_in_local);
+        if (hoverTile == undefined)
+          return state;
+        const newCs = drawSpecificOfState(state.coreState, hoverTile.letter);
+        if (newCs == state.coreState) return state;
+        return withCoreState(state, cs => produce(newCs, s => {
+          s.inventory.copies--;
+        }));
+      }
+      else {
+        return state;
+      }
+
+    }
   }
 }

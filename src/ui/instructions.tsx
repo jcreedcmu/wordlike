@@ -139,6 +139,7 @@ function exampleState(): GameState {
         bombs: 3,
         vowels: 0,
         consonants: 0,
+        copies: 0,
       },
     },
     mouseState: {

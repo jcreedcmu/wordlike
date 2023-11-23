@@ -34,5 +34,10 @@ export function tryReduceShortcut(state: GameState, code: string): GameState | u
       return withCoreState(state, cs => reduceToolSelect(cs, 'consonant'));
     }
   }
+  if (code == 'x') {
+    if (state.coreState.inventory.copies >= 1) {
+      return withCoreState(state, cs => reduceToolSelect(cs, 'copy'));
+    }
+  }
   return undefined;
 }

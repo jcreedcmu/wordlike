@@ -152,6 +152,9 @@ export function Game(props: GameProps): JSX.Element {
     if (tool == 'bomb') {
       return 'url(assets/bomb-cursor.png) 16 16, pointer';
     }
+    if (tool == 'copy') {
+      return 'url(assets/copy-cursor.png) 16 16, pointer';
+    }
     if (tool == 'hand') {
       return 'grab';
     }

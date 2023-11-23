@@ -94,6 +94,7 @@ export type CoreState = {
     bombs: number,
     vowels: number,
     consonants: number,
+    copies: number,
   }
   bonusLayerName: string,
 };
@@ -139,6 +140,7 @@ export function mkGameState(seed?: number): GameState {
         bombs: 0,
         vowels: 0,
         consonants: 0,
+        copies: 0,
       },
       bonusLayerName: 'game',
     },

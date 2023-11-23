@@ -13,6 +13,7 @@ const tools = [
   'bomb',
   'vowel',
   'consonant',
+  'copy',
 ] as const;
 
 export type Tool = (typeof tools)[number];
@@ -35,6 +36,7 @@ export function getCurrentTool(state: CoreState): Tool {
 export const dynamiteIntent: Intent & { t: 'kill' } = { t: 'kill', radius: 0, cost: 1 };
 export const BOMB_RADIUS = 2;
 export const bombIntent: Intent & { t: 'bomb' } = { t: 'bomb' };
+export const copyIntent: Intent & { t: 'copy' } = { t: 'copy' };
 
 export function getCurrentTools(state: CoreState): Tool[] {
   if (state.lost) {
@@ -53,6 +55,9 @@ export function getCurrentTools(state: CoreState): Tool[] {
   if (state.inventory.consonants > 0) {
     tools.push('consonant');
   }
+  if (state.inventory.copies > 0) {
+    tools.push('copy');
+  }
   return tools;
 }
 
@@ -66,14 +71,14 @@ export function reduceToolSelect(state: CoreState, tool: Tool): CoreState {
   switch (tool) {
     case 'consonant': {
       const newState = drawOfState(state, 'consonant');
-      if (newState == state) return newState;
+      if (newState == state) return state;
       return produce(newState, s => {
         s.inventory.consonants--;
       });
     }
     case 'vowel': {
       const newState = drawOfState(state, 'vowel');
-      if (newState == state) return newState;
+      if (newState == state) return state;
       return produce(newState, s => {
         s.inventory.vowels--;
       });

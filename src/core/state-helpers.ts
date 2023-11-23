@@ -65,6 +65,15 @@ export function drawOfState(state: CoreState, drawForce?: DrawForce): CoreState 
   }));
 }
 
+export function drawSpecificOfState(state: CoreState, letter: string): CoreState {
+  const handLength = get_hand_tiles(state).length;
+  if (handLength >= HAND_TILE_LIMIT)
+    return state;
+  return checkValid(produce(state, s => {
+    addHandTile(s, ensureTileId({ letter, p_in_world_int: { x: 0, y: handLength } }));
+  }));
+}
+
 const directions: Point[] = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([x, y]) => ({ x, y }));
 
 export function resolveValid(state: CoreState): CoreState {

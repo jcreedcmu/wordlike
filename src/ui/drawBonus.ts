@@ -58,7 +58,10 @@ export function drawBonus(d: CanvasRenderingContext2D, bonus: Bonus, pan_canvas_
       drawImage(d, toolbarImg, rectOfTool('vowel'), rect_in_canvas);
       return;
     }
-
+    case 'copy': {
+      drawImage(d, toolbarImg, rectOfTool('copy'), rect_in_canvas);
+      return;
+    }
   }
   unreachable(bonus);
 }

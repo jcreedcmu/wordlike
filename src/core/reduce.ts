@@ -275,6 +275,7 @@ function reduceGameAction(state: GameState, action: GameAction): effectful.Resul
           s.inventory.bombs = 15;
           s.inventory.vowels = 15;
           s.inventory.consonants = 15;
+          s.inventory.copies = 15;
         }))));
       }
       return gs(state);

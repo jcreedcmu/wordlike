@@ -7,14 +7,19 @@ import { Layer, mkLayer } from './layer';
 import { CoreState, Tile, TileEntity } from './state';
 import { MoveTile } from './state-helpers';
 
-export type Bonus =
+export type ScoringBonus =
   | { t: 'bonus' }
   | { t: 'bomb' }
-  | { t: 'empty' }
-  | { t: 'block' }
   | { t: 'required', letter: string }
   | { t: 'consonant' }
   | { t: 'vowel' }
+  | { t: 'copy' }
+  ;
+
+export type Bonus =
+  | ScoringBonus
+  | { t: 'empty' }
+  | { t: 'block' }
   ;
 
 export function bonusGenerator(p: Point, seed: number): Bonus {
@@ -44,6 +49,9 @@ export function bonusGenerator(p: Point, seed: number): Bonus {
     if (ph < 0.5) {
       return { t: 'required', letter: deterministicLetterSample(ph * 1e9) };
     }
+    else if (ph < 0.53) {
+      return { t: 'copy' };
+    }
     else {
       return { t: 'block' };
     }
@@ -64,40 +72,40 @@ export function isBlocking(tile: MoveTile, bonus: Bonus): boolean {
   return true;
 }
 
-type Scoring =
-  | { t: 'bonus', p: Point }
-  | { t: 'bomb', p: Point }
-  | { t: 'required', p: Point }
-  | { t: 'vowel', p: Point }
-  | { t: 'consonant', p: Point }
-  ;
+type Scoring = {
+  bonus: ScoringBonus,
+  p: Point
+};
 
 export function adjacentScoringOfBonus(bonus: Bonus, p: Point): Scoring[] {
   switch (bonus.t) {
-    case 'bonus': return [{ t: 'bonus', p }];
-    case 'bomb': return [{ t: 'bomb', p }];
-    case 'vowel': return [{ t: 'vowel', p }];
-    case 'consonant': return [{ t: 'consonant', p }];
+    case 'bonus': return [{ bonus, p }];
+    case 'bomb': return [{ bonus, p }];
+    case 'vowel': return [{ bonus, p }];
+    case 'consonant': return [{ bonus, p }];
+    case 'copy': return [{ bonus, p }];
     default: return [];
   }
 }
 
 export function overlapScoringOfBonus(bonus: Bonus, p: Point): Scoring[] {
   switch (bonus.t) {
-    case 'required': return [{ t: 'required', p }];
+    case 'required': return [{ bonus, p }];
     default: return [];
   }
 }
 
 export function resolveScoring(state: Draft<CoreState>, scoring: Scoring): void {
-  switch (scoring.t) {
+  const bonus = scoring.bonus;
+  switch (bonus.t) {
     case 'bonus': state.score++; return;
     case 'bomb': state.inventory.bombs++; return;
     case 'required': state.score += 10; return;
     case 'vowel': state.inventory.vowels += 5; return
     case 'consonant': state.inventory.consonants += 5; return
+    case 'copy': state.inventory.copies += 3; return
   }
-  unreachable(scoring);
+  unreachable(bonus);
 }
 
 // Bonus Layer Generation
