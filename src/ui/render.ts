@@ -212,7 +212,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   function drawShuffleButton() {
     d.textAlign = 'center';
     d.textBaseline = 'middle';
-    if (cs.winState != 'lost') {
+    if (cs.winState.t != 'lost') {
       fillText(d, '🔀', midpointOfRect(shuffle_button_bds_in_canvas), 'black', '36px sans-serif');
     }
   }
@@ -356,7 +356,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     }
   }
 
-  if (cs.winState != 'lost')
+  if (cs.winState.t != 'lost')
     drawToolbar(d, cs);
   else {
     fillRect(d, toolbar_bds_in_canvas, backgroundGray);
@@ -366,7 +366,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   drawShadows();
   drawHand();
   drawShuffleButton();
-  if (cs.winState != 'lost') {
+  if (cs.winState.t != 'lost') {
     drawOtherUi();
     drawAnimations(now_in_game(cs.game_from_clock));
   }

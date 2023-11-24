@@ -172,7 +172,7 @@ function exampleState(): GameState {
         }
       },
       score: 7,
-      winState: 'playing',
+      winState: { t: 'playing' },
       panic: { currentTime_in_game: Date.now(), lastClear_in_game: Date.now() - PANIC_INTERVAL_MS / 3 },
       paused: undefined,
       inventory: {

@@ -189,7 +189,7 @@ function reduceMouseDownInWorld(state: GameState, wp: WidgetPoint & { t: 'world'
 }
 
 function reduceMouseDownInHand(state: GameState, wp: WidgetPoint & { t: 'hand' }, button: number, mods: Set<string>): GameState {
-  if (state.coreState.winState == 'lost')
+  if (state.coreState.winState.t == 'lost')
     return vacuous_down(state, wp);
 
   const p_in_hand_int = vm(wp.p_in_local, Math.floor);
@@ -349,7 +349,7 @@ function reduceGameAction(state: GameState, action: GameAction): effectful.Resul
       if (state.coreState.panic !== undefined) {
         if (getPanicFraction(state.coreState.panic, state.coreState.game_from_clock) > 1) {
           return gs(produce(state, s => {
-            s.coreState.winState = 'lost';
+            s.coreState.winState = { t: 'lost' };
           }));
         }
         return gs(produce(state, s => { s.coreState.panic!.currentTime_in_game = t_in_game; }));

@@ -138,7 +138,7 @@ export function mkGameState(seed: number, creative: boolean): GameState {
       energies: initialEnergies(),
       seed,
       score: 0,
-      winState: creative ? 'creative' : 'playing',
+      winState: { t: creative ? 'creative' : 'playing' },
       panic: undefined,
       paused: undefined,
       game_from_clock: se1.translate(-Date.now()),

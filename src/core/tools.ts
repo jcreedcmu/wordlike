@@ -27,7 +27,7 @@ export function indexOfTool(tool: Tool): number {
 }
 
 export function getCurrentTool(state: CoreState): Tool {
-  if (state.winState == 'lost') {
+  if (state.winState.t == 'lost') {
     return 'hand';
   }
   return state.currentTool;
@@ -39,7 +39,7 @@ export const bombIntent: Intent & { t: 'bomb' } = { t: 'bomb' };
 export const copyIntent: Intent & { t: 'copy' } = { t: 'copy' };
 
 export function getCurrentTools(state: CoreState): Tool[] {
-  if (state.winState == 'lost') {
+  if (state.winState.t == 'lost') {
     return [];
   }
   const tools: Tool[] = ['pointer', 'hand'];

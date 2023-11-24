@@ -136,7 +136,7 @@ export function checkValid(state: CoreState): CoreState {
   let animations = state.animations;
 
   if (state.score >= WIN_SCORE && canWinFromState(state.winState)) {
-    winState = 'won';
+    winState = { t: 'won' };
     animations = [...animations, mkWinAnimation(state.game_from_clock)];
   }
 
