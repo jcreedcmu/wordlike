@@ -6,6 +6,7 @@ import { CoreState, GameState, TileEntity } from '../core/state';
 import { bonusOfStatePoint, pointFall, tileFall } from '../core/state-helpers';
 import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from '../core/tile-helpers';
 import { BOMB_RADIUS, getCurrentTool, getCurrentTools, rectOfTool } from '../core/tools';
+import { shouldDisplayBackButton } from '../core/winState';
 import { drawImage, fillRect, fillText, lineTo, moveTo, pathRectCircle, strokeRect } from '../util/dutil';
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from '../util/se2-extra';
@@ -196,22 +197,22 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   }
 
   function drawPauseButton() {
-    if (cs.panic) {
+    if (shouldDisplayBackButton(cs.winState)) {
       d.textAlign = 'center';
       d.textBaseline = 'middle';
-      if (!cs.lost) {
-        fillText(d, '⏸', midpointOfRect(pause_button_bds_in_canvas), 'black', '48px sans-serif');
-      }
-      else {
-        fillText(d, '⟳', midpointOfRect(pause_button_bds_in_canvas), 'black', '48px sans-serif');
-      }
+      fillText(d, '⟳', midpointOfRect(pause_button_bds_in_canvas), 'black', '48px sans-serif');
+    }
+    else if (cs.panic) {
+      d.textAlign = 'center';
+      d.textBaseline = 'middle';
+      fillText(d, '⏸', midpointOfRect(pause_button_bds_in_canvas), 'black', '48px sans-serif');
     }
   }
 
   function drawShuffleButton() {
     d.textAlign = 'center';
     d.textBaseline = 'middle';
-    if (!cs.lost) {
+    if (cs.winState != 'lost') {
       fillText(d, '🔀', midpointOfRect(shuffle_button_bds_in_canvas), 'black', '36px sans-serif');
     }
   }
@@ -355,7 +356,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     }
   }
 
-  if (!cs.lost)
+  if (cs.winState != 'lost')
     drawToolbar(d, cs);
   else {
     fillRect(d, toolbar_bds_in_canvas, backgroundGray);
@@ -365,7 +366,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   drawShadows();
   drawHand();
   drawShuffleButton();
-  if (!cs.lost) {
+  if (cs.winState != 'lost') {
     drawOtherUi();
     drawAnimations(now_in_game(cs.game_from_clock));
   }

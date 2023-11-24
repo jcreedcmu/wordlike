@@ -14,7 +14,7 @@ export type GameAction =
 
 export type Action =
   | { t: 'resize', vd: ViewData }
-  | { t: 'newGame' }
+  | { t: 'newGame', creative?: boolean }
   | { t: 'setSceneState', state: SceneState }
   | GameAction
   ;

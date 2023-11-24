@@ -15,6 +15,7 @@ import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
 import { Layer, Overlay, getOverlayLayer, mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
 import { CoreState, GameState, HAND_TILE_LIMIT, Location, MouseState, Tile, TileEntity } from "./state";
 import { addHandTile, addWorldTile, ensureTileId, get_hand_tiles, get_main_tiles, get_tiles, putTileInWorld, removeTile } from "./tile-helpers";
+import { shouldStartPanicBar } from "./winState";
 
 export function addWorldTiles(state: CoreState, tiles: Tile[]): CoreState {
   return produce(state, s => {
@@ -125,7 +126,7 @@ export function checkValid(state: CoreState): CoreState {
 
   let panic = state.panic;
   if (allValid) panic = undefined;
-  if (!allValid && panic === undefined) {
+  if (!allValid && panic === undefined && shouldStartPanicBar(state.winState)) {
     const currentTime_in_game = now_in_game(state.game_from_clock);
     const debug_offset = DEBUG.skipAheadPanic ? PANIC_INTERVAL_MS - 10000 : 0;
     panic = { currentTime_in_game, lastClear_in_game: currentTime_in_game - debug_offset };

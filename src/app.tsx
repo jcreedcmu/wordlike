@@ -51,6 +51,8 @@ export function App(props: {}): JSX.Element {
         Wordlike<p />
         <button style={style} onClick={() => dispatch({ t: 'newGame' })}>Start Game</button>
         <p /><p />
+        <button style={style} onClick={() => dispatch({ t: 'newGame', creative: true })}>Start Game (Creative Mode)</button>
+        <p /><p />
         <button style={style} onClick={() => dispatch({ t: 'setSceneState', state: { t: 'instructions', page: 0 } })}>Instructions</button>
       </div>;
     }

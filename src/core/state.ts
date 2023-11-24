@@ -11,6 +11,7 @@ import { Grid, LocatedWord, mkGridOf } from './grid';
 import { Overlay, mkOverlay } from './layer';
 import { SelectionOperation, SelectionState } from './selection';
 import { Tool } from './tools';
+import { WinState } from './winState';
 
 export type MouseState =
   | { t: 'up', p_in_canvas: Point }
@@ -87,7 +88,7 @@ export type CoreState = {
   bonusOverlay: Overlay<Bonus>,
   selected?: SelectionState,
   score: number,
-  lost: boolean,
+  winState: WinState,
   panic: PanicData | undefined,
   paused: PauseData | undefined,
   game_from_clock: SE1,
@@ -109,17 +110,16 @@ export function mkSceneState(): SceneState {
   return { t: 'menu' };
 }
 
-export function mkGameSceneState(seed?: number): SceneState {
+export function mkGameSceneState(seed: number, creative: boolean): SceneState {
   return {
     t: 'game',
-    gameState: mkGameState(seed), revision: 0
+    gameState: mkGameState(seed, creative), revision: 0
   };
 }
 
 const DEFAULT_SCALE = 48;
 
-export function mkGameState(seed?: number): GameState {
-  seed = seed ?? 12345678;
+export function mkGameState(seed: number, creative: boolean): GameState {
   return {
     coreState: {
       animations: [],
@@ -138,7 +138,7 @@ export function mkGameState(seed?: number): GameState {
       energies: initialEnergies(),
       seed,
       score: 0,
-      lost: false,
+      winState: creative ? 'creative' : 'playing',
       panic: undefined,
       paused: undefined,
       game_from_clock: se1.translate(-Date.now()),

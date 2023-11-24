@@ -19,6 +19,7 @@ import { CoreState, GameState, HAND_TILE_LIMIT, Location, SceneState, mkGameScen
 import { MoveTile, addWorldTiles, bonusOfStatePoint, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, isCollision, isOccupied, isTilePinned, tileFall, unpauseState, withCoreState } from './state-helpers';
 import { getTileId, get_hand_tiles, get_tiles, putTileInHand, putTileInWorld, putTilesInHand, removeAllTiles, setTileLoc, tileAtPoint } from "./tile-helpers";
 import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect } from './tools';
+import { shouldDisplayBackButton } from './winState';
 
 function resolveMouseup(state: GameState): GameState {
   // FIXME: Setting the mouse state to up *before* calling
@@ -188,7 +189,7 @@ function reduceMouseDownInWorld(state: GameState, wp: WidgetPoint & { t: 'world'
 }
 
 function reduceMouseDownInHand(state: GameState, wp: WidgetPoint & { t: 'hand' }, button: number, mods: Set<string>): GameState {
-  if (state.coreState.lost)
+  if (state.coreState.winState == 'lost')
     return vacuous_down(state, wp);
 
   const p_in_hand_int = vm(wp.p_in_local, Math.floor);
@@ -328,7 +329,7 @@ function reduceGameAction(state: GameState, action: GameAction): effectful.Resul
     }
     case 'mouseDown': {
       const wp = getWidgetPoint(state.coreState, action.p);
-      if (state.coreState.lost && wp.t == 'pauseButton')
+      if (wp.t == 'pauseButton' && shouldDisplayBackButton(state.coreState.winState))
         return { state: { t: 'menu' }, effects: [] };
       return gs(reduceMouseDown(state, wp, action.button, action.mods));
     }
@@ -348,7 +349,7 @@ function reduceGameAction(state: GameState, action: GameAction): effectful.Resul
       if (state.coreState.panic !== undefined) {
         if (getPanicFraction(state.coreState.panic, state.coreState.game_from_clock) > 1) {
           return gs(produce(state, s => {
-            s.coreState.lost = true;
+            s.coreState.winState = 'lost';
           }));
         }
         return gs(produce(state, s => { s.coreState.panic!.currentTime_in_game = t_in_game; }));
@@ -363,7 +364,9 @@ export function reduce(scState: SceneState, action: Action): effectful.Result<Sc
   switch (action.t) {
     case 'resize': return { state: scState, effects: [] }; // XXX maybe stash viewdata this in state somewhere?
     case 'newGame':
-      return { state: mkGameSceneState(Date.now()), effects: [] };
+      return {
+        state: mkGameSceneState(Date.now(), action.creative ?? false), effects: [],
+      };
     case 'setSceneState':
       return { state: action.state, effects: [] };
     default:
