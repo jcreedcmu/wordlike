@@ -13,7 +13,7 @@ import { getPanicFraction, now_in_game } from './clock';
 import { getIntentOfMouseDown, reduceIntent } from './intent';
 import { tryKillTileOfState } from './kill-helpers';
 import { mkOverlayFrom } from './layer';
-import { setScore } from './scoring';
+import { incrementScore, setScore } from './scoring';
 import { resolveSelection } from './selection';
 import { tryReduceShortcut } from './shortcuts';
 import { CoreState, GameState, HAND_TILE_LIMIT, Location, SceneState, mkGameSceneState } from './state';
@@ -281,33 +281,41 @@ function reduceGameAction(state: GameState, action: GameAction): effectful.Resul
       if (shortcutState !== undefined)
         return gs(shortcutState);
 
-      if (action.code == '<space>') {
-        return gs(withCoreState(state, cs => drawOfState(cs)));
-      }
-      if (action.code == '`' || action.code == '/') {
-        const ms = state.mouseState;
-        if (ms.t == 'drag_tile' && state.coreState.selected) {
-          const flippedMs = produce(ms, mss => { mss.flipped = !mss.flipped; });
-          return gs(produce(state, s => { s.mouseState = flippedMs; }));
+      switch (action.code) {
+        case '<space>': {
+          return gs(withCoreState(state, cs => drawOfState(cs)));
         }
-        return gs(state);
+        case '`':  // fallthrough intentional
+        case '/': {
+          const ms = state.mouseState;
+          if (ms.t == 'drag_tile' && state.coreState.selected) {
+            const flippedMs = produce(ms, mss => { mss.flipped = !mss.flipped; });
+            return gs(produce(state, s => { s.mouseState = flippedMs; }));
+          }
+          return gs(state);
+        }
+        case 'k': {
+          return gs(withCoreState(state, cs => tryKillTileOfState(cs, getWidgetPoint(cs, state.mouseState.p_in_canvas), dynamiteIntent)));
+        }
+        case 'a': {
+          return gs(dropTopHandTile(state));
+        }
+        case 'S-d': {
+          return gs(withCoreState(state, cs => checkValid(produce(addWorldTiles(removeAllTiles(cs), debugTiles()), s => {
+            setScore(s, 1000);
+            s.inventory.bombs = 15;
+            s.inventory.vowels = 15;
+            s.inventory.consonants = 15;
+            s.inventory.copies = 15;
+          }))));
+        }
+        case 'S-s': {
+          return gs(withCoreState(state, cs => checkValid(produce(cs, s => {
+            incrementScore(s, 90);
+          }))));
+        }
+        default: return gs(state);
       }
-      if (action.code == 'k') {
-        return gs(withCoreState(state, cs => tryKillTileOfState(cs, getWidgetPoint(cs, state.mouseState.p_in_canvas), dynamiteIntent)));
-      }
-      if (action.code == 'a') {
-        return gs(dropTopHandTile(state));
-      }
-      if (action.code == 'S-d') {
-        return gs(withCoreState(state, cs => checkValid(produce(addWorldTiles(removeAllTiles(cs), debugTiles()), s => {
-          setScore(s, 1000);
-          s.inventory.bombs = 15;
-          s.inventory.vowels = 15;
-          s.inventory.consonants = 15;
-          s.inventory.copies = 15;
-        }))));
-      }
-      return gs(state);
     }
     case 'none': return gs(state);
     case 'wheel': {

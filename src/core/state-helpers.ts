@@ -6,14 +6,14 @@ import * as se1 from '../util/se1';
 import { apply, compose, inverse } from '../util/se2';
 import { Point } from "../util/types";
 import { vadd, vequal, vm } from "../util/vutil";
-import { Animation, mkPointDecayAnimation, mkWinAnimation } from './animations';
+import { Animation, mkPointDecayAnimation, mkScoreAnimation, mkWinAnimation } from './animations';
 import { getAssets } from "./assets";
 import { Bonus, adjacentScoringOfBonus, getBonusLayer, isBlocking, overlapScoringOfBonus, resolveScoring } from "./bonus";
 import { PANIC_INTERVAL_MS, PauseData, now_in_game } from "./clock";
 import { DrawForce, getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
 import { Layer, Overlay, getOverlayLayer, mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
-import { getScore } from "./scoring";
+import { PROGRESS_ANIMATION_POINTS, getHighWaterMark, getScore, setHighWaterMark } from "./scoring";
 import { CoreState, GameState, HAND_TILE_LIMIT, Location, MouseState, Tile, TileEntity } from "./state";
 import { addHandTile, addWorldTile, ensureTileId, get_hand_tiles, get_main_tiles, get_tiles, putTileInWorld, removeTile } from "./tile-helpers";
 import { WIN_SCORE, canWinFromState, shouldStartPanicBar } from "./winState";
@@ -104,13 +104,34 @@ export function resolveValid(state: CoreState): CoreState {
 
   const scorings = [...overlapScorings, ...adjacentScorings];
 
-  return produce(state, s => {
+  return resolveHighWaterMark(produce(state, s => {
     scorings.forEach(scoring => {
       setOverlay(s.bonusOverlay, scoring.p, { t: 'empty' });
       resolveScoring(s, scoring);
       s.animations.push(mkPointDecayAnimation(scoring.p, state.game_from_clock));
     });
-  });
+  }));
+}
+
+function resolveHighWaterMark(state: CoreState): CoreState {
+  const score = getScore(state);
+  const oldMark = getHighWaterMark(state);
+  if (score > oldMark) {
+    const scoreLevel = Math.floor(score / PROGRESS_ANIMATION_POINTS);
+    const oldMarkLevel = Math.floor(oldMark / PROGRESS_ANIMATION_POINTS);
+    let anim: undefined | Animation;
+    if (scoreLevel > oldMarkLevel && !(score > WIN_SCORE)) {
+      anim = mkScoreAnimation(state.game_from_clock, scoreLevel * PROGRESS_ANIMATION_POINTS);
+    }
+    return produce(state, s => {
+      if (anim !== undefined)
+        s.animations.push(anim);
+      setHighWaterMark(s, score);
+    });
+  }
+  else {
+    return state;
+  }
 }
 
 export function checkValid(state: CoreState): CoreState {
