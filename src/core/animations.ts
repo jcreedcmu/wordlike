@@ -39,10 +39,10 @@ export function mkExplosionAnimation(p: Point, radius: number, game_from_clock: 
   }
 }
 
-export function mkWinAnimation(game_from_clock: SE1): Animation {
+function mkFireworksAnimation(game_from_clock: SE1, message: string): Animation {
   return {
     t: 'fireworks',
-    message: 'You Win!',
+    message,
     duration_ms: 3000,
     start_in_game: now_in_game(game_from_clock),
     fireworks: range(20).map(x => {
@@ -55,4 +55,13 @@ export function mkWinAnimation(game_from_clock: SE1): Animation {
       };
     })
   };
+}
+
+
+export function mkWinAnimation(game_from_clock: SE1): Animation {
+  return mkFireworksAnimation(game_from_clock, 'You Win!');
+}
+
+export function mkScoreAnimation(game_from_clock: SE1, points: number): Animation {
+  return mkFireworksAnimation(game_from_clock, `${points} points!`);
 }
