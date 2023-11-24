@@ -87,7 +87,7 @@ function resolveMouseupInner(state: GameState): GameState {
           });
 
           const tgts = moves.map(x => x.p_in_world_int);
-          if (isCollision(remainingTiles, moves, state.coreState.bonusOverlay, getBonusLayer(state.coreState.bonusLayerName))) {
+          if (isCollision(remainingTiles, moves, state.coreState.bonusOverlay, getBonusLayer(state.coreState.bonusLayerSeed))) {
             return state;
           }
 
@@ -374,7 +374,7 @@ export function reduce(scState: SceneState, action: Action): effectful.Result<Sc
     case 'resize': return { state: scState, effects: [] }; // XXX maybe stash viewdata this in state somewhere?
     case 'newGame':
       return {
-        state: mkGameSceneState(Date.now(), action.creative ?? false), effects: [],
+        state: mkGameSceneState(Date.now(), action.creative ?? false, Date.now()), effects: [],
       };
     case 'setSceneState':
       return { state: action.state, effects: [] };

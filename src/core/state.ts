@@ -89,7 +89,7 @@ export type CoreState = {
   connectedSet: Grid<boolean>,
   energies: Energies,
   canvas_from_world: SE2,
-  seed: number,
+  seed: number, // changes during game play, determines which letters are drawn
   bonusOverlay: Overlay<Bonus>,
   selected?: SelectionState,
   scoring: ScoreState,
@@ -103,7 +103,7 @@ export type CoreState = {
     consonants: number,
     copies: number,
   }
-  bonusLayerName: string,
+  bonusLayerSeed: number,  // immutable during game play
 };
 
 export type GameState = {
@@ -115,16 +115,16 @@ export function mkSceneState(): SceneState {
   return { t: 'menu' };
 }
 
-export function mkGameSceneState(seed: number, creative: boolean): SceneState {
+export function mkGameSceneState(seed: number, creative: boolean, bonusLayerSeed: number): SceneState {
   return {
     t: 'game',
-    gameState: mkGameState(seed, creative), revision: 0
+    gameState: mkGameState(seed, creative, bonusLayerSeed), revision: 0
   };
 }
 
 const DEFAULT_SCALE = 48;
 
-export function mkGameState(seed: number, creative: boolean): GameState {
+export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: number): GameState {
   return {
     coreState: {
       animations: [],
@@ -153,7 +153,7 @@ export function mkGameState(seed: number, creative: boolean): GameState {
         consonants: 0,
         copies: 0,
       },
-      bonusLayerName: 'game',
+      bonusLayerSeed,
     },
     mouseState: { t: 'up', p_in_canvas: { x: 0, y: 0 } },
   };

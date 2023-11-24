@@ -117,7 +117,6 @@ function render(ci: CanvasInfo, props: CanvasProps) {
 function exampleState(): GameState {
   const state: GameState = {
     coreState: {
-      bonusLayerName: 'instructions',
       animations: [],
       currentTool: 'pointer',
       invalidWords: [],
@@ -155,6 +154,7 @@ function exampleState(): GameState {
         byClass: [0, 0,],
       },
       seed: 1533311107,
+      bonusLayerSeed: 46,
       canvas_from_world: {
         scale: {
           x: 39.6694214876033,

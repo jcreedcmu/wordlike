@@ -138,9 +138,10 @@ export type BonusLayerId = string;
 const _cachedBonusLayer: Record<BonusLayerId, Layer<Bonus>> = {};
 
 const DETERMINISTIC_SEED = 46;
-export function getBonusLayer(name: string): Layer<Bonus> {
+export function getBonusLayer(seed: number = DETERMINISTIC_SEED): Layer<Bonus> {
+  const name = `game-${seed}`;
   if (_cachedBonusLayer[name] == undefined) {
-    _cachedBonusLayer[name] = mkBonusLayer(name == 'game' ? Date.now() : DETERMINISTIC_SEED);
+    _cachedBonusLayer[name] = mkBonusLayer(seed);
   }
   return _cachedBonusLayer[name];
 }

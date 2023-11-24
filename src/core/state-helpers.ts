@@ -199,7 +199,7 @@ export function unpauseState(state: CoreState, pause: PauseData): CoreState {
 }
 
 export function bonusOfStatePoint(cs: CoreState, p: Point): Bonus {
-  return getOverlayLayer(cs.bonusOverlay, getBonusLayer(cs.bonusLayerName), p);
+  return getOverlayLayer(cs.bonusOverlay, getBonusLayer(cs.bonusLayerSeed), p);
 }
 
 export function tileFall(state: CoreState, ms: MouseState): Point {
