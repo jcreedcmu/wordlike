@@ -32,7 +32,7 @@ export function drawAnimation(d: CanvasRenderingContext2D, pan_canvas_from_world
       drawBonusPoint(d, pan_canvas_from_world, anim.p_in_world_int, fraction);
       return;
     } break;
-    case 'win': {
+    case 'fireworks': {
       d.textAlign = 'center';
       d.textBaseline = 'middle';
       anim.fireworks.forEach(fw => {
@@ -45,8 +45,8 @@ export function drawAnimation(d: CanvasRenderingContext2D, pan_canvas_from_world
         }
       });
       const mp = midpointOfRect(canvas_bds_in_canvas);
-      strokeText(d, 'You win!', mp, 'white', 4, '96px sans-serif');
-      fillText(d, 'You win!', mp, 'rgb(0,128,0)', '96px sans-serif');
+      strokeText(d, anim.message, mp, 'white', 4, '96px sans-serif');
+      fillText(d, anim.message, mp, 'rgb(0,128,0)', '96px sans-serif');
       return;
     } break;
   }

@@ -17,7 +17,7 @@ type Firework = {
 export type Animation =
   | { t: 'explosion', start_in_game: number, duration_ms: number, center_in_world: Point, radius: number }
   | { t: 'point-decay', start_in_game: number, duration_ms: number, p_in_world_int: Point }
-  | { t: 'win', start_in_game: number, duration_ms: number, fireworks: Firework[] }
+  | { t: 'fireworks', start_in_game: number, duration_ms: number, fireworks: Firework[], message: string }
   ;
 
 export function mkPointDecayAnimation(p: Point, game_from_clock: SE1): Animation {
@@ -41,7 +41,8 @@ export function mkExplosionAnimation(p: Point, radius: number, game_from_clock: 
 
 export function mkWinAnimation(game_from_clock: SE1): Animation {
   return {
-    t: 'win',
+    t: 'fireworks',
+    message: 'You Win!',
     duration_ms: 3000,
     start_in_game: now_in_game(game_from_clock),
     fireworks: range(20).map(x => {
