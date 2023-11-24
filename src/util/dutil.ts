@@ -76,6 +76,13 @@ export function fillText(d: CanvasRenderingContext2D, text: string, p: Point, co
   d.fillText(text, p.x, p.y);
 }
 
+export function strokeText(d: CanvasRenderingContext2D, text: string, p: Point, color: string, thickness: number, font: string) {
+  d.strokeStyle = color;
+  d.lineWidth = thickness;
+  d.font = font;
+  d.strokeText(text, p.x, p.y);
+}
+
 export function drawImage(d: CanvasRenderingContext2D, img: CanvasImageSource, srcRect: Rect, dstRect: Rect) {
   d.drawImage(img,
     srcRect.p.x, srcRect.p.y, srcRect.sz.x, srcRect.sz.y,
@@ -92,10 +99,23 @@ export function pathRectCircle(d: CanvasRenderingContext2D, rect: Rect) {
   );
 }
 
+export function pathCircle(d: CanvasRenderingContext2D, center: Point, radius: number) {
+  d.beginPath();
+  d.arc(center.x,
+    center.y,
+    radius,
+    0, 360,
+  );
+}
+
 export function moveTo(d: CanvasRenderingContext2D, p: Point) {
   d.moveTo(p.x, p.y);
 }
 
 export function lineTo(d: CanvasRenderingContext2D, p: Point) {
   d.lineTo(p.x, p.y);
+}
+
+export function randomColor(): string {
+  return `rgb(${Math.floor(Math.random() * 256)},${Math.floor(Math.random() * 256)},${Math.floor(Math.random() * 256)})`;
 }

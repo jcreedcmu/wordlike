@@ -371,6 +371,8 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     drawAnimations(now_in_game(cs.game_from_clock));
   }
   else {
+    d.textAlign = 'center';
+    d.textBaseline = 'middle';
     fillText(d, 'You lost :(', midpointOfRect(canvas_bds_in_canvas), 'rgba(0,0,0,0.3)', '96px sans-serif');
   }
 }

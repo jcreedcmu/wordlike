@@ -6,7 +6,7 @@ import * as se1 from '../util/se1';
 import { apply, compose, inverse } from '../util/se2';
 import { Point } from "../util/types";
 import { vadd, vequal, vm } from "../util/vutil";
-import { Animation, mkPointDecayAnimation } from './animations';
+import { Animation, mkPointDecayAnimation, mkWinAnimation } from './animations';
 import { getAssets } from "./assets";
 import { Bonus, adjacentScoringOfBonus, getBonusLayer, isBlocking, overlapScoringOfBonus, resolveScoring } from "./bonus";
 import { PANIC_INTERVAL_MS, PauseData, now_in_game } from "./clock";
@@ -15,7 +15,7 @@ import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
 import { Layer, Overlay, getOverlayLayer, mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
 import { CoreState, GameState, HAND_TILE_LIMIT, Location, MouseState, Tile, TileEntity } from "./state";
 import { addHandTile, addWorldTile, ensureTileId, get_hand_tiles, get_main_tiles, get_tiles, putTileInWorld, removeTile } from "./tile-helpers";
-import { shouldStartPanicBar } from "./winState";
+import { WIN_SCORE, canWinFromState, shouldStartPanicBar } from "./winState";
 
 export function addWorldTiles(state: CoreState, tiles: Tile[]): CoreState {
   return produce(state, s => {
@@ -132,10 +132,20 @@ export function checkValid(state: CoreState): CoreState {
     panic = { currentTime_in_game, lastClear_in_game: currentTime_in_game - debug_offset };
   }
 
+  let winState = state.winState;
+  let animations = state.animations;
+
+  if (state.score >= WIN_SCORE && canWinFromState(state.winState)) {
+    winState = 'won';
+    animations = [...animations, mkWinAnimation(state.game_from_clock)];
+  }
+
   return produce(state, s => {
     s.panic = panic;
     s.invalidWords = invalidWords;
     s.connectedSet = connectedSet;
+    s.winState = winState;
+    s.animations = animations;
 
     // XXX: is this the right place to do this?
     s.currentTool = 'pointer';

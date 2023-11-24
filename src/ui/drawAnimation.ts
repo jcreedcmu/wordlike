@@ -1,10 +1,13 @@
 import { Animation } from '../core/animations';
+import { doOnce } from '../util/debug';
+import { fillText, pathCircle, strokeText } from '../util/dutil';
 import { SE2 } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
 import { Point } from "../util/types";
-import { unreachable } from "../util/util";
+import { midpointOfRect, unreachable } from "../util/util";
 import { vscale, vsub } from "../util/vutil";
 import { drawBonusPoint } from "./drawBonus";
+import { canvas_bds_in_canvas } from './widget-helpers';
 
 export function drawAnimation(d: CanvasRenderingContext2D, pan_canvas_from_world: SE2, time_ms: number, anim: Animation): void {
   switch (anim.t) {
@@ -28,6 +31,25 @@ export function drawAnimation(d: CanvasRenderingContext2D, pan_canvas_from_world
     case 'point-decay': {
       const fraction = Math.min(1, Math.max(0, 1 - (time_ms - anim.start_in_game) / anim.duration_ms));
       drawBonusPoint(d, pan_canvas_from_world, anim.p_in_world_int, fraction);
+      return;
+    } break;
+    case 'win': {
+      d.textAlign = 'center';
+      d.textBaseline = 'middle';
+      doOnce('win', () => {
+        console.log(anim.fireworks);
+      });
+      anim.fireworks.forEach(fw => {
+        const t_ms = time_ms - anim.start_in_game - fw.start_in_anim;
+        if (t_ms <= fw.duration_ms && t_ms > 0) {
+          const radius = fw.radius * (t_ms / fw.duration_ms);
+          d.fillStyle = fw.color;
+          pathCircle(d, fw.center_in_canvas, radius);
+          d.fill();
+        }
+      });
+      strokeText(d, 'You win!', midpointOfRect(canvas_bds_in_canvas), 'white', 4, '96px sans-serif');
+      fillText(d, 'You win!', midpointOfRect(canvas_bds_in_canvas), 'rgb(0,128,0)', '96px sans-serif');
       return;
     } break;
   }

@@ -109,3 +109,11 @@ export function getRandomOrder(length: number): number[] {
   rv.sort((a, b) => a[1] - b[1]);
   return rv.map(a => a[0]);
 }
+
+export function range(n: number): number[] {
+  return [...new Array(n)].map((a, b) => b);
+}
+
+export function randPointInRect(rect: Rect): Point {
+  return vm2(rect.p, rect.sz, (p, sz) => Math.random() * sz + p);
+}

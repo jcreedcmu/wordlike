@@ -1,3 +1,5 @@
+export const WIN_SCORE = 1000;
+
 export type WinState =
   | 'won'
   | 'lost'
@@ -12,5 +14,10 @@ export function shouldDisplayBackButton(ws: WinState): boolean {
 
 // If true, an invalid state initializes the panic bar
 export function shouldStartPanicBar(ws: WinState): boolean {
+  return ws == 'playing';
+}
+
+// If true, it make sense to win from this state
+export function canWinFromState(ws: WinState): boolean {
   return ws == 'playing';
 }
