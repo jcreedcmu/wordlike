@@ -1,6 +1,7 @@
 import { produce } from "../util/produce";
 import { Rect } from "../util/types";
 import { Intent } from './intent';
+import { getScore } from "./scoring";
 import { CoreState } from "./state";
 import { drawOfState } from "./state-helpers";
 
@@ -43,7 +44,7 @@ export function getCurrentTools(state: CoreState): Tool[] {
     return [];
   }
   const tools: Tool[] = ['pointer', 'hand'];
-  if (state.score >= dynamiteIntent.cost) {
+  if (getScore(state) >= dynamiteIntent.cost) {
     tools.push('dynamite');
   }
   if (state.inventory.bombs > 0) {

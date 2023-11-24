@@ -6,6 +6,7 @@ import { Animation, mkExplosionAnimation } from './animations';
 import { Bonus } from "./bonus";
 import { KillIntent } from './intent';
 import { setOverlay } from "./layer";
+import { getScore, incrementScore } from "./scoring";
 import { CoreState, MainTile } from "./state";
 import { bonusOfStatePoint, checkValid } from './state-helpers';
 import { get_hand_tiles, get_main_tiles, removeTile } from "./tile-helpers";
@@ -13,13 +14,13 @@ import { BOMB_RADIUS } from './tools';
 
 function eligibleKillIntent(state: CoreState, intent: KillIntent): boolean {
   switch (intent.t) {
-    case 'kill': return state.score >= intent.cost;
+    case 'kill': return getScore(state) >= intent.cost;
     case 'bomb': return state.inventory.bombs >= 1;
   }
 }
 function spendKillIntent(state: CoreState, intent: KillIntent): CoreState {
   switch (intent.t) {
-    case 'kill': return produce(state, s => { s.score -= intent.cost; });
+    case 'kill': return produce(state, s => { incrementScore(s, -intent.cost); });
     case 'bomb': return produce(state, s => { s.inventory.bombs--; });
   }
 }
@@ -91,7 +92,7 @@ function killTileOfState(state: CoreState, wp: DragWidgetPoint, intent: KillInte
         if (tile == undefined)
           return state;
         return checkValid(produce(removeTile(state, tile.id), s => {
-          s.score--;
+          incrementScore(s, -1);
         }));
       }
       else {

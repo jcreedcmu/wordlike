@@ -13,6 +13,7 @@ import { getPanicFraction, now_in_game } from './clock';
 import { getIntentOfMouseDown, reduceIntent } from './intent';
 import { tryKillTileOfState } from './kill-helpers';
 import { mkOverlayFrom } from './layer';
+import { setScore } from './scoring';
 import { resolveSelection } from './selection';
 import { tryReduceShortcut } from './shortcuts';
 import { CoreState, GameState, HAND_TILE_LIMIT, Location, SceneState, mkGameSceneState } from './state';
@@ -299,7 +300,7 @@ function reduceGameAction(state: GameState, action: GameAction): effectful.Resul
       }
       if (action.code == 'S-d') {
         return gs(withCoreState(state, cs => checkValid(produce(addWorldTiles(removeAllTiles(cs), debugTiles()), s => {
-          s.score = 1000;
+          setScore(s, 1000);
           s.inventory.bombs = 15;
           s.inventory.vowels = 15;
           s.inventory.consonants = 15;

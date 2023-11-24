@@ -1,4 +1,5 @@
 import { produce } from "../util/produce";
+import { getScore } from "./scoring";
 import { GameState } from "./state";
 import { withCoreState } from "./state-helpers";
 import { reduceToolSelect } from "./tools";
@@ -18,7 +19,7 @@ export function tryReduceShortcut(state: GameState, code: string): GameState | u
     else return undefined;
   }
   if (code == 'd') {
-    if (state.coreState.score >= 1) {
+    if (getScore(state.coreState) >= 1) {
       return withCoreState(state, cs => produce(cs, s => {
         s.currentTool = 'dynamite';
       }));

@@ -6,6 +6,7 @@ import { deterministicLetterSample, getSample } from './distribution';
 import { Layer, mkLayer } from './layer';
 import { CoreState, Tile, TileEntity } from './state';
 import { MoveTile } from './state-helpers';
+import { incrementScore } from './scoring';
 
 export type ScoringBonus =
   | { t: 'bonus' }
@@ -121,9 +122,9 @@ export function overlapScoringOfBonus(bonus: Bonus, p: Point): Scoring[] {
 export function resolveScoring(state: Draft<CoreState>, scoring: Scoring): void {
   const bonus = scoring.bonus;
   switch (bonus.t) {
-    case 'bonus': state.score++; return;
+    case 'bonus': incrementScore(state); return;
     case 'bomb': state.inventory.bombs++; return;
-    case 'required': state.score += 10; return;
+    case 'required': incrementScore(state, 10); return;
     case 'vowel': state.inventory.vowels += 5; return
     case 'consonant': state.inventory.consonants += 5; return
     case 'copy': state.inventory.copies += 3; return

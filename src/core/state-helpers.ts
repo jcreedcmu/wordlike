@@ -13,6 +13,7 @@ import { PANIC_INTERVAL_MS, PauseData, now_in_game } from "./clock";
 import { DrawForce, getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
 import { Layer, Overlay, getOverlayLayer, mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
+import { getScore } from "./scoring";
 import { CoreState, GameState, HAND_TILE_LIMIT, Location, MouseState, Tile, TileEntity } from "./state";
 import { addHandTile, addWorldTile, ensureTileId, get_hand_tiles, get_main_tiles, get_tiles, putTileInWorld, removeTile } from "./tile-helpers";
 import { WIN_SCORE, canWinFromState, shouldStartPanicBar } from "./winState";
@@ -136,7 +137,7 @@ export function checkValid(state: CoreState): CoreState {
   let winState = state.winState;
   let animations = state.animations;
 
-  if (state.score >= WIN_SCORE && canWinFromState(state.winState)) {
+  if (getScore(state) >= WIN_SCORE && canWinFromState(state.winState)) {
     winState = { t: 'won', winTime_in_game: currentTime_in_game };
     animations = [...animations, mkWinAnimation(state.game_from_clock)];
   }

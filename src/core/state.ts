@@ -76,6 +76,11 @@ export type TileEntityOptionalId = {
   letter: string,
 };
 
+export type ScoreState = {
+  score: number,
+  highWaterMark: number,
+}
+
 export type CoreState = {
   animations: Animation[],
   currentTool: Tool,
@@ -87,7 +92,7 @@ export type CoreState = {
   seed: number,
   bonusOverlay: Overlay<Bonus>,
   selected?: SelectionState,
-  score: number,
+  scoring: ScoreState,
   winState: WinState,
   panic: PanicData | undefined,
   paused: PauseData | undefined,
@@ -137,7 +142,7 @@ export function mkGameState(seed: number, creative: boolean): GameState {
       connectedSet: mkGridOf([]),
       energies: initialEnergies(),
       seed,
-      score: 0,
+      scoring: { score: 0, highWaterMark: 0 },
       winState: { t: creative ? 'creative' : 'playing' },
       panic: undefined,
       paused: undefined,

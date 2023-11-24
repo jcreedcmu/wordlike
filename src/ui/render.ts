@@ -2,6 +2,7 @@ import { getAssets } from '../core/assets';
 import { now_in_game } from '../core/clock';
 import { LocatedWord, getGrid } from '../core/grid';
 import { getOverlay } from '../core/layer';
+import { getScore } from '../core/scoring';
 import { CoreState, GameState, TileEntity } from '../core/state';
 import { bonusOfStatePoint, pointFall, tileFall } from '../core/state-helpers';
 import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from '../core/tile-helpers';
@@ -337,7 +338,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     d.textAlign = 'right';
     const fontSize = 40;
     d.font = `bold ${fontSize}px sans-serif`;
-    d.fillText(`${cs.score}`, scoreLoc.x, scoreLoc.y);
+    d.fillText(`${getScore(cs)}`, scoreLoc.x, scoreLoc.y);
 
     // draw panic bar
     drawPanicBar(d, cs.panic, cs.game_from_clock);
