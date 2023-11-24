@@ -36,9 +36,6 @@ export function drawAnimation(d: CanvasRenderingContext2D, pan_canvas_from_world
     case 'win': {
       d.textAlign = 'center';
       d.textBaseline = 'middle';
-      doOnce('win', () => {
-        console.log(anim.fireworks);
-      });
       anim.fireworks.forEach(fw => {
         const t_ms = time_ms - anim.start_in_game - fw.start_in_anim;
         if (t_ms <= fw.duration_ms && t_ms > 0) {
