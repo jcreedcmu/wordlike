@@ -31,6 +31,9 @@ export function App(props: {}): JSX.Element {
   if (DEBUG.stateExporter) {
     (window as any).state = () => { return state; }
   }
+  if (DEBUG.stateImporter) {
+    (window as any).importState = (state: SceneState) => { dispatch({ t: 'setSceneState', state }); }
+  }
 
   switch (state.t) {
     case 'menu': {

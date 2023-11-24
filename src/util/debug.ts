@@ -10,6 +10,7 @@ export const DEBUG = {
   letterSample: false,
   words: false,
   stateExporter: true,
+  stateImporter: true,
   instructions: false,
   skipAheadPanic: false,
   acceleratePanic: false,
