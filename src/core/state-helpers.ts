@@ -126,8 +126,9 @@ export function checkValid(state: CoreState): CoreState {
 
   let panic = state.panic;
   if (allValid) panic = undefined;
+  const currentTime_in_game = now_in_game(state.game_from_clock);
   if (!allValid && panic === undefined && shouldStartPanicBar(state.winState)) {
-    const currentTime_in_game = now_in_game(state.game_from_clock);
+
     const debug_offset = DEBUG.skipAheadPanic ? PANIC_INTERVAL_MS - 10000 : 0;
     panic = { currentTime_in_game, lastClear_in_game: currentTime_in_game - debug_offset };
   }
@@ -136,7 +137,7 @@ export function checkValid(state: CoreState): CoreState {
   let animations = state.animations;
 
   if (state.score >= WIN_SCORE && canWinFromState(state.winState)) {
-    winState = { t: 'won' };
+    winState = { t: 'won', winTime_in_game: currentTime_in_game };
     animations = [...animations, mkWinAnimation(state.game_from_clock)];
   }
 

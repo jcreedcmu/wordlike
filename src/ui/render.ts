@@ -95,6 +95,16 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
   });
 }
 
+function formatTime(x: number) {
+  var date = new Date(0);
+  date.setMilliseconds(x);
+  let rv = date.toISOString().substr(11, 8);
+  rv = rv.replace(/^0/, '');
+  rv = rv.replace(/^0:/, '');
+  rv = rv.replace(/^0/, '');
+  return rv;
+}
+
 export function rawPaint(ci: CanvasInfo, state: GameState) {
   const cs = state.coreState;
 
@@ -366,16 +376,23 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   drawShadows();
   drawHand();
   drawShuffleButton();
-  if (cs.winState.t != 'lost') {
+  const mp = midpointOfRect(canvas_bds_in_canvas);
+  if (cs.winState.t == 'lost') {
+    d.textAlign = 'center';
+    d.textBaseline = 'middle';
+    fillText(d, 'You lost :(', mp, 'rgba(0,0,0,0.3)', '96px sans-serif');
+  }
+  else {
     drawOtherUi();
     drawAnimations(now_in_game(cs.game_from_clock));
   }
-  else {
+  if (cs.winState.t == 'won') {
     d.textAlign = 'center';
     d.textBaseline = 'middle';
-    fillText(d, 'You lost :(', midpointOfRect(canvas_bds_in_canvas), 'rgba(0,0,0,0.3)', '96px sans-serif');
+    fillText(d, `Time: ${formatTime(cs.winState.winTime_in_game)}`, { x: mp.x, y: canvas_bds_in_canvas.sz.y - 12 }, 'black', 'bold 24px sans-serif');
   }
 }
+
 
 export class RenderPane {
   d: CanvasRenderingContext2D;

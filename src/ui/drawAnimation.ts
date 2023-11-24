@@ -1,5 +1,4 @@
 import { Animation } from '../core/animations';
-import { doOnce } from '../util/debug';
 import { fillText, pathCircle, strokeText } from '../util/dutil';
 import { SE2 } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
@@ -45,8 +44,9 @@ export function drawAnimation(d: CanvasRenderingContext2D, pan_canvas_from_world
           d.fill();
         }
       });
-      strokeText(d, 'You win!', midpointOfRect(canvas_bds_in_canvas), 'white', 4, '96px sans-serif');
-      fillText(d, 'You win!', midpointOfRect(canvas_bds_in_canvas), 'rgb(0,128,0)', '96px sans-serif');
+      const mp = midpointOfRect(canvas_bds_in_canvas);
+      strokeText(d, 'You win!', mp, 'white', 4, '96px sans-serif');
+      fillText(d, 'You win!', mp, 'rgb(0,128,0)', '96px sans-serif');
       return;
     } break;
   }

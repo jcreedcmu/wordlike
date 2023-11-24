@@ -1,7 +1,7 @@
 export const WIN_SCORE = 1000;
 
 export type WinState =
-  | { t: 'won' }
+  | { t: 'won', winTime_in_game: number }
   | { t: 'lost' }
   | { t: 'playing' }
   | { t: 'creative' }
