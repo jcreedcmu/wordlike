@@ -117,3 +117,7 @@ export function range(n: number): number[] {
 export function randPointInRect(rect: Rect): Point {
   return vm2(rect.p, rect.sz, (p, sz) => Math.random() * sz + p);
 }
+
+export async function grab(path: string): Promise<string> {
+  return (await fetch(path, { cache: "no-cache" })).text();
+}

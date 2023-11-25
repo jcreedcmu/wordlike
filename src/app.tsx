@@ -68,10 +68,16 @@ export function App(props: {}): JSX.Element {
   }
 }
 
-function glRender(ci: CanvasInfo, props: CanvasProps): void {
 
-}
+
 export function Game(props: GameProps): JSX.Element {
+
+  function glRender(ci: CanvasInfo, props: CanvasProps): void {
+    if (props.main.coreState.renderToGl) {
+
+    }
+  }
+
   const { state, dispatch } = props;
   const [glcref, glmc] = useCanvas<CanvasProps>(
     { main: state }, glRender, [state.coreState], ci => {
@@ -203,7 +209,6 @@ export function Game(props: GameProps): JSX.Element {
     display: state.coreState.renderToGl ? undefined : 'none',
   };
 
-  console.log('rendering');
   const normalCanvas = <canvas
     key="normal"
     style={normalStyle}
@@ -219,7 +224,9 @@ export function Game(props: GameProps): JSX.Element {
 }
 
 function render(ci: CanvasInfo, props: CanvasProps) {
-  paintWithScale(ci, props.main);
+  if (!props.main.coreState.renderToGl) {
+    paintWithScale(ci, props.main);
+  }
 }
 
 
