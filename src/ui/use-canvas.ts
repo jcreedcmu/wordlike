@@ -12,6 +12,12 @@ export type CanvasInfo = {
   size: Point,
 };
 
+export type CanvasGlInfo = {
+  c: HTMLCanvasElement,
+  d: WebGL2RenderingContext,
+  size: Point,
+};
+
 export function useRawCanvas<S, CI>(
   state: S,
   render: (ci: CI, state: S) => void,
@@ -55,6 +61,26 @@ export function useCanvas<S>(
   ] {
   return useRawCanvas<S, CanvasInfo>(state, render, deps, rci => {
     const ci = { ...rci, d: rci.c.getContext('2d')! };
+    onLoad(ci);
+    return ci;
+  });
+}
+
+export function useCanvasGl<S>(
+  state: S,
+  render: (ci: CanvasGlInfo, state: S) => void,
+  deps: any[],
+  onLoad: (ci: CanvasGlInfo) => void,
+): [
+    React.RefCallback<HTMLCanvasElement>,
+    React.MutableRefObject<CanvasGlInfo | undefined>,
+  ] {
+  return useRawCanvas<S, CanvasGlInfo>(state, render, deps, rci => {
+    const d = rci.c.getContext('webgl2');
+    if (!d) {
+      throw `This environment does not support WebGL2`;
+    }
+    const ci = { ...rci, d };
     onLoad(ci);
     return ci;
   });
