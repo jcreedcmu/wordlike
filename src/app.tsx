@@ -12,6 +12,7 @@ import { CanvasInfo, useCanvas } from './ui/use-canvas';
 import { useEffectfulReducer } from './ui/use-effectful-reducer';
 import { DEBUG } from './util/debug';
 import { relpos } from './util/dutil';
+import { make_pane } from './ui/gl-pane';
 
 const ANIMATION_INTERVAL_MS = 35;
 
@@ -67,30 +68,40 @@ export function App(props: {}): JSX.Element {
   }
 }
 
+function glRender(ci: CanvasInfo, props: CanvasProps): void {
+
+}
 export function Game(props: GameProps): JSX.Element {
   const { state, dispatch } = props;
+  const [glcref, glmc] = useCanvas<CanvasProps>(
+    { main: state }, glRender, [state.coreState], ci => {
+      dispatch({ t: 'resize', vd: resizeView(ci.c) });
+    });
+
   const [cref, mc] = useCanvas<CanvasProps>(
     { main: state }, render, [state.coreState], ci => {
       dispatch({ t: 'resize', vd: resizeView(ci.c) });
     });
 
   function handleResize(e: UIEvent) {
-    dispatch({ t: 'resize', vd: resizeView(mc.current!.c) });
+    withCanvas(c => dispatch({ t: 'resize', vd: resizeView(c) }));
   }
 
   function mouseDownListener(e: MouseEvent) {
-    const mods = new Set<string>();
-    if (e.ctrlKey)
-      mods.add('ctrl');
-    if (e.shiftKey)
-      mods.add('shift');
-    if (e.altKey)
-      mods.add('meta');
-    if (e.metaKey)
-      mods.add('meta');
-    dispatch({ t: 'mouseDown', button: e.buttons, p: relpos(e, mc.current!.c), mods })
-    e.preventDefault();
-    e.stopPropagation();
+    withCanvas(c => {
+      const mods = new Set<string>();
+      if (e.ctrlKey)
+        mods.add('ctrl');
+      if (e.shiftKey)
+        mods.add('shift');
+      if (e.altKey)
+        mods.add('meta');
+      if (e.metaKey)
+        mods.add('meta');
+      dispatch({ t: 'mouseDown', button: e.buttons, p: relpos(e, c), mods })
+      e.preventDefault();
+      e.stopPropagation();
+    });
   }
 
   function contextMenuListener(e: MouseEvent) {
@@ -102,14 +113,22 @@ export function Game(props: GameProps): JSX.Element {
     e.stopPropagation();
     e.preventDefault();
   }
+
+  function withCanvas(k: (c: HTMLCanvasElement) => void): void {
+    if (!state.coreState.renderToGl && mc.current)
+      k(mc.current.c);
+    else if (state.coreState.renderToGl && glmc.current)
+      k(glmc.current.c);
+  }
+
   function mouseUpListener(e: MouseEvent) {
-    dispatch({ t: 'mouseUp', p: relpos(e, mc.current!.c) })
+    withCanvas(c => dispatch({ t: 'mouseUp', p: relpos(e, c) }));
   }
   function mouseMoveListener(e: MouseEvent) {
-    dispatch({ t: 'mouseMove', p: relpos(e, mc.current!.c) })
+    withCanvas(c => dispatch({ t: 'mouseMove', p: relpos(e, c) }));
   }
   function wheelListener(e: WheelEvent) {
-    dispatch({ t: 'wheel', p: relpos(e, mc.current!.c), delta: e.deltaY })
+    withCanvas(c => dispatch({ t: 'wheel', p: relpos(e, c), delta: e.deltaY }));
   }
 
   function keyListener(k: KeyboardEvent) {
@@ -175,15 +194,28 @@ export function Game(props: GameProps): JSX.Element {
     }
   }
 
-  const style: React.CSSProperties =
-  {
-    cursor: cursorOfState(state)
+  const normalStyle: React.CSSProperties = {
+    cursor: cursorOfState(state),
+    display: state.coreState.renderToGl ? 'none' : undefined,
   };
+  const glStyle: React.CSSProperties = {
+    cursor: cursorOfState(state),
+    display: state.coreState.renderToGl ? undefined : 'none',
+  };
+
+  console.log('rendering');
+  const normalCanvas = <canvas
+    key="normal"
+    style={normalStyle}
+    ref={cref} />;
+  const glCanvas = <canvas
+    key="gl"
+    style={glStyle}
+    ref={glcref} />;
   return <div>
-    <canvas
-      style={style}
-      ref={cref} />
-  </div>
+    {normalCanvas}
+    {glCanvas}
+  </div>;
 }
 
 function render(ci: CanvasInfo, props: CanvasProps) {

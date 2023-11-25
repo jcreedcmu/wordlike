@@ -394,18 +394,6 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   }
 }
 
-
-export class RenderPane {
-  d: CanvasRenderingContext2D;
-  constructor(public c: HTMLCanvasElement) {
-    this.d = c.getContext('2d')!;
-    c.width = canvas_bds_in_canvas.sz.x;
-    c.height = canvas_bds_in_canvas.sz.y;
-  }
-
-
-}
-
 function colorsOfTile(opts?: { connected?: boolean, selected?: boolean }): { fg: string, bg: string } {
   if (opts?.selected === true)
     return { fg: '#1f5198', bg: '#809fca' };
@@ -452,8 +440,4 @@ export function drawTileLetter(d: CanvasRenderingContext2D, letter: string, rect
   d.font = `bold ${fontSize}px sans-serif`;
   d.fillText(letter.toUpperCase(), rect_in_canvas.p.x + rect_in_canvas.sz.x / 2 + 0.5,
     rect_in_canvas.p.y + rect_in_canvas.sz.y / 2 + 1.5);
-}
-
-export function make_pane(c: HTMLCanvasElement): RenderPane {
-  return new RenderPane(c);
 }

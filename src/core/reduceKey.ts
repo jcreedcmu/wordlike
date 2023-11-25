@@ -43,6 +43,7 @@ export function reduceKey(state: GameState, code: string): GameState {
       })));
     }
     case 'S-g': {
+      console.log('hi');
       return withCoreState(state, cs => produce(cs, s => {
         s.renderToGl = !s.renderToGl;
       }));
