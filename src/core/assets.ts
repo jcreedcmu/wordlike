@@ -21,7 +21,7 @@ let assets: Assets = {
 export async function initAssets() {
   const toolbarImg = await imgProm('assets/toolbar.png');
   const vert = await grab('assets/vertex.vert');
-  const frag = await grab('assets/fragment.frag');
+  const frag = await grab('assets/frag.frag');
   const wordlist = (await (await fetch('assets/dictionary.txt')).text())
     .split('\n').filter(x => x);
   const dictionary = Object.fromEntries(wordlist.map(word => [word, true]));
