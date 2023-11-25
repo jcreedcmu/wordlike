@@ -8,50 +8,7 @@ import { addWorldTiles, checkValid, drawOfState, dropTopHandTile, withCoreState 
 import { removeAllTiles } from "./tile-helpers";
 import { dynamiteIntent, reduceToolSelect } from "./tools";
 
-function tryReduceShortcut(state: GameState, code: string): GameState | undefined {
-  if (code == '<esc>') {
-    return withCoreState(state, cs => produce(cs, s => {
-      s.currentTool = 'pointer';
-    }));
-  }
-  if (code == 'b') {
-    if (state.coreState.inventory.bombs >= 1) {
-      return withCoreState(state, cs => produce(cs, s => {
-        s.currentTool = 'bomb';
-      }));
-    }
-    else return undefined;
-  }
-  if (code == 'd') {
-    if (getScore(state.coreState) >= 1) {
-      return withCoreState(state, cs => produce(cs, s => {
-        s.currentTool = 'dynamite';
-      }));
-    }
-  }
-  if (code == 'v') {
-    if (state.coreState.inventory.vowels >= 1) {
-      return withCoreState(state, cs => reduceToolSelect(cs, 'vowel'));
-    }
-  }
-  if (code == 'c') {
-    if (state.coreState.inventory.consonants >= 1) {
-      return withCoreState(state, cs => reduceToolSelect(cs, 'consonant'));
-    }
-  }
-  if (code == 'x') {
-    if (state.coreState.inventory.copies >= 1) {
-      return withCoreState(state, cs => reduceToolSelect(cs, 'copy'));
-    }
-  }
-  return undefined;
-}
-
 export function reduceKey(state: GameState, code: string): GameState {
-  const shortcutState = tryReduceShortcut(state, code);
-  if (shortcutState !== undefined)
-    return shortcutState;
-
   switch (code) {
     case '<space>': {
       return withCoreState(state, cs => drawOfState(cs));
@@ -85,6 +42,43 @@ export function reduceKey(state: GameState, code: string): GameState {
         incrementScore(s, 90);
       })));
     }
-    default: return state;
+
+    // Tool shortcuts
+    case '<esc>': {
+      return withCoreState(state, cs => produce(cs, s => {
+        s.currentTool = 'pointer';
+      }));
+    }
+    case 'b': {
+      if (state.coreState.inventory.bombs >= 1) {
+        return withCoreState(state, cs => produce(cs, s => {
+          s.currentTool = 'bomb';
+        }));
+      }
+    } break;
+    case 'd': {
+      if (getScore(state.coreState) >= 1) {
+        return withCoreState(state, cs => produce(cs, s => {
+          s.currentTool = 'dynamite';
+        }));
+      }
+    } break;
+    case 'v': {
+      if (state.coreState.inventory.vowels >= 1) {
+        return withCoreState(state, cs => reduceToolSelect(cs, 'vowel'));
+      }
+    } break;
+    case 'c': {
+      if (state.coreState.inventory.consonants >= 1) {
+        return withCoreState(state, cs => reduceToolSelect(cs, 'consonant'));
+      }
+
+    } break;
+    case 'x': {
+      if (state.coreState.inventory.copies >= 1) {
+        return withCoreState(state, cs => reduceToolSelect(cs, 'copy'));
+      }
+    } break;
   }
+  return state;
 }
