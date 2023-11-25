@@ -7,10 +7,18 @@ out vec4 outputColor;
 // Size of the 'screen' in pixels
 uniform vec2 u_canvasSize;
 
+// Transformation matrix
+uniform mat3 u_world_from_canvas;
+
 void main() {
-  vec2 pos = v_uv * u_canvasSize;
-if (pos.y > 100.)
-  outputColor = vec4(pos.y - floor(pos.y), 0.5, 0.0, 1.0) ;
- else
-  outputColor = vec4(pos.x / 799.0, 0.5, 0.0, 1.0);
+  vec3 p_in_canvas = vec3(v_uv * u_canvasSize, 1.0);
+  p_in_canvas.y = u_canvasSize.y - p_in_canvas.y;
+  vec2 p_in_world = (u_world_from_canvas * p_in_canvas).xy;
+  vec2 p_in_world_r = round(p_in_world);
+  vec2 off = abs(p_in_world - p_in_world_r);
+  if ((off.x < 0.1 && off.y < 0.03) || (off.x < 0.03 && off.y < 0.1))
+    outputColor = vec4(.06,.45,.64,1.);
+  else {
+    outputColor = vec4(1.,1.,1.,1.);
+  }
 }
