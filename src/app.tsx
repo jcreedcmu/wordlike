@@ -83,6 +83,7 @@ function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): void {
 }
 
 
+
 export function Game(props: GameProps): JSX.Element {
   const { state, dispatch } = props;
   const [glcref, glmc] = useCanvasGl<CanvasProps>(
@@ -93,12 +94,29 @@ export function Game(props: GameProps): JSX.Element {
       dispatch({ t: 'resize', vd: resizeView(ci.c) });
     });
 
+  const cs = state.coreState;
+
+  function withCanvas(k: (c: HTMLCanvasElement) => void): void {
+    if (!cs.renderToGl && mc.current) {
+      console.log("calling with normal");
+      k(mc.current.c);
+    }
+    else if (cs.renderToGl && glmc.current) {
+      console.log("calling with gl");
+      k(glmc.current.c);
+    }
+  }
+
   function handleResize(e: UIEvent) {
     withCanvas(c => dispatch({ t: 'resize', vd: resizeView(c) }));
   }
 
-  function mouseDownListener(e: MouseEvent) {
+  function reactMouseDownListener(e: React.PointerEvent) {
+    (e.target as HTMLCanvasElement).setPointerCapture(e.pointerId);
+
     withCanvas(c => {
+      console.log(c.getClientRects());
+      console.log(c.getBoundingClientRect());
       const mods = new Set<string>();
       if (e.ctrlKey)
         mods.add('ctrl');
@@ -108,7 +126,7 @@ export function Game(props: GameProps): JSX.Element {
         mods.add('meta');
       if (e.metaKey)
         mods.add('meta');
-      dispatch({ t: 'mouseDown', button: e.buttons, p: relpos(e, c), mods })
+      dispatch({ t: 'mouseDown', button: e.buttons, p: relpos(e.nativeEvent, c), mods })
       e.preventDefault();
       e.stopPropagation();
     });
@@ -124,19 +142,15 @@ export function Game(props: GameProps): JSX.Element {
     e.preventDefault();
   }
 
-  function withCanvas(k: (c: HTMLCanvasElement) => void): void {
-    if (!state.coreState.renderToGl && mc.current)
-      k(mc.current.c);
-    else if (state.coreState.renderToGl && glmc.current)
-      k(glmc.current.c);
+  function reactMouseUpListener(e: React.PointerEvent) {
+    (e.target as HTMLCanvasElement).releasePointerCapture(e.pointerId);
+    withCanvas(c => dispatch({ t: 'mouseUp', p: relpos(e.nativeEvent, c) }));
+  }
+  function reactMouseMoveListener(e: React.PointerEvent) {
+    withCanvas(c => dispatch({ t: 'mouseMove', p: relpos(e.nativeEvent, c) }));
   }
 
-  function mouseUpListener(e: MouseEvent) {
-    withCanvas(c => dispatch({ t: 'mouseUp', p: relpos(e, c) }));
-  }
-  function mouseMoveListener(e: MouseEvent) {
-    withCanvas(c => dispatch({ t: 'mouseMove', p: relpos(e, c) }));
-  }
+  // XXX: This still is broken with GL
   function wheelListener(e: WheelEvent) {
     withCanvas(c => dispatch({ t: 'wheel', p: relpos(e, c), delta: e.deltaY }));
   }
@@ -158,21 +172,14 @@ export function Game(props: GameProps): JSX.Element {
   useEffect(() => {
 
     document.addEventListener('dblclick', dblclickListener);
-    document.addEventListener('mouseup', mouseUpListener);
-    document.addEventListener('mousemove', mouseMoveListener);
-    document.addEventListener('mousedown', mouseDownListener);
     document.addEventListener('contextmenu', contextMenuListener);
     document.addEventListener('wheel', wheelListener);
     document.addEventListener('keydown', keyListener);
-    window.addEventListener('resize', handleResize);
     window.addEventListener('resize', handleResize);
     interval = window.setInterval(intervalHandler, ANIMATION_INTERVAL_MS);
 
     return () => {
       document.removeEventListener('dblclick', dblclickListener);
-      document.removeEventListener('mouseup', mouseUpListener);
-      document.removeEventListener('mousemove', mouseMoveListener);
-      document.removeEventListener('mousedown', mouseDownListener);
       document.removeEventListener('contextmenu', contextMenuListener);
       document.removeEventListener('wheel', wheelListener);
       document.removeEventListener('keydown', keyListener);
@@ -214,10 +221,16 @@ export function Game(props: GameProps): JSX.Element {
   };
 
   const normalCanvas = <canvas
+    onPointerDown={reactMouseDownListener}
+    onPointerUp={reactMouseUpListener}
+    onPointerMove={reactMouseMoveListener}
     key="normal"
     style={normalStyle}
     ref={cref} />;
   const glCanvas = <canvas
+    onPointerDown={reactMouseDownListener}
+    onPointerUp={reactMouseUpListener}
+    onPointerMove={reactMouseMoveListener}
     key="gl"
     style={glStyle}
     ref={glcref} />;
