@@ -77,6 +77,9 @@ function glRender(ci: CanvasGlInfo, props: CanvasProps): void {
 
 function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): void {
   dispatch({ t: 'resize', vd: resizeView(ci.c) });
+  const { d: gl } = ci;
+  gl.clearColor(0.3, 0.3, 0.3, 1);
+  gl.clear(gl.COLOR_BUFFER_BIT);
 }
 
 
