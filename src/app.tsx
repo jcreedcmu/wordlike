@@ -8,7 +8,7 @@ import { Instructions } from './ui/instructions';
 import { key } from './ui/key';
 import { paintWithScale } from './ui/render';
 import { resizeView } from './ui/ui-helpers';
-import { CanvasInfo, useCanvas } from './ui/use-canvas';
+import { CanvasGlInfo, CanvasInfo, useCanvas, useCanvasGl } from './ui/use-canvas';
 import { useEffectfulReducer } from './ui/use-effectful-reducer';
 import { DEBUG } from './util/debug';
 import { relpos } from './util/dutil';
@@ -69,20 +69,21 @@ export function App(props: {}): JSX.Element {
 }
 
 
+function glRender(ci: CanvasGlInfo, props: CanvasProps): void {
+  if (props.main.coreState.renderToGl) {
+
+  }
+}
+
+function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): void {
+  dispatch({ t: 'resize', vd: resizeView(ci.c) });
+}
+
 
 export function Game(props: GameProps): JSX.Element {
-
-  function glRender(ci: CanvasInfo, props: CanvasProps): void {
-    if (props.main.coreState.renderToGl) {
-
-    }
-  }
-
   const { state, dispatch } = props;
-  const [glcref, glmc] = useCanvas<CanvasProps>(
-    { main: state }, glRender, [state.coreState], ci => {
-      dispatch({ t: 'resize', vd: resizeView(ci.c) });
-    });
+  const [glcref, glmc] = useCanvasGl<CanvasProps>(
+    { main: state }, glRender, [state.coreState], ci => glInitialize(ci, dispatch));
 
   const [cref, mc] = useCanvas<CanvasProps>(
     { main: state }, render, [state.coreState], ci => {
