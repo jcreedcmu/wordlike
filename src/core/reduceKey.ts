@@ -42,6 +42,11 @@ export function reduceKey(state: GameState, code: string): GameState {
         incrementScore(s, 90);
       })));
     }
+    case 'S-g': {
+      return withCoreState(state, cs => produce(cs, s => {
+        s.renderToGl = !s.renderToGl;
+      }));
+    }
 
     // Tool shortcuts
     case '<esc>': {
