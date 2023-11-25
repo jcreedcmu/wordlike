@@ -123,7 +123,8 @@ export function mkGameSceneState(seed: number, creative: boolean, bonusLayerSeed
   };
 }
 
-const DEFAULT_SCALE = 48;
+const DEFAULT_SCALE = 48.001;
+const epsilon = 0.0001;
 
 export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: number): GameState {
   return {
@@ -137,8 +138,8 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
       canvas_from_world: {
         scale: { x: DEFAULT_SCALE, y: DEFAULT_SCALE },
         translate: {
-          x: world_bds_in_canvas.p.x + world_bds_in_canvas.sz.x / 2 - DEFAULT_SCALE / 2,
-          y: world_bds_in_canvas.p.y + world_bds_in_canvas.sz.y / 2 - DEFAULT_SCALE / 2
+          x: epsilon + world_bds_in_canvas.p.x + world_bds_in_canvas.sz.x / 2 - DEFAULT_SCALE / 2,
+          y: epsilon + world_bds_in_canvas.p.y + world_bds_in_canvas.sz.y / 2 - DEFAULT_SCALE / 2
         }
       },
       connectedSet: mkGridOf([]),
