@@ -12,7 +12,7 @@ import { CanvasGlInfo, CanvasInfo, useCanvas, useCanvasGl } from './ui/use-canva
 import { useEffectfulReducer } from './ui/use-effectful-reducer';
 import { DEBUG } from './util/debug';
 import { relpos } from './util/dutil';
-import { make_pane } from './ui/gl-pane';
+import { GlEnv, glInitialize, renderGlPane } from './ui/gl-pane';
 
 const ANIMATION_INTERVAL_MS = 35;
 
@@ -68,25 +68,16 @@ export function App(props: {}): JSX.Element {
   }
 }
 
-
-function glRender(ci: CanvasGlInfo, props: CanvasProps): void {
+function glRender(ci: CanvasGlInfo, env: GlEnv, props: CanvasProps): void {
   if (props.main.coreState.renderToGl) {
-
+    renderGlPane(ci, env, props.main);
   }
 }
 
-function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): void {
-  dispatch({ t: 'resize', vd: resizeView(ci.c) });
-  const { d: gl } = ci;
-  gl.clearColor(0.3, 0.3, 0.3, 1);
-  gl.clear(gl.COLOR_BUFFER_BIT);
-}
-
-
-
 export function Game(props: GameProps): JSX.Element {
   const { state, dispatch } = props;
-  const [glcref, glmc] = useCanvasGl<CanvasProps>(
+
+  const [glcref, glmc] = useCanvasGl<CanvasProps, GlEnv>(
     { main: state }, glRender, [state.coreState], ci => glInitialize(ci, dispatch));
 
   const [cref, mc] = useCanvas<CanvasProps>(
@@ -101,7 +92,7 @@ export function Game(props: GameProps): JSX.Element {
       k(mc.current.c);
     }
     else if (cs.renderToGl && glmc.current) {
-      k(glmc.current.c);
+      k(glmc.current.ci.c);
     }
   }
 
