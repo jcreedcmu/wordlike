@@ -98,11 +98,9 @@ export function Game(props: GameProps): JSX.Element {
 
   function withCanvas(k: (c: HTMLCanvasElement) => void): void {
     if (!cs.renderToGl && mc.current) {
-      console.log("calling with normal");
       k(mc.current.c);
     }
     else if (cs.renderToGl && glmc.current) {
-      console.log("calling with gl");
       k(glmc.current.c);
     }
   }
@@ -115,8 +113,6 @@ export function Game(props: GameProps): JSX.Element {
     (e.target as HTMLCanvasElement).setPointerCapture(e.pointerId);
 
     withCanvas(c => {
-      console.log(c.getClientRects());
-      console.log(c.getBoundingClientRect());
       const mods = new Set<string>();
       if (e.ctrlKey)
         mods.add('ctrl');
@@ -150,9 +146,8 @@ export function Game(props: GameProps): JSX.Element {
     withCanvas(c => dispatch({ t: 'mouseMove', p: relpos(e.nativeEvent, c) }));
   }
 
-  // XXX: This still is broken with GL
-  function wheelListener(e: WheelEvent) {
-    withCanvas(c => dispatch({ t: 'wheel', p: relpos(e, c), delta: e.deltaY }));
+  function reactWheelListener(e: React.WheelEvent) {
+    withCanvas(c => dispatch({ t: 'wheel', p: relpos(e.nativeEvent, c), delta: e.deltaY }));
   }
 
   function keyListener(k: KeyboardEvent) {
@@ -173,7 +168,6 @@ export function Game(props: GameProps): JSX.Element {
 
     document.addEventListener('dblclick', dblclickListener);
     document.addEventListener('contextmenu', contextMenuListener);
-    document.addEventListener('wheel', wheelListener);
     document.addEventListener('keydown', keyListener);
     window.addEventListener('resize', handleResize);
     interval = window.setInterval(intervalHandler, ANIMATION_INTERVAL_MS);
@@ -181,11 +175,11 @@ export function Game(props: GameProps): JSX.Element {
     return () => {
       document.removeEventListener('dblclick', dblclickListener);
       document.removeEventListener('contextmenu', contextMenuListener);
-      document.removeEventListener('wheel', wheelListener);
       document.removeEventListener('keydown', keyListener);
       window.removeEventListener('resize', handleResize);
       clearInterval(interval);
-      console.log('clearing interval');
+      if (DEBUG.interval)
+        console.log('clearing interval');
     };
   }, []);
 
@@ -224,6 +218,7 @@ export function Game(props: GameProps): JSX.Element {
     onPointerDown={reactMouseDownListener}
     onPointerUp={reactMouseUpListener}
     onPointerMove={reactMouseMoveListener}
+    onWheel={reactWheelListener}
     key="normal"
     style={normalStyle}
     ref={cref} />;
@@ -231,6 +226,7 @@ export function Game(props: GameProps): JSX.Element {
     onPointerDown={reactMouseDownListener}
     onPointerUp={reactMouseUpListener}
     onPointerMove={reactMouseMoveListener}
+    onWheel={reactWheelListener}
     key="gl"
     style={glStyle}
     ref={glcref} />;
