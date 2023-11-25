@@ -82,6 +82,7 @@ export type ScoreState = {
 }
 
 export type CoreState = {
+  renderToGl: boolean,
   animations: Animation[],
   currentTool: Tool,
   tile_entities: Record<string, TileEntity>,
@@ -127,6 +128,7 @@ const DEFAULT_SCALE = 48;
 export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: number): GameState {
   return {
     coreState: {
+      renderToGl: false,
       animations: [],
       currentTool: 'pointer',
       tile_entities: {},

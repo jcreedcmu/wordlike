@@ -1,7 +1,6 @@
 import * as effectful from '../ui/use-effectful-reducer';
 import { canvas_from_drag_tile, pan_canvas_from_canvas_of_mouse_state } from '../ui/view-helpers';
 import { WidgetPoint, canvas_from_hand, getWidgetPoint } from '../ui/widget-helpers';
-import { debugTiles } from '../util/debug';
 import { produce } from '../util/produce';
 import { SE2, apply, compose, composen, inverse, scale, translate } from '../util/se2';
 import { Point } from '../util/types';
@@ -11,14 +10,12 @@ import { Action, Effect, GameAction } from './action';
 import { getBonusLayer } from './bonus';
 import { getPanicFraction, now_in_game } from './clock';
 import { getIntentOfMouseDown, reduceIntent } from './intent';
-import { tryKillTileOfState } from './kill-helpers';
 import { mkOverlayFrom } from './layer';
-import { incrementScore, setScore } from './scoring';
+import { reduceKey } from './reduceKey';
 import { resolveSelection } from './selection';
-import { tryReduceShortcut } from './shortcuts';
 import { CoreState, GameState, HAND_TILE_LIMIT, Location, SceneState, mkGameSceneState } from './state';
-import { MoveTile, addWorldTiles, bonusOfStatePoint, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, isCollision, isOccupied, isTilePinned, tileFall, unpauseState, withCoreState } from './state-helpers';
-import { getTileId, get_hand_tiles, get_tiles, putTileInHand, putTileInWorld, putTilesInHand, removeAllTiles, setTileLoc, tileAtPoint } from "./tile-helpers";
+import { MoveTile, bonusOfStatePoint, checkValid, drawOfState, filterExpiredAnimations, isCollision, isOccupied, isTilePinned, tileFall, unpauseState, withCoreState } from './state-helpers';
+import { getTileId, get_hand_tiles, get_tiles, putTileInHand, putTileInWorld, putTilesInHand, setTileLoc, tileAtPoint } from "./tile-helpers";
 import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect } from './tools';
 import { shouldDisplayBackButton } from './winState';
 
@@ -277,45 +274,7 @@ function reduceGameAction(state: GameState, action: GameAction): effectful.Resul
   }
   switch (action.t) {
     case 'key': {
-      const shortcutState = tryReduceShortcut(state, action.code);
-      if (shortcutState !== undefined)
-        return gs(shortcutState);
-
-      switch (action.code) {
-        case '<space>': {
-          return gs(withCoreState(state, cs => drawOfState(cs)));
-        }
-        case '`':  // fallthrough intentional
-        case '/': {
-          const ms = state.mouseState;
-          if (ms.t == 'drag_tile' && state.coreState.selected) {
-            const flippedMs = produce(ms, mss => { mss.flipped = !mss.flipped; });
-            return gs(produce(state, s => { s.mouseState = flippedMs; }));
-          }
-          return gs(state);
-        }
-        case 'k': {
-          return gs(withCoreState(state, cs => tryKillTileOfState(cs, getWidgetPoint(cs, state.mouseState.p_in_canvas), dynamiteIntent)));
-        }
-        case 'a': {
-          return gs(dropTopHandTile(state));
-        }
-        case 'S-d': {
-          return gs(withCoreState(state, cs => checkValid(produce(addWorldTiles(removeAllTiles(cs), debugTiles()), s => {
-            setScore(s, 1000);
-            s.inventory.bombs = 15;
-            s.inventory.vowels = 15;
-            s.inventory.consonants = 15;
-            s.inventory.copies = 15;
-          }))));
-        }
-        case 'S-s': {
-          return gs(withCoreState(state, cs => checkValid(produce(cs, s => {
-            incrementScore(s, 90);
-          }))));
-        }
-        default: return gs(state);
-      }
+      return gs(reduceKey(state, action.code));
     }
     case 'none': return gs(state);
     case 'wheel': {

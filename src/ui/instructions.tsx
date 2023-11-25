@@ -117,6 +117,7 @@ function render(ci: CanvasInfo, props: CanvasProps) {
 function exampleState(): GameState {
   const state: GameState = {
     coreState: {
+      renderToGl: false,
       animations: [],
       currentTool: 'pointer',
       invalidWords: [],
