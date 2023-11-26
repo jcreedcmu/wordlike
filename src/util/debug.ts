@@ -15,6 +15,7 @@ export const DEBUG = {
   skipAheadPanic: false,
   acceleratePanic: false,
   interval: false,
+  glTiming: false,
 };
 
 export type DebugLevel = keyof (typeof DEBUG);
@@ -26,12 +27,21 @@ export function logger(level: DebugLevel, ...args: any[]) {
 }
 
 const debugDone: Record<string, boolean> = {};
+const debugCount: Record<string, number> = {};
 
 export function doOnce(tag: string, k: () => void): void {
   if (!debugDone[tag]) {
     debugDone[tag] = true;
     k();
   }
+}
+
+export function doOnceEvery(tag: string, N: number, k: () => void): void {
+  debugCount[tag] = debugCount[tag] ?? 0;
+  if (debugCount[tag] == 0) {
+    k();
+  }
+  debugCount[tag] = (debugCount[tag] + 1) % N;
 }
 
 export function doAgain(tag: string): void {

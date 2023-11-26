@@ -1,6 +1,7 @@
 import { Dispatch } from "../core/action";
 import { getAssets } from "../core/assets";
 import { GameState } from "../core/state";
+import { DEBUG, doOnceEvery } from "../util/debug";
 import { imageDataOfImage } from "../util/dutil";
 import { attributeSetFloats, shaderProgram } from "../util/gl-util";
 import { inverse } from "../util/se2";
@@ -18,34 +19,63 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState) {
   const { d: gl } = ci;
   const { prog } = env;
 
-  gl.clearColor(0.0, 0.3, 0.3, 1);
-  gl.clear(gl.COLOR_BUFFER_BIT);
+  const ext = gl.getExtension('EXT_disjoint_timer_query');
+  const query = gl.createQuery()!;
+  const actuallyRender = () => {
+    gl.clearColor(0.0, 0.3, 0.3, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
 
-  gl.useProgram(prog);
+    gl.useProgram(prog);
 
-  const u_spriteTexture = gl.getUniformLocation(prog, 'u_spriteTexture');
-  gl.uniform1i(u_spriteTexture, SPRITE_TEXTURE_UNIT);
+    const u_spriteTexture = gl.getUniformLocation(prog, 'u_spriteTexture');
+    gl.uniform1i(u_spriteTexture, SPRITE_TEXTURE_UNIT);
 
-  const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
-  gl.uniform2f(u_canvasSize, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
+    const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
+    gl.uniform2f(u_canvasSize, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
 
-  const world_from_canvas_SE2 = inverse(pan_canvas_from_world_of_state(state));
-  const s = world_from_canvas_SE2.scale;
-  const t = world_from_canvas_SE2.translate;
+    const world_from_canvas_SE2 = inverse(pan_canvas_from_world_of_state(state));
+    const s = world_from_canvas_SE2.scale;
+    const t = world_from_canvas_SE2.translate;
 
-  const world_from_canvas = [
-    s.x, 0.0, 0.0,
-    0.0, s.y, 0.0,
-    t.x, t.y, 1.0,
-  ];
-  const u_world_from_canvas = gl.getUniformLocation(prog, "u_world_from_canvas");
-  gl.uniformMatrix3fv(u_world_from_canvas, false, world_from_canvas);
+    const world_from_canvas = [
+      s.x, 0.0, 0.0,
+      0.0, s.y, 0.0,
+      t.x, t.y, 1.0,
+    ];
+    const u_world_from_canvas = gl.getUniformLocation(prog, "u_world_from_canvas");
+    gl.uniformMatrix3fv(u_world_from_canvas, false, world_from_canvas);
 
-  gl.viewport(0, 0, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
+    gl.viewport(0, 0, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
 
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  };
+
+  if (DEBUG.glTiming) {
+    const NUM_TRIALS = 100;
+    gl.beginQuery(ext.TIME_ELAPSED_EXT, query);
+    for (let i = 0; i < NUM_TRIALS; i++) {
+      actuallyRender();
+    }
+    gl.endQuery(ext.TIME_ELAPSED_EXT);
+
+    setTimeout(() => {
+      const available = gl.getQueryParameter(query, gl.QUERY_RESULT_AVAILABLE);
+      doOnceEvery('glTiming', 20, () => {
+        if (available) {
+          console.log('elapsed ms', gl.getQueryParameter(query, gl.QUERY_RESULT) / 1e6 / NUM_TRIALS);
+        }
+        else {
+          console.log('not available');
+        }
+      });
+    }, 1000);
+  }
+  else {
+    actuallyRender();
+  }
+
 
 }
 
