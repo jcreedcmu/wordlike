@@ -15,7 +15,8 @@ export const DEBUG = {
   skipAheadPanic: false,
   acceleratePanic: false,
   interval: false,
-  glTiming: false,
+  glProfiling: false,
+  canvasProfiling: false,
 };
 
 export type DebugLevel = keyof (typeof DEBUG);

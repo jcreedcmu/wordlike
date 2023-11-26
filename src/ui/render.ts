@@ -8,6 +8,7 @@ import { bonusOfStatePoint, pointFall, tileFall } from '../core/state-helpers';
 import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from '../core/tile-helpers';
 import { BOMB_RADIUS, getCurrentTool, getCurrentTools, rectOfTool } from '../core/tools';
 import { shouldDisplayBackButton } from '../core/winState';
+import { DEBUG, doOnceEvery } from '../util/debug';
 import { drawImage, fillRect, fillText, lineTo, moveTo, pathRectCircle, strokeRect } from '../util/dutil';
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from '../util/se2-extra';
@@ -29,10 +30,26 @@ const DRAW_TILE_SHADOWS = false;
 
 export function paintWithScale(ci: CanvasInfo, state: GameState) {
   const { d } = ci;
-  d.save();
-  d.scale(devicePixelRatio, devicePixelRatio);
-  rawPaint(ci, state);
-  d.restore();
+  const actuallyRender = () => {
+    d.save();
+    d.scale(devicePixelRatio, devicePixelRatio);
+    rawPaint(ci, state);
+    d.restore();
+  };
+  if (DEBUG.canvasProfiling) {
+    const before = Date.now();
+    const NUM_TRIALS = 10;
+    for (let i = 0; i < NUM_TRIALS; i++) {
+      actuallyRender();
+    }
+    const duration = Date.now() - before;
+    doOnceEvery('canvasTiming', 20, () => {
+      console.log('elapsed ms', duration / NUM_TRIALS);
+    });
+  }
+  else {
+    actuallyRender();
+  }
 }
 
 export function drawPausedScreen(ci: CanvasInfo) {

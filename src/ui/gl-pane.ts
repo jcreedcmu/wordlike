@@ -1,7 +1,7 @@
 import { Dispatch } from "../core/action";
 import { getAssets } from "../core/assets";
 import { GameState } from "../core/state";
-import { DEBUG, doOnceEvery } from "../util/debug";
+import { DEBUG, doOnce, doOnceEvery } from "../util/debug";
 import { imageDataOfImage } from "../util/dutil";
 import { attributeSetFloats, shaderProgram } from "../util/gl-util";
 import { inverse } from "../util/se2";
@@ -19,8 +19,7 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState) {
   const { d: gl } = ci;
   const { prog } = env;
 
-  const ext = gl.getExtension('EXT_disjoint_timer_query');
-  const query = gl.createQuery()!;
+
   const actuallyRender = () => {
     gl.clearColor(0.0, 0.3, 0.3, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -52,25 +51,33 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState) {
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   };
 
-  if (DEBUG.glTiming) {
-    const NUM_TRIALS = 100;
-    gl.beginQuery(ext.TIME_ELAPSED_EXT, query);
-    for (let i = 0; i < NUM_TRIALS; i++) {
+  if (DEBUG.glProfiling) {
+    const ext = gl.getExtension('EXT_disjoint_timer_query');
+    if (ext == null) {
+      doOnce('glDebugExtensionError', () => console.log(`Couldn't get EXT_disjoint_timer_query`));
       actuallyRender();
     }
-    gl.endQuery(ext.TIME_ELAPSED_EXT);
+    else {
+      const query = gl.createQuery()!;
+      const NUM_TRIALS = 100;
+      gl.beginQuery(ext.TIME_ELAPSED_EXT, query);
+      for (let i = 0; i < NUM_TRIALS; i++) {
+        actuallyRender();
+      }
+      gl.endQuery(ext.TIME_ELAPSED_EXT);
 
-    setTimeout(() => {
-      const available = gl.getQueryParameter(query, gl.QUERY_RESULT_AVAILABLE);
-      doOnceEvery('glTiming', 20, () => {
-        if (available) {
-          console.log('elapsed ms', gl.getQueryParameter(query, gl.QUERY_RESULT) / 1e6 / NUM_TRIALS);
-        }
-        else {
-          console.log('not available');
-        }
-      });
-    }, 1000);
+      setTimeout(() => {
+        const available = gl.getQueryParameter(query, gl.QUERY_RESULT_AVAILABLE);
+        doOnceEvery('glTiming', 20, () => {
+          if (available) {
+            console.log('elapsed ms', gl.getQueryParameter(query, gl.QUERY_RESULT) / 1e6 / NUM_TRIALS);
+          }
+          else {
+            console.log('not available');
+          }
+        });
+      }, 1000);
+    }
   }
   else {
     actuallyRender();
