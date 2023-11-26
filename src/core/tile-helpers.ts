@@ -4,6 +4,8 @@ import { Point } from "../util/types";
 import { vequal, vm } from "../util/vutil";
 import { CoreState, GameState, HandTile, Location, MainTile, Tile, TileEntity, TileEntityOptionalId, TileOptionalId } from "./state";
 
+export type TileId = string;
+
 // FIXME: global counter
 let tileIdCounter = 1000;
 function tileOfTileEntity(tile: TileEntity): Tile {

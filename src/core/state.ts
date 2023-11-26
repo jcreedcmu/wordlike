@@ -5,6 +5,7 @@ import { SE2 } from '../util/se2';
 import { Point } from '../util/types';
 import { Animation } from './animations';
 import { Bonus } from './bonus';
+import { Chunk } from './chunk';
 import { PanicData, PauseData } from './clock';
 import { Energies, initialEnergies } from './distribution';
 import { Grid, LocatedWord, mkGridOf } from './grid';
@@ -105,6 +106,7 @@ export type CoreState = {
     copies: number,
   }
   bonusLayerSeed: number,  // immutable during game play
+  _cachedTileChunkMap: Overlay<Chunk>;
 };
 
 export type GameState = {
@@ -157,6 +159,7 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
         copies: 0,
       },
       bonusLayerSeed,
+      _cachedTileChunkMap: mkOverlay<Chunk>(),
     },
     mouseState: { t: 'up', p_in_canvas: { x: 0, y: 0 } },
   };

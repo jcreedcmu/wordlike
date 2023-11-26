@@ -14,6 +14,8 @@ import { rawPaint } from './render';
 import { resizeView } from './ui-helpers';
 import { CanvasInfo, useCanvas } from './use-canvas';
 import { produce } from '../util/produce';
+import { mkOverlay } from '../core/layer';
+import { Chunk } from '../core/chunk';
 
 export const NUM_PAGES = 2;
 
@@ -117,6 +119,7 @@ function render(ci: CanvasInfo, props: CanvasProps) {
 function exampleState(): GameState {
   const state: GameState = {
     coreState: {
+      _cachedTileChunkMap: mkOverlay<Chunk>(),
       renderToGl: false,
       animations: [],
       currentTool: 'pointer',
