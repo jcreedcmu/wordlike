@@ -119,3 +119,9 @@ export function lineTo(d: CanvasRenderingContext2D, p: Point) {
 export function randomColor(): string {
   return `rgb(${Math.floor(Math.random() * 256)},${Math.floor(Math.random() * 256)},${Math.floor(Math.random() * 256)})`;
 }
+
+export function imageDataOfImage(im: HTMLImageElement): ImageData {
+  const buf = buffer({ x: im.width, y: im.height });
+  buf.d.drawImage(im, 0, 0);
+  return buf.d.getImageData(0, 0, im.width, im.height);
+}

@@ -10,6 +10,9 @@ uniform vec2 u_canvasSize;
 // Transformation matrix
 uniform mat3 u_world_from_canvas;
 
+// Sprite sheet
+uniform sampler2D u_spriteTexture;
+
 float crosshair(vec2 p) {
   if (p.x < 2.5 * u_world_from_canvas[0][0] && p.y < 0.5 * u_world_from_canvas[0][0])
     return 1.0;
@@ -33,9 +36,13 @@ void main() {
   }
   else {
     vec2 p_in_world_r = round(p_in_world);
+    vec2 p_in_world_fp = p_in_world - floor(p_in_world);
+
     vec2 off = abs(p_in_world - p_in_world_r);
     float ch_amount = max(crosshair(off.xy), crosshair(off.yx));
-    outputColor = ch_amount * vec4(.06,.45,.64,1.) + (1.-ch_amount) * vec4(1.,1.,1.,1.);
+    vec4 bgcolor = texture(u_spriteTexture, (p_in_world_fp + vec2(1.,1.)) / 8. );
+    vec3 whiteBack = bgcolor.rgb * bgcolor.a + vec3(1.) * (1. - bgcolor.a);
+    outputColor = ch_amount * vec4(.06,.45,.64,1.) + (1.-ch_amount) * vec4(whiteBack, 1.);
   }
 
 }
