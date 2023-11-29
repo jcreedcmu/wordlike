@@ -26,6 +26,13 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState) {
 
     gl.useProgram(prog);
 
+    attributeSetFloats(gl, prog, "pos", 3, [
+      -1, 1, 0,
+      1, 1, 0,
+      -1, -1, 0,
+      1, -1, 0
+    ]);
+
     const u_spriteTexture = gl.getUniformLocation(prog, 'u_spriteTexture');
     gl.uniform1i(u_spriteTexture, SPRITE_TEXTURE_UNIT);
 
@@ -94,12 +101,6 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
   const vert = getAssets().vert;
   const prog = shaderProgram(gl, vert, frag);
   gl.useProgram(prog);
-  attributeSetFloats(gl, prog, "pos", 3, [
-    -1, 1, 0,
-    1, 1, 0,
-    -1, -1, 0,
-    1, -1, 0
-  ]);
 
   const spriteTexture = gl.createTexture();
   if (spriteTexture == null) {
