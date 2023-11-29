@@ -4,7 +4,7 @@ import { CHUNK_SIZE } from "../core/chunk";
 import { GameState } from "../core/state";
 import { DEBUG, doOnce, doOnceEvery } from "../util/debug";
 import { imageDataOfImage } from "../util/dutil";
-import { attributeSetFloats, shaderProgram } from "../util/gl-util";
+import { attributeCreateAndSetFloats, attributeSetFloats, shaderProgram } from "../util/gl-util";
 import { SE2, apply, compose, inverse, scale } from "../util/se2";
 import { apply_to_rect } from "../util/se2-extra";
 import { Point } from "../util/types";
@@ -18,7 +18,9 @@ import { canvas_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
 
 export type GlEnv = {
   prog: WebGLProgram,
+  chunkBoundsBuffer: WebGLBuffer,
 }
+
 const SPRITE_TEXTURE_UNIT = 0;
 
 function drawChunk(gl: WebGL2RenderingContext, env: GlEnv, p_in_chunk: Point, state: GameState, chunk_from_canvas: SE2): void {
@@ -30,7 +32,7 @@ function drawChunk(gl: WebGL2RenderingContext, env: GlEnv, p_in_chunk: Point, st
   const chunk_rect_in_gl = apply_to_rect(gl_from_chunk, chunk_rect_in_chunk);
 
   const [p1, p2] = rectPts(chunk_rect_in_gl);
-  attributeSetFloats(gl, prog, "pos", 3, [
+  attributeSetFloats(gl, env.chunkBoundsBuffer, [
     p1.x, p2.y, 0,
     p2.x, p2.y, 0,
     p1.x, p1.y, 0,
@@ -144,6 +146,15 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, imdat);
+  const chunkBoundsBuffer = attributeCreateAndSetFloats(gl, prog, "pos", 3, [
+    0, 0, 0,
+    0, 0, 0,
+    0, 0, 0,
+    0, 0, 0
+  ]);
+  if (chunkBoundsBuffer == null) {
+    throw new Error(`Couldn't allocate chunk bounds buffer`);
+  }
 
-  return { prog };
+  return { prog, chunkBoundsBuffer };
 }

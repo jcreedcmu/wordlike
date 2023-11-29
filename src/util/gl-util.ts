@@ -1,16 +1,27 @@
-export function attributeSetFloats(
+export function attributeCreateAndSetFloats(
   gl: WebGL2RenderingContext,
   prog: WebGLProgram,
   attr_name: string,
   rsize: number,
   arr: number[]
-) {
-  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+): WebGLBuffer | null {
+  const buffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr),
     gl.STATIC_DRAW);
   const attr = gl.getAttribLocation(prog, attr_name);
   gl.enableVertexAttribArray(attr);
   gl.vertexAttribPointer(attr, rsize, gl.FLOAT, false, 0, 0);
+  return buffer;
+}
+
+export function attributeSetFloats(
+  gl: WebGL2RenderingContext,
+  buffer: WebGLBuffer,
+  arr: number[]
+) {
+  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr), gl.STATIC_DRAW);
 }
 
 export function shaderProgram(gl: WebGL2RenderingContext, vs: string, fs: string) {
