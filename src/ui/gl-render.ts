@@ -1,24 +1,70 @@
 import { Dispatch } from "../core/action";
 import { getAssets } from "../core/assets";
+import { CHUNK_SIZE } from "../core/chunk";
 import { GameState } from "../core/state";
 import { DEBUG, doOnce, doOnceEvery } from "../util/debug";
 import { imageDataOfImage } from "../util/dutil";
 import { attributeSetFloats, shaderProgram } from "../util/gl-util";
-import { inverse } from "../util/se2";
+import { SE2, apply, compose, inverse, scale } from "../util/se2";
 import { apply_to_rect } from "../util/se2-extra";
+import { Point } from "../util/types";
 import { rectPts } from "../util/util";
-import { gl_from_canvas } from "./gl-helpers";
+import { vadd, vdiag, vm } from "../util/vutil";
+import { canvas_from_gl, gl_from_canvas } from "./gl-helpers";
 import { resizeView } from "./ui-helpers";
 import { CanvasGlInfo } from "./use-canvas";
 import { pan_canvas_from_world_of_state } from "./view-helpers";
-import { canvas_bds_in_canvas } from "./widget-helpers";
+import { canvas_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
 
 export type GlEnv = {
   prog: WebGLProgram,
 }
 const SPRITE_TEXTURE_UNIT = 0;
 
-export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState) {
+function drawChunk(gl: WebGL2RenderingContext, env: GlEnv, p_in_chunk: Point, state: GameState, chunk_from_canvas: SE2): void {
+  const { prog } = env;
+
+  const chunk_rect_in_chunk = { p: p_in_chunk, sz: vdiag(0.999) };
+
+  const gl_from_chunk = compose(gl_from_canvas, inverse(chunk_from_canvas));
+  const chunk_rect_in_gl = apply_to_rect(gl_from_chunk, chunk_rect_in_chunk);
+
+  const [p1, p2] = rectPts(chunk_rect_in_gl);
+  attributeSetFloats(gl, prog, "pos", 3, [
+    p1.x, p2.y, 0,
+    p2.x, p2.y, 0,
+    p1.x, p1.y, 0,
+    p2.x, p1.y, 0
+  ]);
+
+  const u_spriteTexture = gl.getUniformLocation(prog, 'u_spriteTexture');
+  gl.uniform1i(u_spriteTexture, SPRITE_TEXTURE_UNIT);
+
+  const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
+  gl.uniform2f(u_canvasSize, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
+
+  const world_from_canvas_SE2 = inverse(pan_canvas_from_world_of_state(state));
+  const s = world_from_canvas_SE2.scale;
+  const t = world_from_canvas_SE2.translate;
+
+  const world_from_canvas = [
+    s.x, 0.0, 0.0,
+    0.0, s.y, 0.0,
+    t.x, t.y, 1.0,
+  ];
+  const u_world_from_canvas = gl.getUniformLocation(prog, "u_world_from_canvas");
+  gl.uniformMatrix3fv(u_world_from_canvas, false, world_from_canvas);
+
+  gl.viewport(0, 0, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
+
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+}
+
+const shouldDebug = { v: false };
+export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): void {
   const { d: gl } = ci;
   const { prog } = env;
 
@@ -29,41 +75,18 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState) {
 
     gl.useProgram(prog);
 
-    const canvas_bds_in_gl = apply_to_rect(gl_from_canvas, canvas_bds_in_canvas);
-    doOnce('canvas_bds', () => {
-      console.log(canvas_bds_in_gl);
-    });
-    const [p1, p2] = rectPts(canvas_bds_in_gl);
-    attributeSetFloats(gl, prog, "pos", 3, [
-      p1.x, p2.y, 0,
-      p2.x, p2.y, 0,
-      p1.x, p1.y, 0,
-      p2.x, p1.y, 0
-    ]);
+    const pan_canvas_from_world = pan_canvas_from_world_of_state(state);
+    const chunk_from_canvas = compose(scale(vdiag(1 / CHUNK_SIZE)), inverse(pan_canvas_from_world));
+    const top_left_in_canvas = world_bds_in_canvas.p;
+    const bot_right_in_canvas = vadd(world_bds_in_canvas.p, world_bds_in_canvas.sz);
+    const top_left_in_chunk = vm(apply(chunk_from_canvas, top_left_in_canvas), Math.floor);
+    const bot_right_in_chunk = vm(apply(chunk_from_canvas, bot_right_in_canvas), Math.ceil);
 
-    const u_spriteTexture = gl.getUniformLocation(prog, 'u_spriteTexture');
-    gl.uniform1i(u_spriteTexture, SPRITE_TEXTURE_UNIT);
-
-    const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
-    gl.uniform2f(u_canvasSize, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
-
-    const world_from_canvas_SE2 = inverse(pan_canvas_from_world_of_state(state));
-    const s = world_from_canvas_SE2.scale;
-    const t = world_from_canvas_SE2.translate;
-
-    const world_from_canvas = [
-      s.x, 0.0, 0.0,
-      0.0, s.y, 0.0,
-      t.x, t.y, 1.0,
-    ];
-    const u_world_from_canvas = gl.getUniformLocation(prog, "u_world_from_canvas");
-    gl.uniformMatrix3fv(u_world_from_canvas, false, world_from_canvas);
-
-    gl.viewport(0, 0, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
-
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    for (let i = top_left_in_chunk.x; i < bot_right_in_chunk.x; i++) {
+      for (let j = top_left_in_chunk.y; j < bot_right_in_chunk.y; j++) {
+        drawChunk(gl, env, { x: i, y: j }, state, chunk_from_canvas);
+      }
+    }
   };
 
   if (DEBUG.glProfiling) {
@@ -74,7 +97,7 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState) {
     }
     else {
       const query = gl.createQuery()!;
-      const NUM_TRIALS = 100;
+      const NUM_TRIALS = 10;
       gl.beginQuery(ext.TIME_ELAPSED_EXT, query);
       for (let i = 0; i < NUM_TRIALS; i++) {
         actuallyRender();
