@@ -1,5 +1,5 @@
 import { Point, Rect } from "./types";
-import { vm2, vscale, vsub } from "./vutil";
+import { vadd, vm2, vscale, vsub } from "./vutil";
 
 export function mapval<T, U>(m: { [k: string]: T }, f: (x: T, k?: string) => U): { [k: string]: U } {
   return Object.fromEntries(Object.entries(m).map(([k, v]) => [k, f(v, k)]));
@@ -120,4 +120,8 @@ export function randPointInRect(rect: Rect): Point {
 
 export async function grab(path: string): Promise<string> {
   return (await fetch(path, { cache: "no-cache" })).text();
+}
+
+export function rectPts(rect: Rect): [Point, Point] {
+  return [rect.p, vadd(rect.p, rect.sz)];
 }

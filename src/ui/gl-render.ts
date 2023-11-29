@@ -5,6 +5,9 @@ import { DEBUG, doOnce, doOnceEvery } from "../util/debug";
 import { imageDataOfImage } from "../util/dutil";
 import { attributeSetFloats, shaderProgram } from "../util/gl-util";
 import { inverse } from "../util/se2";
+import { apply_to_rect } from "../util/se2-extra";
+import { rectPts } from "../util/util";
+import { gl_from_canvas } from "./gl-helpers";
 import { resizeView } from "./ui-helpers";
 import { CanvasGlInfo } from "./use-canvas";
 import { pan_canvas_from_world_of_state } from "./view-helpers";
@@ -26,11 +29,16 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState) {
 
     gl.useProgram(prog);
 
+    const canvas_bds_in_gl = apply_to_rect(gl_from_canvas, canvas_bds_in_canvas);
+    doOnce('canvas_bds', () => {
+      console.log(canvas_bds_in_gl);
+    });
+    const [p1, p2] = rectPts(canvas_bds_in_gl);
     attributeSetFloats(gl, prog, "pos", 3, [
-      -1, 1, 0,
-      1, 1, 0,
-      -1, -1, 0,
-      1, -1, 0
+      p1.x, p2.y, 0,
+      p2.x, p2.y, 0,
+      p1.x, p1.y, 0,
+      p2.x, p1.y, 0
     ]);
 
     const u_spriteTexture = gl.getUniformLocation(prog, 'u_spriteTexture');
