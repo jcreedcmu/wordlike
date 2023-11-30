@@ -22,11 +22,12 @@ export type GlEnv = {
 }
 
 const SPRITE_TEXTURE_UNIT = 0;
+const CHUNK_DATA_TEXTURE_UNIT = 1;
 
 function drawChunk(gl: WebGL2RenderingContext, env: GlEnv, p_in_chunk: Point, state: GameState, chunk_from_canvas: SE2): void {
   const { prog } = env;
 
-  const chunk_rect_in_chunk = { p: p_in_chunk, sz: vdiag(0.999) };
+  const chunk_rect_in_chunk = { p: p_in_chunk, sz: vdiag(0.995) };
 
   const gl_from_chunk = compose(gl_from_canvas, inverse(chunk_from_canvas));
   const chunk_rect_in_gl = apply_to_rect(gl_from_chunk, chunk_rect_in_chunk);
@@ -39,8 +40,14 @@ function drawChunk(gl: WebGL2RenderingContext, env: GlEnv, p_in_chunk: Point, st
     p2.x, p1.y, 0
   ]);
 
+  const u_chunk_origin_in_world = gl.getUniformLocation(prog, 'u_chunk_origin_in_world');
+  gl.uniform2f(u_chunk_origin_in_world, p_in_chunk.x * CHUNK_SIZE, p_in_chunk.y * CHUNK_SIZE);
+
   const u_spriteTexture = gl.getUniformLocation(prog, 'u_spriteTexture');
   gl.uniform1i(u_spriteTexture, SPRITE_TEXTURE_UNIT);
+
+  const u_chunkDataTexture = gl.getUniformLocation(prog, 'u_chunkDataTexture');
+  gl.uniform1i(u_chunkDataTexture, CHUNK_DATA_TEXTURE_UNIT);
 
   const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
   gl.uniform2f(u_canvasSize, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
@@ -135,17 +142,43 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
   const prog = shaderProgram(gl, vert, frag);
   gl.useProgram(prog);
 
+  // Sprite texture
   const spriteTexture = gl.createTexture();
   if (spriteTexture == null) {
-    throw new Error(`couldn't create texture`);
+    throw new Error(`couldn't create sprite texture`);
   }
   gl.activeTexture(gl.TEXTURE0 + SPRITE_TEXTURE_UNIT);
   gl.bindTexture(gl.TEXTURE_2D, spriteTexture);
 
-  const imdat = imageDataOfImage(getAssets().toolbarImg);
+  const spriteImdat = imageDataOfImage(getAssets().toolbarImg);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, imdat);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, spriteImdat);
+
+  // Chunk data texture
+  const chunkDataTexture = gl.createTexture();
+  if (chunkDataTexture == null) {
+    throw new Error(`couldn't create chunk data texture`);
+  }
+  gl.activeTexture(gl.TEXTURE0 + CHUNK_DATA_TEXTURE_UNIT);
+  gl.bindTexture(gl.TEXTURE_2D, chunkDataTexture);
+
+  const chunkImdat = new ImageData(CHUNK_SIZE, CHUNK_SIZE);
+  chunkImdat.data[0] = 255;
+  chunkImdat.data[1] = 0;
+  chunkImdat.data[2] = 0;
+  chunkImdat.data[3] = 255;
+  const last = (CHUNK_SIZE * (CHUNK_SIZE - 1) + CHUNK_SIZE - 2);
+  chunkImdat.data[4 * last] = 255;
+  chunkImdat.data[4 * last + 1] = 128;
+  chunkImdat.data[4 * last + 2] = 0;
+  chunkImdat.data[4 * last + 3] = 255;
+
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, chunkImdat);
+
+  // Chunk bounds vertex attribute array
   const chunkBoundsBuffer = attributeCreateAndSetFloats(gl, prog, "pos", 3, [
     0, 0, 0,
     0, 0, 0,
