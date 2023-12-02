@@ -3,6 +3,7 @@ precision mediump float;
 
 const int CHUNK_SIZE = 16;
 const float NUM_SPRITES_PER_SHEET = 8.;
+const float SPRITE_SIZE = 32.;
 
 out vec4 outputColor;
 
@@ -41,7 +42,11 @@ vec4 getColor() {
 
   vec2 coords_within_chunk = p_in_world_int - u_chunk_origin_in_world;
   vec2 p_in_world_r = round(p_in_world);
-  vec2 p_in_world_fp = p_in_world - floor(p_in_world);
+  vec2 p_in_world_fp = p_in_world - floor(p_in_world); // fractional part
+
+  // Avoid glitches due to sprites leaking into each other on the sheet with
+  // linear interpolation.
+  p_in_world_fp = clamp(p_in_world_fp, 0.5/SPRITE_SIZE, 1. - 1./SPRITE_SIZE);
 
   vec2 sprite_coords = round(255.0 * texture(u_chunkDataTexture, (coords_within_chunk + vec2(0.5,0.5)) / float(CHUNK_SIZE) )).xy;
   vec4 bgcolor = texture(u_spriteTexture, (p_in_world_fp + sprite_coords) / NUM_SPRITES_PER_SHEET);
