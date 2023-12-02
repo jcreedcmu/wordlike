@@ -26,12 +26,12 @@ export function drawBonusPoint(d: CanvasRenderingContext2D, pan_canvas_from_worl
 
 export function drawBonusBomb(d: CanvasRenderingContext2D, pan_canvas_from_world: SE2, p: Point, fraction: number = 1) {
   const rect_in_canvas = apply_to_rect(pan_canvas_from_world, { p, sz: { x: 1, y: 1 } });
-  const toolbarImg = getAssets().toolbarImg;
-  drawImage(d, toolbarImg, rectOfTool('bomb'), rect_in_canvas);
+  const spriteSheet = getAssets().spriteSheetBuf.c;
+  drawImage(d, spriteSheet, rectOfTool('bomb'), rect_in_canvas);
 }
 
 export function drawBonus(d: CanvasRenderingContext2D, bonus: Bonus, pan_canvas_from_world: SE2, p: Point, fraction: number = 1, active: boolean = false) {
-  const toolbarImg = getAssets().toolbarImg;
+  const spriteSheet = getAssets().spriteSheetBuf.c;
   const rect_in_canvas = apply_to_rect(pan_canvas_from_world, { p, sz: { x: 1, y: 1 } });
 
   switch (bonus.t) {
@@ -49,11 +49,11 @@ export function drawBonus(d: CanvasRenderingContext2D, bonus: Bonus, pan_canvas_
       drawTileLetter(d, bonus.letter, rect_in_canvas, '#aaa');
     } return;
     case 'word': {
-      drawImage(d, toolbarImg, spriteRectOfPos(vadd(posOfBonus(bonus), { x: 0, y: active ? 1 : 0 })), rect_in_canvas);
+      drawImage(d, spriteSheet, spriteRectOfPos(vadd(posOfBonus(bonus), { x: 0, y: active ? 1 : 0 })), rect_in_canvas);
       return;
     }
     default: {
-      drawImage(d, toolbarImg, rectOfBonus(bonus), rect_in_canvas);
+      drawImage(d, spriteSheet, rectOfBonus(bonus), rect_in_canvas);
       return;
     }
   }

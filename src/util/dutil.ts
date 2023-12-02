@@ -125,3 +125,7 @@ export function imageDataOfImage(im: HTMLImageElement): ImageData {
   buf.d.drawImage(im, 0, 0);
   return buf.d.getImageData(0, 0, im.width, im.height);
 }
+
+export function imageDataOfBuffer(buf: Buffer): ImageData {
+  return buf.d.getImageData(0, 0, buf.c.width, buf.c.height);
+}

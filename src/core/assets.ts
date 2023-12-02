@@ -1,9 +1,10 @@
-import { imgProm } from "../util/dutil";
+import { prerenderSpriteSheet } from "../ui/sprite-sheet";
+import { Buffer, imgProm } from "../util/dutil";
 import { grab } from "../util/util";
 
 type Assets = {
   dictionary: Record<string, boolean>,
-  toolbarImg: HTMLImageElement,
+  spriteSheetBuf: Buffer,
   vert: string,
   frag: string,
 };
@@ -13,13 +14,13 @@ type Assets = {
 // initialization in actual execution, will overwrite it.
 let assets: Assets = {
   dictionary: { 'foo': true, 'bar': true, 'baz': true },
-  toolbarImg: undefined as any, // cheating here and assuming tests won't use toolbarImg
+  spriteSheetBuf: undefined as any, // cheating here and assuming tests won't use toolbarImg
   vert: '',
   frag: '',
 }
 
 export async function initAssets() {
-  const toolbarImg = await imgProm('assets/toolbar.png');
+  const spriteSheetImg = await imgProm('assets/toolbar.png');
   const vert = await grab('assets/vertex.vert');
   const frag = await grab('assets/frag.frag');
   const wordlist = (await (await fetch('assets/dictionary.txt')).text())
@@ -27,7 +28,7 @@ export async function initAssets() {
   const dictionary = Object.fromEntries(wordlist.map(word => [word, true]));
   assets = {
     dictionary,
-    toolbarImg,
+    spriteSheetBuf: prerenderSpriteSheet(spriteSheetImg),
     vert,
     frag,
   };

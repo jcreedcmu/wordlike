@@ -79,7 +79,7 @@ function drawToolbarCount(d: CanvasRenderingContext2D, rect: Rect, count: number
 
 function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
   fillRect(d, toolbar_bds_in_canvas, backgroundGray);
-  const toolbarImg = getAssets().toolbarImg;
+  const spriteSheet = getAssets().spriteSheetBuf.c;
   d.imageSmoothingEnabled = false;
 
   const tools = getCurrentTools(state);
@@ -91,7 +91,7 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
       { p: { x: 0, y: S_in_canvas * ix_in_toolbar }, sz: { x: S_in_canvas, y: S_in_canvas } }
     );
 
-    drawImage(d, toolbarImg, rectOfTool(tool), rect_in_canvas);
+    drawImage(d, spriteSheet, rectOfTool(tool), rect_in_canvas);
 
     if (tool == 'bomb') {
       drawToolbarCount(d, rect_in_canvas, state.inventory.bombs);

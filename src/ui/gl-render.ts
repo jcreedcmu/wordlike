@@ -5,7 +5,7 @@ import { CHUNK_SIZE } from "../core/chunk";
 import { GameState } from "../core/state";
 import { bonusOfStatePoint } from "../core/state-helpers";
 import { DEBUG, doOnce, doOnceEvery } from "../util/debug";
-import { imageDataOfImage } from "../util/dutil";
+import { imageDataOfBuffer } from "../util/dutil";
 import { attributeCreateAndSetFloats, attributeSetFloats, shaderProgram } from "../util/gl-util";
 import { SE2, apply, compose, inverse, scale } from "../util/se2";
 import { apply_to_rect } from "../util/se2-extra";
@@ -173,7 +173,7 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
   gl.activeTexture(gl.TEXTURE0 + SPRITE_TEXTURE_UNIT);
   gl.bindTexture(gl.TEXTURE_2D, spriteTexture);
 
-  const spriteImdat = imageDataOfImage(getAssets().toolbarImg);
+  const spriteImdat = imageDataOfBuffer(getAssets().spriteSheetBuf);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
