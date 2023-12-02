@@ -7,6 +7,7 @@ import { Layer, mkLayer } from './layer';
 import { CoreState, Tile, TileEntity } from './state';
 import { MoveTile } from './state-helpers';
 import { incrementScore } from './scoring';
+import { indexOfTool } from './tools';
 
 export type ScoringBonus =
   | { t: 'bonus' }
@@ -144,4 +145,17 @@ export function getBonusLayer(seed: number = DETERMINISTIC_SEED): Layer<Bonus> {
     _cachedBonusLayer[name] = mkBonusLayer(seed);
   }
   return _cachedBonusLayer[name];
+}
+
+export function posOfBonus(bonus: Bonus): Point {
+  switch (bonus.t) {
+    case 'bonus': return { x: 1, y: 1 };
+    case 'bomb': return { x: 0, y: indexOfTool('bomb') };
+    case 'required': return { x: 0, y: 0 }; // XXX should prerender alphabet into texture
+    case 'consonant': return { x: 0, y: indexOfTool('consonant') };
+    case 'vowel': return { x: 0, y: indexOfTool('vowel') };
+    case 'copy': return { x: 0, y: indexOfTool('copy') };
+    case 'empty': return { x: 0, y: 7 };
+    case 'block': return { x: 1, y: 0 };
+  }
 }

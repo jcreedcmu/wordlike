@@ -1,7 +1,9 @@
 import { Dispatch } from "../core/action";
 import { getAssets } from "../core/assets";
+import { posOfBonus } from "../core/bonus";
 import { CHUNK_SIZE } from "../core/chunk";
 import { GameState } from "../core/state";
+import { bonusOfStatePoint } from "../core/state-helpers";
 import { DEBUG, doOnce, doOnceEvery } from "../util/debug";
 import { imageDataOfImage } from "../util/dutil";
 import { attributeCreateAndSetFloats, attributeSetFloats, shaderProgram } from "../util/gl-util";
@@ -9,7 +11,7 @@ import { SE2, apply, compose, inverse, scale } from "../util/se2";
 import { apply_to_rect } from "../util/se2-extra";
 import { Point } from "../util/types";
 import { rectPts } from "../util/util";
-import { vadd, vdiag, vm } from "../util/vutil";
+import { vadd, vdiag, vm, vscale } from "../util/vutil";
 import { canvas_from_gl, gl_from_canvas } from "./gl-helpers";
 import { resizeView } from "./ui-helpers";
 import { CanvasGlInfo } from "./use-canvas";
@@ -17,6 +19,7 @@ import { pan_canvas_from_world_of_state } from "./view-helpers";
 import { canvas_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
 
 export type GlEnv = {
+  chunkImdat: ImageData,
   prog: WebGLProgram,
   chunkBoundsBuffer: WebGLBuffer,
 }
@@ -25,7 +28,7 @@ const SPRITE_TEXTURE_UNIT = 0;
 const CHUNK_DATA_TEXTURE_UNIT = 1;
 
 function drawChunk(gl: WebGL2RenderingContext, env: GlEnv, p_in_chunk: Point, state: GameState, chunk_from_canvas: SE2): void {
-  const { prog } = env;
+  const { prog, chunkBoundsBuffer, chunkImdat } = env;
 
   const chunk_rect_in_chunk = { p: p_in_chunk, sz: vdiag(0.995) };
 
@@ -33,7 +36,7 @@ function drawChunk(gl: WebGL2RenderingContext, env: GlEnv, p_in_chunk: Point, st
   const chunk_rect_in_gl = apply_to_rect(gl_from_chunk, chunk_rect_in_chunk);
 
   const [p1, p2] = rectPts(chunk_rect_in_gl);
-  attributeSetFloats(gl, env.chunkBoundsBuffer, [
+  attributeSetFloats(gl, chunkBoundsBuffer, [
     p1.x, p2.y, 0,
     p2.x, p2.y, 0,
     p1.x, p1.y, 0,
@@ -68,6 +71,22 @@ function drawChunk(gl: WebGL2RenderingContext, env: GlEnv, p_in_chunk: Point, st
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
+  // Set chunk data
+  for (let i = 0; i < CHUNK_SIZE; i++) {
+    for (let j = 0; j < CHUNK_SIZE; j++) {
+      const ix = 4 * (j * CHUNK_SIZE + i);
+      const p_in_world = vadd({ x: i, y: j }, vscale(p_in_chunk, CHUNK_SIZE));
+      const bonusPos = posOfBonus(bonusOfStatePoint(state.coreState, p_in_world));
+      chunkImdat.data[ix + 0] = bonusPos.x;
+      chunkImdat.data[ix + 1] = bonusPos.y;
+      chunkImdat.data[ix + 2] = 0;
+      chunkImdat.data[ix + 3] = 255;
+    }
+  }
+
+  gl.activeTexture(gl.TEXTURE0 + CHUNK_DATA_TEXTURE_UNIT);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, chunkImdat);
+
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
 }
@@ -79,7 +98,7 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
 
 
   const actuallyRender = () => {
-    gl.clearColor(0.0, 0.3, 0.3, 1);
+    gl.clearColor(1.0, 1.0, 1.0, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     gl.useProgram(prog);
@@ -152,7 +171,7 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
 
   const spriteImdat = imageDataOfImage(getAssets().toolbarImg);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, spriteImdat);
 
   // Chunk data texture
@@ -164,19 +183,9 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
   gl.bindTexture(gl.TEXTURE_2D, chunkDataTexture);
 
   const chunkImdat = new ImageData(CHUNK_SIZE, CHUNK_SIZE);
-  chunkImdat.data[0] = 255;
-  chunkImdat.data[1] = 0;
-  chunkImdat.data[2] = 0;
-  chunkImdat.data[3] = 255;
-  const last = (CHUNK_SIZE * (CHUNK_SIZE - 1) + CHUNK_SIZE - 2);
-  chunkImdat.data[4 * last] = 255;
-  chunkImdat.data[4 * last + 1] = 128;
-  chunkImdat.data[4 * last + 2] = 0;
-  chunkImdat.data[4 * last + 3] = 255;
 
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, chunkImdat);
 
   // Chunk bounds vertex attribute array
   const chunkBoundsBuffer = attributeCreateAndSetFloats(gl, prog, "pos", 3, [
@@ -189,5 +198,5 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
     throw new Error(`Couldn't allocate chunk bounds buffer`);
   }
 
-  return { prog, chunkBoundsBuffer };
+  return { prog, chunkBoundsBuffer, chunkImdat };
 }

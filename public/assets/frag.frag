@@ -1,8 +1,9 @@
 #version 300 es
+precision mediump float;
 
 const int CHUNK_SIZE = 16;
+const float NUM_SPRITES_PER_SHEET = 8.;
 
-precision mediump float;
 out vec4 outputColor;
 
 // World coordinates of the origin of the chunk
@@ -42,8 +43,10 @@ vec4 getColor() {
   vec2 p_in_world_r = round(p_in_world);
   vec2 p_in_world_fp = p_in_world - floor(p_in_world);
 
-  if (p_in_world_fp.y < 0.3) {
-    return texture(u_chunkDataTexture, (coords_within_chunk + vec2(0.5,0.5)) / float(CHUNK_SIZE) );
+  if (p_in_world_fp.y < 1.0) {
+    vec2 sprite_coords = round(255.0 * texture(u_chunkDataTexture, (coords_within_chunk + vec2(0.5,0.5)) / float(CHUNK_SIZE) )).xy;
+
+    return texture(u_spriteTexture, (p_in_world_fp + sprite_coords) / NUM_SPRITES_PER_SHEET);
   }
 
   if (p_in_world_int == vec2(0.,0.) && less_dist(p_in_world - p_in_world_int - vec2(0.5,0.5), 0.25)) {
