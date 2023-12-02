@@ -19,7 +19,7 @@ import { drawAnimation } from './drawAnimation';
 import { drawBonus } from './drawBonus';
 import { drawPanicBar } from './drawPanicBar';
 import { CanvasInfo } from './use-canvas';
-import { canvas_from_drag_tile, cell_in_canvas, pan_canvas_from_world_of_state } from './view-helpers';
+import { canvas_from_drag_tile, cell_in_canvas, drawBubble, pan_canvas_from_world_of_state } from './view-helpers';
 import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, getWidgetPoint, hand_bds_in_canvas, pause_button_bds_in_canvas, shuffle_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
 
 const interfaceCyanColor = 'rgb(0,255,255,0.5)';
@@ -222,6 +222,12 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     );
     d.stroke();
 
+    // draw word bonus bubbles
+    for (const wordBonus of cs.wordBonusState.active) {
+      const apex_in_canvas = apply(pan_canvas_from_world, vadd(wordBonus.p_in_world_int, { x: 0.4, y: 0.4 }));
+      const text_in_canvas = vadd({ x: -24, y: -24 }, apply(pan_canvas_from_world, vadd(wordBonus.p_in_world_int, { x: 0.4, y: 0 })));
+      drawBubble(d, wordBonus.word, text_in_canvas, apex_in_canvas);
+    }
     d.restore();
   }
 

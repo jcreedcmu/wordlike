@@ -8,6 +8,7 @@ import { Point } from "../util/types";
 import { midpointOfRect, unreachable } from "../util/util";
 import { vadd } from '../util/vutil';
 import { drawTileLetter } from './render';
+import { drawBubble } from './view-helpers';
 
 export function drawBonusPoint(d: CanvasRenderingContext2D, pan_canvas_from_world: SE2, p: Point, fraction: number = 1) {
   const rect_in_canvas = apply_to_rect(pan_canvas_from_world, { p, sz: { x: 1, y: 1 } });
