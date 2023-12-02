@@ -1,13 +1,14 @@
 import { getAssets } from '../core/assets';
-import { Bonus, posOfBonus, rectOfBonus, spriteRectOfPos } from '../core/bonus';
+import { Bonus, rectOfBonus } from '../core/bonus';
 import { rectOfTool } from '../core/tools';
 import { drawImage, fillRect } from '../util/dutil';
 import { SE2 } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
-import { Point } from "../util/types";
+import { Point, Rect } from "../util/types";
 import { midpointOfRect } from "../util/util";
 import { vadd } from '../util/vutil';
 import { drawTileLetter } from './render';
+import { spriteLocOfBonus, spriteRectOfPos } from './sprite-sheet';
 
 export function drawBonusPoint(d: CanvasRenderingContext2D, pan_canvas_from_world: SE2, p: Point, fraction: number = 1) {
   const rect_in_canvas = apply_to_rect(pan_canvas_from_world, { p, sz: { x: 1, y: 1 } });
@@ -30,13 +31,17 @@ export function drawBonusBomb(d: CanvasRenderingContext2D, pan_canvas_from_world
   drawImage(d, spriteSheet, rectOfTool('bomb'), rect_in_canvas);
 }
 
-export function drawBonus(d: CanvasRenderingContext2D, bonus: Bonus, pan_canvas_from_world: SE2, p: Point, fraction: number = 1, active: boolean = false) {
+export function drawRequiredLetterBonus(d: CanvasRenderingContext2D, letter: string, rect_in_canvas: Rect) {
+  drawTileLetter(d, letter, rect_in_canvas, '#aaa');
+}
+
+export function drawBonus(d: CanvasRenderingContext2D, bonus: Bonus, canvas_from_world: SE2, p_in_world: Point, fraction: number = 1, active: boolean = false) {
   const spriteSheet = getAssets().spriteSheetBuf.c;
-  const rect_in_canvas = apply_to_rect(pan_canvas_from_world, { p, sz: { x: 1, y: 1 } });
+  const rect_in_canvas = apply_to_rect(canvas_from_world, { p: p_in_world, sz: { x: 1, y: 1 } });
 
   switch (bonus.t) {
     case 'bonus':
-      drawBonusPoint(d, pan_canvas_from_world, p);
+      drawBonusPoint(d, canvas_from_world, p_in_world);
       return;
     case 'empty':
       return;
@@ -45,11 +50,11 @@ export function drawBonus(d: CanvasRenderingContext2D, bonus: Bonus, pan_canvas_
       return;
     }
     case 'required': {
-      const rect_in_canvas = apply_to_rect(pan_canvas_from_world, { p, sz: { x: 1, y: 1 } });
-      drawTileLetter(d, bonus.letter, rect_in_canvas, '#aaa');
+      const rect_in_canvas = apply_to_rect(canvas_from_world, { p: p_in_world, sz: { x: 1, y: 1 } });
+      drawRequiredLetterBonus(d, bonus.letter, rect_in_canvas);
     } return;
     case 'word': {
-      drawImage(d, spriteSheet, spriteRectOfPos(vadd(posOfBonus(bonus), { x: 0, y: active ? 1 : 0 })), rect_in_canvas);
+      drawImage(d, spriteSheet, spriteRectOfPos(vadd(spriteLocOfBonus(bonus), { x: 0, y: active ? 1 : 0 })), rect_in_canvas);
       return;
     }
     default: {

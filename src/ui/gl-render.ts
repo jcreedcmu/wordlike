@@ -1,6 +1,5 @@
 import { Dispatch } from "../core/action";
 import { getAssets } from "../core/assets";
-import { posOfBonus } from "../core/bonus";
 import { CHUNK_SIZE } from "../core/chunk";
 import { GameState } from "../core/state";
 import { bonusOfStatePoint } from "../core/state-helpers";
@@ -13,6 +12,7 @@ import { Point } from "../util/types";
 import { rectPts } from "../util/util";
 import { vadd, vdiag, vm, vscale } from "../util/vutil";
 import { canvas_from_gl, gl_from_canvas } from "./gl-helpers";
+import { spriteLocOfBonus } from "./sprite-sheet";
 import { resizeView } from "./ui-helpers";
 import { CanvasGlInfo } from "./use-canvas";
 import { pan_canvas_from_world_of_state } from "./view-helpers";
@@ -76,7 +76,7 @@ function drawChunk(gl: WebGL2RenderingContext, env: GlEnv, p_in_chunk: Point, st
     for (let j = 0; j < CHUNK_SIZE; j++) {
       const ix = 4 * (j * CHUNK_SIZE + i);
       const p_in_world = vadd({ x: i, y: j }, vscale(p_in_chunk, CHUNK_SIZE));
-      const bonusPos = posOfBonus(bonusOfStatePoint(state.coreState, p_in_world));
+      const bonusPos = spriteLocOfBonus(bonusOfStatePoint(state.coreState, p_in_world));
       chunkImdat.data[ix + 0] = bonusPos.x;
       chunkImdat.data[ix + 1] = bonusPos.y;
       chunkImdat.data[ix + 2] = 0;

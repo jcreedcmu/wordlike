@@ -5,6 +5,7 @@ import { getScore } from "./scoring";
 import { CoreState } from "./state";
 import { drawOfState } from "./state-helpers";
 
+// XXX rename this, this is really sprite size
 export const TOOL_IMAGE_WIDTH = 32;
 
 const tools = [

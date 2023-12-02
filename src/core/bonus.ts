@@ -1,16 +1,16 @@
-import { Draft } from 'immer';
+import { spriteLocOfBonus, spriteRectOfPos } from '../ui/sprite-sheet';
 import { DEBUG } from '../util/debug';
+import { produce } from '../util/produce';
 import { Point, Rect } from '../util/types';
-import { lerp, point_hash, unreachable } from '../util/util';
-import { vadd, vdiag, vdiv, vequal, vint, vm, vscale, vsnorm, vsub } from '../util/vutil';
+import { lerp, point_hash } from '../util/util';
+import { vadd, vdiv, vint, vm, vsnorm, vsub } from '../util/vutil';
 import { deterministicLetterSample } from './distribution';
 import { Layer, mkLayer } from './layer';
 import { incrementScore } from './scoring';
 import { CoreState } from './state';
 import { MoveTile, Scoring } from './state-helpers';
-import { TOOL_IMAGE_WIDTH, indexOfTool } from './tools';
+import { indexOfTool } from './tools';
 import { mkActiveWordBonus } from './word-bonus';
-import { produce } from '../util/produce';
 
 export type ScoringBonus =
   | { t: 'bonus' }
@@ -155,25 +155,6 @@ export function getBonusLayer(seed: number = DETERMINISTIC_SEED): Layer<Bonus> {
   return _cachedBonusLayer[name];
 }
 
-export function posOfBonus(bonus: Bonus): Point {
-  switch (bonus.t) {
-    case 'bonus': return { x: 1, y: 1 };
-    case 'bomb': return { x: 0, y: indexOfTool('bomb') };
-    case 'required': return { x: 0, y: 0 }; // XXX should prerender alphabet into texture
-    case 'consonant': return { x: 0, y: indexOfTool('consonant') };
-    case 'vowel': return { x: 0, y: indexOfTool('vowel') };
-    case 'copy': return { x: 0, y: indexOfTool('copy') };
-    case 'empty': return { x: 0, y: 7 };
-    case 'block': return { x: 1, y: 0 };
-    case 'word': return { x: 0, y: 8 };
-  }
-}
-
 export function rectOfBonus(bonus: Bonus): Rect {
-  return spriteRectOfPos(posOfBonus(bonus));
-}
-
-export function spriteRectOfPos(pos: Point): Rect {
-  const S_in_image = TOOL_IMAGE_WIDTH;
-  return { p: vscale(pos, S_in_image), sz: vdiag(S_in_image) };
+  return spriteRectOfPos(spriteLocOfBonus(bonus));
 }
