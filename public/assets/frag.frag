@@ -2,7 +2,7 @@
 precision mediump float;
 
 const int CHUNK_SIZE = 16;
-const float NUM_SPRITES_PER_SHEET = 8.;
+const float NUM_SPRITES_PER_SHEET = 16.; // in both directions
 const float SPRITE_SIZE = 32.;
 
 out vec4 outputColor;

@@ -4,6 +4,7 @@ import { CoreState, GameState, MouseState } from '../core/state';
 import { Point, Rect } from '../util/types';
 import { getDragWidgetPoint, getWidgetPoint } from './widget-helpers';
 import { apply_to_rect, matchScale } from '../util/se2-extra';
+import { drawWordBonusPanicBar } from './drawPanicBar';
 
 export function pan_canvas_from_canvas_of_mouse_state(state: MouseState): SE2 {
   if (state.t == 'drag_world') {
@@ -59,9 +60,20 @@ export function cell_in_canvas(p: Point, canvas_from_world: SE2): Rect {
   return apply_to_rect(canvas_from_world, { p, sz: { x: 1, y: 1 } });
 }
 
-export function drawBubble(d: CanvasRenderingContext2D, text: string, textCenter: Point, coneApex: Point): void {
+export function drawBubble(
+  d: CanvasRenderingContext2D,
+  text: string,
+  textCenter: Point,
+  coneApex: Point,
+  progress: number | undefined = undefined
+): void {
+  if (progress !== undefined && progress > 1)
+    return;
   const fontSize = 12;
   const lines = text.split('\n');
+  if (progress !== undefined) {
+    lines.push('');
+  }
   d.font = `${fontSize}px sans-serif`;
   const maxWidth = Math.max(...lines.map(line => d.measureText(line).width));
   const MARGIN = 8;
@@ -95,5 +107,11 @@ export function drawBubble(d: CanvasRenderingContext2D, text: string, textCenter
 
   for (let i = 0; i < lines.length; i++) {
     d.fillText(lines[i], textCenter.x, textCenter.y + i * fontSize);
+  }
+  if (progress !== undefined) {
+    const maxp = { x: textCenter.x + maxWidth / 2, y: textCenter.y - fontSize / 2 + fontSize * lines.length };
+    const minp = { x: textCenter.x - maxWidth / 2, y: maxp.y - fontSize };
+    minp.x = progress * maxp.x + (1 - progress) * minp.x;
+    drawWordBonusPanicBar(d, { p: minp, sz: vsub(maxp, minp) }, progress);
   }
 }

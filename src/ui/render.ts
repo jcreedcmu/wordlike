@@ -1,5 +1,5 @@
 import { getAssets } from '../core/assets';
-import { now_in_game } from '../core/clock';
+import { getWordBonusFraction, now_in_game } from '../core/clock';
 import { LocatedWord, getGrid } from '../core/grid';
 import { getOverlay } from '../core/layer';
 import { getScore } from '../core/scoring';
@@ -14,12 +14,12 @@ import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from '../util/se2-extra';
 import { Point, Rect } from '../util/types';
 import { boundRect, midpointOfRect, scaleRectToCenter } from '../util/util';
-import { vadd, vdiv, vm, vscale, vsub, vtrans } from '../util/vutil';
+import { vadd, vdiv, vequal, vm, vscale, vsub, vtrans } from '../util/vutil';
 import { drawAnimation } from './drawAnimation';
 import { drawBonus } from './drawBonus';
 import { drawPanicBar } from './drawPanicBar';
 import { CanvasInfo } from './use-canvas';
-import { canvas_from_drag_tile, cell_in_canvas, pan_canvas_from_world_of_state } from './view-helpers';
+import { canvas_from_drag_tile, cell_in_canvas, drawBubble, pan_canvas_from_world_of_state } from './view-helpers';
 import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, getWidgetPoint, hand_bds_in_canvas, pause_button_bds_in_canvas, shuffle_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
 
 const interfaceCyanColor = 'rgb(0,255,255,0.5)';
@@ -205,7 +205,8 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
       for (let j = top_left_in_world.y; j <= bot_right_in_world.y; j++) {
         const p: Point = { x: i, y: j };
         const bonus = bonusOfStatePoint(cs, p);
-        drawBonus(d, bonus, pan_canvas_from_world, p);
+        const active = bonus.t == 'word' && cs.wordBonusState.active.findIndex(x => vequal(p, x.p_in_world_int)) != -1;
+        drawBonus(d, bonus, pan_canvas_from_world, p, undefined, active);
       }
     }
 
@@ -221,6 +222,12 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     );
     d.stroke();
 
+    // draw word bonus bubbles
+    for (const wordBonus of cs.wordBonusState.active) {
+      const apex_in_canvas = apply(pan_canvas_from_world, vadd(wordBonus.p_in_world_int, { x: 0.4, y: 0.4 }));
+      const text_in_canvas = vadd({ x: -24, y: -24 }, apply(pan_canvas_from_world, vadd(wordBonus.p_in_world_int, { x: 0.4, y: 0 })));
+      drawBubble(d, wordBonus.word, text_in_canvas, apex_in_canvas, getWordBonusFraction(wordBonus, cs.game_from_clock));
+    }
     d.restore();
   }
 

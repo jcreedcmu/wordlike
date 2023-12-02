@@ -1,0 +1,58 @@
+import { Draft } from "immer";
+import { produce } from "../util/produce";
+import { SE1 } from "../util/se1";
+import { Point } from "../util/types";
+import { next_rand } from "../util/util";
+import { getAssets } from "./assets";
+import { now_in_game } from "./clock";
+import { ActiveWordBonus, CoreState } from "./state";
+
+export function mkActiveWordBonus(state: CoreState, p_in_world_int: Point): { wordBonus: ActiveWordBonus, state: CoreState } {
+
+  const { state: state1, word } = getNextWord(state);
+  console.log(word);
+  return {
+    wordBonus: {
+      activation_time_in_game: now_in_game(state.game_from_clock),
+      p_in_world_int: p_in_world_int,
+      word,
+    }, state: state1
+  };
+}
+
+export function getWordSample(seed0: number, length: number): { seed: number, word: string } {
+  const cands = Object.keys(getAssets().dictionary).filter(x => x.length == length);
+  const { float, seed } = next_rand(seed0);
+  const word = cands[Math.floor(float * cands.length)];
+  return { seed, word };
+}
+
+const lengthSchedule: number[] = [
+  3,
+  3,
+  3,
+  4,
+  4,
+  4,
+  5,
+  5,
+  6,
+  6,
+  7,
+  8,
+  9,
+  10,
+];
+
+export function getNextWord(state: CoreState): { state: CoreState, word: string } {
+  const wordBonusesAllocated = state.wordBonusesAllocated;
+  const length = lengthSchedule[Math.min(lengthSchedule.length - 1, wordBonusesAllocated)];
+  const { seed, word } = getWordSample(state.seed, length);
+  return {
+    word,
+    state: produce(state, s => {
+      s.seed = seed;
+      s.wordBonusesAllocated = wordBonusesAllocated + 1;
+    })
+  };
+}
