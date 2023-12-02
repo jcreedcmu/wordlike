@@ -1,14 +1,15 @@
 import { Draft } from 'immer';
 import { DEBUG } from '../util/debug';
-import { Point } from '../util/types';
+import { Point, Rect } from '../util/types';
 import { lerp, point_hash, unreachable } from '../util/util';
-import { vadd, vdiv, vint, vm, vsnorm, vsub } from '../util/vutil';
+import { vadd, vdiag, vdiv, vint, vm, vscale, vsnorm, vsub } from '../util/vutil';
 import { deterministicLetterSample } from './distribution';
 import { Layer, mkLayer } from './layer';
 import { incrementScore } from './scoring';
 import { CoreState } from './state';
 import { MoveTile } from './state-helpers';
-import { indexOfTool } from './tools';
+import { TOOL_IMAGE_WIDTH, indexOfTool } from './tools';
+import { mkActiveWordBonus } from './word-bonus';
 
 export type ScoringBonus =
   | { t: 'bonus' }
@@ -17,6 +18,7 @@ export type ScoringBonus =
   | { t: 'consonant' }
   | { t: 'vowel' }
   | { t: 'copy' }
+  | { t: 'word' }
   ;
 
 export type Bonus =
@@ -78,7 +80,9 @@ export function bonusGenerator(p: Point, seed: number): Bonus {
     else if (ph < 0.53) {
       return { t: 'copy' };
     }
-    else {
+    else if (ph < 0.56) {
+      return { t: 'word' };
+    } else {
       return { t: 'block' };
     }
   }
@@ -110,6 +114,7 @@ export function adjacentScoringOfBonus(bonus: Bonus, p: Point): Scoring[] {
     case 'vowel': return [{ bonus, p }];
     case 'consonant': return [{ bonus, p }];
     case 'copy': return [{ bonus, p }];
+    case 'word': return [{ bonus, p }];
     default: return [];
   }
 }
@@ -130,6 +135,7 @@ export function resolveScoring(state: Draft<CoreState>, scoring: Scoring): void 
     case 'vowel': state.inventory.vowels += 5; return
     case 'consonant': state.inventory.consonants += 5; return
     case 'copy': state.inventory.copies += 3; return
+    case 'word': state.wordBonusState.active.push(mkActiveWordBonus(state.game_from_clock, scoring.p)); return;
   }
   unreachable(bonus);
 }
@@ -158,5 +164,15 @@ export function posOfBonus(bonus: Bonus): Point {
     case 'copy': return { x: 0, y: indexOfTool('copy') };
     case 'empty': return { x: 0, y: 7 };
     case 'block': return { x: 1, y: 0 };
+    case 'word': return { x: 0, y: 8 };
   }
+}
+
+export function rectOfBonus(bonus: Bonus): Rect {
+  return spriteRectOfPos(posOfBonus(bonus));
+}
+
+export function spriteRectOfPos(pos: Point): Rect {
+  const S_in_image = TOOL_IMAGE_WIDTH;
+  return { p: vscale(pos, S_in_image), sz: vdiag(S_in_image) };
 }

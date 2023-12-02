@@ -120,6 +120,7 @@ function render(ci: CanvasInfo, props: CanvasProps) {
 function exampleState(): GameState {
   const state: GameState = {
     coreState: {
+      wordBonusState: { active: [] },
       _cachedTileChunkMap: mkOverlay<Chunk>(),
       renderToGl: false,
       animations: [],

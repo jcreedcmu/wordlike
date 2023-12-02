@@ -82,6 +82,15 @@ export type ScoreState = {
   highWaterMark: number,
 }
 
+export type ActiveWordBonus = {
+  word: string,
+  activation_time_in_game: number,
+  p_in_world_int: Point,
+};
+
+export type WordBonusState = {
+  active: ActiveWordBonus[],
+}
 export type CoreState = {
   renderToGl: boolean,
   animations: Animation[],
@@ -99,6 +108,7 @@ export type CoreState = {
   panic: PanicData | undefined,
   paused: PauseData | undefined,
   game_from_clock: SE1,
+  wordBonusState: WordBonusState,
   inventory: {
     bombs: number,
     vowels: number,
@@ -131,6 +141,7 @@ const epsilon = 0.0001;
 export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: number): GameState {
   return {
     coreState: {
+      wordBonusState: { active: [] },
       renderToGl: false,
       animations: [],
       currentTool: 'pointer',
