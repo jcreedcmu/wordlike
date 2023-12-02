@@ -7,7 +7,7 @@ import { deterministicLetterSample } from './distribution';
 import { Layer, mkLayer } from './layer';
 import { incrementScore } from './scoring';
 import { CoreState } from './state';
-import { MoveTile } from './state-helpers';
+import { MoveTile, Scoring } from './state-helpers';
 import { TOOL_IMAGE_WIDTH, indexOfTool } from './tools';
 import { mkActiveWordBonus } from './word-bonus';
 
@@ -102,27 +102,21 @@ export function isBlocking(tile: MoveTile, bonus: Bonus): boolean {
   return true;
 }
 
-type Scoring = {
-  bonus: ScoringBonus,
-  p: Point,
-  destroy: boolean,
-};
-
-export function adjacentScoringOfBonus(bonus: Bonus, p: Point): Scoring[] {
+export function adjacentScoringOfBonus(bonus: Bonus, p_in_world_int: Point): Scoring[] {
   switch (bonus.t) {
-    case 'bonus': return [{ bonus, p, destroy: true }];
-    case 'bomb': return [{ bonus, p, destroy: true }];
-    case 'vowel': return [{ bonus, p, destroy: true }];
-    case 'consonant': return [{ bonus, p, destroy: true }];
-    case 'copy': return [{ bonus, p, destroy: true }];
-    case 'word': return [{ bonus, p, destroy: false }];
+    case 'bonus': return [{ bonus, p_in_world_int, destroy: true }];
+    case 'bomb': return [{ bonus, p_in_world_int, destroy: true }];
+    case 'vowel': return [{ bonus, p_in_world_int, destroy: true }];
+    case 'consonant': return [{ bonus, p_in_world_int, destroy: true }];
+    case 'copy': return [{ bonus, p_in_world_int, destroy: true }];
+    case 'word': return [{ bonus, p_in_world_int, destroy: false }];
     default: return [];
   }
 }
 
-export function overlapScoringOfBonus(bonus: Bonus, p: Point): Scoring[] {
+export function overlapScoringOfBonus(bonus: Bonus, p_in_world_int: Point): Scoring[] {
   switch (bonus.t) {
-    case 'required': return [{ bonus, p, destroy: true }];
+    case 'required': return [{ bonus, p_in_world_int, destroy: true }];
     default: return [];
   }
 }
@@ -136,8 +130,9 @@ export function resolveScoring(state: Draft<CoreState>, scoring: Scoring): void 
     case 'vowel': state.inventory.vowels += 5; return
     case 'consonant': state.inventory.consonants += 5; return
     case 'copy': state.inventory.copies += 3; return
-    case 'word': if (state.wordBonusState.active.findIndex(x => vequal(x.p_in_world_int, scoring.p)) == -1)
-      state.wordBonusState.active.push(mkActiveWordBonus(state.game_from_clock, scoring.p)); return;
+    case 'word': if (state.wordBonusState.active.findIndex(x => vequal(x.p_in_world_int, scoring.p_in_world_int)) == -1)
+      state.wordBonusState.active.push(mkActiveWordBonus(state.game_from_clock, scoring.p_in_world_int)); return;
+    case 'wordAchieved': incrementScore(state, 75); return;
   }
   unreachable(bonus);
 }

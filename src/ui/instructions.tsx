@@ -252,7 +252,7 @@ function exampleState(): GameState {
     { letter: "t", p_in_world_int: { x: 0, y: 1 } },
     { letter: "a", p_in_world_int: { x: 0, y: 2 } },
   ].map(ensureTileId);
-  const almost = withCoreState(state, cs => resolveValid(checkValid(addHandTiles(addWorldTiles(cs, tiles), handTiles))));
+  const almost = withCoreState(state, cs => resolveValid(checkValid(addHandTiles(addWorldTiles(cs, tiles), handTiles)), new Set()));
   return produce(almost, s => {
     s.coreState.animations = [];
   });
