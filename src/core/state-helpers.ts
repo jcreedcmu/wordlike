@@ -138,7 +138,7 @@ export function checkValid(state: CoreState): CoreState {
   const tiles = get_main_tiles(state);
   const grid = mkGridOfMainTiles(tiles);
 
-  const { validWords, invalidWords } = checkGridWords(grid, word => getAssets().dictionary[word]);
+  const { validWords, invalidWords } = checkGridWords(grid, word => getAssets().dictionary[word] || DEBUG.allWords);
   const { allConnected, connectedSet } = checkConnected(grid);
   let allValid = false;
   if (invalidWords.length == 0 && allConnected && get_hand_tiles(state).length == 0) {

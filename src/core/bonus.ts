@@ -1,12 +1,13 @@
 import { Draft } from 'immer';
+import { DEBUG } from '../util/debug';
 import { Point } from '../util/types';
 import { lerp, point_hash, unreachable } from '../util/util';
-import { vadd, vdiv, vint, vm, vmn, vsnorm, vsub } from '../util/vutil';
-import { deterministicLetterSample, getSample } from './distribution';
+import { vadd, vdiv, vint, vm, vsnorm, vsub } from '../util/vutil';
+import { deterministicLetterSample } from './distribution';
 import { Layer, mkLayer } from './layer';
-import { CoreState, Tile, TileEntity } from './state';
-import { MoveTile } from './state-helpers';
 import { incrementScore } from './scoring';
+import { CoreState } from './state';
+import { MoveTile } from './state-helpers';
 import { indexOfTool } from './tools';
 
 export type ScoringBonus =
@@ -92,7 +93,7 @@ export function isBlocking(tile: MoveTile, bonus: Bonus): boolean {
   if (bonus.t == 'empty')
     return false;
   if (bonus.t == 'required') {
-    return !(bonus.letter == tile.letter);
+    return !(bonus.letter == tile.letter || DEBUG.allWords);
   }
   return true;
 }
