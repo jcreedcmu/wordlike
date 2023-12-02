@@ -4,6 +4,7 @@
 
 import { DEBUG } from "../util/debug";
 import { SE1, apply } from "../util/se1";
+import { ActiveWordBonus } from "./state";
 
 export type PanicData = {
   lastClear_in_game: number,
@@ -15,9 +16,14 @@ export type PauseData = {
 }
 
 export const PANIC_INTERVAL_MS = DEBUG.acceleratePanic ? 10000 : 90000;
+export const WORD_BONUS_INTERVAL_MS = DEBUG.acceleratePanic ? 10000 : 300_000;
 
 export function getPanicFraction(panic: PanicData, game_from_clock: SE1) {
   return (now_in_game(game_from_clock) - panic.lastClear_in_game) / PANIC_INTERVAL_MS;
+}
+
+export function getWordBonusFraction(wordBonus: ActiveWordBonus, game_from_clock: SE1) {
+  return (now_in_game(game_from_clock) - wordBonus.activation_time_in_game) / WORD_BONUS_INTERVAL_MS;
 }
 
 export function now_in_game(game_from_clock: SE1) {

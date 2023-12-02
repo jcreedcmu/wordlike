@@ -1,5 +1,5 @@
 import { getAssets } from '../core/assets';
-import { now_in_game } from '../core/clock';
+import { getWordBonusFraction, now_in_game } from '../core/clock';
 import { LocatedWord, getGrid } from '../core/grid';
 import { getOverlay } from '../core/layer';
 import { getScore } from '../core/scoring';
@@ -226,7 +226,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     for (const wordBonus of cs.wordBonusState.active) {
       const apex_in_canvas = apply(pan_canvas_from_world, vadd(wordBonus.p_in_world_int, { x: 0.4, y: 0.4 }));
       const text_in_canvas = vadd({ x: -24, y: -24 }, apply(pan_canvas_from_world, vadd(wordBonus.p_in_world_int, { x: 0.4, y: 0 })));
-      drawBubble(d, wordBonus.word, text_in_canvas, apex_in_canvas);
+      drawBubble(d, wordBonus.word, text_in_canvas, apex_in_canvas, getWordBonusFraction(wordBonus, cs.game_from_clock));
     }
     d.restore();
   }

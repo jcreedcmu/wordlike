@@ -13,7 +13,7 @@ export const DEBUG = {
   stateImporter: true,
   instructions: false,
   skipAheadPanic: false,
-  acceleratePanic: false,
+  acceleratePanic: true,
   interval: false,
   glProfiling: false,
   canvasProfiling: false,

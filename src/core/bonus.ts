@@ -2,7 +2,7 @@ import { Draft } from 'immer';
 import { DEBUG } from '../util/debug';
 import { Point, Rect } from '../util/types';
 import { lerp, point_hash, unreachable } from '../util/util';
-import { vadd, vdiag, vdiv, vint, vm, vscale, vsnorm, vsub } from '../util/vutil';
+import { vadd, vdiag, vdiv, vequal, vint, vm, vscale, vsnorm, vsub } from '../util/vutil';
 import { deterministicLetterSample } from './distribution';
 import { Layer, mkLayer } from './layer';
 import { incrementScore } from './scoring';
@@ -136,7 +136,8 @@ export function resolveScoring(state: Draft<CoreState>, scoring: Scoring): void 
     case 'vowel': state.inventory.vowels += 5; return
     case 'consonant': state.inventory.consonants += 5; return
     case 'copy': state.inventory.copies += 3; return
-    case 'word': state.wordBonusState.active.push(mkActiveWordBonus(state.game_from_clock, scoring.p)); return;
+    case 'word': if (state.wordBonusState.active.findIndex(x => vequal(x.p_in_world_int, scoring.p)) == -1)
+      state.wordBonusState.active.push(mkActiveWordBonus(state.game_from_clock, scoring.p)); return;
   }
   unreachable(bonus);
 }

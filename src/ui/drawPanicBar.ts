@@ -1,4 +1,5 @@
 import { PanicData, getPanicFraction } from "../core/clock";
+import { ActiveWordBonus } from "../core/state";
 import { fillRect } from "../util/dutil";
 import { SE1 } from "../util/se1";
 import { Spline, lerpSpline } from "../util/spline";
@@ -39,4 +40,10 @@ export function drawPanicBar(d: CanvasRenderingContext2D, panic: PanicData | und
     }
     fillRect(d, rectOfPanic_in_canvas(panic_fraction), color);
   }
+}
+
+export function drawWordBonusPanicBar(d: CanvasRenderingContext2D, rect: Rect, fraction: number) {
+  const c = lerpSpline(panicColorSpline, fraction);
+  const color = `rgb(${c[0]},${c[1]},${c[2]})`;
+  fillRect(d, rect, color);
 }
