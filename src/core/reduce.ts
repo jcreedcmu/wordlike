@@ -7,14 +7,15 @@ import { Point } from '../util/types';
 import { getRandomOrder } from '../util/util';
 import { vm, vscale, vsub } from '../util/vutil';
 import { Action, Effect, GameAction } from './action';
+import { mkPointDecayAnimation } from './animations';
 import { getBonusLayer } from './bonus';
 import { getPanicFraction, now_in_game } from './clock';
 import { getIntentOfMouseDown, reduceIntent } from './intent';
-import { mkOverlayFrom } from './layer';
+import { mkOverlayFrom, setOverlay } from './layer';
 import { reduceKey } from './reduceKey';
 import { resolveSelection } from './selection';
 import { CoreState, GameState, HAND_TILE_LIMIT, Location, SceneState, mkGameSceneState } from './state';
-import { MoveTile, bonusOfStatePoint, checkValid, drawOfState, filterExpiredAnimations, isCollision, isOccupied, isTilePinned, tileFall, unpauseState, withCoreState } from './state-helpers';
+import { MoveTile, bonusOfStatePoint, checkValid, drawOfState, filterExpiredAnimations, filterExpiredWordBonusState, isCollision, isOccupied, isTilePinned, tileFall, unpauseState, withCoreState } from './state-helpers';
 import { getTileId, get_hand_tiles, get_tiles, putTileInHand, putTileInWorld, putTilesInHand, setTileLoc, tileAtPoint } from "./tile-helpers";
 import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect } from './tools';
 import { shouldDisplayBackButton } from './winState';
@@ -309,10 +310,19 @@ function reduceGameAction(state: GameState, action: GameAction): effectful.Resul
       if (state.coreState.paused)
         return gs(state);
 
+
       const t_in_game = now_in_game(state.coreState.game_from_clock);
       const newAnimations = filterExpiredAnimations(t_in_game, state.coreState.animations);
+      const [newWordBonusState, destroys] = filterExpiredWordBonusState(t_in_game, state.coreState.wordBonusState);
+      destroys.forEach(destroy_p => {
+        newAnimations.push(mkPointDecayAnimation(destroy_p, state.coreState.game_from_clock));
+      });
       state = produce(state, s => {
         s.coreState.animations = newAnimations;
+        s.coreState.wordBonusState = newWordBonusState;
+        destroys.forEach(destroy_p => {
+          setOverlay(s.coreState.bonusOverlay, destroy_p, { t: 'empty' });
+        });
       });
       if (state.coreState.panic !== undefined) {
         if (getPanicFraction(state.coreState.panic, state.coreState.game_from_clock) > 1) {

@@ -9,12 +9,12 @@ import { vadd, vequal, vm } from "../util/vutil";
 import { Animation, mkPointDecayAnimation, mkScoreAnimation, mkWinAnimation } from './animations';
 import { getAssets } from "./assets";
 import { Bonus, adjacentScoringOfBonus, getBonusLayer, isBlocking, overlapScoringOfBonus, resolveScoring } from "./bonus";
-import { PANIC_INTERVAL_MS, PauseData, now_in_game } from "./clock";
+import { PANIC_INTERVAL_MS, PauseData, WORD_BONUS_INTERVAL_MS, now_in_game } from "./clock";
 import { DrawForce, getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
 import { Layer, Overlay, getOverlayLayer, mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
 import { PROGRESS_ANIMATION_POINTS, getHighWaterMark, getScore, setHighWaterMark } from "./scoring";
-import { CoreState, GameState, HAND_TILE_LIMIT, Location, MouseState, Tile, TileEntity } from "./state";
+import { CoreState, GameState, HAND_TILE_LIMIT, Location, MouseState, Tile, TileEntity, WordBonusState } from "./state";
 import { addHandTile, addWorldTile, ensureTileId, get_hand_tiles, get_main_tiles, get_tiles, putTileInWorld, removeTile } from "./tile-helpers";
 import { WIN_SCORE, canWinFromState, shouldStartPanicBar } from "./winState";
 
@@ -189,6 +189,15 @@ export function isTilePinned(state: CoreState, tileId: string, loc: Location & {
 
 export function filterExpiredAnimations(now_ms: number, anims: Animation[]): Animation[] {
   return anims.filter(anim => now_ms <= anim.start_in_game + anim.duration_ms);
+}
+
+// List of Points is where to destroy word bonuses without points
+export function filterExpiredWordBonusState(now_ms: number, wordBonusState: WordBonusState): [WordBonusState, Point[]] {
+  return [{
+    active: wordBonusState.active.filter(wb => now_ms <= wb.activation_time_in_game + WORD_BONUS_INTERVAL_MS)
+  },
+  wordBonusState.active.filter(wb => now_ms > wb.activation_time_in_game + WORD_BONUS_INTERVAL_MS).map(wb => wb.p_in_world_int)
+  ];
 }
 
 export function unpauseState(state: CoreState, pause: PauseData): CoreState {
