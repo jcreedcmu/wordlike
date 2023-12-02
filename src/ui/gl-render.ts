@@ -99,11 +99,11 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
 
 
   const actuallyRender = () => {
-    gl.clearColor(1.0, 1.0, 1.0, 1.0);
+    gl.clearColor(1.0, 1.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
-    gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    // gl.enable(gl.BLEND);
+    // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
     gl.useProgram(prog);
 

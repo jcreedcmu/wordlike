@@ -43,20 +43,12 @@ vec4 getColor() {
   vec2 p_in_world_r = round(p_in_world);
   vec2 p_in_world_fp = p_in_world - floor(p_in_world);
 
-  if (p_in_world_fp.y < 1.0) {
-    vec2 sprite_coords = round(255.0 * texture(u_chunkDataTexture, (coords_within_chunk + vec2(0.5,0.5)) / float(CHUNK_SIZE) )).xy;
-
-    return texture(u_spriteTexture, (p_in_world_fp + sprite_coords) / NUM_SPRITES_PER_SHEET);
-  }
-
-  if (p_in_world_int == vec2(0.,0.) && less_dist(p_in_world - p_in_world_int - vec2(0.5,0.5), 0.25)) {
-    return vec4(0.5,0.5,0.5,1.);
-  }
-
+  vec2 sprite_coords = round(255.0 * texture(u_chunkDataTexture, (coords_within_chunk + vec2(0.5,0.5)) / float(CHUNK_SIZE) )).xy;
+  vec4 bgcolor = texture(u_spriteTexture, (p_in_world_fp + sprite_coords) / NUM_SPRITES_PER_SHEET);
 
   vec2 off = abs(p_in_world - p_in_world_r);
   float ch_amount = max(crosshair(off.xy), crosshair(off.yx));
-  vec4 bgcolor = texture(u_spriteTexture, (p_in_world_fp + vec2(1.,1.)) / 8. );
+
   vec3 whiteBack = bgcolor.rgb * bgcolor.a + vec3(1.) * (1. - bgcolor.a);
   return ch_amount * vec4(.06,.45,.64,1.) + (1.-ch_amount) * vec4(whiteBack, 1.);
 }
