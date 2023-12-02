@@ -58,3 +58,42 @@ export function canvas_from_drag_tile(state: CoreState, ms: MouseState): SE2 {
 export function cell_in_canvas(p: Point, canvas_from_world: SE2): Rect {
   return apply_to_rect(canvas_from_world, { p, sz: { x: 1, y: 1 } });
 }
+
+export function drawBubble(d: CanvasRenderingContext2D, text: string, textCenter: Point, coneApex: Point): void {
+  const fontSize = 12;
+  const lines = text.split('\n');
+  d.font = `${fontSize}px sans-serif`;
+  const maxWidth = Math.max(...lines.map(line => d.measureText(line).width));
+  const MARGIN = 8;
+  const RADIUS = 5;
+
+  function bubble(color: string, thick: number): void {
+    d.fillStyle = color;
+    d.strokeStyle = color;
+    d.lineWidth = thick;
+    d.beginPath();
+
+    d.roundRect(textCenter.x - maxWidth / 2 - MARGIN, textCenter.y - fontSize / 2 - MARGIN,
+      maxWidth + MARGIN * 2, fontSize * lines.length + MARGIN * 2, RADIUS);
+
+    const OFFSET = textCenter.y < coneApex.y ? 10 : -10;
+    d.moveTo(textCenter.x - OFFSET, textCenter.y);
+    d.lineTo(textCenter.x + OFFSET, textCenter.y);
+    d.lineTo(coneApex.x, coneApex.y);
+    d.lineTo(textCenter.x - OFFSET, textCenter.y);
+
+    d.fill();
+    if (thick != 0)
+      d.stroke();
+  }
+  bubble('black', 2);
+  bubble('white', 0);
+
+  d.fillStyle = 'black';
+  d.textAlign = 'center';
+  d.textBaseline = 'middle';
+
+  for (let i = 0; i < lines.length; i++) {
+    d.fillText(lines[i], textCenter.x, textCenter.y + i * fontSize);
+  }
+}

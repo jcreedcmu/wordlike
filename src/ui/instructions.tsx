@@ -16,6 +16,7 @@ import { CanvasInfo, useCanvas } from './use-canvas';
 import { produce } from '../util/produce';
 import { mkOverlay } from '../core/layer';
 import { Chunk } from '../core/chunk';
+import { drawBubble } from './view-helpers';
 
 export const NUM_PAGES = 2;
 
@@ -102,16 +103,16 @@ function render(ci: CanvasInfo, props: CanvasProps) {
   d.scale(devicePixelRatio, devicePixelRatio);
   rawPaint(ci, props.main);
 
-  drawBubble(ci, `This is the origin.\nAll tiles must connect here, and\nthe tile cannot be moved once placed.`,
+  drawBubble(d, `This is the origin.\nAll tiles must connect here, and\nthe tile cannot be moved once placed.`,
     { x: 250, y: 100 }, { x: 170, y: 230 });
 
-  drawBubble(ci, `This is your hand.\nDrag tiles from here to\nmake intersecting words.`,
+  drawBubble(d, `This is your hand.\nDrag tiles from here to\nmake intersecting words.`,
     { x: 670, y: 197 }, { x: 732, y: 140 });
 
-  drawBubble(ci, `Click in this space (or hit [spacebar])\n to get more tiles.`,
+  drawBubble(d, `Click in this space (or hit [spacebar])\n to get more tiles.`,
     { x: 670, y: 347 }, { x: 732, y: 290 });
 
-  drawBubble(ci, `This is the panic bar. When it\nruns out, you lose!\nYou\x27re safe when your hand is\nempty, and all tiles form words.`,
+  drawBubble(d, `This is the panic bar. When it\nruns out, you lose!\nYou\x27re safe when your hand is\nempty, and all tiles form words.`,
     { x: 163, y: 453 }, { x: 301, y: 593 });
   d.restore();
 }
@@ -254,45 +255,4 @@ function exampleState(): GameState {
   return produce(almost, s => {
     s.coreState.animations = [];
   });
-}
-
-function drawBubble(ci: CanvasInfo, text: string, textCenter: Point, coneApex: Point): void {
-  const { d } = ci;
-  const fontSize = 12;
-  const lines = text.split('\n');
-  d.font = `${fontSize}px sans-serif`;
-  const maxWidth = Math.max(...lines.map(line => d.measureText(line).width));
-  const MARGIN = 8;
-  const RADIUS = 5;
-
-  function bubble(color: string, thick: number): void {
-    d.fillStyle = color;
-    d.strokeStyle = color;
-    d.lineWidth = thick;
-    d.beginPath();
-
-    d.roundRect(textCenter.x - maxWidth / 2 - MARGIN, textCenter.y - fontSize / 2 - MARGIN,
-      maxWidth + MARGIN * 2, fontSize * lines.length + MARGIN * 2, RADIUS);
-
-    const OFFSET = textCenter.y < coneApex.y ? 10 : -10;
-    d.moveTo(textCenter.x - OFFSET, textCenter.y);
-    d.lineTo(textCenter.x + OFFSET, textCenter.y);
-    d.lineTo(coneApex.x, coneApex.y);
-    d.lineTo(textCenter.x - OFFSET, textCenter.y);
-
-    d.fill();
-    if (thick != 0)
-      d.stroke();
-  }
-  bubble('black', 2);
-  bubble('white', 0);
-
-  d.fillStyle = 'black';
-  d.textAlign = 'center';
-  d.textBaseline = 'middle';
-
-  for (let i = 0; i < lines.length; i++) {
-    d.fillText(lines[i], textCenter.x, textCenter.y + i * fontSize);
-  }
-
 }
