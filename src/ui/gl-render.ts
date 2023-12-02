@@ -30,7 +30,7 @@ const CHUNK_DATA_TEXTURE_UNIT = 1;
 function drawChunk(gl: WebGL2RenderingContext, env: GlEnv, p_in_chunk: Point, state: GameState, chunk_from_canvas: SE2): void {
   const { prog, chunkBoundsBuffer, chunkImdat } = env;
 
-  const chunk_rect_in_chunk = { p: p_in_chunk, sz: vdiag(0.995) };
+  const chunk_rect_in_chunk = { p: p_in_chunk, sz: vdiag(1.) };
 
   const gl_from_chunk = compose(gl_from_canvas, inverse(chunk_from_canvas));
   const chunk_rect_in_gl = apply_to_rect(gl_from_chunk, chunk_rect_in_chunk);
@@ -69,7 +69,7 @@ function drawChunk(gl: WebGL2RenderingContext, env: GlEnv, p_in_chunk: Point, st
 
   gl.viewport(0, 0, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
 
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
   // Set chunk data
   for (let i = 0; i < CHUNK_SIZE; i++) {
@@ -87,6 +87,7 @@ function drawChunk(gl: WebGL2RenderingContext, env: GlEnv, p_in_chunk: Point, st
   gl.activeTexture(gl.TEXTURE0 + CHUNK_DATA_TEXTURE_UNIT);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, chunkImdat);
 
+
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
 }
@@ -98,8 +99,11 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
 
 
   const actuallyRender = () => {
-    gl.clearColor(1.0, 1.0, 1.0, 1);
+    gl.clearColor(1.0, 1.0, 1.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
+
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
     gl.useProgram(prog);
 
@@ -172,6 +176,8 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
   const spriteImdat = imageDataOfImage(getAssets().toolbarImg);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, spriteImdat);
 
   // Chunk data texture

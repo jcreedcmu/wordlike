@@ -76,7 +76,7 @@ export function useCanvasGl<S, ENV>(
     React.MutableRefObject<{ ci: CanvasGlInfo, env: ENV } | undefined>,
   ] {
   return useRawCanvas<S, { ci: CanvasGlInfo, env: ENV }>(state, ({ ci, env }, s) => { render(ci, env, s); }, deps, rci => {
-    const d = rci.c.getContext('webgl2');
+    const d = rci.c.getContext('webgl2', { premultipliedAlpha: false });
     if (!d) {
       throw `This environment does not support WebGL2`;
     }
