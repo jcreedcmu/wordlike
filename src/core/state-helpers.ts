@@ -106,9 +106,11 @@ export function resolveValid(state: CoreState): CoreState {
 
   return resolveHighWaterMark(produce(state, s => {
     scorings.forEach(scoring => {
-      setOverlay(s.bonusOverlay, scoring.p, { t: 'empty' });
       resolveScoring(s, scoring);
-      s.animations.push(mkPointDecayAnimation(scoring.p, state.game_from_clock));
+      if (scoring.destroy) {
+        setOverlay(s.bonusOverlay, scoring.p, { t: 'empty' });
+        s.animations.push(mkPointDecayAnimation(scoring.p, state.game_from_clock));
+      }
     });
   }));
 }

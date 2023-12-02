@@ -30,7 +30,7 @@ export function drawBonusBomb(d: CanvasRenderingContext2D, pan_canvas_from_world
   drawImage(d, toolbarImg, rectOfTool('bomb'), rect_in_canvas);
 }
 
-export function drawBonus(d: CanvasRenderingContext2D, bonus: Bonus, pan_canvas_from_world: SE2, p: Point, fraction: number = 1) {
+export function drawBonus(d: CanvasRenderingContext2D, bonus: Bonus, pan_canvas_from_world: SE2, p: Point, fraction: number = 1, active: boolean = false) {
   const toolbarImg = getAssets().toolbarImg;
   const rect_in_canvas = apply_to_rect(pan_canvas_from_world, { p, sz: { x: 1, y: 1 } });
 
@@ -49,8 +49,7 @@ export function drawBonus(d: CanvasRenderingContext2D, bonus: Bonus, pan_canvas_
       drawTileLetter(d, bonus.letter, rect_in_canvas, '#aaa');
     } return;
     case 'word': {
-      // XXX make conditional on word bonus activation
-      drawImage(d, toolbarImg, spriteRectOfPos(vadd(posOfBonus(bonus), { x: 0, y: 1 })), rect_in_canvas);
+      drawImage(d, toolbarImg, spriteRectOfPos(vadd(posOfBonus(bonus), { x: 0, y: active ? 1 : 0 })), rect_in_canvas);
       return;
     }
     default: {

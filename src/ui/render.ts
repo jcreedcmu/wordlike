@@ -14,7 +14,7 @@ import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from '../util/se2-extra';
 import { Point, Rect } from '../util/types';
 import { boundRect, midpointOfRect, scaleRectToCenter } from '../util/util';
-import { vadd, vdiv, vm, vscale, vsub, vtrans } from '../util/vutil';
+import { vadd, vdiv, vequal, vm, vscale, vsub, vtrans } from '../util/vutil';
 import { drawAnimation } from './drawAnimation';
 import { drawBonus } from './drawBonus';
 import { drawPanicBar } from './drawPanicBar';
@@ -205,7 +205,8 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
       for (let j = top_left_in_world.y; j <= bot_right_in_world.y; j++) {
         const p: Point = { x: i, y: j };
         const bonus = bonusOfStatePoint(cs, p);
-        drawBonus(d, bonus, pan_canvas_from_world, p);
+        const active = bonus.t == 'word' && cs.wordBonusState.active.findIndex(x => vequal(p, x.p_in_world_int)) != -1;
+        drawBonus(d, bonus, pan_canvas_from_world, p, undefined, active);
       }
     }
 

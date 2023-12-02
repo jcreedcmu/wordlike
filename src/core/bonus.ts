@@ -104,24 +104,25 @@ export function isBlocking(tile: MoveTile, bonus: Bonus): boolean {
 
 type Scoring = {
   bonus: ScoringBonus,
-  p: Point
+  p: Point,
+  destroy: boolean,
 };
 
 export function adjacentScoringOfBonus(bonus: Bonus, p: Point): Scoring[] {
   switch (bonus.t) {
-    case 'bonus': return [{ bonus, p }];
-    case 'bomb': return [{ bonus, p }];
-    case 'vowel': return [{ bonus, p }];
-    case 'consonant': return [{ bonus, p }];
-    case 'copy': return [{ bonus, p }];
-    case 'word': return [{ bonus, p }];
+    case 'bonus': return [{ bonus, p, destroy: true }];
+    case 'bomb': return [{ bonus, p, destroy: true }];
+    case 'vowel': return [{ bonus, p, destroy: true }];
+    case 'consonant': return [{ bonus, p, destroy: true }];
+    case 'copy': return [{ bonus, p, destroy: true }];
+    case 'word': return [{ bonus, p, destroy: false }];
     default: return [];
   }
 }
 
 export function overlapScoringOfBonus(bonus: Bonus, p: Point): Scoring[] {
   switch (bonus.t) {
-    case 'required': return [{ bonus, p }];
+    case 'required': return [{ bonus, p, destroy: true }];
     default: return [];
   }
 }

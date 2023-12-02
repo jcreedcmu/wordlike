@@ -19,7 +19,7 @@ export const DEBUG = {
   canvasProfiling: false,
 
   // if true, every string of letters is considered a word, and required-letter bonuses admit any letter
-  allWords: false,
+  allWords: true,
 };
 
 export type DebugLevel = keyof (typeof DEBUG);
