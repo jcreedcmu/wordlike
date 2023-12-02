@@ -3,7 +3,6 @@
 const int CHUNK_SIZE = 16;
 
 precision mediump float;
-in vec2 v_uv; // range is [0,1] x [0,1]
 out vec4 outputColor;
 
 // World coordinates of the origin of the chunk
@@ -33,7 +32,7 @@ bool less_dist(vec2 v, float d) {
 }
 
 vec4 getColor() {
-  vec3 p_in_canvas = vec3(v_uv * u_canvasSize, 1.0);
+  vec3 p_in_canvas = vec3(gl_FragCoord.xy, 1.0);
   p_in_canvas.y = u_canvasSize.y - p_in_canvas.y;
   vec2 p_in_world = (u_world_from_canvas * p_in_canvas).xy;
 
