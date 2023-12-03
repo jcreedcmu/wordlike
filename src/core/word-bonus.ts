@@ -8,9 +8,7 @@ import { now_in_game } from "./clock";
 import { ActiveWordBonus, CoreState } from "./state";
 
 export function mkActiveWordBonus(state: CoreState, p_in_world_int: Point): { wordBonus: ActiveWordBonus, state: CoreState } {
-
   const { state: state1, word } = getNextWord(state);
-  console.log(word);
   return {
     wordBonus: {
       activation_time_in_game: now_in_game(state.game_from_clock),
