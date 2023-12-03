@@ -19,7 +19,7 @@ import { addHandTile, addWorldTile, ensureTileId, get_hand_tiles, get_main_tiles
 import { WIN_SCORE, canWinFromState, shouldStartPanicBar } from "./winState";
 
 export type Scoring = {
-  bonus: ScoringBonus | { t: 'wordAchieved' },
+  bonus: ScoringBonus | { t: 'wordAchieved', word: string },
   p_in_world_int: Point,
   destroy: boolean,
 };
@@ -106,7 +106,7 @@ export function resolveValid(state: CoreState, validWords: Set<string>): CoreSta
   });
 
   const wordAchievedScorings: Scoring[] = state.wordBonusState.active.filter(x => validWords.has(x.word)).map(x => ({
-    bonus: { t: 'wordAchieved' },
+    bonus: { t: 'wordAchieved', word: x.word },
     destroy: true,
     p_in_world_int: x.p_in_world_int,
   }));

@@ -142,7 +142,7 @@ export function resolveScoring(state: CoreState, scoring: Scoring): CoreState {
         s.wordBonusState.active.push(wordBonus);
       });
     }
-    case 'wordAchieved': return produce(state, s => { incrementScore(s, 75); });
+    case 'wordAchieved': return produce(state, s => { incrementScore(s, bonus.word.length * 10 + 10); });
     case 'time': return produce(state, s => { s.inventory.times++; });
   }
 }

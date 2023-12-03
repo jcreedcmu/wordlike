@@ -28,10 +28,6 @@ export function getWordSample(seed0: number, length: number): { seed: number, wo
 }
 
 const lengthSchedule: number[] = [
-  3,
-  3,
-  3,
-  4,
   4,
   4,
   5,
@@ -39,7 +35,10 @@ const lengthSchedule: number[] = [
   6,
   6,
   7,
+  7,
   8,
+  8,
+  9,
   9,
   10,
 ];
