@@ -15,7 +15,7 @@ import { mkOverlayFrom, setOverlay } from './layer';
 import { reduceKey } from './reduceKey';
 import { resolveSelection } from './selection';
 import { CoreState, GameState, HAND_TILE_LIMIT, Location, SceneState, mkGameSceneState } from './state';
-import { MoveTile, bonusOfStatePoint, checkValid, drawOfState, filterExpiredAnimations, filterExpiredWordBonusState, isCollision, isOccupied, isTilePinned, tileFall, unpauseState, withCoreState } from './state-helpers';
+import { MoveTile, bonusOfStatePoint, checkValid, drawOfState, filterExpiredAnimations, filterExpiredWordBonusState, isCollision, isOccupied, isTilePinned, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
 import { getTileId, get_hand_tiles, get_tiles, putTileInHand, putTileInWorld, putTilesInHand, setTileLoc, tileAtPoint } from "./tile-helpers";
 import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect } from './tools';
 import { shouldDisplayBackButton } from './winState';
@@ -127,7 +127,7 @@ function resolveMouseupInner(state: GameState): GameState {
           const selectedIds = state.coreState.selected.selectedIds;
 
           // check hand size limit
-          if (selectedIds.length + handTiles.length > HAND_TILE_LIMIT)
+          if (proposedHandDragOverLimit(state.coreState, state.mouseState))
             return state;
 
           return withCoreState(state, cs => checkValid(putTilesInHand(cs, selectedIds, new_tile_in_hand_int.y)));

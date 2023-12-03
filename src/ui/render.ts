@@ -4,7 +4,7 @@ import { LocatedWord, getGrid } from '../core/grid';
 import { getOverlay } from '../core/layer';
 import { getScore } from '../core/scoring';
 import { CoreState, GameState, TileEntity } from '../core/state';
-import { bonusOfStatePoint, pointFall, tileFall } from '../core/state-helpers';
+import { bonusOfStatePoint, pointFall, proposedHandDragOverLimit, tileFall } from '../core/state-helpers';
 import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from '../core/tile-helpers';
 import { BOMB_RADIUS, getCurrentTool, getCurrentTools, rectOfTool } from '../core/tools';
 import { shouldDisplayBackButton } from '../core/winState';
@@ -25,6 +25,7 @@ import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, getWidgetP
 const interfaceCyanColor = 'rgb(0,255,255,0.5)';
 const shadowColor = 'rgb(128,128,100,0.4)';
 const backgroundGray = '#eeeeee';
+const backgroundRed = '#ffaaaa';
 
 const DRAW_TILE_SHADOWS = false;
 
@@ -255,8 +256,9 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     }
   }
 
-  function drawHand() {
-    fillRect(d, hand_bds_in_canvas, backgroundGray);
+  function drawHand(illegalDrag: boolean) {
+    const handBackgroundColor = illegalDrag ? backgroundRed : backgroundGray;
+    fillRect(d, hand_bds_in_canvas, handBackgroundColor);
 
     // draw hand tiles
     get_hand_tiles(cs).forEach(tile => {
@@ -402,7 +404,8 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
   drawPauseButton();
   drawWorld();
   drawShadows();
-  drawHand();
+  const illegalDrag = ms.t == 'drag_tile' && getWidgetPoint(cs, ms.p_in_canvas).t == 'hand' && proposedHandDragOverLimit(cs, ms);
+  drawHand(illegalDrag);
   drawShuffleButton();
   const mp = midpointOfRect(canvas_bds_in_canvas);
   if (cs.winState.t == 'lost') {

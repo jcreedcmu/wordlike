@@ -272,3 +272,9 @@ export function dropTopHandTile(state: GameState): GameState {
   }
   return state;
 }
+
+export function proposedHandDragOverLimit(state: CoreState, mouseState: MouseState): boolean {
+  const numHandTiles = get_hand_tiles(state).length - (mouseState.t == 'drag_tile' && mouseState.orig_loc.t == 'hand' ? 1 : 0);
+  const numDragTiles = (state.selected == undefined ? 1 : state.selected.selectedIds.length);
+  return numHandTiles + numDragTiles > HAND_TILE_LIMIT;
+}
