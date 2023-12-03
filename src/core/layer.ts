@@ -24,7 +24,7 @@ function unparseNamedCoord(name: string, p: Point): string {
 }
 
 function unparseCoord(p: Point): string {
-  return `${name},${p.x},${p.y}`;
+  return `,${p.x},${p.y}`;
 }
 
 export function mkLayer<T>(name: string, func: (p: Point) => T): Layer<T> {

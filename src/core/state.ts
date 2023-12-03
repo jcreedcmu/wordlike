@@ -91,6 +91,8 @@ export type ActiveWordBonus = {
 };
 
 export type WordBonusState = {
+  numAllocated: number,
+  shown: Point | undefined,
   active: ActiveWordBonus[],
 }
 export type CoreState = {
@@ -110,7 +112,6 @@ export type CoreState = {
   panic: PanicData | undefined,
   paused: PauseData | undefined,
   game_from_clock: SE1,
-  wordBonusesAllocated: number,
   wordBonusState: WordBonusState,
   inventory: {
     bombs: number,
@@ -145,8 +146,11 @@ const epsilon = 0.0001;
 export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: number): GameState {
   return {
     coreState: {
-      wordBonusesAllocated: 0,
-      wordBonusState: { active: [] },
+      wordBonusState: {
+        shown: undefined,
+        active: [],
+        numAllocated: 0,
+      },
       renderToGl: false,
       animations: [],
       currentTool: 'pointer',

@@ -139,6 +139,7 @@ export function resolveScoring(state: CoreState, scoring: Scoring): CoreState {
     case 'word': {
       const { state: state1, wordBonus } = mkActiveWordBonus(state, scoring.p_in_world_int);
       return produce(state1, s => {
+        s.wordBonusState.shown = wordBonus.p_in_world_int;
         s.wordBonusState.active.push(wordBonus);
       });
     }

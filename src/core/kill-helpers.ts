@@ -3,12 +3,12 @@ import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { vequal, vint } from "../util/vutil";
 import { Animation, mkExplosionAnimation } from './animations';
-import { Bonus } from "./bonus";
+import { bonusOfStatePoint } from "./bonus-helpers";
 import { KillIntent } from './intent';
 import { setOverlay } from "./layer";
 import { getScore, incrementScore } from "./scoring";
 import { CoreState, MainTile } from "./state";
-import { bonusOfStatePoint, checkValid } from './state-helpers';
+import { checkValid } from './state-helpers';
 import { get_hand_tiles, get_main_tiles, removeTile } from "./tile-helpers";
 import { BOMB_RADIUS } from './tools';
 

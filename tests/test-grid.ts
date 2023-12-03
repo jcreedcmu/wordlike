@@ -1,6 +1,6 @@
 import { checkConnected, checkGridWordsHoriz, checkGridWordsVert, getGrid, mkGrid, transpose } from '../src/core/grid';
 import { Tile, TileOptionalId } from '../src/core/state';
-import { ensureTileId } from '../src/core/tile-helpers';
+import { ensureTileId } from '../src/core/tile-id-helpers';
 import { vequal } from '../src/util/vutil';
 
 function isWord(word: string): boolean {

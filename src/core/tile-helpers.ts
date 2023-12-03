@@ -3,11 +3,12 @@ import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { vequal, vm } from "../util/vutil";
 import { CoreState, GameState, HandTile, Location, MainTile, Tile, TileEntity, TileEntityOptionalId, TileOptionalId } from "./state";
+import { Bonus } from "./bonus";
+import { bonusOfStatePoint } from "./bonus-helpers";
+import { ensureId } from "./tile-id-helpers";
 
 export type TileId = string;
 
-// FIXME: global counter
-let tileIdCounter = 1000;
 function tileOfTileEntity(tile: TileEntity): Tile {
   switch (tile.loc.t) {
     case 'hand': return { letter: tile.letter, id: tile.id, p_in_world_int: tile.loc.p_in_hand_int };
@@ -63,16 +64,6 @@ export function removeTile(state: CoreState, id: string): CoreState {
   return produce(nowhere, s => {
     delete s.tile_entities[id];
   });
-}
-
-function ensureId(tile: TileEntityOptionalId): TileEntity {
-  const id = tile.id ?? `tile${tileIdCounter++}`;
-  return { ...tile, id };
-}
-
-export function ensureTileId(tile: TileOptionalId): Tile {
-  const id = tile.id ?? `tile${tileIdCounter++}`;
-  return { ...tile, id };
 }
 
 export function addWorldTile(state: Draft<CoreState>, tile: TileOptionalId): void {
@@ -166,6 +157,18 @@ export function isSelectedForDrag(state: GameState, tile: TileEntity): boolean {
   else {
     return state.mouseState.id == tile.id || tile.loc.t == 'world' && state.coreState.selected.selectedIds.includes(tile.id);
   }
+}
+
+export type CellContents =
+  | { t: 'tile', tile: TileEntity }
+  | { t: 'bonus', bonus: Bonus }
+  ;
+
+export function cellAtPoint(state: CoreState, p_in_world: Point): CellContents {
+  const tile = tileAtPoint(state, p_in_world);
+  if (tile !== undefined)
+    return { t: 'tile', tile };
+  return { t: 'bonus', bonus: bonusOfStatePoint(state, p_in_world) };
 }
 
 export function tileAtPoint(state: CoreState, p_in_world: Point): TileEntity | undefined {

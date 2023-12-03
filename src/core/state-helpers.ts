@@ -9,13 +9,15 @@ import { vadd, vequal, vm } from "../util/vutil";
 import { Animation, mkPointDecayAnimation, mkScoreAnimation, mkWinAnimation } from './animations';
 import { getAssets } from "./assets";
 import { Bonus, ScoringBonus, adjacentScoringOfBonus, getBonusLayer, isBlocking, overlapScoringOfBonus, resolveScoring } from "./bonus";
+import { bonusOfStatePoint } from "./bonus-helpers";
 import { PANIC_INTERVAL_MS, PanicData, PauseData, WORD_BONUS_INTERVAL_MS, now_in_game } from "./clock";
 import { DrawForce, getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
 import { Layer, Overlay, getOverlayLayer, mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
 import { PROGRESS_ANIMATION_POINTS, getHighWaterMark, getScore, setHighWaterMark } from "./scoring";
 import { CoreState, GameState, HAND_TILE_LIMIT, Location, MouseState, Tile, TileEntity, WordBonusState } from "./state";
-import { addHandTile, addWorldTile, ensureTileId, get_hand_tiles, get_main_tiles, get_tiles, putTileInWorld, removeTile } from "./tile-helpers";
+import { addHandTile, addWorldTile, get_hand_tiles, get_main_tiles, get_tiles, putTileInWorld, removeTile } from "./tile-helpers";
+import { ensureTileId } from "./tile-id-helpers";
 import { WIN_SCORE, canWinFromState, shouldStartPanicBar } from "./winState";
 
 export type Scoring = {
@@ -117,10 +119,10 @@ export function resolveValid(state: CoreState, validWords: Set<string>): CoreSta
       wordAchievedScorings.findIndex(x => vequal(x.p_in_world_int, sc.p_in_world_int)) == -1
       && state.wordBonusState.active.findIndex(x => vequal(x.p_in_world_int, sc.p_in_world_int)) == -1);
 
-  const newWordBonusState = { active: state.wordBonusState.active.filter(x => !validWords.has(x.word)) };
   const scorings = [...overlapScorings, ...adjacentScorings, ...wordAchievedScorings];
 
-  let tmpState = produce(state, s => { s.wordBonusState = newWordBonusState; });
+  const newActive = state.wordBonusState.active.filter(x => !validWords.has(x.word));
+  let tmpState = produce(state, s => { s.wordBonusState.active = newActive; });
 
   scorings.forEach(scoring => {
     if (scoring.destroy) {
@@ -218,10 +220,10 @@ export function filterExpiredAnimations(now_ms: number, anims: Animation[]): Ani
 
 // List of Points is where to destroy word bonuses without points
 export function filterExpiredWordBonusState(now_ms: number, wordBonusState: WordBonusState): [WordBonusState, Point[]] {
-  return [{
-    active: wordBonusState.active.filter(wb => now_ms <= wb.activation_time_in_game + WORD_BONUS_INTERVAL_MS)
-  },
-  wordBonusState.active.filter(wb => now_ms > wb.activation_time_in_game + WORD_BONUS_INTERVAL_MS).map(wb => wb.p_in_world_int)
+  const newActive = wordBonusState.active.filter(wb => now_ms <= wb.activation_time_in_game + WORD_BONUS_INTERVAL_MS);
+  return [
+    produce(wordBonusState, s => { s.active = newActive; }),
+    wordBonusState.active.filter(wb => now_ms > wb.activation_time_in_game + WORD_BONUS_INTERVAL_MS).map(wb => wb.p_in_world_int)
   ];
 }
 
@@ -232,10 +234,6 @@ export function unpauseState(state: CoreState, pause: PauseData): CoreState {
     s.game_from_clock = newGame_from_clock;
   });
 
-}
-
-export function bonusOfStatePoint(cs: CoreState, p: Point): Bonus {
-  return getOverlayLayer(cs.bonusOverlay, getBonusLayer(cs.bonusLayerSeed), p);
 }
 
 export function tileFall(state: CoreState, ms: MouseState): Point {

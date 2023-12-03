@@ -5,7 +5,7 @@ import { PANIC_INTERVAL_MS } from '../core/clock';
 import { mkGridOf } from '../core/grid';
 import { GameState, Tile } from '../core/state';
 import { addHandTiles, addWorldTiles, checkValid, resolveValid, withCoreState } from '../core/state-helpers';
-import { ensureTileId } from "../core/tile-helpers";
+import { ensureTileId } from "../core/tile-id-helpers";
 import { DEBUG } from '../util/debug';
 import { relpos } from '../util/dutil';
 import * as SE1 from '../util/se1';
@@ -120,8 +120,11 @@ function render(ci: CanvasInfo, props: CanvasProps) {
 function exampleState(): GameState {
   const state: GameState = {
     coreState: {
-      wordBonusesAllocated: 0,
-      wordBonusState: { active: [] },
+      wordBonusState: {
+        shown: undefined,
+        active: [],
+        numAllocated: 0,
+      },
       _cachedTileChunkMap: mkOverlay<Chunk>(),
       renderToGl: false,
       animations: [],

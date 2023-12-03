@@ -1,13 +1,14 @@
 import { WidgetPoint } from '../ui/widget-helpers';
 import { produce } from '../util/produce';
-import { vm } from '../util/vutil';
+import { vint, vm } from '../util/vutil';
 import { GameState, TileEntity } from './state';
 import { tryKillTileOfState } from './kill-helpers';
 import { Tool, bombIntent, copyIntent, dynamiteIntent } from './tools';
 import { SelectionOperation, selectionOperationOfMods } from './selection';
 import { vacuous_down, deselect } from './reduce';
 import { checkValid, drawSpecific, withCoreState } from './state-helpers';
-import { addHandTile, tileAtPoint } from './tile-helpers';
+import { CellContents, addHandTile, tileAtPoint } from './tile-helpers';
+import { Point } from '../util/types';
 
 export type KillIntent =
   | { t: 'kill', radius: number, cost: number }
@@ -20,16 +21,23 @@ export type Intent =
   | { t: 'exchangeTiles', id: string }
   | { t: 'startSelection', opn: SelectionOperation }
   | { t: 'copy' }
+  | { t: 'setShownWordBonus', p_in_world_int: Point }
   | KillIntent
   ;
 
-export function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number, mods: Set<string>, hoverTile: TileEntity | undefined, hoverBlock: boolean, pinned: boolean): Intent {
+function dynamiteableCell(cell: CellContents): boolean {
+  // XXX more things should be dynamiteable (#108)
+  return cell.t == 'tile' || (cell.t == 'bonus' && cell.bonus.t == 'block');
+}
+
+export function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number, mods: Set<string>, hoverCell: CellContents, pinned: boolean): Intent {
   if (button == 2)
     return { t: 'panWorld' };
 
   switch (tool) {
     case 'pointer':
-      if (hoverTile) {
+      if (hoverCell.t == 'tile') {
+        const hoverTile = hoverCell.tile;
         if (pinned)
           return { t: 'panWorld' };
         if (mods.has('meta')) {
@@ -39,10 +47,15 @@ export function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number
           return { t: 'dragTile', id: hoverTile.id };
         }
       }
+      else {
+        if (hoverCell.t == 'bonus' && hoverCell.bonus.t == 'word' && wp.t == 'world') {
+          return { t: 'setShownWordBonus', p_in_world_int: vint(wp.p_in_local) };
+        }
+      }
       return { t: 'startSelection', opn: selectionOperationOfMods(mods) };
     case 'hand': return { t: 'panWorld' };
     case 'dynamite':
-      if (hoverTile || hoverBlock) {
+      if (dynamiteableCell(hoverCell)) {
         return dynamiteIntent;
       }
       else {
@@ -58,6 +71,12 @@ export function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number
 }
 
 export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint): GameState {
+
+  // Eagerly clear shown state
+  if (intent.t !== 'setShownWordBonus') {
+    state = produce(state, s => { s.coreState.wordBonusState.shown = undefined; });
+  }
+
   switch (intent.t) {
     case 'dragTile': {
       if (wp.t != 'world' && wp.t != 'hand') return vacuous_down(state, wp);
@@ -144,7 +163,11 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
       else {
         return state;
       }
-
     }
+
+    case 'setShownWordBonus':
+      return produce(state, s => {
+        s.coreState.wordBonusState.shown = intent.p_in_world_int;
+      });
   }
 }

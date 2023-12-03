@@ -9,14 +9,15 @@ import { vm, vscale, vsub } from '../util/vutil';
 import { Action, Effect, GameAction } from './action';
 import { mkPointDecayAnimation } from './animations';
 import { getBonusLayer } from './bonus';
+import { bonusOfStatePoint } from './bonus-helpers';
 import { getPanicFraction, now_in_game } from './clock';
 import { getIntentOfMouseDown, reduceIntent } from './intent';
 import { mkOverlayFrom, setOverlay } from './layer';
 import { reduceKey } from './reduceKey';
 import { resolveSelection } from './selection';
-import { CoreState, GameState, HAND_TILE_LIMIT, Location, SceneState, mkGameSceneState } from './state';
-import { MoveTile, bonusOfStatePoint, checkValid, drawOfState, filterExpiredAnimations, filterExpiredWordBonusState, isCollision, isOccupied, isTilePinned, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
-import { getTileId, get_hand_tiles, get_tiles, putTileInHand, putTileInWorld, putTilesInHandFromNotHand, setTileLoc, tileAtPoint } from "./tile-helpers";
+import { CoreState, GameState, Location, SceneState, mkGameSceneState } from './state';
+import { MoveTile, checkValid, drawOfState, filterExpiredAnimations, filterExpiredWordBonusState, isCollision, isOccupied, isTilePinned, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
+import { cellAtPoint, getTileId, get_hand_tiles, get_tiles, putTileInHand, putTileInWorld, putTilesInHandFromNotHand, setTileLoc, tileAtPoint } from "./tile-helpers";
 import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect } from './tools';
 import { shouldDisplayBackButton } from './winState';
 
@@ -169,12 +170,11 @@ export function vacuous_down(state: GameState, wp: WidgetPoint): GameState {
 }
 
 function reduceMouseDownInWorld(state: GameState, wp: WidgetPoint & { t: 'world' }, button: number, mods: Set<string>): GameState {
-  const hoverTile = tileAtPoint(state.coreState, wp.p_in_local);
   const p_in_world_int = vm(wp.p_in_local, Math.floor);
-  const hoverBlock = bonusOfStatePoint(state.coreState, p_in_world_int).t == 'block';
+  const hoverCell = cellAtPoint(state.coreState, p_in_world_int);
   let pinned =
-    (hoverTile && hoverTile.loc.t == 'world') ? isTilePinned(state.coreState, hoverTile.id, hoverTile.loc) : false;
-  const intent = getIntentOfMouseDown(getCurrentTool(state.coreState), wp, button, mods, hoverTile, hoverBlock, pinned);
+    (hoverCell.t == 'tile' && hoverCell.tile.loc.t == 'world') ? isTilePinned(state.coreState, hoverCell.tile.id, hoverCell.tile.loc) : false;
+  const intent = getIntentOfMouseDown(getCurrentTool(state.coreState), wp, button, mods, hoverCell, pinned);
   return reduceIntent(state, intent, wp);
 }
 

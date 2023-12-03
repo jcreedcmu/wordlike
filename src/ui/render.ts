@@ -1,10 +1,11 @@
 import { getAssets } from '../core/assets';
+import { bonusOfStatePoint } from '../core/bonus-helpers';
 import { getWordBonusFraction, now_in_game } from '../core/clock';
 import { LocatedWord, getGrid } from '../core/grid';
 import { getOverlay } from '../core/layer';
 import { getScore } from '../core/scoring';
 import { CoreState, GameState, TileEntity } from '../core/state';
-import { bonusOfStatePoint, pointFall, proposedHandDragOverLimit, tileFall } from '../core/state-helpers';
+import { pointFall, proposedHandDragOverLimit, tileFall } from '../core/state-helpers';
 import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from '../core/tile-helpers';
 import { BOMB_RADIUS, getCurrentTool, getCurrentTools, rectOfTool } from '../core/tools';
 import { shouldDisplayBackButton } from '../core/winState';
@@ -228,11 +229,13 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     );
     d.stroke();
 
-    // draw word bonus bubbles
+    // draw word bonus bubble, if any
     for (const wordBonus of cs.wordBonusState.active) {
-      const apex_in_canvas = apply(pan_canvas_from_world, vadd(wordBonus.p_in_world_int, { x: 0.4, y: 0.4 }));
-      const text_in_canvas = vadd({ x: -24, y: -24 }, apply(pan_canvas_from_world, vadd(wordBonus.p_in_world_int, { x: 0.4, y: 0 })));
-      drawBubble(d, wordBonus.word, text_in_canvas, apex_in_canvas, getWordBonusFraction(wordBonus, cs.game_from_clock));
+      if (cs.wordBonusState.shown !== undefined && vequal(cs.wordBonusState.shown, wordBonus.p_in_world_int)) {
+        const apex_in_canvas = apply(pan_canvas_from_world, vadd(wordBonus.p_in_world_int, { x: 0.4, y: 0.4 }));
+        const text_in_canvas = vadd({ x: -24, y: -24 }, apply(pan_canvas_from_world, vadd(wordBonus.p_in_world_int, { x: 0.4, y: 0 })));
+        drawBubble(d, wordBonus.word, text_in_canvas, apex_in_canvas, getWordBonusFraction(wordBonus, cs.game_from_clock));
+      }
     }
     d.restore();
   }

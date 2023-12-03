@@ -1,8 +1,8 @@
 import { Dispatch } from "../core/action";
 import { getAssets } from "../core/assets";
+import { bonusOfStatePoint } from "../core/bonus-helpers";
 import { CHUNK_SIZE } from "../core/chunk";
 import { GameState } from "../core/state";
-import { bonusOfStatePoint } from "../core/state-helpers";
 import { DEBUG, doOnce, doOnceEvery } from "../util/debug";
 import { imageDataOfBuffer } from "../util/dutil";
 import { attributeCreateAndSetFloats, attributeSetFloats, shaderProgram } from "../util/gl-util";
@@ -11,7 +11,7 @@ import { apply_to_rect } from "../util/se2-extra";
 import { Point } from "../util/types";
 import { rectPts } from "../util/util";
 import { vadd, vdiag, vm, vscale } from "../util/vutil";
-import { canvas_from_gl, gl_from_canvas } from "./gl-helpers";
+import { gl_from_canvas } from "./gl-helpers";
 import { spriteLocOfBonus } from "./sprite-sheet";
 import { resizeView } from "./ui-helpers";
 import { CanvasGlInfo } from "./use-canvas";

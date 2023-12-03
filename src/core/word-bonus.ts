@@ -44,14 +44,14 @@ const lengthSchedule: number[] = [
 ];
 
 export function getNextWord(state: CoreState): { state: CoreState, word: string } {
-  const wordBonusesAllocated = state.wordBonusesAllocated;
+  const wordBonusesAllocated = state.wordBonusState.numAllocated;
   const length = lengthSchedule[Math.min(lengthSchedule.length - 1, wordBonusesAllocated)];
   const { seed, word } = getWordSample(state.seed, length);
   return {
     word,
     state: produce(state, s => {
       s.seed = seed;
-      s.wordBonusesAllocated = wordBonusesAllocated + 1;
+      s.wordBonusState.numAllocated = wordBonusesAllocated + 1;
     })
   };
 }

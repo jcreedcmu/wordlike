@@ -1,5 +1,5 @@
 import { Tile } from "../core/state";
-import { ensureTileId } from "../core/tile-helpers";
+import { ensureTileId } from "../core/tile-id-helpers";
 
 export const isDev = globalThis['window'] == undefined || (globalThis['location'] != undefined && !!globalThis['location'].host.match(/localhost/));
 
