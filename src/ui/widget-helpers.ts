@@ -93,7 +93,17 @@ export function getWidgetPoint(state: CoreState, p_in_canvas: Point): WidgetPoin
       tool: tool,
     }
   }
-  else if (!pointInRect(p_in_canvas, canvas_bds_in_canvas)) {
+  else if (!pointInRect(p_in_canvas, canvas_bds_in_canvas)
+    // The reason for the following exception is this: If we
+    // drag to the *right* towards hand but then slip out of
+    // the canvas, we actually want to consider that in-hand to make
+    // quick drops into the hand more Fitt's-law convenient.
+    //
+    // What happens when p_in_canvas.x >= hand_bds_in_canvas.p.x is
+    // that we fall through to getDragWidgetPoint, and its default
+    // when not in world is to say the point is in hand.
+    && p_in_canvas.x < hand_bds_in_canvas.p.x
+  ) {
     return { t: 'nowhere', p_in_canvas };
   }
   else
