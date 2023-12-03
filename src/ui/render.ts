@@ -105,6 +105,9 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
     else if (tool == 'copy') {
       drawToolbarCount(d, rect_in_canvas, state.inventory.copies);
     }
+    else if (tool == 'time') {
+      drawToolbarCount(d, rect_in_canvas, state.inventory.times);
+    }
 
     // indicate current tool
     if (tool == currentTool) {

@@ -1,5 +1,5 @@
 import { Bonus } from "../core/bonus";
-import { TOOL_IMAGE_WIDTH, indexOfTool } from "../core/tools";
+import { TOOL_IMAGE_WIDTH, Tool, indexOfTool } from "../core/tools";
 import { Buffer, buffer, fillRect } from "../util/dutil";
 import { scale } from "../util/se2";
 import { apply_to_rect } from "../util/se2-extra";
@@ -15,14 +15,28 @@ export function spriteRectOfPos(pos: Point): Rect {
 export function spriteLocOfBonus(bonus: Bonus): Point {
   switch (bonus.t) {
     case 'bonus': return { x: 1, y: 1 };
-    case 'bomb': return { x: 0, y: indexOfTool('bomb') };
+    case 'bomb': return spriteLocOfTool('bomb');
     case 'required': return spriteLocOfRequiredBonus(bonus.letter.charCodeAt(0) - 97);
-    case 'consonant': return { x: 0, y: indexOfTool('consonant') };
-    case 'vowel': return { x: 0, y: indexOfTool('vowel') };
-    case 'copy': return { x: 0, y: indexOfTool('copy') };
+    case 'consonant': return spriteLocOfTool('consonant');
+    case 'vowel': return spriteLocOfTool('vowel');
+    case 'copy': return spriteLocOfTool('copy');
     case 'empty': return { x: 0, y: 7 };
     case 'block': return { x: 1, y: 0 };
     case 'word': return { x: 0, y: 8 };
+    case 'time': return spriteLocOfTool('time');
+  }
+}
+
+export function spriteLocOfTool(tool: Tool): Point {
+  switch (tool) {
+    case 'pointer': return { x: 0, y: 0 };
+    case 'hand': return { x: 0, y: 1 };
+    case 'dynamite': return { x: 0, y: 2 };
+    case 'bomb': return { x: 0, y: 3 };
+    case 'vowel': return { x: 0, y: 4 };
+    case 'consonant': return { x: 0, y: 5 };
+    case 'copy': return { x: 0, y: 6 };
+    case 'time': return { x: 0, y: 10 };
   }
 }
 

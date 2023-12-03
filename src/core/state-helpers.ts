@@ -9,7 +9,7 @@ import { vadd, vequal, vm } from "../util/vutil";
 import { Animation, mkPointDecayAnimation, mkScoreAnimation, mkWinAnimation } from './animations';
 import { getAssets } from "./assets";
 import { Bonus, ScoringBonus, adjacentScoringOfBonus, getBonusLayer, isBlocking, overlapScoringOfBonus, resolveScoring } from "./bonus";
-import { PANIC_INTERVAL_MS, PauseData, WORD_BONUS_INTERVAL_MS, now_in_game } from "./clock";
+import { PANIC_INTERVAL_MS, PanicData, PauseData, WORD_BONUS_INTERVAL_MS, now_in_game } from "./clock";
 import { DrawForce, getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
 import { Layer, Overlay, getOverlayLayer, mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
@@ -157,6 +157,12 @@ function resolveHighWaterMark(state: CoreState): CoreState {
   }
 }
 
+export function freshPanic(state: CoreState): PanicData {
+  const currentTime_in_game = now_in_game(state.game_from_clock);
+  const debug_offset = DEBUG.skipAheadPanic ? PANIC_INTERVAL_MS - 10000 : 0;
+  return { currentTime_in_game, lastClear_in_game: currentTime_in_game - debug_offset };
+}
+
 export function checkValid(state: CoreState): CoreState {
   const tiles = get_main_tiles(state);
   const grid = mkGridOfMainTiles(tiles);
@@ -170,19 +176,17 @@ export function checkValid(state: CoreState): CoreState {
   }
 
   let panic = state.panic;
-  if (allValid) panic = undefined;
-  const currentTime_in_game = now_in_game(state.game_from_clock);
-  if (!allValid && panic === undefined && shouldStartPanicBar(state.winState)) {
-
-    const debug_offset = DEBUG.skipAheadPanic ? PANIC_INTERVAL_MS - 10000 : 0;
-    panic = { currentTime_in_game, lastClear_in_game: currentTime_in_game - debug_offset };
+  if (allValid)
+    panic = undefined;
+  else if (panic === undefined && shouldStartPanicBar(state.winState)) {
+    panic = freshPanic(state);
   }
 
   let winState = state.winState;
   let animations = state.animations;
 
   if (getScore(state) >= WIN_SCORE && canWinFromState(state.winState)) {
-    winState = { t: 'won', winTime_in_game: currentTime_in_game };
+    winState = { t: 'won', winTime_in_game: now_in_game(state.game_from_clock) };
     animations = [...animations, mkWinAnimation(state.game_from_clock)];
   }
 

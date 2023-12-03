@@ -20,6 +20,7 @@ export type ScoringBonus =
   | { t: 'vowel' }
   | { t: 'copy' }
   | { t: 'word' }
+  | { t: 'time' }
   ;
 
 export type Bonus =
@@ -81,8 +82,11 @@ export function bonusGenerator(p: Point, seed: number): Bonus {
     else if (ph < 0.53) {
       return { t: 'copy' };
     }
-    else if (ph < 0.56) {
+    else if (ph < 0.6) {
       return { t: 'word' };
+    }
+    else if (ph < 0.62) {
+      return { t: 'time' };
     } else {
       return { t: 'block' };
     }
@@ -111,6 +115,7 @@ export function adjacentScoringOfBonus(bonus: Bonus, p_in_world_int: Point): Sco
     case 'consonant': return [{ bonus, p_in_world_int, destroy: true }];
     case 'copy': return [{ bonus, p_in_world_int, destroy: true }];
     case 'word': return [{ bonus, p_in_world_int, destroy: false }];
+    case 'time': return [{ bonus, p_in_world_int, destroy: true }];
     default: return [];
   }
 }
@@ -138,6 +143,7 @@ export function resolveScoring(state: CoreState, scoring: Scoring): CoreState {
       });
     }
     case 'wordAchieved': return produce(state, s => { incrementScore(s, 75); });
+    case 'time': return produce(state, s => { s.inventory.times++; });
   }
 }
 

@@ -30,11 +30,12 @@ export function reduceKey(state: GameState, code: string): GameState {
     }
     case 'S-d': {
       return withCoreState(state, cs => checkValid(produce(addWorldTiles(removeAllTiles(cs), debugTiles()), s => {
-        setScore(s, 1000);
+        setScore(s, 900);
         s.inventory.bombs = 15;
         s.inventory.vowels = 15;
         s.inventory.consonants = 15;
         s.inventory.copies = 15;
+        s.inventory.times = 15;
       })));
     }
     case 'S-s': {

@@ -52,6 +52,7 @@ export function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number
       return bombIntent;
     case 'vowel': throw new Error(`shoudn't be able have vowel tool active`);
     case 'consonant': throw new Error(`shoudn't be able have consonant tool active`);
+    case 'time': throw new Error(`shoudn't be able have time tool active`);
     case 'copy': return copyIntent;
   }
 }

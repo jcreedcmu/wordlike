@@ -115,6 +115,7 @@ export type CoreState = {
     vowels: number,
     consonants: number,
     copies: number,
+    times: number,
   }
   bonusLayerSeed: number,  // immutable during game play
   _cachedTileChunkMap: Overlay<Chunk>;
@@ -170,6 +171,7 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
         vowels: 0,
         consonants: 0,
         copies: 0,
+        times: 0,
       },
       bonusLayerSeed,
       _cachedTileChunkMap: mkOverlay<Chunk>(),

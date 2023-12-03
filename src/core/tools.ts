@@ -1,9 +1,10 @@
+import { spriteLocOfTool, spriteRectOfPos } from "../ui/sprite-sheet";
 import { produce } from "../util/produce";
 import { Rect } from "../util/types";
 import { Intent } from './intent';
 import { getScore } from "./scoring";
 import { CoreState } from "./state";
-import { drawOfState } from "./state-helpers";
+import { drawOfState, freshPanic } from "./state-helpers";
 
 // XXX rename this, this is really sprite size
 export const TOOL_IMAGE_WIDTH = 32;
@@ -16,6 +17,7 @@ const tools = [
   'vowel',
   'consonant',
   'copy',
+  'time',
 ] as const;
 
 export type Tool = (typeof tools)[number];
@@ -60,13 +62,14 @@ export function getCurrentTools(state: CoreState): Tool[] {
   if (state.inventory.copies > 0) {
     tools.push('copy');
   }
+  if (state.inventory.times > 0) {
+    tools.push('time');
+  }
   return tools;
 }
 
 export function rectOfTool(tool: Tool): Rect {
-  const S_in_image = TOOL_IMAGE_WIDTH;
-  const ix_in_image = indexOfTool(tool);
-  return { p: { x: 0, y: S_in_image * ix_in_image }, sz: { x: S_in_image, y: S_in_image } };
+  return spriteRectOfPos(spriteLocOfTool(tool));
 }
 
 export function reduceToolSelect(state: CoreState, tool: Tool): CoreState {
@@ -83,6 +86,15 @@ export function reduceToolSelect(state: CoreState, tool: Tool): CoreState {
       if (newState == state) return state;
       return produce(newState, s => {
         s.inventory.vowels--;
+      });
+    }
+    case 'time': {
+      if (!state.panic)
+        return state;
+      const panic = freshPanic(state);
+      return produce(state, s => {
+        s.panic = panic;
+        s.inventory.times--;
       });
     }
     default: return produce(state, s => { s.currentTool = tool; });
