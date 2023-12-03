@@ -12,6 +12,7 @@ function tileOfTileEntity(tile: TileEntity): Tile {
   switch (tile.loc.t) {
     case 'hand': return { letter: tile.letter, id: tile.id, p_in_world_int: tile.loc.p_in_hand_int };
     case 'world': return { letter: tile.letter, id: tile.id, p_in_world_int: tile.loc.p_in_world_int };
+    case 'nowhere': throw new Error(`Trying to construct Tile out of nowhere tile`);
   }
 }
 
@@ -58,20 +59,10 @@ export function get_hand_tiles(state: CoreState): HandTile[] {
 
 export function removeTile(state: CoreState, id: string): CoreState {
   const loc = getTileLoc(state, id);
-  switch (loc.t) {
-    case 'world':
-      return produce(state, s => {
-        delete s.tile_entities[id];
-      });
-    case 'hand':
-      const handTiles = get_hand_tiles(state);
-      return produce(state, s => {
-        for (let i = loc.p_in_hand_int.y; i < handTiles.length; i++) {
-          setTileLoc(s, handTiles[i].id, { t: 'hand', p_in_hand_int: { x: 0, y: i - 1 } });
-        }
-        delete s.tile_entities[id];
-      });
-  }
+  const nowhere = putTileNowhere(state, id);
+  return produce(nowhere, s => {
+    delete s.tile_entities[id];
+  });
 }
 
 function ensureId(tile: TileEntityOptionalId): TileEntity {
@@ -101,34 +92,22 @@ export function addHandTile(state: Draft<CoreState>, tile: Tile): void {
 }
 
 export function putTileInWorld(state: CoreState, id: string, p_in_world_int: Point): CoreState {
-  const loc = getTileLoc(state, id);
-  const handTiles = get_hand_tiles(state);
-  switch (loc.t) {
-    case 'world':
-      return produce(state, s => {
-        setTileLoc(s, id, { t: 'world', p_in_world_int });
-      });
-    case 'hand':
-      return produce(state, s => {
-        for (let i = loc.p_in_hand_int.y; i < handTiles.length; i++) {
-          setTileLoc(s, handTiles[i].id, { t: 'hand', p_in_hand_int: { x: 0, y: i - 1 } });
-        }
-        setTileLoc(s, id, { t: 'world', p_in_world_int });
-      });
-  }
-
+  const nowhere = putTileNowhere(state, id);
+  return produce(nowhere, s => {
+    setTileLoc(s, id, { t: 'world', p_in_world_int });
+  });
 }
 
-// XXX: assumes tile was in world before
 export function putTileInHand(state: CoreState, id: string, ix: number): CoreState {
-  const handTiles = get_hand_tiles(state);
+  const nowhere = putTileNowhere(state, id);
+  const handTiles = get_hand_tiles(nowhere);
 
   if (ix > handTiles.length)
     ix = handTiles.length;
   if (ix < 0)
     ix = 0;
 
-  return produce(state, s => {
+  return produce(nowhere, s => {
     for (let i = ix; i < handTiles.length; i++) {
       setTileLoc(s, handTiles[i].id, { t: 'hand', p_in_hand_int: { x: 0, y: i + 1 } });
     }
@@ -136,7 +115,27 @@ export function putTileInHand(state: CoreState, id: string, ix: number): CoreSta
   });
 }
 
-export function putTilesInHand(state: CoreState, ids: string[], ix: number): CoreState {
+export function putTileNowhere(state: CoreState, id: string): CoreState {
+  const loc = getTileLoc(state, id);
+  const handTiles = get_hand_tiles(state);
+  switch (loc.t) {
+    case 'world':
+      return produce(state, s => {
+        setTileLoc(s, id, { t: 'nowhere' });
+      });
+    case 'hand':
+      return produce(state, s => {
+        for (let i = loc.p_in_hand_int.y; i < handTiles.length; i++) {
+          setTileLoc(s, handTiles[i].id, { t: 'hand', p_in_hand_int: { x: 0, y: i - 1 } });
+        }
+        setTileLoc(s, id, { t: 'nowhere' });
+      });
+    case 'nowhere':
+      return state;
+  }
+}
+
+export function putTilesInHandFromNotHand(state: CoreState, ids: string[], ix: number): CoreState {
   const handTiles = get_hand_tiles(state);
 
   if (ix > handTiles.length)

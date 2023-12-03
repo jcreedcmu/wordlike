@@ -57,9 +57,11 @@ export const HAND_TILE_LIMIT = 10;
 
 export type HandLoc = { t: 'hand', p_in_hand_int: Point };
 export type MainLoc = { t: 'world', p_in_world_int: Point };
+export type NowhereLoc = { t: 'nowhere' };
 export type Location =
   | HandLoc
   | MainLoc
+  | NowhereLoc
   ;
 
 export type TileEntity = {

@@ -16,7 +16,7 @@ import { reduceKey } from './reduceKey';
 import { resolveSelection } from './selection';
 import { CoreState, GameState, HAND_TILE_LIMIT, Location, SceneState, mkGameSceneState } from './state';
 import { MoveTile, bonusOfStatePoint, checkValid, drawOfState, filterExpiredAnimations, filterExpiredWordBonusState, isCollision, isOccupied, isTilePinned, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
-import { getTileId, get_hand_tiles, get_tiles, putTileInHand, putTileInWorld, putTilesInHand, setTileLoc, tileAtPoint } from "./tile-helpers";
+import { getTileId, get_hand_tiles, get_tiles, putTileInHand, putTileInWorld, putTilesInHandFromNotHand, setTileLoc, tileAtPoint } from "./tile-helpers";
 import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect } from './tools';
 import { shouldDisplayBackButton } from './winState';
 
@@ -113,8 +113,6 @@ function resolveMouseupInner(state: GameState): GameState {
             : state;
           return withCoreState(afterDrop, cs => checkValid(cs));
         }
-
-
       }
       else if (wp.t == 'hand') {
         const handTiles = get_hand_tiles(state.coreState);
@@ -123,23 +121,16 @@ function resolveMouseupInner(state: GameState): GameState {
           canvas_from_drag_tile(state.coreState, ms)).translate,
           Math.round);
 
+        if (proposedHandDragOverLimit(state.coreState, state.mouseState)) {
+          return state;
+        }
+
         if (state.coreState.selected) {
           const selectedIds = state.coreState.selected.selectedIds;
-
-          // check hand size limit
-          if (proposedHandDragOverLimit(state.coreState, state.mouseState))
-            return state;
-
-          return withCoreState(state, cs => checkValid(putTilesInHand(cs, selectedIds, new_tile_in_hand_int.y)));
+          return withCoreState(state, cs => checkValid(putTilesInHandFromNotHand(cs, selectedIds, new_tile_in_hand_int.y)));
         }
         else {
-          // check hand size limit
-          if (handTiles.length >= HAND_TILE_LIMIT)
-            return state;
-
-          return ms.orig_loc.t == 'world'
-            ? withCoreState(state, cs => checkValid(putTileInHand(cs, ms.id, new_tile_in_hand_int.y)))
-            : state;
+          return withCoreState(state, cs => checkValid(putTileInHand(cs, ms.id, new_tile_in_hand_int.y)));
         }
       }
       else {

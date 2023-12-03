@@ -149,6 +149,8 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
         return compose(canvas_from_hand(), translate(tile.loc.p_in_hand_int));
       case 'world':
         return compose(pan_canvas_from_world, translate(tile.loc.p_in_world_int));
+      case 'nowhere':
+        throw new Error(`Tried to render tile that exists nowhere`);
     }
   }
 
