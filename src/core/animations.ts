@@ -39,15 +39,15 @@ export function mkExplosionAnimation(p: Point, radius: number, game_from_clock: 
   }
 }
 
-function mkFireworksAnimation(game_from_clock: SE1, message: string): Animation {
+function mkFireworksAnimation(game_from_clock: SE1, message: string, num_fireworks: number, duration_ms: number): Animation {
   return {
     t: 'fireworks',
     message,
-    duration_ms: 3000,
+    duration_ms: duration_ms,
     start_in_game: now_in_game(game_from_clock),
-    fireworks: range(20).map(x => {
+    fireworks: range(num_fireworks).map(x => {
       return {
-        start_in_anim: Math.random() * 2000,
+        start_in_anim: Math.random() * (duration_ms - 1000),
         duration_ms: Math.random() * 500 + 500,
         color: randomColor(),
         radius: Math.random() * 50 + 50,
@@ -59,9 +59,9 @@ function mkFireworksAnimation(game_from_clock: SE1, message: string): Animation 
 
 
 export function mkWinAnimation(game_from_clock: SE1): Animation {
-  return mkFireworksAnimation(game_from_clock, 'You Win!');
+  return mkFireworksAnimation(game_from_clock, 'You Win!', 40, 5000);
 }
 
 export function mkScoreAnimation(game_from_clock: SE1, points: number): Animation {
-  return mkFireworksAnimation(game_from_clock, `${points} points!`);
+  return mkFireworksAnimation(game_from_clock, `${points} points!`, 10, 1000);
 }
