@@ -17,6 +17,7 @@ export const DEBUG = {
   interval: false,
   glProfiling: false,
   canvasProfiling: false,
+  missedChunkRendering: true,
 
   // if true, every string of letters is considered a word, and required-letter bonuses admit any letter
   allWords: false,

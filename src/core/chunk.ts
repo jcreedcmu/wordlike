@@ -1,21 +1,19 @@
+import { ChunkValue } from "../ui/sprite-sheet";
 import { world_bds_in_canvas } from "../ui/widget-helpers";
 import { produce } from "../util/produce";
 import { SE2, apply, compose, inverse, scale } from "../util/se2";
 import { Point } from "../util/types";
 import { vadd, vdiag, vm, vm2, vscale, vsub } from "../util/vutil";
-import { Bonus } from "./bonus";
 import { bonusOfStatePoint } from "./bonus-helpers";
 import { Overlay, getOverlay, setOverlay } from "./layer";
 import { CoreState } from "./state";
-import { TileId } from "./tile-helpers";
 
 export const CHUNK_SIZE = 16;
-export type ChunkValue = Bonus | TileId;
 export type Chunk = {
   data: ChunkValue[];
 }
 
-function getChunk(cs: CoreState, p_in_chunk: Point): Chunk {
+function getChunkData(cs: CoreState, p_in_chunk: Point): Chunk {
   const chunk: Chunk = { data: [] };
   for (let x = 0; x < CHUNK_SIZE; x++) {
     for (let y = 0; y < CHUNK_SIZE; y++) {
@@ -30,10 +28,13 @@ export function ensureChunk(cache: Overlay<Chunk>, cs: CoreState, p_in_chunk: Po
     return cache;
   else
     return produce(cache, c => {
-      setOverlay(c, p_in_chunk, getChunk(cs, p_in_chunk));
+      setOverlay(c, p_in_chunk, getChunkData(cs, p_in_chunk));
     });
 }
 
+export function getChunk(cache: Overlay<Chunk>, p_in_chunk: Point): Chunk | undefined {
+  return getOverlay(cache, p_in_chunk);
+}
 
 export function updateCache(cache: Overlay<Chunk>, cs: CoreState, p_in_world: Point, cval: ChunkValue): Overlay<Chunk> {
   const p_in_chunk = vm(p_in_world, x => Math.floor(x / CHUNK_SIZE));

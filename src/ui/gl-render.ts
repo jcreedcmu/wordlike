@@ -1,9 +1,9 @@
 import { Dispatch } from "../core/action";
 import { getAssets } from "../core/assets";
 import { bonusOfStatePoint } from "../core/bonus-helpers";
-import { CHUNK_SIZE, activeChunks } from "../core/chunk";
+import { CHUNK_SIZE, activeChunks, getChunk } from "../core/chunk";
 import { GameState } from "../core/state";
-import { DEBUG, doOnce, doOnceEvery } from "../util/debug";
+import { DEBUG, doOnce, doOnceEvery, logger } from "../util/debug";
 import { imageDataOfBuffer } from "../util/dutil";
 import { attributeCreateAndSetFloats, attributeSetFloats, shaderProgram } from "../util/gl-util";
 import { SE2, apply, compose, inverse, scale } from "../util/se2";
@@ -12,7 +12,7 @@ import { Point } from "../util/types";
 import { rectPts } from "../util/util";
 import { vadd, vdiag, vm, vscale } from "../util/vutil";
 import { gl_from_canvas } from "./gl-helpers";
-import { spriteLocOfBonus } from "./sprite-sheet";
+import { spriteLocOfBonus, spriteLocOfChunkValue } from "./sprite-sheet";
 import { resizeView } from "./ui-helpers";
 import { CanvasGlInfo } from "./use-canvas";
 import { pan_canvas_from_world_of_state } from "./view-helpers";
@@ -71,12 +71,18 @@ function drawChunk(gl: WebGL2RenderingContext, env: GlEnv, p_in_chunk: Point, st
 
   // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
+  const chunk = getChunk(state.coreState._cachedTileChunkMap, p_in_chunk);
+
+  if (chunk == undefined) {
+    logger('missedChunkRendering', `missing data for chunk ${JSON.stringify(p_in_chunk)}`);
+    return;
+  }
+
   // Set chunk data
-  for (let i = 0; i < CHUNK_SIZE; i++) {
-    for (let j = 0; j < CHUNK_SIZE; j++) {
-      const ix = 4 * (j * CHUNK_SIZE + i);
-      const p_in_world = vadd({ x: i, y: j }, vscale(p_in_chunk, CHUNK_SIZE));
-      const bonusPos = spriteLocOfBonus(bonusOfStatePoint(state.coreState, p_in_world));
+  for (let x = 0; x < CHUNK_SIZE; x++) {
+    for (let y = 0; y < CHUNK_SIZE; y++) {
+      const ix = 4 * (y * CHUNK_SIZE + x);
+      const bonusPos = spriteLocOfChunkValue(chunk.data[x + y * CHUNK_SIZE]);
       chunkImdat.data[ix + 0] = bonusPos.x;
       chunkImdat.data[ix + 1] = bonusPos.y;
       chunkImdat.data[ix + 2] = 0;
@@ -99,7 +105,7 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
 
 
   const actuallyRender = () => {
-    gl.clearColor(1.0, 1.0, 0.0, 1.0);
+    gl.clearColor(1.0, 1.0, 1.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     // gl.enable(gl.BLEND);
