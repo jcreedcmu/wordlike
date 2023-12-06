@@ -1,6 +1,8 @@
+import { world_bds_in_canvas } from "../ui/widget-helpers";
 import { produce } from "../util/produce";
+import { SE2, apply, compose, inverse, scale } from "../util/se2";
 import { Point } from "../util/types";
-import { vm, vm2, vscale, vsub } from "../util/vutil";
+import { vadd, vdiag, vm, vm2, vscale, vsub } from "../util/vutil";
 import { Bonus } from "./bonus";
 import { bonusOfStatePoint } from "./bonus-helpers";
 import { Overlay, getOverlay, setOverlay } from "./layer";
@@ -41,4 +43,20 @@ export function updateCache(cache: Overlay<Chunk>, cs: CoreState, p_in_world: Po
   return produce(cache, c => {
     getOverlay(cache, p_in_chunk)!.data[x + y * CHUNK_SIZE] = cval;
   });
+}
+
+// returns list of p_in_chunk of chunks that are at least partly visible
+export function activeChunks(canvas_from_world: SE2): Point[] {
+  const chunk_from_canvas = compose(scale(vdiag(1 / CHUNK_SIZE)), inverse(canvas_from_world));
+  const top_left_in_canvas = world_bds_in_canvas.p;
+  const bot_right_in_canvas = vadd(world_bds_in_canvas.p, world_bds_in_canvas.sz);
+  const top_left_in_chunk = vm(apply(chunk_from_canvas, top_left_in_canvas), Math.floor);
+  const bot_right_in_chunk = vm(apply(chunk_from_canvas, bot_right_in_canvas), Math.ceil);
+  const chunks: Point[] = [];
+  for (let x = top_left_in_chunk.x; x < bot_right_in_chunk.x; x++) {
+    for (let y = top_left_in_chunk.y; y < bot_right_in_chunk.y; y++) {
+      chunks.push({ x, y });
+    }
+  }
+  return chunks;
 }

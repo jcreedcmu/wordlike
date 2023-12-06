@@ -1,7 +1,7 @@
 import { Dispatch } from "../core/action";
 import { getAssets } from "../core/assets";
 import { bonusOfStatePoint } from "../core/bonus-helpers";
-import { CHUNK_SIZE } from "../core/chunk";
+import { CHUNK_SIZE, activeChunks } from "../core/chunk";
 import { GameState } from "../core/state";
 import { DEBUG, doOnce, doOnceEvery } from "../util/debug";
 import { imageDataOfBuffer } from "../util/dutil";
@@ -107,18 +107,13 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
 
     gl.useProgram(prog);
 
-    const pan_canvas_from_world = pan_canvas_from_world_of_state(state);
-    const chunk_from_canvas = compose(scale(vdiag(1 / CHUNK_SIZE)), inverse(pan_canvas_from_world));
-    const top_left_in_canvas = world_bds_in_canvas.p;
-    const bot_right_in_canvas = vadd(world_bds_in_canvas.p, world_bds_in_canvas.sz);
-    const top_left_in_chunk = vm(apply(chunk_from_canvas, top_left_in_canvas), Math.floor);
-    const bot_right_in_chunk = vm(apply(chunk_from_canvas, bot_right_in_canvas), Math.ceil);
-
-    for (let i = top_left_in_chunk.x; i < bot_right_in_chunk.x; i++) {
-      for (let j = top_left_in_chunk.y; j < bot_right_in_chunk.y; j++) {
-        drawChunk(gl, env, { x: i, y: j }, state, chunk_from_canvas);
-      }
-    }
+    // XXX some redundant transforms going on here, we also compute chunk_from_canvas in chunk.ts
+    const canvas_from_world = pan_canvas_from_world_of_state(state);
+    const chunk_from_canvas = compose(scale(vdiag(1 / CHUNK_SIZE)), inverse(canvas_from_world));
+    const chunks = activeChunks(canvas_from_world);
+    chunks.forEach(p => {
+      drawChunk(gl, env, p, state, chunk_from_canvas);
+    });
   };
 
   if (DEBUG.glProfiling) {
