@@ -1,5 +1,5 @@
 import * as effectful from '../ui/use-effectful-reducer';
-import { canvas_from_drag_tile, pan_canvas_from_canvas_of_mouse_state } from '../ui/view-helpers';
+import { canvas_from_drag_tile, pan_canvas_from_canvas_of_mouse_state, pan_canvas_from_world_of_state } from '../ui/view-helpers';
 import { WidgetPoint, canvas_from_hand, getWidgetPoint } from '../ui/widget-helpers';
 import { produce } from '../util/produce';
 import { SE2, apply, compose, composen, inverse, scale, translate } from '../util/se2';
@@ -10,6 +10,7 @@ import { Action, Effect, GameAction } from './action';
 import { mkPointDecayAnimation } from './animations';
 import { getBonusLayer } from './bonus';
 import { bonusOfStatePoint } from './bonus-helpers';
+import { activeChunks, ensureChunk } from './chunk';
 import { getPanicFraction, now_in_game } from './clock';
 import { getIntentOfMouseDown, reduceIntent } from './intent';
 import { mkOverlayFrom, setOverlay } from './layer';
@@ -301,6 +302,11 @@ function reduceGameAction(state: GameState, action: GameAction): effectful.Resul
       if (state.coreState.paused)
         return gs(state);
 
+      // ensure chunk cache is full enough
+      let cache = state.coreState._cachedTileChunkMap;
+      for (const p of activeChunks(pan_canvas_from_world_of_state(state))) {
+        cache = ensureChunk(cache, state.coreState, p);
+      }
 
       const t_in_game = now_in_game(state.coreState.game_from_clock);
       const newAnimations = filterExpiredAnimations(t_in_game, state.coreState.animations);
@@ -309,6 +315,7 @@ function reduceGameAction(state: GameState, action: GameAction): effectful.Resul
         newAnimations.push(mkPointDecayAnimation(destroy_p, state.coreState.game_from_clock));
       });
       state = produce(state, s => {
+        s.coreState._cachedTileChunkMap = cache;
         s.coreState.animations = newAnimations;
         s.coreState.wordBonusState = newWordBonusState;
         destroys.forEach(destroy_p => {
