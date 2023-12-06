@@ -1,5 +1,5 @@
 import { getAssets } from '../core/assets';
-import { bonusOfStatePoint } from '../core/bonus-helpers';
+import { getBonusFromLayer } from '../core/bonus-helpers';
 import { getWordBonusFraction, now_in_game } from '../core/clock';
 import { LocatedWord, getGrid } from '../core/grid';
 import { getOverlay } from '../core/layer';
@@ -211,7 +211,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     for (let i = top_left_in_world.x; i <= bot_right_in_world.x; i++) {
       for (let j = top_left_in_world.y; j <= bot_right_in_world.y; j++) {
         const p: Point = { x: i, y: j };
-        const bonus = bonusOfStatePoint(cs, p);
+        const bonus = getBonusFromLayer(cs, p);
         const active = bonus.t == 'word' && cs.wordBonusState.active.findIndex(x => vequal(p, x.p_in_world_int)) != -1;
         drawBonus(d, bonus, pan_canvas_from_world, p, undefined, active);
       }

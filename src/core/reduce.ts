@@ -9,7 +9,7 @@ import { vm, vscale, vsub } from '../util/vutil';
 import { Action, Effect, GameAction } from './action';
 import { mkPointDecayAnimation } from './animations';
 import { getBonusLayer } from './bonus';
-import { bonusOfStatePoint } from './bonus-helpers';
+import { getBonusFromLayer } from './bonus-helpers';
 import { activeChunks, ensureChunk } from './chunk';
 import { getPanicFraction, now_in_game } from './clock';
 import { getIntentOfMouseDown, reduceIntent } from './intent';

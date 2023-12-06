@@ -9,7 +9,7 @@ import { vadd, vequal, vm } from "../util/vutil";
 import { Animation, mkPointDecayAnimation, mkScoreAnimation, mkWinAnimation } from './animations';
 import { getAssets } from "./assets";
 import { Bonus, ScoringBonus, adjacentScoringOfBonus, getBonusLayer, isBlocking, overlapScoringOfBonus, resolveScoring } from "./bonus";
-import { bonusOfStatePoint } from "./bonus-helpers";
+import { getBonusFromLayer, setBonusLayer } from "./bonus-helpers";
 import { PANIC_INTERVAL_MS, PanicData, PauseData, WORD_BONUS_INTERVAL_MS, now_in_game } from "./clock";
 import { DrawForce, getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
@@ -56,7 +56,7 @@ export function isCollision(tiles: TileEntity[], moveTiles: MoveTile[], bonusOve
 export function isOccupied(state: CoreState, moveTile: MoveTile): boolean {
   if (isOccupiedTiles(get_tiles(state), moveTile.p_in_world_int))
     return true;
-  return isBlocking(moveTile, bonusOfStatePoint(state, moveTile.p_in_world_int));
+  return isBlocking(moveTile, getBonusFromLayer(state, moveTile.p_in_world_int));
 }
 
 export function isOccupiedTiles(tiles: TileEntity[], p: Point): boolean {
@@ -104,7 +104,7 @@ export function resolveValid(state: CoreState, validWords: Set<string>): CoreSta
 
   const overlapScorings = tiles.flatMap(tile => {
     const p = tile.loc.p_in_world_int;
-    return overlapScoringOfBonus(bonusOfStatePoint(state, p), p);
+    return overlapScoringOfBonus(getBonusFromLayer(state, p), p);
   });
 
   const wordAchievedScorings: Scoring[] = state.wordBonusState.active.filter(x => validWords.has(x.word)).map(x => ({
@@ -114,7 +114,7 @@ export function resolveValid(state: CoreState, validWords: Set<string>): CoreSta
   }));
 
   const adjacentScorings = overlayPoints(layer)
-    .flatMap(p => adjacentScoringOfBonus(bonusOfStatePoint(state, p), p))
+    .flatMap(p => adjacentScoringOfBonus(getBonusFromLayer(state, p), p))
     .filter(sc =>
       wordAchievedScorings.findIndex(x => vequal(x.p_in_world_int, sc.p_in_world_int)) == -1
       && state.wordBonusState.active.findIndex(x => vequal(x.p_in_world_int, sc.p_in_world_int)) == -1);
@@ -127,7 +127,7 @@ export function resolveValid(state: CoreState, validWords: Set<string>): CoreSta
   scorings.forEach(scoring => {
     if (scoring.destroy) {
       tmpState = produce(tmpState, s => {
-        setOverlay(s.bonusOverlay, scoring.p_in_world_int, { t: 'empty' });
+        setBonusLayer(s, scoring.p_in_world_int, { t: 'empty' });
         s.animations.push(mkPointDecayAnimation(scoring.p_in_world_int, state.game_from_clock));
       });
     }

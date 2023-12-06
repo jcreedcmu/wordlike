@@ -4,7 +4,7 @@ import { produce } from "../util/produce";
 import { SE2, apply, compose, inverse, scale } from "../util/se2";
 import { Point } from "../util/types";
 import { vadd, vdiag, vm, vm2, vscale, vsub } from "../util/vutil";
-import { bonusOfStatePoint } from "./bonus-helpers";
+import { getBonusFromLayer } from "./bonus-helpers";
 import { Overlay, getOverlay, setOverlay } from "./layer";
 import { CoreState } from "./state";
 
@@ -17,7 +17,7 @@ function getChunkData(cs: CoreState, p_in_chunk: Point): Chunk {
   const chunk: Chunk = { data: [] };
   for (let x = 0; x < CHUNK_SIZE; x++) {
     for (let y = 0; y < CHUNK_SIZE; y++) {
-      chunk.data[x + y * CHUNK_SIZE] = bonusOfStatePoint(cs, vm2(p_in_chunk, { x, y }, (c, p) => c * CHUNK_SIZE + p));
+      chunk.data[x + y * CHUNK_SIZE] = getBonusFromLayer(cs, vm2(p_in_chunk, { x, y }, (c, p) => c * CHUNK_SIZE + p));
     }
   }
   return chunk;
@@ -36,7 +36,7 @@ export function getChunk(cache: Overlay<Chunk>, p_in_chunk: Point): Chunk | unde
   return getOverlay(cache, p_in_chunk);
 }
 
-export function updateCache(cache: Overlay<Chunk>, cs: CoreState, p_in_world: Point, cval: ChunkValue): Overlay<Chunk> {
+export function updateChunkCache(cache: Overlay<Chunk>, cs: CoreState, p_in_world: Point, cval: ChunkValue): Overlay<Chunk> {
   const p_in_chunk = vm(p_in_world, x => Math.floor(x / CHUNK_SIZE));
   if (!getOverlay(cache, p_in_chunk))
     cache = ensureChunk(cache, cs, p_in_chunk);

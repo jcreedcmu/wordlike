@@ -1,6 +1,6 @@
 import { Dispatch } from "../core/action";
 import { getAssets } from "../core/assets";
-import { bonusOfStatePoint } from "../core/bonus-helpers";
+import { getBonusFromLayer } from "../core/bonus-helpers";
 import { CHUNK_SIZE, activeChunks, getChunk } from "../core/chunk";
 import { GameState } from "../core/state";
 import { DEBUG, doOnce, doOnceEvery, logger } from "../util/debug";

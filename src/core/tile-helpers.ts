@@ -4,7 +4,7 @@ import { Point } from "../util/types";
 import { vequal, vm } from "../util/vutil";
 import { CoreState, GameState, HandTile, Location, MainTile, Tile, TileEntity, TileEntityOptionalId, TileOptionalId } from "./state";
 import { Bonus } from "./bonus";
-import { bonusOfStatePoint } from "./bonus-helpers";
+import { getBonusFromLayer } from "./bonus-helpers";
 import { ensureId } from "./tile-id-helpers";
 
 export type TileId = string;
@@ -168,7 +168,7 @@ export function cellAtPoint(state: CoreState, p_in_world: Point): CellContents {
   const tile = tileAtPoint(state, p_in_world);
   if (tile !== undefined)
     return { t: 'tile', tile };
-  return { t: 'bonus', bonus: bonusOfStatePoint(state, p_in_world) };
+  return { t: 'bonus', bonus: getBonusFromLayer(state, p_in_world) };
 }
 
 export function tileAtPoint(state: CoreState, p_in_world: Point): TileEntity | undefined {
