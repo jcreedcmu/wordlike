@@ -82,9 +82,9 @@ function drawChunk(gl: WebGL2RenderingContext, env: GlEnv, p_in_chunk: Point, st
   for (let x = 0; x < CHUNK_SIZE; x++) {
     for (let y = 0; y < CHUNK_SIZE; y++) {
       const ix = 4 * (y * CHUNK_SIZE + x);
-      const bonusPos = spriteLocOfChunkValue(chunk.data[x + y * CHUNK_SIZE]);
-      chunkImdat.data[ix + 0] = bonusPos.x;
-      chunkImdat.data[ix + 1] = bonusPos.y;
+      const spritePos = chunk.spritePos[x + y * CHUNK_SIZE];
+      chunkImdat.data[ix + 0] = spritePos.x;
+      chunkImdat.data[ix + 1] = spritePos.y;
       chunkImdat.data[ix + 2] = 0;
       chunkImdat.data[ix + 3] = 255;
     }
