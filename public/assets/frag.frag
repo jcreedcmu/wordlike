@@ -5,6 +5,9 @@ const int CHUNK_SIZE = 16;
 const float NUM_SPRITES_PER_SHEET = 16.; // in both directions
 const float SPRITE_SIZE = 32.;
 
+const float NUM_FONT_CELLS_PER_SHEET = 8.; // in both directions
+const float FONT_CELL_SIZE = 64.;
+
 out vec4 outputColor;
 
 // World coordinates of the origin of the chunk
@@ -19,6 +22,9 @@ uniform mat3 u_world_from_canvas;
 // Sprite sheet
 uniform sampler2D u_spriteTexture;
 
+// Font Sheet
+uniform sampler2D u_fontTexture;
+
 // Chunk data
 uniform sampler2D u_chunkDataTexture;
 
@@ -31,6 +37,19 @@ float crosshair(vec2 p) {
 
 bool less_dist(vec2 v, float d) {
   return v.x * v.x + v.y * v.y < d * d;
+}
+
+// p_in_world_fp is the fractional part of p_in_world. It is in [0,1]²
+// sprite_coords is actually an ivec. It is in  [0,NUM_SPRITES_PER_SHEET]²
+vec4 get_sprite_pixel(vec2 p_in_world_fp, vec2 sprite_coords, float sharpness) {
+  if (sprite_coords.x == 12. || sprite_coords.x == 13.) {
+    int letter = int((sprite_coords.x - 12.) * NUM_SPRITES_PER_SHEET + sprite_coords.y);
+    vec2 font_coords = vec2(letter / int( NUM_FONT_CELLS_PER_SHEET), letter % int(NUM_FONT_CELLS_PER_SHEET));
+    float sdf = texture(u_fontTexture, (p_in_world_fp + font_coords) / NUM_FONT_CELLS_PER_SHEET).r;
+    float amount = clamp(0.5 + sharpness * (sdf - 0.5), 0., 1.);
+    return vec4(amount * vec3(0.6) + (1. - amount) * vec3(1.), 1.);
+  }
+  return texture(u_spriteTexture, (p_in_world_fp + sprite_coords) / NUM_SPRITES_PER_SHEET);
 }
 
 vec4 getColor() {
@@ -49,7 +68,7 @@ vec4 getColor() {
   p_in_world_fp = clamp(p_in_world_fp, 0.5/SPRITE_SIZE, 1. - 1./SPRITE_SIZE);
 
   vec2 sprite_coords = round(255.0 * texture(u_chunkDataTexture, (coords_within_chunk + vec2(0.5,0.5)) / float(CHUNK_SIZE) )).xy;
-  vec4 bgcolor = texture(u_spriteTexture, (p_in_world_fp + sprite_coords) / NUM_SPRITES_PER_SHEET);
+  vec4 bgcolor = get_sprite_pixel(p_in_world_fp, sprite_coords, 1. / (u_world_from_canvas[0][0] * 6.));
 
   vec2 off = abs(p_in_world - p_in_world_r);
   float ch_amount = max(crosshair(off.xy), crosshair(off.yx));

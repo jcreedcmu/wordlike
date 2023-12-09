@@ -26,6 +26,7 @@ export type GlEnv = {
 
 const SPRITE_TEXTURE_UNIT = 0;
 const CHUNK_DATA_TEXTURE_UNIT = 1;
+const FONT_TEXTURE_UNIT = 2;
 
 function drawChunk(gl: WebGL2RenderingContext, env: GlEnv, p_in_chunk: Point, state: GameState, chunk_from_canvas: SE2): void {
   const { prog, chunkBoundsBuffer, chunkImdat } = env;
@@ -48,6 +49,9 @@ function drawChunk(gl: WebGL2RenderingContext, env: GlEnv, p_in_chunk: Point, st
 
   const u_spriteTexture = gl.getUniformLocation(prog, 'u_spriteTexture');
   gl.uniform1i(u_spriteTexture, SPRITE_TEXTURE_UNIT);
+
+  const u_fontTexture = gl.getUniformLocation(prog, 'u_fontTexture');
+  gl.uniform1i(u_fontTexture, FONT_TEXTURE_UNIT);
 
   const u_chunkDataTexture = gl.getUniformLocation(prog, 'u_chunkDataTexture');
   gl.uniform1i(u_chunkDataTexture, CHUNK_DATA_TEXTURE_UNIT);
@@ -153,8 +157,6 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
   else {
     actuallyRender();
   }
-
-
 }
 
 export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
@@ -180,6 +182,21 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, spriteImdat);
+
+  // Font texture
+  const fontTexture = gl.createTexture();
+  if (fontTexture == null) {
+    throw new Error(`couldn't create font texture`);
+  }
+  gl.activeTexture(gl.TEXTURE0 + FONT_TEXTURE_UNIT);
+  gl.bindTexture(gl.TEXTURE_2D, fontTexture);
+
+  const fontImdat = imageDataOfBuffer(getAssets().fontSheetBuf);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, fontImdat);
 
   // Chunk data texture
   const chunkDataTexture = gl.createTexture();

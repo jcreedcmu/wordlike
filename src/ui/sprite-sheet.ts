@@ -68,3 +68,9 @@ export function prerenderSpriteSheet(img: HTMLImageElement): Buffer {
   }
   return buf;
 }
+
+export function prerenderFontSheet(img: HTMLImageElement): Buffer {
+  const buf = buffer({ x: img.width, y: img.height });
+  buf.d.drawImage(img, 0, 0);
+  return buf;
+}
