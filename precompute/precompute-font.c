@@ -14,9 +14,9 @@ int main(void) {
   int width;
   int xoff;
   int yoff;
-  int glyph = stbtt_FindGlyphIndex(&font, 65);
+  int glyph = stbtt_FindGlyphIndex(&font, 0x2603);
   unsigned char *bitmap = stbtt_GetGlyphSDF(&font,
-                                            stbtt_ScaleForPixelHeight(&font, 16), /*scale*/
+                                            stbtt_ScaleForPixelHeight(&font, 96), /*scale*/
                                                 glyph, /* glyph index */
                                                 5, /* int padding */
                                                 180, /* unsigned char onedge_value */
