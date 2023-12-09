@@ -10,24 +10,28 @@ int main(void) {
 
   stbtt_InitFont(&font, ttf_buffer, stbtt_GetFontOffsetForIndex(ttf_buffer,0));
 
-  int height = 128;
-  int width = 128;
-  int xoff = 64;
-  int yoff = 64;
-  unsigned char *bitmap = stbtt_GetCodepointSDF(&font,
-                                                12, /*scale*/
-                                                65, /* int codepoint */
+  int height;
+  int width;
+  int xoff;
+  int yoff;
+  int glyph = stbtt_FindGlyphIndex(&font, 65);
+  unsigned char *bitmap = stbtt_GetGlyphSDF(&font,
+                                            stbtt_ScaleForPixelHeight(&font, 16), /*scale*/
+                                                glyph, /* glyph index */
                                                 5, /* int padding */
-                                                128, /* unsigned char onedge_value */
-                                                1.0, /* float pixel_dist_scale */
+                                                180, /* unsigned char onedge_value */
+                                                36.0, /* float pixel_dist_scale */
                                                 &width, /* int *width */
                                                 &height, /* int *height */
                                                 &xoff, /* int *xoff */
                                                 &yoff  /* int *yoff */
                                                 );
-
-  for (int i = 0; i < 128; i++) {
-    printf("%d ", bitmap[i]);
+  printf("P2 %d %d 255\n", width, height);
+  for (int i = 0; i < height; i++) {
+    for (int j = 0; j < width; j++) {
+      printf("%d ", bitmap[i * width + j]);
+    }
+    printf("\n");
   }
   stbtt_FreeSDF(bitmap, (void *)0 /*void *userdata*/);
 
