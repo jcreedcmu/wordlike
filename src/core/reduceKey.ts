@@ -1,7 +1,9 @@
-import { getWidgetPoint } from "../ui/widget-helpers";
+import { canvas_bds_in_canvas, getWidgetPoint } from "../ui/widget-helpers";
 import { debugTiles } from "../util/debug";
 import { produce } from "../util/produce";
+import { midpointOfRect } from "../util/util";
 import { tryKillTileOfState } from "./kill-helpers";
+import { reduceZoom } from "./reduce";
 import { getScore, incrementScore, setScore } from "./scoring";
 import { GameState } from "./state";
 import { addWorldTiles, checkValid, drawOfState, dropTopHandTile, withCoreState } from "./state-helpers";
@@ -10,6 +12,21 @@ import { dynamiteIntent, reduceToolSelect } from "./tools";
 
 export function reduceKey(state: GameState, code: string): GameState {
   switch (code) {
+    case '=':  // fallthrough intentional
+    case '+':
+      if (state.mouseState.t == 'up') {
+        return reduceZoom(state, state.mouseState.p_in_canvas, -1);
+      }
+      else
+        return reduceZoom(state, midpointOfRect(canvas_bds_in_canvas), -1);
+      break;
+    case '-':
+      if (state.mouseState.t == 'up') {
+        return reduceZoom(state, state.mouseState.p_in_canvas, 1);
+      }
+      else
+        return reduceZoom(state, midpointOfRect(canvas_bds_in_canvas), 1);
+      break;
     case '<space>': {
       return withCoreState(state, cs => drawOfState(cs));
     }

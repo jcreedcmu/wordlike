@@ -2,6 +2,7 @@ import { ViewData } from '../ui/ui-helpers';
 import { Point } from '../util/types';
 import { SceneState } from './state';
 
+// All of these p are p_in_canvas
 export type GameAction =
   | { t: 'none' }
   | { t: 'key', code: string }

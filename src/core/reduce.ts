@@ -261,6 +261,26 @@ export function keyCaptured(keyCode: string): boolean {
   }
 }
 
+export function reduceZoom(state: GameState, p_in_canvas: Point, delta: number): GameState {
+  const sf = delta < 0 ? 1.1 : 1 / 1.1;
+  const zoomed_canvas_of_unzoomed_canvas = composen(
+    translate(p_in_canvas),
+    scale({ x: sf, y: sf }),
+    translate(vscale(p_in_canvas, -1)),
+  );
+  const canvas_from_world = compose(zoomed_canvas_of_unzoomed_canvas, state.coreState.canvas_from_world);
+  const MAX_ZOOM_OUT = 7.5;
+  const MAX_ZOOM_IN = 150;
+  if (canvas_from_world.scale.x < MAX_ZOOM_OUT || canvas_from_world.scale.y < MAX_ZOOM_OUT
+    || canvas_from_world.scale.x > MAX_ZOOM_IN || canvas_from_world.scale.y > MAX_ZOOM_IN) {
+    return state;
+  }
+  return produce(state, s => {
+    s.coreState.canvas_from_world = canvas_from_world;
+  });
+
+}
+
 function reduceGameAction(state: GameState, action: GameAction): effectful.Result<SceneState, Effect> {
   function gs(state: GameState): effectful.Result<SceneState, Effect> {
     return { state: { t: 'game', gameState: state, revision: 0 }, effects: [] };
@@ -271,22 +291,7 @@ function reduceGameAction(state: GameState, action: GameAction): effectful.Resul
     }
     case 'none': return gs(state);
     case 'wheel': {
-      const sf = action.delta < 0 ? 1.1 : 1 / 1.1;
-      const zoomed_canvas_of_unzoomed_canvas = composen(
-        translate(action.p),
-        scale({ x: sf, y: sf }),
-        translate(vscale(action.p, -1)),
-      );
-      const canvas_from_world = compose(zoomed_canvas_of_unzoomed_canvas, state.coreState.canvas_from_world);
-      const MAX_ZOOM_OUT = 7.5;
-      const MAX_ZOOM_IN = 150;
-      if (canvas_from_world.scale.x < MAX_ZOOM_OUT || canvas_from_world.scale.y < MAX_ZOOM_OUT
-        || canvas_from_world.scale.x > MAX_ZOOM_IN || canvas_from_world.scale.y > MAX_ZOOM_IN) {
-        return gs(state);
-      }
-      return gs(produce(state, s => {
-        s.coreState.canvas_from_world = canvas_from_world;
-      }));
+      return gs(reduceZoom(state, action.p, action.delta));
     }
     case 'mouseDown': {
       const wp = getWidgetPoint(state.coreState, action.p);

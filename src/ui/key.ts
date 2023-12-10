@@ -7,6 +7,8 @@ const table: { [k: number]: string } = {
   219: '[',
   220: '\\',
   221: ']',
+  173: '-',
+  61: '=',
   8: '<backspace>',
   9: '<tab>',
   32: '<space>',
