@@ -246,7 +246,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
       d.textBaseline = 'middle';
       fillText(d, '⟳', midpointOfRect(pause_button_bds_in_canvas), 'black', '48px sans-serif');
     }
-    else if (cs.panic) {
+    else {
       d.textAlign = 'center';
       d.textBaseline = 'middle';
       fillText(d, '⏸', midpointOfRect(pause_button_bds_in_canvas), 'black', '48px sans-serif');
