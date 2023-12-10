@@ -31,7 +31,7 @@ function dynamiteableCell(cell: CellContents): boolean {
 }
 
 export function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number, mods: Set<string>, hoverCell: CellContents, pinned: boolean): Intent {
-  if (button == 2)
+  if (button == 2 || button == 4)
     return { t: 'panWorld' };
 
   switch (tool) {
