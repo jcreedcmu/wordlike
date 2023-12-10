@@ -46,7 +46,7 @@ export function updateChunkCache(cache: Overlay<Chunk>, cs: CoreState, p_in_worl
     cache = ensureChunk(cache, cs, p_in_chunk);
   const { x, y } = vsub(p_in_world, vscale(p_in_chunk, CHUNK_SIZE));
   return produce(cache, c => {
-    const chunk = getOverlay(cache, p_in_chunk)!;
+    const chunk = getOverlay(c, p_in_chunk)!;
     chunk.data[x + y * CHUNK_SIZE] = cval;
     chunk.spritePos[x + y * CHUNK_SIZE] = spritePos;
   });
