@@ -200,7 +200,8 @@ export function checkValid(state: CoreState): CoreState {
     s.animations = animations;
 
     // XXX: is this the right place to do this?
-    s.currentTool = 'pointer';
+    if (state.currentTool != 'dynamite')
+      s.currentTool = 'pointer';
   });
 }
 

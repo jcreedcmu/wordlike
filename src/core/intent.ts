@@ -26,8 +26,7 @@ export type Intent =
   ;
 
 function dynamiteableCell(cell: CellContents): boolean {
-  // XXX more things should be dynamiteable (#108)
-  return cell.t == 'tile' || (cell.t == 'bonus' && cell.bonus.t == 'block');
+  return cell.t == 'tile' || (cell.t == 'bonus' && (cell.bonus.t != 'empty'));
 }
 
 export function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number, mods: Set<string>, hoverCell: CellContents, pinned: boolean): Intent {
