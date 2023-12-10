@@ -365,7 +365,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     // draw clock
     const clockLoc: Point = {
       x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x - 10,
-      y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - 12
+      y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - 24
     };
     d.fillStyle = '#333';
     d.textBaseline = 'middle';
@@ -377,7 +377,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     // draw score
     const scoreLoc: Point = {
       x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x - 10,
-      y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - 40
+      y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - 52
     };
     d.fillStyle = '#333';
     d.textBaseline = 'middle';
