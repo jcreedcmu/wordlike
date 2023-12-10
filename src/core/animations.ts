@@ -23,7 +23,7 @@ export type Animation =
 export function mkPointDecayAnimation(p: Point, game_from_clock: SE1): Animation {
   return {
     t: 'point-decay',
-    duration_ms: 250,
+    duration_ms: 500,
     p_in_world_int: p,
     start_in_game: now_in_game(game_from_clock),
   };
