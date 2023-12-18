@@ -1,5 +1,5 @@
 import { Bonus } from "../core/bonus";
-import { TileId } from "../core/tile-helpers";
+import { ChunkValue } from "../core/chunk";
 import { TOOL_IMAGE_WIDTH, Tool } from "../core/tools";
 import { Buffer, buffer, fillRect } from "../util/dutil";
 import { scale } from "../util/se2";
@@ -8,16 +8,13 @@ import { Point, Rect } from "../util/types";
 import { vdiag, vscale } from "../util/vutil";
 import { drawRequiredLetterBonus } from "./drawBonus";
 
-// Maybe belongs in chunk.ts?
-export type ChunkValue = Bonus | TileId;
-
 export function spriteRectOfPos(pos: Point): Rect {
   const S_in_image = TOOL_IMAGE_WIDTH;
   return { p: vscale(pos, S_in_image), sz: vdiag(S_in_image) };
 }
 
 export function spriteLocOfChunkValue(cval: ChunkValue) {
-  if (typeof cval == 'string') { //XXX should promote to tagged union
+  if (cval.t == 'tile') {
     return { x: 0, y: 0 }; // XXX placeholder
   }
   else {
