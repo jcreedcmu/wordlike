@@ -44,6 +44,20 @@ export function getChunk(cache: Overlay<Chunk>, p_in_chunk: Point): Chunk | unde
   return getOverlay(cache, p_in_chunk);
 }
 
+// I don't currently expect to use this for any reason other than debugging.
+// gl-render.ts expects the chunk cache to be already up-to-date
+// This also doesn't statefully update the cache if we're reading chunks that don't exist yet,
+// and so is bad for performance.
+export function readChunkCache(cache: Overlay<Chunk>, cs: CoreState, p_in_world: Point): ChunkValue {
+  const p_in_chunk = vm(p_in_world, x => Math.floor(x / CHUNK_SIZE));
+  const { x, y } = vsub(p_in_world, vscale(p_in_chunk, CHUNK_SIZE));
+  if (!getOverlay(cache, p_in_chunk)) {
+    cache = ensureChunk(cache, cs, p_in_chunk);
+  }
+  const chunk = getOverlay(cache, p_in_chunk)!;
+  return chunk.data[x + y * CHUNK_SIZE];
+}
+
 export function updateChunkCache(cache: Overlay<Chunk>, cs: CoreState, p_in_world: Point, cval: ChunkValue): Overlay<Chunk> {
   const spritePos = spriteLocOfChunkValue(cval);
   const p_in_chunk = vm(p_in_world, x => Math.floor(x / CHUNK_SIZE));

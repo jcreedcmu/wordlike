@@ -6,6 +6,8 @@ import { CoreState, GameState, HandTile, Location, MainTile, Tile, TileEntity, T
 import { Bonus } from "./bonus";
 import { getBonusFromLayer } from "./bonus-helpers";
 import { ensureId } from "./tile-id-helpers";
+import { readChunkCache, updateChunkCache } from "./chunk";
+import { getOverlay } from "./layer";
 
 export type TileId = string;
 
@@ -32,6 +34,9 @@ export function getTileLoc(state: CoreState, id: string): Location {
   return state.tile_entities[id].loc;
 }
 
+// XXX: This shouldn't be exported. Every other function that affects
+// tile_entities should be routed through some other public interface
+// function.
 export function setTileLoc(state: Draft<CoreState>, id: string, loc: Location): void {
   state.tile_entities[id].loc = loc;
 }
@@ -79,6 +84,7 @@ export function addWorldTile(state: Draft<CoreState>, tile: TileOptionalId): voi
     letter: tile.letter, loc: { t: 'world', p_in_world_int: tile.p_in_world_int }
   });
   state.tile_entities[newTile.id] = newTile;
+  // XXX update chunk cache?
 }
 
 export function addHandTile(state: Draft<CoreState>, tile: Tile): void {
@@ -91,8 +97,11 @@ export function addHandTile(state: Draft<CoreState>, tile: Tile): void {
 
 export function putTileInWorld(state: CoreState, id: string, p_in_world_int: Point): CoreState {
   const nowhere = putTileNowhere(state, id);
+  const tile = getTileId(state, id);
+  const newCache = updateChunkCache(nowhere._cachedTileChunkMap, nowhere, p_in_world_int, { t: 'tile', tile: { letter: tile.letter } });
   return produce(nowhere, s => {
     setTileLoc(s, id, { t: 'world', p_in_world_int });
+    s._cachedTileChunkMap = newCache;
   });
 }
 

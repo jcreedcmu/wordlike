@@ -1,6 +1,12 @@
 #version 300 es
 precision mediump float;
 
+const vec3 TILE_FOREGROUND_COLOR = vec3(.227,.196,.055);
+const vec3 TILE_BACKGROUND_COLOR = vec3(.788,.706,.318);
+
+const float REQUIRED_BONUS_COLUMN = 12.;
+const float TILE_COLUMN = 14.;
+
 const int CHUNK_SIZE = 16;
 const float NUM_SPRITES_PER_SHEET = 16.; // in both directions
 const float SPRITE_SIZE = 32.;
@@ -42,13 +48,23 @@ bool less_dist(vec2 v, float d) {
 // p_in_world_fp is the fractional part of p_in_world. It is in [0,1]²
 // sprite_coords is actually an ivec. It is in  [0,NUM_SPRITES_PER_SHEET]²
 vec4 get_sprite_pixel(vec2 p_in_world_fp, vec2 sprite_coords, float sharpness) {
-  if (sprite_coords.x == 12. || sprite_coords.x == 13.) {
-    int letter = int((sprite_coords.x - 12.) * NUM_SPRITES_PER_SHEET + sprite_coords.y);
+  if (sprite_coords.x >= TILE_COLUMN ) {
+    int letter = int((sprite_coords.x - TILE_COLUMN) * NUM_SPRITES_PER_SHEET + sprite_coords.y);
+
+    vec2 font_coords = vec2(letter / int( NUM_FONT_CELLS_PER_SHEET), letter % int(NUM_FONT_CELLS_PER_SHEET));
+    float sdf = texture(u_fontTexture, (p_in_world_fp + font_coords) / NUM_FONT_CELLS_PER_SHEET).r;
+    float amount = clamp(0.5 + sharpness * (sdf - 0.5), 0., 1.);
+    return vec4(amount * TILE_FOREGROUND_COLOR + (1. - amount) * TILE_BACKGROUND_COLOR, 1.);
+  }
+
+  if (sprite_coords.x >= REQUIRED_BONUS_COLUMN) {
+    int letter = int((sprite_coords.x - REQUIRED_BONUS_COLUMN) * NUM_SPRITES_PER_SHEET + sprite_coords.y);
     vec2 font_coords = vec2(letter / int( NUM_FONT_CELLS_PER_SHEET), letter % int(NUM_FONT_CELLS_PER_SHEET));
     float sdf = texture(u_fontTexture, (p_in_world_fp + font_coords) / NUM_FONT_CELLS_PER_SHEET).r;
     float amount = clamp(0.5 + sharpness * (sdf - 0.5), 0., 1.);
     return vec4(amount * vec3(0.6) + (1. - amount) * vec3(1.), 1.);
   }
+
   return texture(u_spriteTexture, (p_in_world_fp + sprite_coords) / NUM_SPRITES_PER_SHEET);
 }
 
