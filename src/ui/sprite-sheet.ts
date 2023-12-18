@@ -17,15 +17,15 @@ export function spriteRectOfPos(pos: Point): Rect {
 }
 
 export function spriteLocOfChunkValue(cval: ChunkValue) {
-  if (cval.t == 'tile') {
-    const letterIndex = cval.tile.letter.charCodeAt(0) - 97;
-    return {
-      x: 14 + Math.floor(letterIndex / SPRITE_SHEET_SIZE.y),
-      y: letterIndex % SPRITE_SHEET_SIZE.y,
-    };
-  }
-  else {
-    return spriteLocOfBonus(cval);
+  switch (cval.t) {
+    case 'tile':
+      const letterIndex = cval.tile.letter.charCodeAt(0) - 97;
+      return {
+        x: 14 + Math.floor(letterIndex / SPRITE_SHEET_SIZE.y),
+        y: letterIndex % SPRITE_SHEET_SIZE.y,
+      };
+    case 'bonus':
+      return spriteLocOfBonus(cval.bonus);
   }
 }
 

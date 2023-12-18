@@ -125,10 +125,15 @@ export function putTileInHand(state: CoreState, id: string, ix: number): CoreSta
 export function putTileNowhere(state: CoreState, id: string): CoreState {
   const loc = getTileLoc(state, id);
   const handTiles = get_hand_tiles(state);
+
+
   switch (loc.t) {
     case 'world':
+      const bonus = getBonusFromLayer(state, loc.p_in_world_int);
+      const newCache = updateChunkCache(state._cachedTileChunkMap, state, loc.p_in_world_int, { t: 'bonus', bonus });
       return produce(state, s => {
         setTileLoc(s, id, { t: 'nowhere' });
+        s._cachedTileChunkMap = newCache;
       });
     case 'hand':
       return produce(state, s => {
