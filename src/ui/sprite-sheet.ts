@@ -8,6 +8,9 @@ import { Point, Rect } from "../util/types";
 import { vdiag, vscale } from "../util/vutil";
 import { drawRequiredLetterBonus } from "./drawBonus";
 
+// In number of sprites
+export const SPRITE_SHEET_SIZE = { x: 16, y: 16 };
+
 export function spriteRectOfPos(pos: Point): Rect {
   const S_in_image = TOOL_IMAGE_WIDTH;
   return { p: vscale(pos, S_in_image), sz: vdiag(S_in_image) };
@@ -15,7 +18,11 @@ export function spriteRectOfPos(pos: Point): Rect {
 
 export function spriteLocOfChunkValue(cval: ChunkValue) {
   if (cval.t == 'tile') {
-    return { x: 0, y: 0 }; // XXX placeholder
+    const letterIndex = cval.tile.letter.charCodeAt(0) - 97;
+    return {
+      x: 14 + Math.floor(letterIndex / SPRITE_SHEET_SIZE.y),
+      y: letterIndex % SPRITE_SHEET_SIZE.y,
+    };
   }
   else {
     return spriteLocOfBonus(cval);

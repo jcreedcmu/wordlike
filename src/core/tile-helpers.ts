@@ -9,6 +9,13 @@ import { ensureId } from "./tile-id-helpers";
 
 export type TileId = string;
 
+// This should contain enough information to render a tile assuming we
+// already know its location.
+export type RenderableTile = {
+  letter: string,
+  // XXX status bits, like "selected", or "disconnected" should go here
+}
+
 function tileOfTileEntity(tile: TileEntity): Tile {
   switch (tile.loc.t) {
     case 'hand': return { letter: tile.letter, id: tile.id, p_in_world_int: tile.loc.p_in_hand_int };

@@ -8,11 +8,11 @@ import { Bonus } from "./bonus";
 import { getBonusFromLayer } from "./bonus-helpers";
 import { Overlay, getOverlay, setOverlay } from "./layer";
 import { CoreState } from "./state";
-import { TileId } from "./tile-helpers";
+import { RenderableTile, TileId } from "./tile-helpers";
 
 export const CHUNK_SIZE = 16;
 
-export type ChunkValue = { t: 'bonus', bonus: Bonus } | { t: 'tile', tile: TileId };
+export type ChunkValue = { t: 'bonus', bonus: Bonus } | { t: 'tile', tile: RenderableTile };
 
 export type Chunk = {
   data: ChunkValue[];
