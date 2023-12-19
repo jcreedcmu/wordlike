@@ -10,7 +10,7 @@ import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from '..
 import { BOMB_RADIUS, getCurrentTool, getCurrentTools, rectOfTool } from '../core/tools';
 import { shouldDisplayBackButton } from '../core/winState';
 import { DEBUG, doOnceEvery } from '../util/debug';
-import { drawImage, fillRect, fillText, lineTo, moveTo, pathRectCircle, strokeRect } from '../util/dutil';
+import { clearRect, drawImage, fillRect, fillText, lineTo, moveTo, pathRectCircle, strokeRect } from '../util/dutil';
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from '../util/se2-extra';
 import { Point, Rect } from '../util/types';
@@ -30,12 +30,12 @@ const backgroundRed = '#ffaaaa';
 
 const DRAW_TILE_SHADOWS = false;
 
-export function paintWithScale(ci: CanvasInfo, state: GameState) {
+export function paintWithScale(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
   const { d } = ci;
   const actuallyRender = () => {
     d.save();
     d.scale(devicePixelRatio, devicePixelRatio);
-    rawPaint(ci, state);
+    rawPaint(ci, state, glEnabled);
     d.restore();
   };
   if (DEBUG.canvasProfiling) {
@@ -128,7 +128,7 @@ function formatTime(x: number) {
   return rv;
 }
 
-export function rawPaint(ci: CanvasInfo, state: GameState) {
+export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
   const cs = state.coreState;
 
   if (cs.paused) {
@@ -419,8 +419,15 @@ export function rawPaint(ci: CanvasInfo, state: GameState) {
     fillRect(d, toolbar_bds_in_canvas, backgroundGray);
   }
   drawPauseButton();
-  drawWorld();
-  drawShadows();
+
+  if (!glEnabled) {
+    drawWorld();
+    drawShadows();
+  }
+  else {
+    clearRect(d, world_bds_in_canvas);
+  }
+
   const illegalDrag = ms.t == 'drag_tile' && getWidgetPoint(cs, ms.p_in_canvas).t == 'hand' && proposedHandDragOverLimit(cs, ms);
   drawHand(illegalDrag);
   drawShuffleButton();

@@ -198,11 +198,19 @@ export function Game(props: GameProps): JSX.Element {
 
   const normalStyle: React.CSSProperties = {
     cursor: cursorOfState(state),
-    display: state.coreState.renderToGl ? 'none' : undefined,
+    display: state.coreState.renderToGl ? undefined : undefined,
+    zIndex: 1000,
+    position: 'absolute',
+    top: 0,
+    left: 0,
   };
   const glStyle: React.CSSProperties = {
     cursor: cursorOfState(state),
     display: state.coreState.renderToGl ? undefined : 'none',
+    zIndex: 0,
+    position: 'absolute',
+    top: 0,
+    left: 0,
   };
 
   const normalCanvas = <canvas
@@ -221,16 +229,14 @@ export function Game(props: GameProps): JSX.Element {
     key="gl"
     style={glStyle}
     ref={glcref} />;
-  return <div>
+  return <div className="inner-container">
     {normalCanvas}
     {glCanvas}
   </div>;
 }
 
 function render(ci: CanvasInfo, props: CanvasProps) {
-  if (!props.main.coreState.renderToGl) {
-    paintWithScale(ci, props.main);
-  }
+  paintWithScale(ci, props.main, props.main.coreState.renderToGl);
 }
 
 

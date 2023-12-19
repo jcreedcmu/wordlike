@@ -64,6 +64,10 @@ export function fillRect(d: CanvasRenderingContext2D, rect: Rect, color: string)
   d.fillRect(rect.p.x, rect.p.y, rect.sz.x, rect.sz.y);
 }
 
+export function clearRect(d: CanvasRenderingContext2D, rect: Rect) {
+  d.clearRect(rect.p.x, rect.p.y, rect.sz.x, rect.sz.y);
+}
+
 export function strokeRect(d: CanvasRenderingContext2D, rect: Rect, color: string, width: number = 1) {
   d.strokeStyle = color;
   d.lineWidth = width;

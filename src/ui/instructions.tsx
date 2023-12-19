@@ -101,7 +101,7 @@ function render(ci: CanvasInfo, props: CanvasProps) {
   const { d } = ci;
   d.save();
   d.scale(devicePixelRatio, devicePixelRatio);
-  rawPaint(ci, props.main);
+  rawPaint(ci, props.main, false);
 
   drawBubble(d, `This is the origin.\nAll tiles must connect here, and\nthe tile cannot be moved once placed.`,
     { x: 250, y: 100 }, { x: 170, y: 230 });
