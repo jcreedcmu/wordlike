@@ -40,13 +40,13 @@ export function paintWithScale(ci: CanvasInfo, state: GameState, glEnabled: bool
   };
   if (DEBUG.canvasProfiling) {
     const before = Date.now();
-    const NUM_TRIALS = 10;
+    const NUM_TRIALS = 5;
     for (let i = 0; i < NUM_TRIALS; i++) {
       actuallyRender();
     }
     const duration = Date.now() - before;
     doOnceEvery('canvasTiming', 20, () => {
-      console.log('elapsed ms', duration / NUM_TRIALS);
+      console.log('canvas frame elapsed ms', duration / NUM_TRIALS);
     });
   }
   else {

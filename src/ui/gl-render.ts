@@ -133,25 +133,29 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
       actuallyRender();
     }
     else {
-      const query = gl.createQuery()!;
-      const NUM_TRIALS = 10;
-      gl.beginQuery(ext.TIME_ELAPSED_EXT, query);
-      for (let i = 0; i < NUM_TRIALS; i++) {
-        actuallyRender();
-      }
-      gl.endQuery(ext.TIME_ELAPSED_EXT);
+      let alreadyRendered = false;
+      doOnceEvery('glTiming', 20, () => {
+        alreadyRendered = true;
+        const query = gl.createQuery()!;
+        const NUM_TRIALS = 10;
+        gl.beginQuery(ext.TIME_ELAPSED_EXT, query);
+        for (let i = 0; i < NUM_TRIALS; i++) {
+          actuallyRender();
+        }
+        gl.endQuery(ext.TIME_ELAPSED_EXT);
 
-      setTimeout(() => {
-        const available = gl.getQueryParameter(query, gl.QUERY_RESULT_AVAILABLE);
-        doOnceEvery('glTiming', 20, () => {
+        setTimeout(() => {
+          const available = gl.getQueryParameter(query, gl.QUERY_RESULT_AVAILABLE);
           if (available) {
-            console.log('elapsed ms', gl.getQueryParameter(query, gl.QUERY_RESULT) / 1e6 / NUM_TRIALS);
+            console.log('opengl frame elapsed ms', gl.getQueryParameter(query, gl.QUERY_RESULT) / 1e6 / NUM_TRIALS);
           }
           else {
             console.log('not available');
           }
-        });
-      }, 1000);
+        }, 1000);
+      });
+      if (!alreadyRendered)
+        actuallyRender();
     }
   }
   else {
