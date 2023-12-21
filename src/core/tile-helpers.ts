@@ -8,6 +8,7 @@ import { getBonusFromLayer } from "./bonus-helpers";
 import { ensureId } from "./tile-id-helpers";
 import { readChunkCache, updateChunkCache } from "./chunk";
 import { getOverlay } from "./layer";
+import { MoveTile } from "./state-helpers";
 
 export type TileId = string;
 
@@ -103,6 +104,22 @@ export function putTileInWorld(state: CoreState, id: string, p_in_world_int: Poi
     setTileLoc(s, id, { t: 'world', p_in_world_int });
     s._cachedTileChunkMap = newCache;
   });
+}
+
+export function putTilesInWorld(state: CoreState, moves: MoveTile[]): CoreState {
+  let cs = state;
+  for (const move of moves) {
+    cs = putTileNowhere(cs, move.id);
+  }
+  for (const move of moves) {
+    const tile = getTileId(state, move.id);
+    const newCache = updateChunkCache(cs._cachedTileChunkMap, cs, move.p_in_world_int, { t: 'tile', tile: { letter: tile.letter } });
+    cs = produce(cs, s => {
+      setTileLoc(s, move.id, { t: 'world', p_in_world_int: move.p_in_world_int });
+      s._cachedTileChunkMap = newCache;
+    });
+  }
+  return cs;
 }
 
 export function putTileInHand(state: CoreState, id: string, ix: number): CoreState {

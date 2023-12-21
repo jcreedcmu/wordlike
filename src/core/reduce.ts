@@ -18,7 +18,7 @@ import { reduceKey } from './reduceKey';
 import { resolveSelection } from './selection';
 import { CoreState, GameState, Location, SceneState, mkGameSceneState } from './state';
 import { MoveTile, checkValid, drawOfState, filterExpiredAnimations, filterExpiredWordBonusState, isCollision, isOccupied, isTilePinned, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
-import { cellAtPoint, getTileId, get_hand_tiles, get_tiles, putTileInHand, putTileInWorld, putTilesInHandFromNotHand, setTileLoc, tileAtPoint } from "./tile-helpers";
+import { cellAtPoint, getTileId, get_hand_tiles, get_tiles, putTileInHand, putTileInWorld, putTilesInHandFromNotHand, putTilesInWorld, setTileLoc, tileAtPoint } from "./tile-helpers";
 import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect } from './tools';
 import { shouldDisplayBackButton } from './winState';
 
@@ -90,14 +90,12 @@ function resolveMouseupInner(state: GameState): GameState {
           if (isCollision(remainingTiles, moves, state.coreState.bonusOverlay, getBonusLayer(state.coreState.bonusLayerSeed))) {
             return state;
           }
-
-          const afterDrop = produce(state, s => {
-            moves.forEach(({ id, p_in_world_int }) => {
-              setTileLoc(s.coreState, id, { t: 'world', p_in_world_int });
+          const tcs = produce(
+            putTilesInWorld(state.coreState, moves),
+            s => {
+              s.selected = { overlay: mkOverlayFrom(tgts), selectedIds: selected.selectedIds };
             });
-            s.coreState.selected = { overlay: mkOverlayFrom(tgts), selectedIds: selected.selectedIds };
-          });
-          return withCoreState(afterDrop, cs => checkValid(cs));
+          return withCoreState(state, cs => checkValid(tcs));
         }
         else {
 
