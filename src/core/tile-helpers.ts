@@ -8,7 +8,7 @@ import { getBonusFromLayer } from "./bonus-helpers";
 import { ensureId } from "./tile-id-helpers";
 import { readChunkCache, updateChunkCache } from "./chunk";
 import { getOverlay } from "./layer";
-import { MoveTile } from "./state-helpers";
+import { GenMoveTile, MoveTile } from "./state-helpers";
 
 export type TileId = string;
 
@@ -118,6 +118,35 @@ export function putTilesInWorld(state: CoreState, moves: MoveTile[]): CoreState 
       setTileLoc(s, move.id, { t: 'world', p_in_world_int: move.p_in_world_int });
       s._cachedTileChunkMap = newCache;
     });
+  }
+  return cs;
+}
+
+export function moveTiles(state: CoreState, moves: GenMoveTile[]): CoreState {
+  let cs = state;
+  // First remove all the tiles from the universe, emptying out cache
+  for (const move of moves) {
+    cs = putTileNowhere(cs, move.id);
+  }
+  // Now tiles at their destinations
+  for (const move of moves) {
+    let newCache = cs._cachedTileChunkMap;
+    const tile = getTileId(state, move.id);
+    const loc = move.loc;
+    switch (loc.t) {
+      case 'world':
+        newCache = updateChunkCache(newCache, cs, loc.p_in_world_int, { t: 'tile', tile: { letter: tile.letter } });
+        break;
+      case 'nowhere':
+        break;
+      case 'hand': // XXX At least I don't *think* I need to do anything here... I'm not caching hand state yet.
+        break;
+    }
+    cs = produce(cs, s => {
+      setTileLoc(s, move.id, loc);
+      s._cachedTileChunkMap = newCache;
+    });
+
   }
   return cs;
 }

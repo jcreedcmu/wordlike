@@ -199,14 +199,6 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
       drawTile(d, canvas_from_tile(tile), tile, opts);
     });
 
-
-    // draw invalid words
-    if (ms.t == 'up') {
-      cs.invalidWords.forEach(lw => {
-        drawInvalidWord(d, pan_canvas_from_world, lw);
-      });
-    }
-
     // draw bonuses
     for (let i = top_left_in_world.x; i <= bot_right_in_world.x; i++) {
       for (let j = top_left_in_world.y; j <= bot_right_in_world.y; j++) {
@@ -429,6 +421,13 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
   }
   else {
     clearRect(d, world_bds_in_canvas);
+  }
+
+  // draw invalid words
+  if (ms.t == 'up') {
+    cs.invalidWords.forEach(lw => {
+      drawInvalidWord(d, pan_canvas_from_world, lw);
+    });
   }
 
   const illegalDrag = ms.t == 'drag_tile' && getWidgetPoint(cs, ms.p_in_canvas).t == 'hand' && proposedHandDragOverLimit(cs, ms);

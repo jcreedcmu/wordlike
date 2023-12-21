@@ -18,7 +18,7 @@ import { reduceKey } from './reduceKey';
 import { resolveSelection } from './selection';
 import { CoreState, GameState, Location, SceneState, mkGameSceneState } from './state';
 import { MoveTile, checkValid, drawOfState, filterExpiredAnimations, filterExpiredWordBonusState, isCollision, isOccupied, isTilePinned, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
-import { cellAtPoint, getTileId, get_hand_tiles, get_tiles, putTileInHand, putTileInWorld, putTilesInHandFromNotHand, putTilesInWorld, setTileLoc, tileAtPoint } from "./tile-helpers";
+import { cellAtPoint, getTileId, get_hand_tiles, get_tiles, moveTiles, putTileInHand, putTileInWorld, putTilesInHandFromNotHand, putTilesInWorld, setTileLoc, tileAtPoint } from "./tile-helpers";
 import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect } from './tools';
 import { shouldDisplayBackButton } from './winState';
 
@@ -149,10 +149,8 @@ function resolveMouseupInner(state: GameState): GameState {
         return state;
       const id1 = tile.id;
       const loc1 = getTileId(state.coreState, id1).loc;
-      return withCoreState(state, cs => checkValid(produce(cs, s => {
-        setTileLoc(s, id0, loc1);
-        setTileLoc(s, id1, loc0);
-      })));
+      const tcs = moveTiles(state.coreState, [{ id: id0, loc: loc1 }, { id: id1, loc: loc0 }]);
+      return withCoreState(state, cs => checkValid(tcs));
     }
 
     case 'up': return state; // no drag to resolve

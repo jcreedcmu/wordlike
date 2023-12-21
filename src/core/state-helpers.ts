@@ -46,6 +46,7 @@ export function addHandTiles(state: CoreState, tiles: Tile[]): CoreState {
 // while a drag of a bunch of tiles is being resolved.
 
 export type MoveTile = { letter: string, id: string, p_in_world_int: Point };
+export type GenMoveTile = { id: string, loc: Location };
 
 // Returns false if we cannot place
 export function isCollision(tiles: TileEntity[], moveTiles: MoveTile[], bonusOverlay: Overlay<Bonus>, bonusLayer: Layer<Bonus>) {
