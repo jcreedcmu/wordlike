@@ -34,6 +34,9 @@ uniform sampler2D u_fontTexture;
 // Chunk data
 uniform sampler2D u_chunkDataTexture;
 
+// Draw tile
+uniform bool u_drawTile;
+
 float crosshair(vec2 p) {
   if (p.x < 2.5 * u_world_from_canvas[0][0] && p.y < 0.5 * u_world_from_canvas[0][0])
     return 1.0;
@@ -69,6 +72,10 @@ vec4 get_sprite_pixel(vec2 p_in_world_fp, vec2 sprite_coords, float sharpness) {
 }
 
 vec4 getColor() {
+  if (u_drawTile) {
+    return vec4(1.,0.,0.,1.);
+  }
+
   vec3 p_in_canvas = vec3(gl_FragCoord.xy, 1.0);
   p_in_canvas.y = u_canvasSize.y - p_in_canvas.y;
   vec2 p_in_world = (u_world_from_canvas * p_in_canvas).xy;

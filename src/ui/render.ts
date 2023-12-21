@@ -318,7 +318,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
     d.restore();
   }
 
-  function drawOtherUi() {
+  function drawOtherUi(glEnabled: boolean) {
 
     // draw exchange guide
     if (ms.t == 'exchange_tiles') {
@@ -355,10 +355,13 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
         });
       }
       else {
-        const tile = getTileId(cs, ms.id);
-        drawTile(d,
-          canvas_from_drag_tile(cs, state.mouseState),
-          tile);
+        // draw single tile
+        if (!glEnabled) {
+          const tile = getTileId(cs, ms.id);
+          drawTile(d,
+            canvas_from_drag_tile(cs, state.mouseState),
+            tile);
+        }
       }
     }
 
@@ -438,7 +441,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
     fillText(d, 'You lost :(', mp, 'rgba(0,0,0,0.3)', '96px sans-serif');
   }
   else {
-    drawOtherUi();
+    drawOtherUi(glEnabled);
     drawAnimations(now_in_game(cs.game_from_clock));
   }
   if (cs.winState.t == 'won') {

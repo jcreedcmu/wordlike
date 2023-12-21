@@ -15,7 +15,7 @@ import { gl_from_canvas } from "./gl-helpers";
 import { spriteLocOfBonus, spriteLocOfChunkValue } from "./sprite-sheet";
 import { resizeView } from "./ui-helpers";
 import { CanvasGlInfo } from "./use-canvas";
-import { pan_canvas_from_world_of_state } from "./view-helpers";
+import { canvas_from_drag_tile, pan_canvas_from_world_of_state } from "./view-helpers";
 import { canvas_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
 
 export type GlEnv = {
@@ -43,6 +43,9 @@ function drawChunk(gl: WebGL2RenderingContext, env: GlEnv, p_in_chunk: Point, st
     p1.x, p1.y, 0,
     p2.x, p1.y, 0
   ]);
+
+  const u_drawTile = gl.getUniformLocation(prog, 'u_drawTile');
+  gl.uniform1i(u_drawTile, 0);
 
   const u_chunk_origin_in_world = gl.getUniformLocation(prog, 'u_chunk_origin_in_world');
   gl.uniform2f(u_chunk_origin_in_world, p_in_chunk.x * CHUNK_SIZE, p_in_chunk.y * CHUNK_SIZE);
@@ -124,6 +127,27 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
     chunks.forEach(p => {
       drawChunk(gl, env, p, state, chunk_from_canvas);
     });
+
+    // draw dragged tiles
+    if (state.mouseState.t == 'drag_tile') {
+      const tile_rect_in_tile = { p: vdiag(0.), sz: vdiag(1.) };
+      const canvas_from_tile = canvas_from_drag_tile(state.coreState, state.mouseState);
+      const tile_rect_in_gl = apply_to_rect(compose(gl_from_canvas, canvas_from_tile), tile_rect_in_tile);
+
+      const [p1, p2] = rectPts(tile_rect_in_gl);
+
+      attributeSetFloats(gl, env.chunkBoundsBuffer, [
+        p1.x, p2.y, 0,
+        p2.x, p2.y, 0,
+        p1.x, p1.y, 0,
+        p2.x, p1.y, 0
+      ]);
+
+      const u_drawTile = gl.getUniformLocation(prog, 'u_drawTile');
+      gl.uniform1i(u_drawTile, 1);
+
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    }
   };
 
   if (DEBUG.glProfiling) {

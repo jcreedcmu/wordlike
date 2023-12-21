@@ -8,7 +8,7 @@ export function attributeCreateAndSetFloats(
   const buffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr),
-    gl.STATIC_DRAW);
+    gl.DYNAMIC_DRAW);
   const attr = gl.getAttribLocation(prog, attr_name);
   gl.enableVertexAttribArray(attr);
   gl.vertexAttribPointer(attr, rsize, gl.FLOAT, false, 0, 0);
@@ -21,7 +21,7 @@ export function attributeSetFloats(
   arr: number[]
 ) {
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr), gl.STATIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr), gl.DYNAMIC_DRAW);
 }
 
 export function shaderProgram(gl: WebGL2RenderingContext, vs: string, fs: string) {
