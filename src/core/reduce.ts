@@ -15,7 +15,7 @@ import { getPanicFraction, now_in_game } from './clock';
 import { getIntentOfMouseDown, reduceIntent } from './intent';
 import { mkOverlayFrom, setOverlay } from './layer';
 import { reduceKey } from './reduceKey';
-import { resolveSelection } from './selection';
+import { resolveSelection, deselect, setSelected } from './selection';
 import { CoreState, GameState, Location, SceneState, mkGameSceneState } from './state';
 import { MoveTile, checkValid, drawOfState, filterExpiredAnimations, filterExpiredWordBonusState, isCollision, isOccupied, isTilePinned, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
 import { cellAtPoint, getTileId, get_hand_tiles, get_tiles, moveTiles, putTileInHand, putTileInWorld, putTilesInHandFromNotHand, putTilesInWorld, setTileLoc, tileAtPoint } from "./tile-helpers";
@@ -90,11 +90,8 @@ function resolveMouseupInner(state: GameState): GameState {
           if (isCollision(remainingTiles, moves, state.coreState.bonusOverlay, getBonusLayer(state.coreState.bonusLayerSeed))) {
             return state;
           }
-          const tcs = produce(
-            putTilesInWorld(state.coreState, moves),
-            s => {
-              s.selected = { overlay: mkOverlayFrom(tgts), selectedIds: selected.selectedIds };
-            });
+          const tcs = setSelected(putTilesInWorld(state.coreState, moves),
+            { overlay: mkOverlayFrom(tgts), selectedIds: selected.selectedIds });
           return withCoreState(state, cs => checkValid(tcs));
         }
         else {
@@ -156,10 +153,6 @@ function resolveMouseupInner(state: GameState): GameState {
     case 'up': return state; // no drag to resolve
     case 'down': return state;
   }
-}
-
-export function deselect(state: CoreState): CoreState {
-  return produce(state, s => { s.selected = undefined; });
 }
 
 export function vacuous_down(state: GameState, wp: WidgetPoint): GameState {

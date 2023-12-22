@@ -1,7 +1,8 @@
 import { Dispatch } from "../core/action";
 import { getAssets } from "../core/assets";
 import { getBonusFromLayer } from "../core/bonus-helpers";
-import { WORLD_CHUNK_SIZE, activeChunks, getChunk } from "../core/chunk";
+import { getCachedSelection } from "../core/cache-state";
+import { Chunk, WORLD_CHUNK_SIZE, activeChunks, getChunk } from "../core/chunk";
 import { GameState } from "../core/state";
 import { DEBUG, doOnce, doOnceEvery, logger } from "../util/debug";
 import { imageDataOfBuffer } from "../util/dutil";
@@ -105,6 +106,75 @@ function drawChunk(gl: WebGL2RenderingContext, env: GlEnv, p_in_chunk: Point, st
 
 }
 
+// XXX merge this with above
+function drawExternalChunk(gl: WebGL2RenderingContext, env: GlEnv, chunk: Chunk, state: GameState, canvas_from_chunk_local: SE2): void {
+  const { prog, chunkBoundsBuffer, chunkImdat } = env;
+
+  const chunk_rect_in_canvas = apply_to_rect(canvas_from_chunk_local, { p: vdiag(0), sz: chunk.size });
+  const chunk_rect_in_gl = apply_to_rect(gl_from_canvas, chunk_rect_in_canvas);
+
+  const [p1, p2] = rectPts(chunk_rect_in_gl);
+  attributeSetFloats(gl, chunkBoundsBuffer, [
+    p1.x, p2.y, 0,
+    p2.x, p2.y, 0,
+    p1.x, p1.y, 0,
+    p2.x, p1.y, 0
+  ]);
+
+  const u_drawTile = gl.getUniformLocation(prog, 'u_drawTile');
+  gl.uniform1i(u_drawTile, 1);
+
+  // This doesn't seem relevant for an external chunk
+
+  // const u_chunk_origin_in_world = gl.getUniformLocation(prog, 'u_chunk_origin_in_world');
+  //gl.uniform2f(u_chunk_origin_in_world, p_in_chunk.x * WORLD_CHUNK_SIZE.x, p_in_chunk.y * WORLD_CHUNK_SIZE.y);
+
+  const u_spriteTexture = gl.getUniformLocation(prog, 'u_spriteTexture');
+  gl.uniform1i(u_spriteTexture, SPRITE_TEXTURE_UNIT);
+
+  const u_fontTexture = gl.getUniformLocation(prog, 'u_fontTexture');
+  gl.uniform1i(u_fontTexture, FONT_TEXTURE_UNIT);
+
+  const u_chunkDataTexture = gl.getUniformLocation(prog, 'u_chunkDataTexture');
+  gl.uniform1i(u_chunkDataTexture, CHUNK_DATA_TEXTURE_UNIT);
+
+  const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
+  gl.uniform2f(u_canvasSize, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
+
+  const world_from_canvas_SE2 = inverse(pan_canvas_from_world_of_state(state));
+  const s = world_from_canvas_SE2.scale;
+  const t = world_from_canvas_SE2.translate;
+
+  const world_from_canvas = [
+    s.x, 0.0, 0.0,
+    0.0, s.y, 0.0,
+    t.x, t.y, 1.0,
+  ];
+  const u_world_from_canvas = gl.getUniformLocation(prog, "u_world_from_canvas");
+  gl.uniformMatrix3fv(u_world_from_canvas, false, world_from_canvas);
+
+  gl.viewport(0, 0, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
+
+  //// Set chunk data
+  //
+  // for (let x = 0; x < chunk.size.x; x++) {
+  //   for (let y = 0; y < chunk.size.y; y++) {
+  //     const ix = 4 * (y * chunk.size.x + x);
+  //     const spritePos = chunk.spritePos[x + y * chunk.size.x];
+  //     chunkImdat.data[ix + 0] = spritePos.x;
+  //     chunkImdat.data[ix + 1] = spritePos.y;
+  //     chunkImdat.data[ix + 2] = 0;
+  //     chunkImdat.data[ix + 3] = 255;
+  //   }
+  // }
+
+  // gl.activeTexture(gl.TEXTURE0 + CHUNK_DATA_TEXTURE_UNIT);
+  // gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, chunkImdat);
+
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+}
+
 const shouldDebug = { v: false };
 export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): void {
   const { d: gl } = ci;
@@ -128,25 +198,35 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
       drawChunk(gl, env, p, state, chunk_from_canvas);
     });
 
-    // draw dragged tiles
+    // draw dragged tiles from selection
     if (state.mouseState.t == 'drag_tile') {
-      const tile_rect_in_tile = { p: vdiag(0.), sz: vdiag(1.) };
-      const canvas_from_tile = canvas_from_drag_tile(state.coreState, state.mouseState);
-      const tile_rect_in_gl = apply_to_rect(compose(gl_from_canvas, canvas_from_tile), tile_rect_in_tile);
+      const cachedSelection = getCachedSelection(state.coreState);
+      if (cachedSelection) {
+        // big selection
+        const { chunk, selection_chunk_from_world: chunk_local_from_world } = cachedSelection;
+        const canvas_from_chunk_local = compose(canvas_from_world, inverse(chunk_local_from_world));
+        drawExternalChunk(gl, env, chunk, state, canvas_from_chunk_local);
+      }
+      else {
+        // single tile drag
+        const tile_rect_in_tile = { p: vdiag(0.), sz: vdiag(1.) };
+        const canvas_from_tile = canvas_from_drag_tile(state.coreState, state.mouseState);
+        const tile_rect_in_gl = apply_to_rect(compose(gl_from_canvas, canvas_from_tile), tile_rect_in_tile);
 
-      const [p1, p2] = rectPts(tile_rect_in_gl);
+        const [p1, p2] = rectPts(tile_rect_in_gl);
 
-      attributeSetFloats(gl, env.chunkBoundsBuffer, [
-        p1.x, p2.y, 0,
-        p2.x, p2.y, 0,
-        p1.x, p1.y, 0,
-        p2.x, p1.y, 0
-      ]);
+        attributeSetFloats(gl, env.chunkBoundsBuffer, [
+          p1.x, p2.y, 0,
+          p2.x, p2.y, 0,
+          p1.x, p1.y, 0,
+          p2.x, p1.y, 0
+        ]);
 
-      const u_drawTile = gl.getUniformLocation(prog, 'u_drawTile');
-      gl.uniform1i(u_drawTile, 1);
+        const u_drawTile = gl.getUniformLocation(prog, 'u_drawTile');
+        gl.uniform1i(u_drawTile, 1);
 
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      }
     }
   };
 

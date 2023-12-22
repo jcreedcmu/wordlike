@@ -3,6 +3,7 @@ import { inverse } from "../util/se2";
 import { apply_to_rect } from "../util/se2-extra";
 import { boundRect, pointInRect } from "../util/util";
 import { vadd, vsub } from "../util/vutil";
+import { getCacheState } from "./cache-state";
 import { Overlay, mkOverlay, setOverlay } from "./layer";
 import { CoreState, MouseState } from "./state";
 import { getTileId, get_main_tiles } from "./tile-helpers";
@@ -47,9 +48,7 @@ export function resolveSelection(state: CoreState, ms: MouseState & { t: 'drag_s
   });
 
   const realSelected = selected.selectedIds.length == 0 ? undefined : selected;
-  return produce(state, s => {
-    s.selected = realSelected;
-  });
+  return setSelected(state, realSelected);
 }
 
 function evalSelectionOperation(opn: SelectionOperation, a: string[], b: string[]): string[] {
@@ -72,4 +71,16 @@ export function selectionOperationOfMods(mods: Set<string>): SelectionOperation 
     return 'subtract';
   }
   return 'set';
+}
+
+
+export function setSelected(state: CoreState, sel: SelectionState | undefined): CoreState {
+  getCacheState(state).selection.dirty = true;
+  return produce(state, s => {
+    s.selected = sel;
+  });
+}
+
+export function deselect(state: CoreState): CoreState {
+  return setSelected(state, undefined);
 }

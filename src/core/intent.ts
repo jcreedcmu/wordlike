@@ -1,14 +1,14 @@
 import { WidgetPoint } from '../ui/widget-helpers';
 import { produce } from '../util/produce';
-import { vint, vm } from '../util/vutil';
-import { GameState, TileEntity } from './state';
-import { tryKillTileOfState } from './kill-helpers';
-import { Tool, bombIntent, copyIntent, dynamiteIntent } from './tools';
-import { SelectionOperation, selectionOperationOfMods } from './selection';
-import { vacuous_down, deselect } from './reduce';
-import { checkValid, drawSpecific, withCoreState } from './state-helpers';
-import { CellContents, addHandTile, tileAtPoint } from './tile-helpers';
 import { Point } from '../util/types';
+import { vint, vm } from '../util/vutil';
+import { tryKillTileOfState } from './kill-helpers';
+import { vacuous_down } from './reduce';
+import { SelectionOperation, deselect, selectionOperationOfMods } from './selection';
+import { GameState } from './state';
+import { checkValid, drawSpecific, withCoreState } from './state-helpers';
+import { CellContents, tileAtPoint } from './tile-helpers';
+import { Tool, bombIntent, copyIntent, dynamiteIntent } from './tools';
 
 export type KillIntent =
   | { t: 'kill', radius: number, cost: number }

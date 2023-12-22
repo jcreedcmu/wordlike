@@ -323,32 +323,32 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
     }
 
     // draw dragged tile
-    if (ms.t == 'drag_tile') {
-      if (cs.selected) {
-        const tile0 = getTileId(cs, ms.id);
-        const tiles = cs.selected.selectedIds.map(id => getTileId(cs, id));
+    if (!glEnabled) {
+      if (ms.t == 'drag_tile') {
+        if (cs.selected) {
+          const tile0 = getTileId(cs, ms.id);
+          const tiles = cs.selected.selectedIds.map(id => getTileId(cs, id));
 
-        // draw dragged tiles
-        tiles.forEach(tile => {
-          if (tile.loc.t == 'world' && tile0.loc.t == 'world') {
-            let drag_tile_from_other_tile = translate(vsub(tile.loc.p_in_world_int, tile0.loc.p_in_world_int));
-            if (ms.flipped) {
-              drag_tile_from_other_tile = {
-                scale: drag_tile_from_other_tile.scale, translate: {
-                  x: drag_tile_from_other_tile.translate.y,
-                  y: drag_tile_from_other_tile.translate.x,
-                }
-              };
+          // draw dragged tiles
+          tiles.forEach(tile => {
+            if (tile.loc.t == 'world' && tile0.loc.t == 'world') {
+              let drag_tile_from_other_tile = translate(vsub(tile.loc.p_in_world_int, tile0.loc.p_in_world_int));
+              if (ms.flipped) {
+                drag_tile_from_other_tile = {
+                  scale: drag_tile_from_other_tile.scale, translate: {
+                    x: drag_tile_from_other_tile.translate.y,
+                    y: drag_tile_from_other_tile.translate.x,
+                  }
+                };
+              }
+              drawTile(d,
+                compose(canvas_from_drag_tile(cs, ms), drag_tile_from_other_tile),
+                tile);
             }
-            drawTile(d,
-              compose(canvas_from_drag_tile(cs, ms), drag_tile_from_other_tile),
-              tile);
-          }
-        });
-      }
-      else {
-        // draw single tile
-        if (!glEnabled) {
+          });
+        }
+        else {
+          // draw single tile
           const tile = getTileId(cs, ms.id);
           drawTile(d,
             canvas_from_drag_tile(cs, state.mouseState),
