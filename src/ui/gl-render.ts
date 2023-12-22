@@ -4,10 +4,11 @@ import { getBonusFromLayer } from "../core/bonus-helpers";
 import { getCachedSelection } from "../core/cache-state";
 import { Chunk, WORLD_CHUNK_SIZE, activeChunks, getChunk } from "../core/chunk";
 import { GameState } from "../core/state";
+import { getTileId } from "../core/tile-helpers";
 import { DEBUG, doOnce, doOnceEvery, logger } from "../util/debug";
 import { imageDataOfBuffer } from "../util/dutil";
 import { attributeCreateAndSetFloats, attributeSetFloats, shaderProgram } from "../util/gl-util";
-import { SE2, apply, compose, inverse, scale } from "../util/se2";
+import { SE2, apply, compose, composen, inverse, scale, translate } from "../util/se2";
 import { apply_to_rect } from "../util/se2-extra";
 import { Point } from "../util/types";
 import { rectPts } from "../util/util";
@@ -198,14 +199,23 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
       drawChunk(gl, env, p, state, chunk_from_canvas);
     });
 
+    const ms = state.mouseState;
     // draw dragged tiles from selection
-    if (state.mouseState.t == 'drag_tile') {
+    if (ms.t == 'drag_tile') {
       const cachedSelection = getCachedSelection(state.coreState);
       if (cachedSelection) {
         // big selection
-        const { chunk, selection_chunk_from_world: chunk_local_from_world } = cachedSelection;
-        const canvas_from_chunk_local = compose(canvas_from_world, inverse(chunk_local_from_world));
-        drawExternalChunk(gl, env, chunk, state, canvas_from_chunk_local);
+        const tile0 = getTileId(state.coreState, ms.id);
+        if (tile0.loc.t == 'world') {
+          const { chunk, selection_chunk_from_world: static_chunk_local_from_world } = cachedSelection;
+          const canvas_from_tile = canvas_from_drag_tile(state.coreState, state.mouseState);
+          const canvas_from_chunk_local = composen(
+            canvas_from_tile,                                // canvas_from_tile
+            translate(vscale(tile0.loc.p_in_world_int, -1)), // tile_from_world
+            inverse(static_chunk_local_from_world)           // world_from_chunk_local
+          );
+          drawExternalChunk(gl, env, chunk, state, canvas_from_chunk_local);
+        }
       }
       else {
         // single tile drag
