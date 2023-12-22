@@ -1,5 +1,6 @@
 import { SE2, translate } from "../util/se2";
-import { vscale } from "../util/vutil";
+import { boundRect } from "../util/util";
+import { vadd, vdiag, vscale } from "../util/vutil";
 import { Chunk, mkChunk } from "./chunk";
 import { overlayForEach, overlayPoints } from "./layer";
 import { CoreState, GameState } from "./state";
@@ -33,13 +34,11 @@ function deriveSelectionData(coreState: CoreState): CachedSelectionData | undefi
     return undefined;
 
   const points_in_world = overlayPoints(coreState.selected.overlay);
-  const min = {
-    x: Math.min(...points_in_world.map(({ x, y }) => x)),
-    y: Math.min(...points_in_world.map(({ x, y }) => y))
-  };
+  const bdr = boundRect(points_in_world);
+  const chunk = mkChunk(vadd(bdr.sz, vdiag(1)));
   return {
-    chunk: mkChunk(),
-    selection_chunk_from_world: translate(vscale(min, -1)),
+    chunk,
+    selection_chunk_from_world: translate(vscale(bdr.p, -1)),
   };
 }
 

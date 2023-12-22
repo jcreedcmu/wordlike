@@ -54,6 +54,10 @@ export function vdiv(b: Point, s: number): Point {
   return { x: b.x / s, y: b.y / s };
 }
 
+export function vinv(b: Point): Point {
+  return { x: 1 / b.x, y: 1 / b.y };
+}
+
 export function vint(v: Point): Point {
   return { x: int(v.x), y: int(v.y) };
 }

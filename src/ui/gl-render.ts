@@ -1,7 +1,7 @@
 import { Dispatch } from "../core/action";
 import { getAssets } from "../core/assets";
 import { getBonusFromLayer } from "../core/bonus-helpers";
-import { CHUNK_SIZE, activeChunks, getChunk } from "../core/chunk";
+import { WORLD_CHUNK_SIZE, activeChunks, getChunk } from "../core/chunk";
 import { GameState } from "../core/state";
 import { DEBUG, doOnce, doOnceEvery, logger } from "../util/debug";
 import { imageDataOfBuffer } from "../util/dutil";
@@ -10,7 +10,7 @@ import { SE2, apply, compose, inverse, scale } from "../util/se2";
 import { apply_to_rect } from "../util/se2-extra";
 import { Point } from "../util/types";
 import { rectPts } from "../util/util";
-import { vadd, vdiag, vm, vscale } from "../util/vutil";
+import { vadd, vdiag, vinv, vm, vscale } from "../util/vutil";
 import { gl_from_canvas } from "./gl-helpers";
 import { spriteLocOfBonus, spriteLocOfChunkValue } from "./sprite-sheet";
 import { resizeView } from "./ui-helpers";
@@ -48,7 +48,7 @@ function drawChunk(gl: WebGL2RenderingContext, env: GlEnv, p_in_chunk: Point, st
   gl.uniform1i(u_drawTile, 0);
 
   const u_chunk_origin_in_world = gl.getUniformLocation(prog, 'u_chunk_origin_in_world');
-  gl.uniform2f(u_chunk_origin_in_world, p_in_chunk.x * CHUNK_SIZE, p_in_chunk.y * CHUNK_SIZE);
+  gl.uniform2f(u_chunk_origin_in_world, p_in_chunk.x * WORLD_CHUNK_SIZE.x, p_in_chunk.y * WORLD_CHUNK_SIZE.y);
 
   const u_spriteTexture = gl.getUniformLocation(prog, 'u_spriteTexture');
   gl.uniform1i(u_spriteTexture, SPRITE_TEXTURE_UNIT);
@@ -86,10 +86,10 @@ function drawChunk(gl: WebGL2RenderingContext, env: GlEnv, p_in_chunk: Point, st
   }
 
   // Set chunk data
-  for (let x = 0; x < CHUNK_SIZE; x++) {
-    for (let y = 0; y < CHUNK_SIZE; y++) {
-      const ix = 4 * (y * CHUNK_SIZE + x);
-      const spritePos = chunk.spritePos[x + y * CHUNK_SIZE];
+  for (let x = 0; x < chunk.size.x; x++) {
+    for (let y = 0; y < chunk.size.y; y++) {
+      const ix = 4 * (y * chunk.size.x + x);
+      const spritePos = chunk.spritePos[x + y * chunk.size.x];
       chunkImdat.data[ix + 0] = spritePos.x;
       chunkImdat.data[ix + 1] = spritePos.y;
       chunkImdat.data[ix + 2] = 0;
@@ -122,7 +122,7 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
 
     // XXX some redundant transforms going on here, we also compute chunk_from_canvas in chunk.ts
     const canvas_from_world = pan_canvas_from_world_of_state(state);
-    const chunk_from_canvas = compose(scale(vdiag(1 / CHUNK_SIZE)), inverse(canvas_from_world));
+    const chunk_from_canvas = compose(scale(vinv(WORLD_CHUNK_SIZE)), inverse(canvas_from_world));
     const chunks = activeChunks(canvas_from_world);
     chunks.forEach(p => {
       drawChunk(gl, env, p, state, chunk_from_canvas);
@@ -234,7 +234,7 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
   gl.activeTexture(gl.TEXTURE0 + CHUNK_DATA_TEXTURE_UNIT);
   gl.bindTexture(gl.TEXTURE_2D, chunkDataTexture);
 
-  const chunkImdat = new ImageData(CHUNK_SIZE, CHUNK_SIZE);
+  const chunkImdat = new ImageData(WORLD_CHUNK_SIZE.x, WORLD_CHUNK_SIZE.y);
 
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
