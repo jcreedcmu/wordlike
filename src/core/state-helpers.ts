@@ -8,7 +8,7 @@ import { Point } from "../util/types";
 import { vadd, vequal, vm } from "../util/vutil";
 import { Animation, mkPointDecayAnimation, mkScoreAnimation, mkWinAnimation } from './animations';
 import { getAssets } from "./assets";
-import { Bonus, ScoringBonus, adjacentScoringOfBonus, getBonusLayer, isBlocking, overlapScoringOfBonus, resolveScoring } from "./bonus";
+import { Bonus, ScoringBonus, adjacentScoringOfBonus, isBlocking, overlapScoringOfBonus, resolveScoring } from "./bonus";
 import { getBonusFromLayer, setBonusLayer } from "./bonus-helpers";
 import { PANIC_INTERVAL_MS, PanicData, PauseData, WORD_BONUS_INTERVAL_MS, now_in_game } from "./clock";
 import { DrawForce, getLetterSample } from "./distribution";
@@ -16,7 +16,7 @@ import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
 import { Layer, Overlay, getOverlayLayer, mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
 import { PROGRESS_ANIMATION_POINTS, getHighWaterMark, getScore, setHighWaterMark } from "./scoring";
 import { CoreState, GameState, HAND_TILE_LIMIT, Location, MouseState, Tile, TileEntity, WordBonusState } from "./state";
-import { addHandTile, addWorldTile, get_hand_tiles, get_main_tiles, get_tiles, putTileInWorld, removeTile } from "./tile-helpers";
+import { addHandTile, addWorldTile, get_hand_tiles, get_main_tiles, get_tiles, putTileInWorld } from "./tile-helpers";
 import { ensureTileId } from "./tile-id-helpers";
 import { WIN_SCORE, canWinFromState, shouldStartPanicBar } from "./winState";
 

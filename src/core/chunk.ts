@@ -86,3 +86,10 @@ export function activeChunks(canvas_from_world: SE2): Point[] {
   }
   return chunks;
 }
+
+export function mkChunk(): Chunk {
+  return {
+    data: [],
+    spritePos: [],
+  };
+}
