@@ -3,7 +3,7 @@ import { world_bds_in_canvas } from "../ui/widget-helpers";
 import { produce } from "../util/produce";
 import { SE2, apply, compose, inverse, scale } from "../util/se2";
 import { Point } from "../util/types";
-import { vadd, vdiag, vinv, vm, vm2, vmul, vscale, vsub } from "../util/vutil";
+import { vadd, vdiag, vinv, vm, vm2, vm3, vmul, vscale, vsub } from "../util/vutil";
 import { Bonus } from "./bonus";
 import { getBonusFromLayer } from "./bonus-helpers";
 import { Overlay, getOverlay, setOverlay } from "./layer";
@@ -20,15 +20,22 @@ export type Chunk = {
   spritePos: Point[];
 }
 
-function getWorldChunkData(cs: CoreState, p_in_chunk: Point): Chunk {
-  const chunk: Chunk = { size: WORLD_CHUNK_SIZE, data: [], spritePos: [] };
+export function setChunkData(chunk: Chunk, kont: (p: Point) => ChunkValue): void {
   for (let x = 0; x < chunk.size.x; x++) {
     for (let y = 0; y < chunk.size.y; y++) {
-      const bonus = getBonusFromLayer(cs, vm2(p_in_chunk, { x, y }, (c, p) => c * chunk.size.x + p));
-      chunk.data[x + y * chunk.size.x] = { t: 'bonus', bonus };
-      chunk.spritePos[x + y * chunk.size.x] = spriteLocOfBonus(bonus);
+      const cval = kont({ x, y });
+      chunk.data[x + y * chunk.size.x] = cval;
+      chunk.spritePos[x + y * chunk.size.x] = spriteLocOfChunkValue(cval);
     }
   }
+}
+
+function getWorldChunkData(cs: CoreState, p_in_chunk: Point): Chunk {
+  const chunk: Chunk = { size: WORLD_CHUNK_SIZE, data: [], spritePos: [] };
+  setChunkData(chunk, (p_in_local_chunk) => ({
+    t: 'bonus',
+    bonus: getBonusFromLayer(cs, vm3(p_in_chunk, p_in_local_chunk, chunk.size, (c, p, s) => c * s + p))
+  }));
   return chunk;
 }
 
