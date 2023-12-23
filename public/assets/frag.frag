@@ -4,7 +4,7 @@ precision mediump float;
 const vec3 TILE_LIGHT_COLOR= vec3( 0.9490196078431372, 0.8117647058823529, 0.4627450980392157 );
 const vec3 TILE_DARK_COLOR = vec3( 0.8, 0.5725490196078431, 0.023529411764705882 );
 const vec3 TILE_MED_COLOR = vec3( 0.8980392156862745, 0.7294117647058823, 0.2901960784313726 );
-
+const vec3 BOARD_BG_COLOR = vec3(248. / 255., 234. / 255., 213. / 255.);
 const vec3 TILE_FOREGROUND_COLOR = vec3(0.,0.,0.);
 
 
@@ -42,7 +42,7 @@ uniform sampler2D u_chunkDataTexture;
 uniform bool u_drawTile;
 
 float crosshair(vec2 p) {
-  if (p.x < 2.5 * u_world_from_canvas[0][0] && p.y < 0.5 * u_world_from_canvas[0][0])
+  if (p.x < 1.5 * u_world_from_canvas[0][0] && p.y < 0.5 * u_world_from_canvas[0][0])
     return 1.0;
   else
     return 0.0;
@@ -129,8 +129,9 @@ vec4 getColor() {
   vec2 off = abs(p_in_world - p_in_world_r);
   float ch_amount = max(crosshair(off.xy), crosshair(off.yx));
 
-  vec3 whiteBack = bgcolor.rgb * bgcolor.a + vec3(248. / 255., 234. / 255., 213. / 255.) * (1. - bgcolor.a);
-  return ch_amount * vec4(.06,.45,.64,1.) + (1.-ch_amount) * vec4(whiteBack, 1.);
+  vec3 ch_color = mix(BOARD_BG_COLOR, vec3(0.), 0.4); // crosshairs color
+  vec3 whiteBack = bgcolor.rgb * bgcolor.a + BOARD_BG_COLOR * (1. - bgcolor.a);
+  return ch_amount * vec4(ch_color, 1.) + (1. - ch_amount) * vec4(whiteBack, 1.);
 }
 
 void main() {
