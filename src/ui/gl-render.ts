@@ -248,8 +248,8 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
     gl.clearColor(1.0, 1.0, 1.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
-    // gl.enable(gl.BLEND);
-    // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
     gl.useProgram(prog);
 
@@ -261,17 +261,15 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
       drawChunk(gl, env, p, state, chunk_from_canvas, inverse(pan_canvas_from_world_of_state(state)));
     });
 
-
     const cs = state.coreState;
     const ms = state.mouseState;
     // draw dragged tiles from selection
     if (ms.t == 'drag_tile') {
-      const cachedSelection = getCachedSelection(state.coreState);
-      if (cachedSelection) {
 
-        const tile0 = getTileId(cs, ms.id);
-        const tiles = cs.selected!.selectedIds.map(id => getTileId(cs, id));
+      const tile0 = getTileId(cs, ms.id);
 
+      if (cs.selected) {
+        const tiles = cs.selected.selectedIds.map(id => getTileId(cs, id));
         // draw dragged tiles
         tiles.forEach(tile => {
           if (tile.loc.t == 'world' && tile0.loc.t == 'world') {
@@ -291,24 +289,8 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
         });
       }
       else {
-        // single tile drag
-        const tile_rect_in_tile = { p: vdiag(0.), sz: vdiag(1.) };
-        const canvas_from_tile = canvas_from_drag_tile(state.coreState, state.mouseState);
-        const tile_rect_in_gl = apply_to_rect(compose(gl_from_canvas, canvas_from_tile), tile_rect_in_tile);
-
-        const [p1, p2] = rectPts(tile_rect_in_gl);
-
-        attributeSetFloats(gl, env.chunkBoundsBuffer, [
-          p1.x, p2.y, 0,
-          p2.x, p2.y, 0,
-          p1.x, p1.y, 0,
-          p2.x, p1.y, 0
-        ]);
-
-        const u_drawTile = gl.getUniformLocation(prog, 'u_drawTile');
-        gl.uniform1i(u_drawTile, 1);
-
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        const tile = getTileId(cs, ms.id);
+        drawOneTile(gl, env, tile.letter, state, canvas_from_drag_tile(cs, ms));
       }
     }
   };
