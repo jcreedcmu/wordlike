@@ -13,6 +13,8 @@
 #define PADDING 5
 #define ONEDGE 128
 
+#define PIXEL_HEIGHT 55
+
 void  splat_letter(const stbtt_fontinfo *font, float scale, int codepoint, int sprite_x, int sprite_y, int ascent, char *final) {
   int height;
   int width;
@@ -87,7 +89,7 @@ int main(void) {
   stbtt_InitFont(&font, ttf_buffer, stbtt_GetFontOffsetForIndex(ttf_buffer,0));
 
   int ascent;
-  float scale = stbtt_ScaleForPixelHeight(&font, 55);
+  float scale = stbtt_ScaleForPixelHeight(&font, PIXEL_HEIGHT);
   stbtt_GetFontVMetrics(&font, &ascent,0,0);
   if (DEBUG) {
     fprintf(stderr, "ascent %f\n", ascent * scale);
