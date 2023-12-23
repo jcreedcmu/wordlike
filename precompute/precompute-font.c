@@ -77,7 +77,7 @@ int main(void) {
   stbtt_fontinfo font;
   unsigned char ttf_buffer[1<<20];
   unsigned char final[3 * FINAL_W * FINAL_H];
-  FILE *fontfile = fopen("../public/assets/Birbaslo.ttf", "rb");
+  FILE *fontfile = fopen("../public/assets/Inter-SemiBold.ttf", "rb");
   if (!fontfile) {
     printf("Can't find font\n");
     exit(1);
