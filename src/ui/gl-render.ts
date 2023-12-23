@@ -2,7 +2,7 @@ import { Dispatch } from "../core/action";
 import { getAssets } from "../core/assets";
 import { getBonusFromLayer } from "../core/bonus-helpers";
 import { getCachedSelection } from "../core/cache-state";
-import { Chunk, WORLD_CHUNK_SIZE, activeChunks, getChunk } from "../core/chunk";
+import { Chunk, WORLD_CHUNK_SIZE, activeChunks, getChunk, mkChunk } from "../core/chunk";
 import { GameState } from "../core/state";
 import { getTileId } from "../core/tile-helpers";
 import { DEBUG, doOnce, doOnceEvery, logger } from "../util/debug";
@@ -12,7 +12,7 @@ import { SE2, apply, compose, composen, inverse, scale, translate } from "../uti
 import { apply_to_rect } from "../util/se2-extra";
 import { Point } from "../util/types";
 import { rectPts } from "../util/util";
-import { vadd, vdiag, vinv, vm, vscale } from "../util/vutil";
+import { vadd, vdiag, vinv, vm, vscale, vsub } from "../util/vutil";
 import { gl_from_canvas } from "./gl-helpers";
 import { spriteLocOfBonus, spriteLocOfChunkValue } from "./sprite-sheet";
 import { resizeView } from "./ui-helpers";
@@ -30,7 +30,14 @@ const SPRITE_TEXTURE_UNIT = 0;
 const CHUNK_DATA_TEXTURE_UNIT = 1;
 const FONT_TEXTURE_UNIT = 2;
 
-function drawChunk(gl: WebGL2RenderingContext, env: GlEnv, p_in_chunk: Point, state: GameState, chunk_from_canvas: SE2): void {
+function drawChunk(
+  gl: WebGL2RenderingContext,
+  env: GlEnv,
+  p_in_chunk: Point,
+  state: GameState,
+  chunk_from_canvas: SE2,
+  world_from_canvas_SE2: SE2
+): void {
   const { prog, chunkBoundsBuffer, chunkImdat } = env;
 
   const chunk_rect_in_chunk = { p: p_in_chunk, sz: vdiag(1.) };
@@ -64,7 +71,6 @@ function drawChunk(gl: WebGL2RenderingContext, env: GlEnv, p_in_chunk: Point, st
   const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
   gl.uniform2f(u_canvasSize, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
 
-  const world_from_canvas_SE2 = inverse(pan_canvas_from_world_of_state(state));
   const s = world_from_canvas_SE2.scale;
   const t = world_from_canvas_SE2.translate;
 
@@ -142,7 +148,7 @@ function drawExternalChunk(gl: WebGL2RenderingContext, env: GlEnv, chunk: Chunk,
   const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
   gl.uniform2f(u_canvasSize, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
 
-  const world_from_canvas_SE2 = inverse(pan_canvas_from_world_of_state(state));
+  const world_from_canvas_SE2 = inverse(canvas_from_chunk_local);
   const s = world_from_canvas_SE2.scale;
   const t = world_from_canvas_SE2.translate;
 
@@ -176,6 +182,62 @@ function drawExternalChunk(gl: WebGL2RenderingContext, env: GlEnv, chunk: Chunk,
 
 }
 
+// XXX: Deprecate above
+function drawOneTile(gl: WebGL2RenderingContext, env: GlEnv, letter: string, state: GameState, canvas_from_chunk_local: SE2): void {
+  const { prog, chunkBoundsBuffer, chunkImdat } = env;
+
+  const chunk_rect_in_canvas = apply_to_rect(canvas_from_chunk_local, { p: vdiag(0), sz: { x: 1, y: 1 } });
+  const chunk_rect_in_gl = apply_to_rect(gl_from_canvas, chunk_rect_in_canvas);
+
+  const [p1, p2] = rectPts(chunk_rect_in_gl);
+  attributeSetFloats(gl, chunkBoundsBuffer, [
+    p1.x, p2.y, 0,
+    p2.x, p2.y, 0,
+    p1.x, p1.y, 0,
+    p2.x, p1.y, 0
+  ]);
+
+  const u_drawTile = gl.getUniformLocation(prog, 'u_drawTile');
+  gl.uniform1i(u_drawTile, 1);
+
+  const u_tileLetter = gl.getUniformLocation(prog, 'u_tileLetter');
+  gl.uniform1i(u_tileLetter, letter.charCodeAt(0) - 97);
+
+  // This doesn't seem relevant for an external chunk
+
+  // const u_chunk_origin_in_world = gl.getUniformLocation(prog, 'u_chunk_origin_in_world');
+  //gl.uniform2f(u_chunk_origin_in_world, p_in_chunk.x * WORLD_CHUNK_SIZE.x, p_in_chunk.y * WORLD_CHUNK_SIZE.y);
+
+  const u_spriteTexture = gl.getUniformLocation(prog, 'u_spriteTexture');
+  gl.uniform1i(u_spriteTexture, SPRITE_TEXTURE_UNIT);
+
+  const u_fontTexture = gl.getUniformLocation(prog, 'u_fontTexture');
+  gl.uniform1i(u_fontTexture, FONT_TEXTURE_UNIT);
+
+  const u_chunkDataTexture = gl.getUniformLocation(prog, 'u_chunkDataTexture');
+  gl.uniform1i(u_chunkDataTexture, CHUNK_DATA_TEXTURE_UNIT);
+
+  const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
+  gl.uniform2f(u_canvasSize, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
+
+  const world_from_canvas_SE2 = inverse(canvas_from_chunk_local);
+  const s = world_from_canvas_SE2.scale;
+  const t = world_from_canvas_SE2.translate;
+
+  const world_from_canvas = [
+    s.x, 0.0, 0.0,
+    0.0, s.y, 0.0,
+    t.x, t.y, 1.0,
+  ];
+  const u_world_from_canvas = gl.getUniformLocation(prog, "u_world_from_canvas");
+  gl.uniformMatrix3fv(u_world_from_canvas, false, world_from_canvas);
+
+  gl.viewport(0, 0, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
+
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+}
+
 const shouldDebug = { v: false };
 export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): void {
   const { d: gl } = ci;
@@ -196,26 +258,37 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
     const chunk_from_canvas = compose(scale(vinv(WORLD_CHUNK_SIZE)), inverse(canvas_from_world));
     const chunks = activeChunks(canvas_from_world);
     chunks.forEach(p => {
-      drawChunk(gl, env, p, state, chunk_from_canvas);
+      drawChunk(gl, env, p, state, chunk_from_canvas, inverse(pan_canvas_from_world_of_state(state)));
     });
 
+
+    const cs = state.coreState;
     const ms = state.mouseState;
     // draw dragged tiles from selection
     if (ms.t == 'drag_tile') {
       const cachedSelection = getCachedSelection(state.coreState);
       if (cachedSelection) {
-        // big selection
-        const tile0 = getTileId(state.coreState, ms.id);
-        if (tile0.loc.t == 'world') {
-          const { chunk, selection_chunk_from_world: static_chunk_local_from_world } = cachedSelection;
-          const canvas_from_tile = canvas_from_drag_tile(state.coreState, state.mouseState);
-          const canvas_from_chunk_local = composen(
-            canvas_from_tile,                                // canvas_from_tile
-            translate(vscale(tile0.loc.p_in_world_int, -1)), // tile_from_world
-            inverse(static_chunk_local_from_world)           // world_from_chunk_local
-          );
-          drawExternalChunk(gl, env, chunk, state, canvas_from_chunk_local);
-        }
+
+        const tile0 = getTileId(cs, ms.id);
+        const tiles = cs.selected!.selectedIds.map(id => getTileId(cs, id));
+
+        // draw dragged tiles
+        tiles.forEach(tile => {
+          if (tile.loc.t == 'world' && tile0.loc.t == 'world') {
+            let drag_tile_from_other_tile = translate(vsub(tile.loc.p_in_world_int, tile0.loc.p_in_world_int));
+            if (ms.flipped) {
+              drag_tile_from_other_tile = {
+                scale: drag_tile_from_other_tile.scale, translate: {
+                  x: drag_tile_from_other_tile.translate.y,
+                  y: drag_tile_from_other_tile.translate.x,
+                }
+              };
+            }
+
+            const canvas_from_other_tile = compose(canvas_from_drag_tile(cs, ms), drag_tile_from_other_tile);
+            drawOneTile(gl, env, tile.letter, state, canvas_from_other_tile);
+          }
+        });
       }
       else {
         // single tile drag

@@ -41,6 +41,9 @@ uniform sampler2D u_chunkDataTexture;
 // Draw tile
 uniform bool u_drawTile;
 
+// Tile letter
+uniform int u_tileLetter;
+
 float crosshair(vec2 p) {
   if (p.x < 1.5 * u_world_from_canvas[0][0] && p.y < 0.5 * u_world_from_canvas[0][0])
     return 1.0;
@@ -69,25 +72,32 @@ float round_rect_mask(vec2 p, float size, float sharp, float radius) {
   // return (p.x >= left && p.x <= right && p.y >= left && p.y <= right) ? 1.0 : 0.0;
 }
 
+float get_sharpness() {
+  return 1. / (u_world_from_canvas[0][0] * 6.);
+}
+
+vec4 get_tile_pixel(vec2 p_in_tile, int letter) {
+  vec2 font_coords = vec2(letter / int( NUM_FONT_CELLS_PER_SHEET), letter % int(NUM_FONT_CELLS_PER_SHEET));
+  float sdf = texture(u_fontTexture, (p_in_tile + font_coords) / NUM_FONT_CELLS_PER_SHEET).r;
+  float letter_amount = clamp(0.5 + get_sharpness() * (sdf - 0.5), 0., 1.);
+  float outer_tile_amount = round_rect_mask(p_in_tile, 60./60., 1.0, 5./60.);
+  float mez_tile_amount = round_rect_mask(p_in_tile, 56./60., 1.0, 3./60.);
+  float inner_tile_amount = round_rect_mask(p_in_tile, 52./60., 1.0, 5./60.);
+  vec4 background = vec4(TILE_DARK_COLOR, 0.);
+  vec3 gradient = mix(TILE_LIGHT_COLOR, TILE_DARK_COLOR, clamp(2. * p_in_tile.y - 1., 0., 1.));
+  background = mix(background, vec4(TILE_DARK_COLOR, 1.), outer_tile_amount);
+  background = mix(background, vec4(gradient, 1.), mez_tile_amount);
+  background = mix(background, vec4(TILE_MED_COLOR, 1.), inner_tile_amount);
+  return mix(background, vec4(TILE_FOREGROUND_COLOR, 1.), letter_amount);
+}
+
 // p_in_world_fp is the fractional part of p_in_world. It is in [0,1]²
 // sprite_coords is actually an ivec. It is in  [0,NUM_SPRITES_PER_SHEET]²
-vec4 get_sprite_pixel(vec2 p_in_world_fp, vec2 sprite_coords, float sharpness) {
+vec4 get_sprite_pixel(vec2 p_in_world_fp, vec2 sprite_coords) {
   // tile
-  if (sprite_coords.x >= TILE_COLUMN ) {
+  if (sprite_coords.x >= TILE_COLUMN) {
     int letter = int((sprite_coords.x - TILE_COLUMN) * NUM_SPRITES_PER_SHEET + sprite_coords.y);
-
-    vec2 font_coords = vec2(letter / int( NUM_FONT_CELLS_PER_SHEET), letter % int(NUM_FONT_CELLS_PER_SHEET));
-    float sdf = texture(u_fontTexture, (p_in_world_fp + font_coords) / NUM_FONT_CELLS_PER_SHEET).r;
-    float letter_amount = clamp(0.5 + sharpness * (sdf - 0.5), 0., 1.);
-    float outer_tile_amount = round_rect_mask(p_in_world_fp, 60./60., 1.0, 5./60.);
-    float mez_tile_amount = round_rect_mask(p_in_world_fp, 56./60., 1.0, 3./60.);
-    float inner_tile_amount = round_rect_mask(p_in_world_fp, 52./60., 1.0, 5./60.);
-    vec4 background = vec4(TILE_DARK_COLOR, 0.);
-    vec3 gradient = mix(TILE_LIGHT_COLOR, TILE_DARK_COLOR, clamp(2. * p_in_world_fp.y - 1., 0., 1.));
-    background = mix(background, vec4(TILE_DARK_COLOR, 1.), outer_tile_amount);
-    background = mix(background, vec4(gradient, 1.), mez_tile_amount);
-    background = mix(background, vec4(TILE_MED_COLOR, 1.), inner_tile_amount);
-    return mix(background, vec4(TILE_FOREGROUND_COLOR, 1.), letter_amount);
+    return get_tile_pixel(p_in_world_fp, letter);
   }
 
   // required bonus
@@ -95,7 +105,7 @@ vec4 get_sprite_pixel(vec2 p_in_world_fp, vec2 sprite_coords, float sharpness) {
     int letter = int((sprite_coords.x - REQUIRED_BONUS_COLUMN) * NUM_SPRITES_PER_SHEET + sprite_coords.y);
     vec2 font_coords = vec2(letter / int( NUM_FONT_CELLS_PER_SHEET), letter % int(NUM_FONT_CELLS_PER_SHEET));
     float sdf = texture(u_fontTexture, (p_in_world_fp + font_coords) / NUM_FONT_CELLS_PER_SHEET).r;
-    float amount = clamp(0.5 + sharpness * (sdf - 0.5), 0., 1.);
+    float amount = clamp(0.5 + get_sharpness() * (sdf - 0.5), 0., 1.);
     return vec4(amount * vec3(0.6) + (1. - amount) * vec3(1.), 1.);
   }
 
@@ -107,13 +117,14 @@ vec4 get_sprite_pixel(vec2 p_in_world_fp, vec2 sprite_coords, float sharpness) {
 }
 
 vec4 getColor() {
-  if (u_drawTile) {
-    return vec4(1.,0.,0.,1.);
-  }
-
   vec3 p_in_canvas = vec3(gl_FragCoord.xy, 1.0);
   p_in_canvas.y = u_canvasSize.y - p_in_canvas.y;
   vec2 p_in_world = (u_world_from_canvas * p_in_canvas).xy;
+
+
+  if (u_drawTile) {
+    return get_tile_pixel(p_in_world, u_tileLetter);
+  }
 
   vec2 p_in_world_int = floor(p_in_world);
 
@@ -121,10 +132,8 @@ vec4 getColor() {
   vec2 p_in_world_r = round(p_in_world);
   vec2 p_in_world_fp = p_in_world - floor(p_in_world); // fractional part
 
-
-
   vec2 sprite_coords = round(255.0 * texture(u_chunkDataTexture, (coords_within_chunk + vec2(0.5,0.5)) / float(CHUNK_SIZE) )).xy;
-  vec4 bgcolor = get_sprite_pixel(p_in_world_fp, sprite_coords, 1. / (u_world_from_canvas[0][0] * 6.));
+  vec4 bgcolor = get_sprite_pixel(p_in_world_fp, sprite_coords);
 
   vec2 off = abs(p_in_world - p_in_world_r);
   float ch_amount = max(crosshair(off.xy), crosshair(off.yx));

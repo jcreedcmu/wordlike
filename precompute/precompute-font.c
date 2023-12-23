@@ -13,7 +13,7 @@
 #define PADDING 5
 #define ONEDGE 128
 
-#define PIXEL_HEIGHT 55
+#define PIXEL_HEIGHT 50
 
 void  splat_letter(const stbtt_fontinfo *font, float scale, int codepoint, int sprite_x, int sprite_y, int ascent, char *final) {
   int height;
