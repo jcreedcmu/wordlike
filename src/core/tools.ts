@@ -100,3 +100,16 @@ export function reduceToolSelect(state: CoreState, tool: Tool): CoreState {
     default: return produce(state, s => { s.currentTool = tool; });
   }
 }
+
+export function toolPrecondition(state: CoreState, tool: Tool): boolean {
+  switch (tool) {
+    case 'bomb': return state.inventory.bombs >= 1;
+    case 'pointer': return true;
+    case 'hand': return true;
+    case 'dynamite': return getScore(state) >= 1;
+    case 'vowel': return state.inventory.vowels >= 1;
+    case 'consonant': return state.inventory.consonants >= 1;
+    case 'copy': return state.inventory.copies >= 1;
+    case 'time': return state.inventory.times >= 1;
+  }
+}

@@ -1,10 +1,25 @@
 import { ViewData } from '../ui/ui-helpers';
+import { WidgetPoint } from '../ui/widget-helpers';
 import { Point } from '../util/types';
 import { GameState, SceneState } from './state';
+import { Tool } from './tools';
+
+export type GameLowAction =
+  | { t: 'zoom', center: Point, amount: number }
+  | { t: 'drawTile' }
+  | { t: 'flipOrientation' }
+  | { t: 'dynamiteTile', wp: WidgetPoint }
+  | { t: 'dropTopHandTile' }
+  | { t: 'debug' }
+  | { t: 'incrementScore', amount: number }
+  | { t: 'toggleGl' }
+  | { t: 'setTool', tool: Tool }
+  ;
 
 export type LowAction =
   | { t: 'setGameState', state: GameState } // XXX deprecate
   | { t: 'setSceneState', state: SceneState } // XXX deprecate
+  | { t: 'gameLowAction', action: GameLowAction }
   ;
 
 // All of these p are p_in_canvas

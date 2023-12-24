@@ -1,23 +1,26 @@
 import { canvas_from_drag_tile, pan_canvas_from_canvas_of_mouse_state, pan_canvas_from_world_of_state } from '../ui/view-helpers';
 import { WidgetPoint, canvas_from_hand, getWidgetPoint } from '../ui/widget-helpers';
+import { debugTiles } from '../util/debug';
 import { produce } from '../util/produce';
 import { SE2, apply, compose, composen, inverse, scale, translate } from '../util/se2';
 import { Point } from '../util/types';
 import { getRandomOrder } from '../util/util';
 import { vm, vscale, vsub } from '../util/vutil';
-import { GameAction, LowAction } from './action';
+import { GameAction, GameLowAction, LowAction } from './action';
 import { mkPointDecayAnimation } from './animations';
 import { getBonusLayer } from './bonus';
 import { activeChunks, ensureChunk } from './chunk';
 import { getPanicFraction, now_in_game } from './clock';
 import { getIntentOfMouseDown, reduceIntent } from './intent';
+import { tryKillTileOfState } from './kill-helpers';
 import { mkOverlayFrom, setOverlay } from './layer';
 import { reduceKey } from './reduceKey';
+import { incrementScore, setScore } from './scoring';
 import { deselect, resolveSelection, setSelected } from './selection';
 import { GameState, Location, SceneState } from './state';
-import { MoveTile, checkValid, drawOfState, filterExpiredAnimations, filterExpiredWordBonusState, isCollision, isOccupied, isTilePinned, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
-import { cellAtPoint, getTileId, get_hand_tiles, get_tiles, moveTiles, putTileInHand, putTileInWorld, putTilesInHandFromNotHand, putTilesInWorld, setTileLoc, tileAtPoint } from "./tile-helpers";
-import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect } from './tools';
+import { MoveTile, addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isCollision, isOccupied, isTilePinned, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
+import { cellAtPoint, getTileId, get_hand_tiles, get_tiles, moveTiles, putTileInHand, putTileInWorld, putTilesInHandFromNotHand, putTilesInWorld, removeAllTiles, setTileLoc, tileAtPoint } from "./tile-helpers";
+import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
 import { shouldDisplayBackButton } from './winState';
 
 export function reduceZoom(state: GameState, p_in_canvas: Point, delta: number): GameState {
@@ -265,7 +268,7 @@ export function getLowActions(state: GameState, action: GameAction): LowAction[]
   }
   switch (action.t) {
     case 'key': {
-      return gs(reduceKey(state, action.code));
+      return reduceKey(state, action.code).map(action => ({ t: 'gameLowAction', action }));
     }
     case 'none': return gs(state);
     case 'wheel': {
@@ -326,9 +329,59 @@ export function resolveLowActions(state: SceneState, lowActions: LowAction[]): S
   return state;
 }
 
+function resolveGameLowAction(state: GameState, action: GameLowAction): GameState {
+  switch (action.t) {
+    case 'zoom': return reduceZoom(state, action.center, action.amount)
+    case 'drawTile': return withCoreState(state, cs => drawOfState(cs));
+    case 'flipOrientation': {
+      const ms = state.mouseState;
+      if (ms.t == 'drag_tile' && state.coreState.selected) {
+        const flippedMs = produce(ms, mss => { mss.flipped = !mss.flipped; });
+        return produce(state, s => { s.mouseState = flippedMs; });
+      }
+      return state;
+    }
+    case 'dynamiteTile':
+      return withCoreState(state, cs => tryKillTileOfState(cs, action.wp, dynamiteIntent));
+    case 'dropTopHandTile': return dropTopHandTile(state);
+    case 'debug': {
+      return withCoreState(state, cs => checkValid(produce(addWorldTiles(removeAllTiles(cs), debugTiles()), s => {
+        setScore(s, 900);
+        s.inventory.bombs = 15;
+        s.inventory.vowels = 15;
+        s.inventory.consonants = 15;
+        s.inventory.copies = 15;
+        s.inventory.times = 15;
+      })));
+    }
+    case 'incrementScore':
+      return withCoreState(state, cs => checkValid(produce(cs, s => {
+        incrementScore(s, action.amount);
+      })));
+
+    case 'toggleGl':
+      return withCoreState(state, cs => produce(cs, s => {
+        s.renderToGl = !s.renderToGl;
+      }));
+    case 'setTool':
+      if (toolPrecondition(state.coreState, action.tool))
+        return withCoreState(state, cs => produce(cs, s => {
+          s.currentTool = action.tool;
+        }));
+      else return state;
+
+  }
+}
 function resolveLowAction(state: SceneState, action: LowAction): SceneState {
   switch (action.t) {
     case 'setGameState': return { t: 'game', gameState: action.state, revision: 0 };
     case 'setSceneState': return action.state;
+
+    case 'gameLowAction':
+      if (state.t == 'game') {
+        return { t: 'game', gameState: resolveGameLowAction(state.gameState, action.action), revision: 0 };
+      }
+      else
+        return state;
   }
 }
