@@ -272,7 +272,7 @@ export function getLowActions(state: GameState, action: GameAction): LowAction[]
     }
     case 'none': return gs(state);
     case 'wheel': {
-      return gs(reduceZoom(state, action.p, action.delta));
+      return [{ t: 'gameLowAction', action: { t: 'zoom', amount: action.delta, center: action.p } }];
     }
     case 'mouseDown': {
       const wp = getWidgetPoint(state.coreState, action.p);
