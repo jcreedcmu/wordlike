@@ -2,7 +2,7 @@ import { ViewData } from '../ui/ui-helpers';
 import { WidgetPoint } from '../ui/widget-helpers';
 import { Point } from '../util/types';
 import { Intent } from './intent';
-import { GameState, SceneState } from './state';
+import { CoreState, GameState, SceneState } from './state';
 import { Tool } from './tools';
 
 export type GameLowAction =
@@ -18,8 +18,13 @@ export type GameLowAction =
   | { t: 'mouseDownIntent', intent: Intent, wp: WidgetPoint & { t: 'world' } }
   | { t: 'mouseMove', p: Point }
   | { t: 'setGameState', state: GameState } // XXX deprecate
+  | { t: 'setCoreState', state: CoreState } // XXX deprecate
   | { t: 'none' }
   | { t: 'repaint' }
+  | { t: 'vacuousDown', wp: WidgetPoint }
+  | { t: 'shuffle', wp: WidgetPoint } // XXX could be broken up into shuffle and vacuous down
+  | { t: 'pause', wp: WidgetPoint } // XXX could be broken up into pause and vacuous down
+  | { t: 'multiple', actions: GameLowAction[] }
   ;
 
 export type LowAction =

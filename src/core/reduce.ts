@@ -1,6 +1,6 @@
 import * as effectful from '../ui/use-effectful-reducer';
 import { Action, Effect } from './action';
-import { getLowAction, resolveLowAction, resolveLowActions } from './low-actions';
+import { getLowAction, resolveLowAction } from './low-actions';
 import { SceneState, mkGameSceneState } from './state';
 
 

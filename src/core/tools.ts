@@ -1,6 +1,7 @@
 import { spriteLocOfTool, spriteRectOfPos } from "../ui/sprite-sheet";
 import { produce } from "../util/produce";
 import { Rect } from "../util/types";
+import { GameLowAction } from "./action";
 import { Intent } from './intent';
 import { getScore } from "./scoring";
 import { CoreState } from "./state";
@@ -72,32 +73,38 @@ export function rectOfTool(tool: Tool): Rect {
   return spriteRectOfPos(spriteLocOfTool(tool));
 }
 
-export function reduceToolSelect(state: CoreState, tool: Tool): CoreState {
+export function reduceToolSelect(state: CoreState, tool: Tool): GameLowAction {
   switch (tool) {
     case 'consonant': {
       const newState = drawOfState(state, 'consonant');
-      if (newState == state) return state;
-      return produce(newState, s => {
-        s.inventory.consonants--;
-      });
+      if (newState == state) return { t: 'none' };
+      return {
+        t: 'setCoreState', state: produce(newState, s => {
+          s.inventory.consonants--;
+        })
+      };
     }
     case 'vowel': {
       const newState = drawOfState(state, 'vowel');
-      if (newState == state) return state;
-      return produce(newState, s => {
-        s.inventory.vowels--;
-      });
+      if (newState == state) return { t: 'none' };
+      return {
+        t: 'setCoreState', state: produce(newState, s => {
+          s.inventory.vowels--;
+        })
+      };
     }
     case 'time': {
       if (!state.panic)
-        return state;
+        return { t: 'none' };
       const panic = freshPanic(state);
-      return produce(state, s => {
-        s.panic = panic;
-        s.inventory.times--;
-      });
+      return {
+        t: 'setCoreState', state: produce(state, s => {
+          s.panic = panic;
+          s.inventory.times--;
+        })
+      };
     }
-    default: return produce(state, s => { s.currentTool = tool; });
+    default: return { t: 'setTool', tool };
   }
 }
 

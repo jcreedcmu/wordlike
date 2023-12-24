@@ -84,13 +84,18 @@ function reduceMouseDownInHand(state: GameState, wp: WidgetPoint & { t: 'hand' }
   }
 }
 
-function reduceMouseDownInToolbar(state: GameState, wp: WidgetPoint & { t: 'toolbar' }, button: number, mods: Set<string>): GameState {
+function reduceMouseDownInToolbar(state: GameState, wp: WidgetPoint & { t: 'toolbar' }, button: number, mods: Set<string>): GameLowAction {
   const tool = wp.tool;
   if (tool !== undefined) {
-    return withCoreState(vacuous_down(state, wp), cs => reduceToolSelect(cs, wp.tool));
+    return {
+      t: 'multiple', actions: [
+        { t: 'vacuousDown', wp },
+        reduceToolSelect(state.coreState, wp.tool)
+      ]
+    };
   }
   else {
-    return vacuous_down(state, wp);
+    return { t: 'vacuousDown', wp };
   }
 }
 
@@ -122,10 +127,10 @@ function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number, mods
   switch (wp.t) {
     case 'world': return reduceMouseDownInWorld(state, wp, button, mods);
     case 'hand': return { t: 'setGameState', state: reduceMouseDownInHand(state, wp, button, mods) };
-    case 'toolbar': return { t: 'setGameState', state: reduceMouseDownInToolbar(state, wp, button, mods) };
-    case 'pauseButton': return { t: 'setGameState', state: reducePauseButton(state, wp) };
-    case 'shuffleButton': return { t: 'setGameState', state: reduceShuffleButton(state, wp) };
-    case 'nowhere': return { t: 'setGameState', state: vacuous_down(state, wp) };
+    case 'toolbar': return reduceMouseDownInToolbar(state, wp, button, mods);
+    case 'pauseButton': return { t: 'pause', wp };
+    case 'shuffleButton': return { t: 'shuffle', wp };
+    case 'nowhere': return { t: 'vacuousDown', wp };
   }
 }
 
@@ -286,10 +291,9 @@ export function getLowAction(state: GameState, action: GameAction): LowAction {
   }
 }
 
-// XXX might be dead code
-export function resolveLowActions(state: SceneState, lowActions: LowAction[]): SceneState {
-  for (const action of lowActions) {
-    state = resolveLowAction(state, action);
+export function resolveGameLowActions(state: GameState, gameLowActions: GameLowAction[]): GameState {
+  for (const action of gameLowActions) {
+    state = resolveGameLowAction(state, action);
   }
   return state;
 }
@@ -377,6 +381,11 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
         return state;
       }
     }
+    case 'vacuousDown': return vacuous_down(state, action.wp);
+    case 'shuffle': return reduceShuffleButton(state, action.wp);
+    case 'pause': return reducePauseButton(state, action.wp);
+    case 'multiple': return resolveGameLowActions(state, action.actions);
+    case 'setCoreState': return produce(state, s => { s.coreState = action.state; });
   }
 }
 
