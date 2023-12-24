@@ -17,7 +17,7 @@ import { mkOverlayFrom, setOverlay } from './layer';
 import { reduceKey } from './reduceKey';
 import { incrementScore, setScore } from './scoring';
 import { deselect, resolveSelection, setSelected } from './selection';
-import { GameState, Location, SceneState } from './state';
+import { CoreState, GameState, Location, SceneState } from './state';
 import { MoveTile, addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isCollision, isOccupied, isTilePinned, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
 import { cellAtPoint, getTileId, get_hand_tiles, get_tiles, moveTiles, putTileInHand, putTileInWorld, putTilesInHandFromNotHand, putTilesInWorld, removeAllTiles, setTileLoc, tileAtPoint } from "./tile-helpers";
 import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
@@ -90,12 +90,12 @@ function reduceMouseDownInToolbar(state: GameState, wp: WidgetPoint & { t: 'tool
   }
 }
 
-function reducePauseButton(state: GameState, wp: WidgetPoint): GameState {
-  return produce(vacuous_down(state, wp), s => { s.coreState.paused = { pauseTime_in_clock: Date.now() }; });
+function reducePauseButton(state: CoreState): CoreState {
+  return produce(state, s => { s.paused = { pauseTime_in_clock: Date.now() }; });
 }
 
-function reduceShuffleButton(state: GameState, wp: WidgetPoint): GameState {
-  const hs = get_hand_tiles(state.coreState);
+function reduceShuffleButton(state: CoreState): CoreState {
+  const hs = get_hand_tiles(state);
   let randomOrder = getRandomOrder(hs.length);
   let retries = 0;
   while (randomOrder.every((v, i) => hs[v].letter == hs[i].letter) && retries < 5) {
@@ -105,8 +105,8 @@ function reduceShuffleButton(state: GameState, wp: WidgetPoint): GameState {
   const newLocs: { id: string, loc: Location }[] = hs.map((h, ix) => {
     return { id: h.id, loc: { t: 'hand', p_in_hand_int: { x: 0, y: randomOrder[ix] } } };
   });
-  return produce(vacuous_down(state, wp), s => {
-    newLocs.forEach(({ id, loc }) => { setTileLoc(s.coreState, id, loc); });
+  return produce(state, s => {
+    newLocs.forEach(({ id, loc }) => { setTileLoc(s, id, loc); });
   });
 }
 
@@ -119,8 +119,8 @@ function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number, mods
     case 'world': return reduceMouseDownInWorld(state, wp, button, mods);
     case 'hand': return reduceMouseDownInHand(state, wp, button, mods);
     case 'toolbar': return reduceMouseDownInToolbar(state, wp, button, mods);
-    case 'pauseButton': return { t: 'pause', wp };
-    case 'shuffleButton': return { t: 'shuffle', wp };
+    case 'pauseButton': return { t: 'vacuousDownAnd', wp, action: { t: 'pause' } };
+    case 'shuffleButton': return { t: 'vacuousDownAnd', wp, action: { t: 'shuffle' } };
     case 'nowhere': return { t: 'vacuousDown', wp };
   }
 }
@@ -383,8 +383,8 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
       }
     }
     case 'vacuousDown': return vacuous_down(state, action.wp);
-    case 'shuffle': return reduceShuffleButton(state, action.wp);
-    case 'pause': return reducePauseButton(state, action.wp);
+    case 'shuffle': return withCoreState(state, reduceShuffleButton);
+    case 'pause': return withCoreState(state, reducePauseButton);
     case 'multiple': return resolveGameLowActions(state, action.actions);
     case 'drawTileAndDeselect':
       return withCoreState(state, cs => drawOfState(deselect(cs)));

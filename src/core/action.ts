@@ -25,8 +25,8 @@ export type GameLowAction =
   | { t: 'none' }
   | { t: 'repaint' }
   | { t: 'vacuousDown', wp: WidgetPoint }
-  | { t: 'shuffle', wp: WidgetPoint } // XXX could be broken up into shuffle and vacuous down
-  | { t: 'pause', wp: WidgetPoint } // XXX could be broken up into pause and vacuous down
+  | { t: 'shuffle' }
+  | { t: 'pause' }
   | { t: 'multiple', actions: GameLowAction[] }
   | { t: 'startDragHandTile', wp: WidgetPoint, p_in_hand_int: Point }
   | { t: 'unpause', paused: PauseData }
