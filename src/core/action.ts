@@ -2,10 +2,10 @@ import { ViewData } from '../ui/ui-helpers';
 import { WidgetPoint } from '../ui/widget-helpers';
 import { SE2 } from '../util/se2';
 import { Point } from '../util/types';
-import { PauseData } from './clock';
+import { PanicData, PauseData } from './clock';
 import { Intent } from './intent';
 import { SelectionState } from './selection';
-import { CoreState, GameState, Location, MouseState, SceneState } from './state';
+import { CoreState, GameState, InventoryItems, Location, MouseState, SceneState } from './state';
 import { MoveTile } from './state-helpers';
 import { Tool } from './tools';
 
@@ -22,7 +22,6 @@ export type GameLowAction =
   | { t: 'setTool', tool: Tool }
   | { t: 'mouseDownIntent', intent: Intent, wp: WidgetPoint }
   | { t: 'mouseMove', p: Point }
-  | { t: 'setCoreState', state: CoreState } // XXX deprecate
   | { t: 'none' }
   | { t: 'repaint' }
   | { t: 'vacuousDown', wp: WidgetPoint }
@@ -40,8 +39,12 @@ export type GameLowAction =
   | { t: 'putTilesInHandFromNotHand', ids: string[], ix: number }
   | { t: 'putTileInHand', id: string, ix: number }
   | { t: 'setSelected', sel: SelectionState | undefined }
-  | { t: 'checkValid' }
+  | { t: 'checkValid' } // XXX break this up into more low-level actions
   | { t: 'swap', id0: string, id1: string, loc0: Location, loc1: Location }
+  | { t: 'decrement', which: keyof InventoryItems }
+  | { t: 'drawConsonant' }
+  | { t: 'drawVowel' }
+  | { t: 'setPanic', panic: PanicData }
   ;
 
 export type LowAction =

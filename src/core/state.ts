@@ -95,6 +95,15 @@ export type WordBonusState = {
   shown: Point | undefined,
   active: ActiveWordBonus[],
 }
+
+export type InventoryItems = {
+  bombs: number,
+  vowels: number,
+  consonants: number,
+  copies: number,
+  times: number,
+};
+
 export type CoreState = {
   renderToGl: boolean,
   animations: Animation[],
@@ -113,13 +122,7 @@ export type CoreState = {
   paused: PauseData | undefined,
   game_from_clock: SE1,
   wordBonusState: WordBonusState,
-  inventory: {
-    bombs: number,
-    vowels: number,
-    consonants: number,
-    copies: number,
-    times: number,
-  }
+  inventory: InventoryItems
   bonusLayerSeed: number,  // immutable during game play
   _cachedTileChunkMap: Overlay<Chunk>;
 };

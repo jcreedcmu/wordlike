@@ -386,7 +386,6 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     case 'shuffle': return reduceShuffleButton(state, action.wp);
     case 'pause': return reducePauseButton(state, action.wp);
     case 'multiple': return resolveGameLowActions(state, action.actions);
-    case 'setCoreState': return produce(state, s => { s.coreState = action.state; });
     case 'drawTileAndDeselect':
       return withCoreState(state, cs => drawOfState(deselect(cs)));
     case 'startDragHandTile': {
@@ -439,6 +438,31 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     case 'putTileInHand':
       return withCoreState(state, cs => putTileInHand(cs, action.id, action.ix));
 
+    case 'decrement':
+      return produce(state, s => { s.coreState.inventory[action.which]--; });
+
+    case 'drawConsonant': {
+      let newState = drawOfState(state.coreState, 'consonant');
+      if (newState == state.coreState)
+        return state;
+      else {
+        newState = produce(newState, cs => { cs.inventory.consonants--; });
+        return produce(state, s => { s.coreState = newState; });
+      }
+    }
+
+    case 'drawVowel': {
+      let newState = drawOfState(state.coreState, 'vowel');
+      if (newState == state.coreState)
+        return state;
+      else {
+        newState = produce(newState, cs => { cs.inventory.vowels--; });
+        return produce(state, s => { s.coreState = newState; });
+      }
+    }
+
+    case 'setPanic':
+      return produce(state, s => { s.coreState.panic = action.panic; });
   }
 }
 

@@ -75,33 +75,18 @@ export function rectOfTool(tool: Tool): Rect {
 
 export function reduceToolSelect(state: CoreState, tool: Tool): GameLowAction {
   switch (tool) {
-    case 'consonant': {
-      const newState = drawOfState(state, 'consonant');
-      if (newState == state) return { t: 'none' };
-      return {
-        t: 'setCoreState', state: produce(newState, s => {
-          s.inventory.consonants--;
-        })
-      };
-    }
-    case 'vowel': {
-      const newState = drawOfState(state, 'vowel');
-      if (newState == state) return { t: 'none' };
-      return {
-        t: 'setCoreState', state: produce(newState, s => {
-          s.inventory.vowels--;
-        })
-      };
-    }
+    case 'consonant': return { t: 'drawConsonant' };
+
+    case 'vowel': return { t: 'drawVowel' };
     case 'time': {
       if (!state.panic)
         return { t: 'none' };
       const panic = freshPanic(state);
       return {
-        t: 'setCoreState', state: produce(state, s => {
-          s.panic = panic;
-          s.inventory.times--;
-        })
+        t: 'multiple', actions: [
+          { t: 'setPanic', panic },
+          { t: 'decrement', which: 'times' },
+        ]
       };
     }
     default: return { t: 'setTool', tool };
