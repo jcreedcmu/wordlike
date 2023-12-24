@@ -130,28 +130,21 @@ function resolveMouseup(state: GameState): GameLowAction {
   // resolveMouseupInner had some problems I think. I should investigate
   // why.
   return {
-    t: 'andMouseUp', p_in_canvas: state.mouseState.p_in_canvas, action: {
-      t: 'setGameState',
-      state: resolveMouseupInner(state)
-    }
+    action: resolveMouseupInner(state),
+    t: 'andMouseUp',
+    p_in_canvas: state.mouseState.p_in_canvas,
   };
 }
 
-function resolveMouseupInner(state: GameState): GameState {
+function resolveMouseupInner(state: GameState): GameLowAction {
   const ms = state.mouseState;
 
   switch (ms.t) {
-    case 'drag_selection': {
-      const newCs = resolveSelection(state.coreState, ms);
-      return produce(state, s => { s.coreState = newCs; });
-    }
+    case 'drag_selection': return { t: 'dragSelectionEnd', ms };
+
     case 'drag_world': {
-
-      const new_canvas_from_world = compose(pan_canvas_from_canvas_of_mouse_state(ms), state.coreState.canvas_from_world);
-
-      return produce(state, s => {
-        s.coreState.canvas_from_world = new_canvas_from_world;
-      });
+      const canvas_from_world = compose(pan_canvas_from_canvas_of_mouse_state(ms), state.coreState.canvas_from_world);
+      return { t: 'set_canvas_from_world', canvas_from_world };
     }
 
     case 'drag_tile': {
@@ -169,7 +162,7 @@ function resolveMouseupInner(state: GameState): GameState {
           const old_tile_loc: Location = ms.orig_loc;
           if (old_tile_loc.t != 'world') {
             console.error(`Unexpected non-world tile`);
-            return state;
+            return { t: 'none' };
           }
           const old_tile_in_world_int = old_tile_loc.p_in_world_int;
           const new_tile_from_old_tile: SE2 = translate(vsub(new_tile_in_world_int, old_tile_in_world_int));
@@ -194,11 +187,16 @@ function resolveMouseupInner(state: GameState): GameState {
 
           const tgts = moves.map(x => x.p_in_world_int);
           if (isCollision(remainingTiles, moves, state.coreState.bonusOverlay, getBonusLayer(state.coreState.bonusLayerSeed))) {
-            return state;
+            return { t: 'none' };
           }
-          const tcs = setSelected(putTilesInWorld(state.coreState, moves),
-            { overlay: mkOverlayFrom(tgts), selectedIds: selected.selectedIds });
-          return withCoreState(state, cs => checkValid(tcs));
+
+          return {
+            t: 'multiple', actions: [
+              { t: 'putTilesInWorld', moves },
+              { t: 'setSelected', sel: { overlay: mkOverlayFrom(tgts), selectedIds: selected.selectedIds } },
+              { t: 'checkValid' },
+            ]
+          };
         }
         else {
 
@@ -211,10 +209,10 @@ function resolveMouseupInner(state: GameState): GameState {
             letter: getTileId(state.coreState, ms.id).letter,
           }
 
-          const afterDrop = !isOccupied(state.coreState, moveTile)
-            ? withCoreState(state, cs => putTileInWorld(cs, ms.id, moveTile.p_in_world_int))
-            : state;
-          return withCoreState(afterDrop, cs => checkValid(cs));
+          const afterDrop: GameLowAction = !isOccupied(state.coreState, moveTile)
+            ? { t: 'putTileInWorld', id: ms.id, p_in_world_int: moveTile.p_in_world_int }
+            : { t: 'none' };
+          return { t: 'multiple', actions: [afterDrop, { t: 'checkValid' }] };
         }
       }
       else if (wp.t == 'hand') {
@@ -225,39 +223,52 @@ function resolveMouseupInner(state: GameState): GameState {
           Math.round);
 
         if (proposedHandDragOverLimit(state.coreState, state.mouseState)) {
-          return state;
+          return { t: 'none' };
         }
 
         if (state.coreState.selected) {
           const selectedIds = state.coreState.selected.selectedIds;
-          return withCoreState(state, cs => checkValid(putTilesInHandFromNotHand(cs, selectedIds, new_tile_in_hand_int.y)));
+          return {
+            t: 'multiple', actions: [
+              { t: 'putTilesInHandFromNotHand', ids: selectedIds, ix: new_tile_in_hand_int.y },
+              { t: 'checkValid' },
+            ]
+          };
         }
         else {
-          return withCoreState(state, cs => checkValid(putTileInHand(cs, ms.id, new_tile_in_hand_int.y)));
+          return {
+            t: 'multiple', actions: [
+              { t: 'putTileInHand', id: ms.id, ix: new_tile_in_hand_int.y },
+              { t: 'checkValid' },
+            ]
+          };
         }
       }
       else {
         // we dragged somewhere other than world or hand
-        return state;
+        return { t: 'none' };
       }
     }
     case 'exchange_tiles': {
       const wp = getWidgetPoint(state.coreState, ms.p_in_canvas);
       if (wp.t != 'world')
-        return state;
+        return { t: 'none' };
       const id0 = ms.id;
       const loc0 = getTileId(state.coreState, id0).loc;
       const tile = tileAtPoint(state.coreState, wp.p_in_local);
       if (tile == undefined)
-        return state;
+        return { t: 'none' };
       const id1 = tile.id;
       const loc1 = getTileId(state.coreState, id1).loc;
-      const tcs = moveTiles(state.coreState, [{ id: id0, loc: loc1 }, { id: id1, loc: loc0 }]);
-      return withCoreState(state, cs => checkValid(tcs));
+      return {
+        t: 'multiple', actions: [
+          { t: 'swap', id0, id1, loc0, loc1 },
+          { t: 'checkValid' },
+        ]
+      };
     }
-
-    case 'up': return state; // no drag to resolve
-    case 'down': return state;
+    case 'up': return { t: 'none' }; // no drag to resolve
+    case 'down': return { t: 'none' };
   }
 }
 
@@ -331,7 +342,6 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
       else return state;
     case 'mouseDownIntent':
       return reduceIntent(state, action.intent, action.wp);
-    case 'setGameState': return action.state;
     case 'mouseMove': return produce(state, s => {
       s.mouseState.p_in_canvas = action.p;
     });
@@ -400,6 +410,34 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
       return produce(resolveGameLowAction(state, action.action), s => {
         s.mouseState = { t: 'up', p_in_canvas: action.p_in_canvas };
       });
+    case 'dragSelectionEnd': {
+      const newCs = resolveSelection(state.coreState, action.ms);
+      return produce(state, s => { s.coreState = newCs; });
+    }
+    case 'set_canvas_from_world': {
+      return produce(state, s => {
+        s.coreState.canvas_from_world = action.canvas_from_world;
+      });
+    }
+    case 'putTilesInWorld':
+      return withCoreState(state, cs => putTilesInWorld(cs, action.moves));
+    case 'putTileInWorld':
+      return withCoreState(state, cs => putTileInWorld(cs, action.id, action.p_in_world_int));
+    case 'setSelected':
+      return withCoreState(state, cs => setSelected(cs, action.sel));
+    case 'checkValid':
+      return withCoreState(state, cs => checkValid(cs));
+
+    case 'swap':
+      return withCoreState(state, cs => moveTiles(cs, [
+        { id: action.id0, loc: action.loc1 },
+        { id: action.id1, loc: action.loc0 }
+      ]));
+
+    case 'putTilesInHandFromNotHand':
+      return withCoreState(state, cs => putTilesInHandFromNotHand(cs, action.ids, action.ix));
+    case 'putTileInHand':
+      return withCoreState(state, cs => putTileInHand(cs, action.id, action.ix));
 
   }
 }
