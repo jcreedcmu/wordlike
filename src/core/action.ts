@@ -1,6 +1,7 @@
 import { ViewData } from '../ui/ui-helpers';
 import { WidgetPoint } from '../ui/widget-helpers';
 import { Point } from '../util/types';
+import { Intent } from './intent';
 import { GameState, SceneState } from './state';
 import { Tool } from './tools';
 
@@ -14,6 +15,8 @@ export type GameLowAction =
   | { t: 'incrementScore', amount: number }
   | { t: 'toggleGl' }
   | { t: 'setTool', tool: Tool }
+  | { t: 'mouseDownIntent', intent: Intent, wp: WidgetPoint & { t: 'world' } }
+  | { t: 'setGameState', state: GameState } // XXX deprecate
   ;
 
 export type LowAction =

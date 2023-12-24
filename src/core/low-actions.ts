@@ -47,13 +47,13 @@ export function vacuous_down(state: GameState, wp: WidgetPoint): GameState {
   return produce(state, s => { s.mouseState = { t: 'down', p_in_canvas: wp.p_in_canvas }; });
 }
 
-function reduceMouseDownInWorld(state: GameState, wp: WidgetPoint & { t: 'world' }, button: number, mods: Set<string>): GameState {
+function reduceMouseDownInWorld(state: GameState, wp: WidgetPoint & { t: 'world' }, button: number, mods: Set<string>): GameLowAction {
   const p_in_world_int = vm(wp.p_in_local, Math.floor);
   const hoverCell = cellAtPoint(state.coreState, p_in_world_int);
   let pinned =
     (hoverCell.t == 'tile' && hoverCell.tile.loc.t == 'world') ? isTilePinned(state.coreState, hoverCell.tile.id, hoverCell.tile.loc) : false;
   const intent = getIntentOfMouseDown(getCurrentTool(state.coreState), wp, button, mods, hoverCell, pinned);
-  return reduceIntent(state, intent, wp);
+  return { t: 'mouseDownIntent', intent, wp };
 }
 
 function reduceMouseDownInHand(state: GameState, wp: WidgetPoint & { t: 'hand' }, button: number, mods: Set<string>): GameState {
@@ -114,18 +114,18 @@ function reduceShuffleButton(state: GameState, wp: WidgetPoint): GameState {
   });
 }
 
-function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number, mods: Set<string>): GameState {
+function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number, mods: Set<string>): GameLowAction {
   const paused = state.coreState.paused;
   if (paused) {
-    return withCoreState(vacuous_down(state, wp), cs => unpauseState(cs, paused));
+    return { t: 'setGameState', state: withCoreState(vacuous_down(state, wp), cs => unpauseState(cs, paused)) };
   }
   switch (wp.t) {
     case 'world': return reduceMouseDownInWorld(state, wp, button, mods);
-    case 'hand': return reduceMouseDownInHand(state, wp, button, mods);
-    case 'toolbar': return reduceMouseDownInToolbar(state, wp, button, mods);
-    case 'pauseButton': return reducePauseButton(state, wp);
-    case 'shuffleButton': return reduceShuffleButton(state, wp);
-    case 'nowhere': return vacuous_down(state, wp);
+    case 'hand': return { t: 'setGameState', state: reduceMouseDownInHand(state, wp, button, mods) };
+    case 'toolbar': return { t: 'setGameState', state: reduceMouseDownInToolbar(state, wp, button, mods) };
+    case 'pauseButton': return { t: 'setGameState', state: reducePauseButton(state, wp) };
+    case 'shuffleButton': return { t: 'setGameState', state: reduceShuffleButton(state, wp) };
+    case 'nowhere': return { t: 'setGameState', state: vacuous_down(state, wp) };
   }
 }
 
@@ -278,7 +278,7 @@ export function getLowActions(state: GameState, action: GameAction): LowAction[]
       const wp = getWidgetPoint(state.coreState, action.p);
       if (wp.t == 'pauseButton' && shouldDisplayBackButton(state.coreState.winState))
         return [{ t: 'setSceneState', state: { t: 'menu' } }];
-      return gs(reduceMouseDown(state, wp, action.button, action.mods));
+      return [{ t: 'gameLowAction', action: reduceMouseDown(state, wp, action.button, action.mods) }];
     }
     case 'mouseUp': return gs(resolveMouseup(state));
     case 'mouseMove': return gs(produce(state, s => {
@@ -369,7 +369,9 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
           s.currentTool = action.tool;
         }));
       else return state;
-
+    case 'mouseDownIntent':
+      return reduceIntent(state, action.intent, action.wp);
+    case 'setGameState': return action.state;
   }
 }
 function resolveLowAction(state: SceneState, action: LowAction): SceneState {
