@@ -16,7 +16,10 @@ export type GameLowAction =
   | { t: 'toggleGl' }
   | { t: 'setTool', tool: Tool }
   | { t: 'mouseDownIntent', intent: Intent, wp: WidgetPoint & { t: 'world' } }
+  | { t: 'mouseMove', p: Point }
   | { t: 'setGameState', state: GameState } // XXX deprecate
+  | { t: 'none' }
+  | { t: 'repaint' }
   ;
 
 export type LowAction =

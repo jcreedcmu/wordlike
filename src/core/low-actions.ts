@@ -269,59 +269,24 @@ export function getLowActions(state: GameState, action: GameAction): LowAction[]
   function gs(state: GameState): LowAction[] {
     return [{ t: 'gameLowAction', action: { t: 'setGameState', state } }];
   }
+  function gla(action: GameLowAction): LowAction[] {
+    return [{ t: 'gameLowAction', action }];
+  }
+
   switch (action.t) {
-    case 'key': {
-      return reduceKey(state, action.code).map(action => ({ t: 'gameLowAction', action }));
-    }
+    case 'key': return gla(reduceKey(state, action.code));
     case 'none': return [];
-    case 'wheel': {
+    case 'wheel':
       return [{ t: 'gameLowAction', action: { t: 'zoom', amount: action.delta, center: action.p } }];
-    }
     case 'mouseDown': {
       const wp = getWidgetPoint(state.coreState, action.p);
       if (wp.t == 'pauseButton' && shouldDisplayBackButton(state.coreState.winState))
         return [{ t: 'setSceneState', state: { t: 'menu' } }];
       return [{ t: 'gameLowAction', action: reduceMouseDown(state, wp, action.button, action.mods) }];
     }
-    case 'mouseUp': return [{ t: 'gameLowAction', action: resolveMouseup(state) }];
-    case 'mouseMove': return gs(produce(state, s => {
-      s.mouseState.p_in_canvas = action.p;
-    }));
-    case 'repaint':
-      if (state.coreState.paused)
-        return gs(state);
-
-      // ensure chunk cache is full enough
-      let cache = state.coreState._cachedTileChunkMap;
-      for (const p of activeChunks(pan_canvas_from_world_of_state(state))) {
-        cache = ensureChunk(cache, state.coreState, p);
-      }
-
-      const t_in_game = now_in_game(state.coreState.game_from_clock);
-      const newAnimations = filterExpiredAnimations(t_in_game, state.coreState.animations);
-      const [newWordBonusState, destroys] = filterExpiredWordBonusState(t_in_game, state.coreState.wordBonusState);
-      destroys.forEach(destroy_p => {
-        newAnimations.push(mkPointDecayAnimation(destroy_p, state.coreState.game_from_clock));
-      });
-      state = produce(state, s => {
-        s.coreState._cachedTileChunkMap = cache;
-        s.coreState.animations = newAnimations;
-        s.coreState.wordBonusState = newWordBonusState;
-        destroys.forEach(destroy_p => {
-          setOverlay(s.coreState.bonusOverlay, destroy_p, { t: 'empty' });
-        });
-      });
-      if (state.coreState.panic !== undefined) {
-        if (getPanicFraction(state.coreState.panic, state.coreState.game_from_clock) > 1) {
-          return gs(produce(state, s => {
-            s.coreState.winState = { t: 'lost' };
-          }));
-        }
-        return gs(produce(state, s => { s.coreState.panic!.currentTime_in_game = t_in_game; }));
-      }
-      else {
-        return gs(state);
-      }
+    case 'mouseUp': return gla(resolveMouseup(state));
+    case 'mouseMove': return gla({ t: 'mouseMove', p: action.p });
+    case 'repaint': return gla({ t: 'repaint' });
   }
 }
 
@@ -375,6 +340,46 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     case 'mouseDownIntent':
       return reduceIntent(state, action.intent, action.wp);
     case 'setGameState': return action.state;
+    case 'mouseMove': return produce(state, s => {
+      s.mouseState.p_in_canvas = action.p;
+    });
+    case 'none': return state;
+    case 'repaint': {
+      if (state.coreState.paused)
+        return state;
+
+      // ensure chunk cache is full enough
+      let cache = state.coreState._cachedTileChunkMap;
+      for (const p of activeChunks(pan_canvas_from_world_of_state(state))) {
+        cache = ensureChunk(cache, state.coreState, p);
+      }
+
+      const t_in_game = now_in_game(state.coreState.game_from_clock);
+      const newAnimations = filterExpiredAnimations(t_in_game, state.coreState.animations);
+      const [newWordBonusState, destroys] = filterExpiredWordBonusState(t_in_game, state.coreState.wordBonusState);
+      destroys.forEach(destroy_p => {
+        newAnimations.push(mkPointDecayAnimation(destroy_p, state.coreState.game_from_clock));
+      });
+      state = produce(state, s => {
+        s.coreState._cachedTileChunkMap = cache;
+        s.coreState.animations = newAnimations;
+        s.coreState.wordBonusState = newWordBonusState;
+        destroys.forEach(destroy_p => {
+          setOverlay(s.coreState.bonusOverlay, destroy_p, { t: 'empty' });
+        });
+      });
+      if (state.coreState.panic !== undefined) {
+        if (getPanicFraction(state.coreState.panic, state.coreState.game_from_clock) > 1) {
+          return produce(state, s => {
+            s.coreState.winState = { t: 'lost' };
+          });
+        }
+        return produce(state, s => { s.coreState.panic!.currentTime_in_game = t_in_game; });
+      }
+      else {
+        return state;
+      }
+    }
   }
 }
 
