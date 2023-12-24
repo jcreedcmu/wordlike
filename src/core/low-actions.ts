@@ -113,7 +113,7 @@ function reduceShuffleButton(state: GameState, wp: WidgetPoint): GameState {
 function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number, mods: Set<string>): GameLowAction {
   const paused = state.coreState.paused;
   if (paused) {
-    return { t: 'setGameState', state: withCoreState(vacuous_down(state, wp), cs => unpauseState(cs, paused)) };
+    return { t: 'vacuousDownAnd', wp, action: { t: 'unpause', paused } };
   }
   switch (wp.t) {
     case 'world': return reduceMouseDownInWorld(state, wp, button, mods);
@@ -392,6 +392,10 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
         }
       });
     }
+    case 'unpause':
+      return withCoreState(state, cs => unpauseState(cs, action.paused))
+    case 'vacuousDownAnd':
+      return resolveGameLowAction(vacuous_down(state, action.wp), action.action);
   }
 }
 

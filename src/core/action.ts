@@ -1,6 +1,7 @@
 import { ViewData } from '../ui/ui-helpers';
 import { WidgetPoint } from '../ui/widget-helpers';
 import { Point } from '../util/types';
+import { PauseData } from './clock';
 import { Intent } from './intent';
 import { CoreState, GameState, SceneState } from './state';
 import { Tool } from './tools';
@@ -27,6 +28,9 @@ export type GameLowAction =
   | { t: 'pause', wp: WidgetPoint } // XXX could be broken up into pause and vacuous down
   | { t: 'multiple', actions: GameLowAction[] }
   | { t: 'startDragHandTile', wp: WidgetPoint, p_in_hand_int: Point }
+  | { t: 'unpause', paused: PauseData }
+  | { t: 'vacuousDownAnd', wp: WidgetPoint, action: GameLowAction }
+
   ;
 
 export type LowAction =
