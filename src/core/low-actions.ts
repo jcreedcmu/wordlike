@@ -284,7 +284,7 @@ export function getLowAction(state: GameState, action: GameAction): LowAction {
     case 'mouseDown': {
       const wp = getWidgetPoint(state.coreState, action.p);
       if (wp.t == 'pauseButton' && shouldDisplayBackButton(state.coreState.winState))
-        return { t: 'setSceneState', state: { t: 'menu' } };
+        return { t: 'returnToMenu' };
       return gla(reduceMouseDown(state, wp, action.button, action.mods));
     }
     case 'mouseUp': return gla(resolveMouseup(state));
@@ -468,7 +468,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
 
 export function resolveLowAction(state: SceneState, action: LowAction): SceneState {
   switch (action.t) {
-    case 'setSceneState': return action.state;
+    case 'returnToMenu': return { t: 'menu' }
     case 'gameLowAction':
       if (state.t == 'game') {
         return { t: 'game', gameState: resolveGameLowAction(state.gameState, action.action), revision: 0 };

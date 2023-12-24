@@ -48,7 +48,7 @@ export type GameLowAction =
   ;
 
 export type LowAction =
-  | { t: 'setSceneState', state: SceneState } // XXX deprecate
+  | { t: 'returnToMenu' }
   | { t: 'gameLowAction', action: GameLowAction }
   ;
 
