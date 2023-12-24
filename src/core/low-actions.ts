@@ -130,10 +130,10 @@ function resolveMouseup(state: GameState): GameLowAction {
   // resolveMouseupInner had some problems I think. I should investigate
   // why.
   return {
-    t: 'setGameState',
-    state: produce(resolveMouseupInner(state), s => {
-      s.mouseState = { t: 'up', p_in_canvas: state.mouseState.p_in_canvas };
-    })
+    t: 'andMouseUp', p_in_canvas: state.mouseState.p_in_canvas, action: {
+      t: 'setGameState',
+      state: resolveMouseupInner(state)
+    }
   };
 }
 
@@ -396,6 +396,11 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
       return withCoreState(state, cs => unpauseState(cs, action.paused))
     case 'vacuousDownAnd':
       return resolveGameLowAction(vacuous_down(state, action.wp), action.action);
+    case 'andMouseUp':
+      return produce(resolveGameLowAction(state, action.action), s => {
+        s.mouseState = { t: 'up', p_in_canvas: action.p_in_canvas };
+      });
+
   }
 }
 

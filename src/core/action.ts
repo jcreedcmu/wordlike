@@ -30,6 +30,7 @@ export type GameLowAction =
   | { t: 'startDragHandTile', wp: WidgetPoint, p_in_hand_int: Point }
   | { t: 'unpause', paused: PauseData }
   | { t: 'vacuousDownAnd', wp: WidgetPoint, action: GameLowAction }
+  | { t: 'andMouseUp', p_in_canvas: Point, action: GameLowAction }
 
   ;
 
