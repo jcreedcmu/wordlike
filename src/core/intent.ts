@@ -3,7 +3,7 @@ import { produce } from '../util/produce';
 import { Point } from '../util/types';
 import { vint, vm } from '../util/vutil';
 import { tryKillTileOfState } from './kill-helpers';
-import { vacuous_down } from './reduce';
+import { vacuous_down } from './low-actions';
 import { SelectionOperation, deselect, selectionOperationOfMods } from './selection';
 import { GameState } from './state';
 import { checkValid, drawSpecific, withCoreState } from './state-helpers';

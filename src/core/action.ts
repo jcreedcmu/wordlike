@@ -1,6 +1,11 @@
 import { ViewData } from '../ui/ui-helpers';
 import { Point } from '../util/types';
-import { SceneState } from './state';
+import { GameState, SceneState } from './state';
+
+export type LowAction =
+  | { t: 'setGameState', state: GameState } // XXX deprecate
+  | { t: 'setSceneState', state: SceneState } // XXX deprecate
+  ;
 
 // All of these p are p_in_canvas
 export type GameAction =

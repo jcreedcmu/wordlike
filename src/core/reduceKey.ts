@@ -3,7 +3,7 @@ import { debugTiles } from "../util/debug";
 import { produce } from "../util/produce";
 import { midpointOfRect } from "../util/util";
 import { tryKillTileOfState } from "./kill-helpers";
-import { reduceZoom } from "./reduce";
+import { reduceZoom } from "./low-actions";
 import { getScore, incrementScore, setScore } from "./scoring";
 import { GameState } from "./state";
 import { addWorldTiles, checkValid, drawOfState, dropTopHandTile, withCoreState } from "./state-helpers";
