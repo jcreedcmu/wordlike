@@ -129,13 +129,16 @@ function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number, mods
   }
 }
 
-function resolveMouseup(state: GameState): GameState {
+function resolveMouseup(state: GameState): GameLowAction {
   // FIXME: Setting the mouse state to up *before* calling
   // resolveMouseupInner had some problems I think. I should investigate
   // why.
-  return produce(resolveMouseupInner(state), s => {
-    s.mouseState = { t: 'up', p_in_canvas: state.mouseState.p_in_canvas };
-  });
+  return {
+    t: 'setGameState',
+    state: produce(resolveMouseupInner(state), s => {
+      s.mouseState = { t: 'up', p_in_canvas: state.mouseState.p_in_canvas };
+    })
+  };
 }
 
 function resolveMouseupInner(state: GameState): GameState {
@@ -264,13 +267,13 @@ function resolveMouseupInner(state: GameState): GameState {
 
 export function getLowActions(state: GameState, action: GameAction): LowAction[] {
   function gs(state: GameState): LowAction[] {
-    return [{ t: 'setGameState', state }];
+    return [{ t: 'gameLowAction', action: { t: 'setGameState', state } }];
   }
   switch (action.t) {
     case 'key': {
       return reduceKey(state, action.code).map(action => ({ t: 'gameLowAction', action }));
     }
-    case 'none': return gs(state);
+    case 'none': return [];
     case 'wheel': {
       return [{ t: 'gameLowAction', action: { t: 'zoom', amount: action.delta, center: action.p } }];
     }
@@ -280,7 +283,7 @@ export function getLowActions(state: GameState, action: GameAction): LowAction[]
         return [{ t: 'setSceneState', state: { t: 'menu' } }];
       return [{ t: 'gameLowAction', action: reduceMouseDown(state, wp, action.button, action.mods) }];
     }
-    case 'mouseUp': return gs(resolveMouseup(state));
+    case 'mouseUp': return [{ t: 'gameLowAction', action: resolveMouseup(state) }];
     case 'mouseMove': return gs(produce(state, s => {
       s.mouseState.p_in_canvas = action.p;
     }));
@@ -374,11 +377,10 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     case 'setGameState': return action.state;
   }
 }
+
 function resolveLowAction(state: SceneState, action: LowAction): SceneState {
   switch (action.t) {
-    case 'setGameState': return { t: 'game', gameState: action.state, revision: 0 };
     case 'setSceneState': return action.state;
-
     case 'gameLowAction':
       if (state.t == 'game') {
         return { t: 'game', gameState: resolveGameLowAction(state.gameState, action.action), revision: 0 };
