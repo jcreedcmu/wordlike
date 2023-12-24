@@ -71,7 +71,7 @@ function reduceMouseDownInHand(state: GameState, wp: WidgetPoint & { t: 'hand' }
       return { t: 'startDragHandTile', p_in_hand_int, wp };
     }
     else
-      return { t: 'drawTileAndDeselect' };
+      return { t: 'multiple', actions: [{ t: 'deselect' }, { t: 'drawTile' }] };
   }
 }
 
@@ -386,8 +386,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     case 'shuffle': return withCoreState(state, reduceShuffleButton);
     case 'pause': return withCoreState(state, reducePauseButton);
     case 'multiple': return resolveGameLowActions(state, action.actions);
-    case 'drawTileAndDeselect':
-      return withCoreState(state, cs => drawOfState(deselect(cs)));
+    case 'deselect': return withCoreState(state, deselect);
     case 'startDragHandTile': {
       const tiles = get_hand_tiles(state.coreState);
       return produce(withCoreState(state, deselect), s => {

@@ -12,7 +12,7 @@ import { Tool } from './tools';
 export type GameLowAction =
   | { t: 'zoom', center: Point, amount: number }
   | { t: 'drawTile' }
-  | { t: 'drawTileAndDeselect' } // XXX merge with above somehow
+  | { t: 'deselect' }
   | { t: 'flipOrientation' }
   | { t: 'dynamiteTile', wp: WidgetPoint }
   | { t: 'dropTopHandTile' }
