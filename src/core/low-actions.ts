@@ -265,24 +265,20 @@ function resolveMouseupInner(state: GameState): GameState {
   }
 }
 
-export function getLowActions(state: GameState, action: GameAction): LowAction[] {
-  function gs(state: GameState): LowAction[] {
-    return [{ t: 'gameLowAction', action: { t: 'setGameState', state } }];
+export function getLowAction(state: GameState, action: GameAction): LowAction {
+  function gla(action: GameLowAction): LowAction {
+    return { t: 'gameLowAction', action };
   }
-  function gla(action: GameLowAction): LowAction[] {
-    return [{ t: 'gameLowAction', action }];
-  }
-
   switch (action.t) {
     case 'key': return gla(reduceKey(state, action.code));
-    case 'none': return [];
+    case 'none': return gla({ t: 'none' });
     case 'wheel':
-      return [{ t: 'gameLowAction', action: { t: 'zoom', amount: action.delta, center: action.p } }];
+      return { t: 'gameLowAction', action: { t: 'zoom', amount: action.delta, center: action.p } };
     case 'mouseDown': {
       const wp = getWidgetPoint(state.coreState, action.p);
       if (wp.t == 'pauseButton' && shouldDisplayBackButton(state.coreState.winState))
-        return [{ t: 'setSceneState', state: { t: 'menu' } }];
-      return [{ t: 'gameLowAction', action: reduceMouseDown(state, wp, action.button, action.mods) }];
+        return { t: 'setSceneState', state: { t: 'menu' } };
+      return gla(reduceMouseDown(state, wp, action.button, action.mods));
     }
     case 'mouseUp': return gla(resolveMouseup(state));
     case 'mouseMove': return gla({ t: 'mouseMove', p: action.p });
@@ -290,6 +286,7 @@ export function getLowActions(state: GameState, action: GameAction): LowAction[]
   }
 }
 
+// XXX might be dead code
 export function resolveLowActions(state: SceneState, lowActions: LowAction[]): SceneState {
   for (const action of lowActions) {
     state = resolveLowAction(state, action);
@@ -383,7 +380,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
   }
 }
 
-function resolveLowAction(state: SceneState, action: LowAction): SceneState {
+export function resolveLowAction(state: SceneState, action: LowAction): SceneState {
   switch (action.t) {
     case 'setSceneState': return action.state;
     case 'gameLowAction':
