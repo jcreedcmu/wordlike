@@ -8,6 +8,7 @@ import { Tool } from './tools';
 export type GameLowAction =
   | { t: 'zoom', center: Point, amount: number }
   | { t: 'drawTile' }
+  | { t: 'drawTileAndDeselect' } // XXX merge with above somehow
   | { t: 'flipOrientation' }
   | { t: 'dynamiteTile', wp: WidgetPoint }
   | { t: 'dropTopHandTile' }
@@ -15,7 +16,7 @@ export type GameLowAction =
   | { t: 'incrementScore', amount: number }
   | { t: 'toggleGl' }
   | { t: 'setTool', tool: Tool }
-  | { t: 'mouseDownIntent', intent: Intent, wp: WidgetPoint & { t: 'world' } }
+  | { t: 'mouseDownIntent', intent: Intent, wp: WidgetPoint }
   | { t: 'mouseMove', p: Point }
   | { t: 'setGameState', state: GameState } // XXX deprecate
   | { t: 'setCoreState', state: CoreState } // XXX deprecate
@@ -25,6 +26,7 @@ export type GameLowAction =
   | { t: 'shuffle', wp: WidgetPoint } // XXX could be broken up into shuffle and vacuous down
   | { t: 'pause', wp: WidgetPoint } // XXX could be broken up into pause and vacuous down
   | { t: 'multiple', actions: GameLowAction[] }
+  | { t: 'startDragHandTile', wp: WidgetPoint, p_in_hand_int: Point }
   ;
 
 export type LowAction =

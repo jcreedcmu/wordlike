@@ -56,31 +56,22 @@ function reduceMouseDownInWorld(state: GameState, wp: WidgetPoint & { t: 'world'
   return { t: 'mouseDownIntent', intent, wp };
 }
 
-function reduceMouseDownInHand(state: GameState, wp: WidgetPoint & { t: 'hand' }, button: number, mods: Set<string>): GameState {
+function reduceMouseDownInHand(state: GameState, wp: WidgetPoint & { t: 'hand' }, button: number, mods: Set<string>): GameLowAction {
   if (state.coreState.winState.t == 'lost')
-    return vacuous_down(state, wp);
+    return { t: 'vacuousDown', wp }
 
   const p_in_hand_int = vm(wp.p_in_local, Math.floor);
   const tiles = get_hand_tiles(state.coreState);
   const tool = getCurrentTool(state.coreState);
-  if (tool == 'dynamite') return reduceIntent(state, dynamiteIntent, wp);
-  else if (tool == 'bomb') return reduceIntent(state, bombIntent, wp);
+  if (tool == 'dynamite') return { t: 'mouseDownIntent', intent: dynamiteIntent, wp };
+  else if (tool == 'bomb') return { t: 'mouseDownIntent', intent: bombIntent, wp };
   else {
     const hoverTile = p_in_hand_int.x == 0 && p_in_hand_int.y >= 0 && p_in_hand_int.y < tiles.length;
     if (hoverTile) {
-      return produce(withCoreState(state, deselect), s => {
-        s.mouseState = {
-          t: 'drag_tile',
-          orig_loc: { t: 'hand', p_in_hand_int },
-          id: tiles[p_in_hand_int.y].id,
-          orig_p_in_canvas: wp.p_in_canvas,
-          p_in_canvas: wp.p_in_canvas,
-          flipped: false,
-        }
-      });
+      return { t: 'startDragHandTile', p_in_hand_int, wp };
     }
     else
-      return withCoreState(state, cs => drawOfState(deselect(cs)));
+      return { t: 'drawTileAndDeselect' };
   }
 }
 
@@ -126,7 +117,7 @@ function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number, mods
   }
   switch (wp.t) {
     case 'world': return reduceMouseDownInWorld(state, wp, button, mods);
-    case 'hand': return { t: 'setGameState', state: reduceMouseDownInHand(state, wp, button, mods) };
+    case 'hand': return reduceMouseDownInHand(state, wp, button, mods);
     case 'toolbar': return reduceMouseDownInToolbar(state, wp, button, mods);
     case 'pauseButton': return { t: 'pause', wp };
     case 'shuffleButton': return { t: 'shuffle', wp };
@@ -386,6 +377,21 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     case 'pause': return reducePauseButton(state, action.wp);
     case 'multiple': return resolveGameLowActions(state, action.actions);
     case 'setCoreState': return produce(state, s => { s.coreState = action.state; });
+    case 'drawTileAndDeselect':
+      return withCoreState(state, cs => drawOfState(deselect(cs)));
+    case 'startDragHandTile': {
+      const tiles = get_hand_tiles(state.coreState);
+      return produce(withCoreState(state, deselect), s => {
+        s.mouseState = {
+          t: 'drag_tile',
+          orig_loc: { t: 'hand', p_in_hand_int: action.p_in_hand_int },
+          id: tiles[action.p_in_hand_int.y].id,
+          orig_p_in_canvas: action.wp.p_in_canvas,
+          p_in_canvas: action.wp.p_in_canvas,
+          flipped: false,
+        }
+      });
+    }
   }
 }
 
