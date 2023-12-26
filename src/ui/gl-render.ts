@@ -86,7 +86,9 @@ function drawChunk(
 
   // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-  const chunk = getChunk(state.coreState._cachedTileChunkMap, p_in_chunk);
+  const ms = state.mouseState;
+  const chunkCache = ms.t == 'drag_tile' ? ms._chunkCache : state.coreState._cachedTileChunkMap;
+  const chunk = getChunk(chunkCache, p_in_chunk);
 
   if (chunk == undefined) {
     logger('missedChunkRendering', `missing data for chunk ${JSON.stringify(p_in_chunk)}`);

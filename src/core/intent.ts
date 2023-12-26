@@ -7,7 +7,7 @@ import { vacuous_down } from './low-actions';
 import { SelectionOperation, deselect, selectionOperationOfMods } from './selection';
 import { GameState } from './state';
 import { checkValid, drawSpecific, withCoreState } from './state-helpers';
-import { CellContents, tileAtPoint } from './tile-helpers';
+import { CellContents, clearTileAtPositions, getTileLoc, tileAtPoint } from './tile-helpers';
 import { Tool, bombIntent, copyIntent, dynamiteIntent } from './tools';
 
 export type KillIntent =
@@ -78,12 +78,26 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
 
   switch (intent.t) {
     case 'dragTile': {
+      const cs = state.coreState;
       if (wp.t != 'world' && wp.t != 'hand') return vacuous_down(state, wp);
       const p_in_world_int = vm(wp.p_in_local, Math.floor);
       let state2 = state;
-      if (state.coreState.selected) {
+      const sel = cs.selected;
+      const toErase: Point[] = sel
+        ? sel.selectedIds.map(id => {
+          const loc = getTileLoc(cs, id);
+          if (loc.t !== 'world')
+            throw new Error('selected nonworld tile');
+          return loc.p_in_world_int;
+        })
+        : [p_in_world_int];
+      let overlay = cs._cachedTileChunkMap;
+      toErase.forEach(p => {
+        overlay = clearTileAtPositions(cs, overlay, p);
+      });
+      if (sel) {
         // If we start dragging a tile not in the selection, we should deselect it first
-        if (!state.coreState.selected.selectedIds.includes(intent.id)) {
+        if (!sel.selectedIds.includes(intent.id)) {
           state2 = withCoreState(state, cs => deselect(cs));
         }
       }
@@ -95,6 +109,7 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
           orig_p_in_canvas: wp.p_in_canvas,
           p_in_canvas: wp.p_in_canvas,
           flipped: false,
+          _chunkCache: overlay,
         };
       });
     }
@@ -155,6 +170,7 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
             orig_p_in_canvas: wp.p_in_canvas,
             p_in_canvas: wp.p_in_canvas,
             flipped: false,
+            _chunkCache: state.coreState._cachedTileChunkMap,
           };
         });
 

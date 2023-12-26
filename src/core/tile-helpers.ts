@@ -3,11 +3,11 @@ import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { vequal, vm } from "../util/vutil";
 import { CoreState, GameState, HandTile, Location, MainTile, Tile, TileEntity, TileEntityOptionalId, TileOptionalId } from "./state";
-import { Bonus } from "./bonus";
+import { Bonus, getBonusLayer } from "./bonus";
 import { getBonusFromLayer } from "./bonus-helpers";
 import { ensureId } from "./tile-id-helpers";
-import { readChunkCache, updateChunkCache } from "./chunk";
-import { getOverlay } from "./layer";
+import { Chunk, ChunkValue, readChunkCache, updateChunkCache } from "./chunk";
+import { Overlay, getOverlay } from "./layer";
 import { GenMoveTile, MoveTile } from "./state-helpers";
 
 export type TileId = string;
@@ -249,4 +249,9 @@ export function tileAtPoint(state: CoreState, p_in_world: Point): TileEntity | u
     }
   }
   return undefined;
+}
+
+export function clearTileAtPositions(cs: CoreState, overlay: Overlay<Chunk>, p_in_world: Point): Overlay<Chunk> {
+  const cval: ChunkValue = { t: 'bonus', bonus: getBonusFromLayer(cs, p_in_world) };
+  return updateChunkCache(overlay, cs, p_in_world, cval);
 }
