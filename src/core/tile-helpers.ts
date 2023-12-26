@@ -87,7 +87,7 @@ export function addWorldTile(state: Draft<CoreState>, tile: TileOptionalId): voi
     letter: tile.letter, loc: { t: 'world', p_in_world_int: tile.p_in_world_int }
   });
   state.tile_entities[newTile.id] = newTile;
-  updateChunkCache(state._cachedTileChunkMap, state, tile.p_in_world_int, { t: 'tile', tile: { letter: tile.letter } });
+  state._cachedTileChunkMap = updateChunkCache(state._cachedTileChunkMap, state, tile.p_in_world_int, { t: 'tile', tile: { letter: tile.letter } });
 }
 
 export function addHandTile(state: Draft<CoreState>, tile: Tile): void {

@@ -18,3 +18,11 @@ describe('putTileInWorld', () => {
     expect(readChunkCache(state._cachedTileChunkMap, state, { x: 0, y: 0 })).toEqual({ t: 'tile', tile: { letter: 'A' } });
   });
 });
+
+describe('addWorldTile', () => {
+  test('should update cache correctly', () => {
+    let state = oneTileState().coreState;
+    state = produce(state, s => addWorldTile(s, { letter: 'X', p_in_world_int: { x: 10, y: 20 } }));
+    expect(readChunkCache(state._cachedTileChunkMap, state, { x: 10, y: 20 })).toEqual({ t: 'tile', tile: { letter: 'X' } });
+  });
+});
