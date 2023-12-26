@@ -19,7 +19,7 @@ import { incrementScore, setScore } from './scoring';
 import { deselect, resolveSelection, setSelected } from './selection';
 import { CoreState, GameState, Location, SceneState } from './state';
 import { MoveTile, addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isCollision, isOccupied, isTilePinned, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
-import { cellAtPoint, getTileId, get_hand_tiles, get_tiles, moveTiles, putTileInHand, putTileInWorld, putTilesInHandFromNotHand, putTilesInWorld, removeAllTiles, setTileLoc, tileAtPoint } from "./tile-helpers";
+import { cellAtPoint, getTileId, get_hand_tiles, get_tiles, moveTiles, moveToHandLoc, putTileInHand, putTileInWorld, putTilesInHandFromNotHand, putTilesInWorld, removeAllTiles, tileAtPoint } from "./tile-helpers";
 import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
 import { shouldDisplayBackButton } from './winState';
 
@@ -102,11 +102,11 @@ function reduceShuffleButton(state: CoreState): CoreState {
     randomOrder = getRandomOrder(hs.length);
     retries++;
   }
-  const newLocs: { id: string, loc: Location }[] = hs.map((h, ix) => {
+  const newLocs: { id: string, loc: Location & { t: 'hand' } }[] = hs.map((h, ix) => {
     return { id: h.id, loc: { t: 'hand', p_in_hand_int: { x: 0, y: randomOrder[ix] } } };
   });
   return produce(state, s => {
-    newLocs.forEach(({ id, loc }) => { setTileLoc(s, id, loc); });
+    newLocs.forEach(({ id, loc }) => { moveToHandLoc(s, id, loc); });
   });
 }
 

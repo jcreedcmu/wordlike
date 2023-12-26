@@ -35,11 +35,13 @@ export function getTileLoc(state: CoreState, id: string): Location {
   return state.tile_entities[id].loc;
 }
 
-// XXX: This shouldn't be exported. Every other function that affects
-// tile_entities should be routed through some other public interface
-// function.
-export function setTileLoc(state: Draft<CoreState>, id: string, loc: Location): void {
+function setTileLoc(state: Draft<CoreState>, id: string, loc: Location): void {
   state.tile_entities[id].loc = loc;
+}
+
+export function moveToHandLoc(state: Draft<CoreState>, id: string, loc: Location & { t: 'hand' }) {
+  state.tile_entities[id].loc = loc;
+  // XXX update any hand cache?
 }
 
 export function get_tiles(state: CoreState): TileEntity[] {
@@ -85,7 +87,7 @@ export function addWorldTile(state: Draft<CoreState>, tile: TileOptionalId): voi
     letter: tile.letter, loc: { t: 'world', p_in_world_int: tile.p_in_world_int }
   });
   state.tile_entities[newTile.id] = newTile;
-  // XXX update chunk cache?
+  updateChunkCache(state._cachedTileChunkMap, state, tile.p_in_world_int, { t: 'tile', tile: { letter: tile.letter } });
 }
 
 export function addHandTile(state: Draft<CoreState>, tile: Tile): void {
