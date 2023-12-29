@@ -85,3 +85,19 @@ export function useCanvasGl<S, ENV>(
     return { ci, env };
   });
 }
+
+export function useNonreactiveCanvasGl<ENV>(
+  onLoad: (ci: CanvasGlInfo) => ENV,
+): [
+    React.RefCallback<HTMLCanvasElement>,
+    React.MutableRefObject<{ ci: CanvasGlInfo, env: ENV } | undefined>,
+  ] {
+  return useRawCanvas<{}, { ci: CanvasGlInfo, env: ENV }>({}, ({ ci }, s) => { }, [], rci => {
+    const d = rci.c.getContext('webgl2', { premultipliedAlpha: false, antialias: false });
+    if (!d) {
+      throw `This environment does not support WebGL2`;
+    }
+    const ci = { ...rci, d };
+    return { ci, env: onLoad(ci) };
+  });
+}

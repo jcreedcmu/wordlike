@@ -8,7 +8,7 @@ import { Instructions } from './ui/instructions';
 import { key } from './ui/key';
 import { paintWithScale } from './ui/render';
 import { resizeView } from './ui/ui-helpers';
-import { CanvasGlInfo, CanvasInfo, useCanvas, useCanvasGl } from './ui/use-canvas';
+import { CanvasGlInfo, CanvasInfo, useCanvas, useNonreactiveCanvasGl } from './ui/use-canvas';
 import { useEffectfulReducer } from './ui/use-effectful-reducer';
 import { DEBUG } from './util/debug';
 import { relpos } from './util/dutil';
@@ -69,16 +69,16 @@ export function App(props: {}): JSX.Element {
 }
 
 function glRender(ci: CanvasGlInfo, env: GlEnv, props: CanvasProps): void {
-  if (props.main.coreState.renderToGl) {
+  if (props.main.coreState.renderToGl && !DEBUG.fastAnimation) {
     renderGlPane(ci, env, props.main);
   }
 }
 
 export function Game(props: GameProps): JSX.Element {
   const { state, dispatch } = props;
+  let going = true;
 
-  const [glcref, glmc] = useCanvasGl<CanvasProps, GlEnv>(
-    { main: state }, glRender, [state.coreState], ci => glInitialize(ci, dispatch));
+  const [glcref, glmc] = useNonreactiveCanvasGl<GlEnv>(ci => glInitialize(ci, dispatch));
 
   const [cref, mc] = useCanvas<CanvasProps>(
     { main: state }, render, [state.coreState], ci => {
@@ -152,6 +152,16 @@ export function Game(props: GameProps): JSX.Element {
 
   function intervalHandler() {
     dispatch({ t: 'repaint' });
+    if (DEBUG.fastAnimation) {
+      if (!going) {
+        console.log('abandoning requestanimationframe loop');
+      }
+      if (glmc.current) {
+        renderGlPane(glmc.current.ci, glmc.current.env, state);
+      }
+      window.requestAnimationFrame(intervalHandler);
+    }
+
   }
 
   let interval: number | undefined = undefined;
@@ -161,7 +171,13 @@ export function Game(props: GameProps): JSX.Element {
     document.addEventListener('contextmenu', contextMenuListener);
     document.addEventListener('keydown', keyListener);
     window.addEventListener('resize', handleResize);
-    interval = window.setInterval(intervalHandler, ANIMATION_INTERVAL_MS);
+
+    if (DEBUG.fastAnimation) {
+      window.requestAnimationFrame(intervalHandler);
+    }
+    else {
+      interval = window.setInterval(intervalHandler, ANIMATION_INTERVAL_MS);
+    }
 
     return () => {
       document.removeEventListener('dblclick', dblclickListener);
@@ -169,6 +185,7 @@ export function Game(props: GameProps): JSX.Element {
       document.removeEventListener('keydown', keyListener);
       window.removeEventListener('resize', handleResize);
       clearInterval(interval);
+      going = false;
       if (DEBUG.interval)
         console.log('clearing interval');
     };
