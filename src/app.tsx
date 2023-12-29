@@ -8,7 +8,7 @@ import { Instructions } from './ui/instructions';
 import { key } from './ui/key';
 import { paintWithScale } from './ui/render';
 import { resizeView } from './ui/ui-helpers';
-import { CanvasGlInfo, CanvasInfo, useCanvas, useNonreactiveCanvasGl } from './ui/use-canvas';
+import { CanvasGlInfo, CanvasInfo, useCanvas, useCanvasGl, useNonreactiveCanvasGl } from './ui/use-canvas';
 import { useEffectfulReducer } from './ui/use-effectful-reducer';
 import { DEBUG } from './util/debug';
 import { relpos } from './util/dutil';
@@ -76,9 +76,19 @@ function glRender(ci: CanvasGlInfo, env: GlEnv, props: CanvasProps): void {
 
 export function Game(props: GameProps): JSX.Element {
   const { state, dispatch } = props;
+  const stateRef = React.useRef(state);
+  useEffect(() => {
+    // This effect runs whenever state changes
+    stateRef.current = state;
+  }, [state]);
+
   let going = true;
 
-  const [glcref, glmc] = useNonreactiveCanvasGl<GlEnv>(ci => glInitialize(ci, dispatch));
+
+  const [glcref, glmc] = DEBUG.fastAnimation
+    ? useNonreactiveCanvasGl<GlEnv>(ci => glInitialize(ci, dispatch))
+    : useCanvasGl<CanvasProps, GlEnv>(
+      { main: state }, glRender, [state.coreState], ci => glInitialize(ci, dispatch));
 
   const [cref, mc] = useCanvas<CanvasProps>(
     { main: state }, render, [state.coreState], ci => {
@@ -157,7 +167,7 @@ export function Game(props: GameProps): JSX.Element {
         console.log('abandoning requestanimationframe loop');
       }
       if (glmc.current) {
-        renderGlPane(glmc.current.ci, glmc.current.env, state);
+        renderGlPane(glmc.current.ci, glmc.current.env, stateRef.current);
       }
       window.requestAnimationFrame(intervalHandler);
     }
