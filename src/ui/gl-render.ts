@@ -241,7 +241,18 @@ function drawOneTile(gl: WebGL2RenderingContext, env: GlEnv, letter: string, sta
 }
 
 const shouldDebug = { v: false };
+let oldState: GameState | null = null;
 export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): void {
+
+  if (oldState != null && JSON.stringify(state) == JSON.stringify(oldState)) {
+    console.log('skipping');
+    return;
+  }
+  else {
+    console.log('rendering');
+  }
+  oldState = state;
+
   const { d: gl } = ci;
   const { prog } = env;
 
