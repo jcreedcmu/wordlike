@@ -319,7 +319,7 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
     drawHand(gl, env, state.coreState);
 
     // draw panic bar
-    if (state.coreState.panic) {
+    if (state.coreState.winState.t != 'lost' && state.coreState.panic) {
       const rr = renderPanicBar(state.coreState.panic, state.coreState.game_from_clock);
       glFillRect(gl, env, rr.rect, rr.color);
     }
