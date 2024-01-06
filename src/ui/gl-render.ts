@@ -20,9 +20,16 @@ import { CanvasGlInfo } from "./use-canvas";
 import { canvas_from_drag_tile, pan_canvas_from_world_of_state } from "./view-helpers";
 import { canvas_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
 
+export type RectDrawer = {
+  prog: WebGLProgram,
+  positionAttributeLocation: number,
+  colorUniformLocation: WebGLUniformLocation,
+};
+
 export type GlEnv = {
   chunkImdat: ImageData,
   prog: WebGLProgram,
+  rectDrawer: RectDrawer,
   chunkBoundsBuffer: WebGLBuffer,
 }
 
@@ -46,7 +53,9 @@ function drawChunk(
   const chunk_rect_in_gl = apply_to_rect(gl_from_chunk, chunk_rect_in_chunk);
 
   const [p1, p2] = rectPts(chunk_rect_in_gl);
-  attributeSetFloats(gl, chunkBoundsBuffer, [
+  attributeSetFloats(gl,
+    prog, "pos", 3,
+    chunkBoundsBuffer, [
     p1.x, p2.y, 0,
     p2.x, p2.y, 0,
     p1.x, p1.y, 0,
@@ -123,7 +132,9 @@ function drawExternalChunk(gl: WebGL2RenderingContext, env: GlEnv, chunk: Chunk,
   const chunk_rect_in_gl = apply_to_rect(gl_from_canvas, chunk_rect_in_canvas);
 
   const [p1, p2] = rectPts(chunk_rect_in_gl);
-  attributeSetFloats(gl, chunkBoundsBuffer, [
+  attributeSetFloats(gl,
+    prog, "pos", 3,
+    chunkBoundsBuffer, [
     p1.x, p2.y, 0,
     p2.x, p2.y, 0,
     p1.x, p1.y, 0,
@@ -192,7 +203,9 @@ function drawOneTile(gl: WebGL2RenderingContext, env: GlEnv, letter: string, sta
   const chunk_rect_in_gl = apply_to_rect(gl_from_canvas, chunk_rect_in_canvas);
 
   const [p1, p2] = rectPts(chunk_rect_in_gl);
-  attributeSetFloats(gl, chunkBoundsBuffer, [
+  attributeSetFloats(gl,
+    prog, "pos", 3,
+    chunkBoundsBuffer, [
     p1.x, p2.y, 0,
     p2.x, p2.y, 0,
     p1.x, p1.y, 0,
@@ -306,6 +319,11 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
         drawOneTile(gl, env, tile.letter, state, canvas_from_drag_tile(cs, ms));
       }
     }
+
+    // draw hand background???
+    gl.useProgram(env.rectDrawer.prog);
+    gl.uniform4fv(env.rectDrawer.colorUniformLocation, [1, 1, 0, 1]);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   };
 
   if (DEBUG.glProfiling) {
@@ -408,5 +426,42 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
     throw new Error(`Couldn't allocate chunk bounds buffer`);
   }
 
-  return { prog, chunkBoundsBuffer, chunkImdat };
+  return { prog, chunkBoundsBuffer, chunkImdat, rectDrawer: mkRectDrawer(gl) };
+}
+
+
+function mkRectDrawer(gl: WebGL2RenderingContext): RectDrawer {
+  // Create rect drawer data
+  const prog = shaderProgram(gl, `
+        attribute vec4 a_position;
+        void main() {
+            gl_Position = a_position;
+        }
+`, `
+        precision mediump float;
+        uniform vec4 u_color;
+        void main() {
+            gl_FragColor = u_color;
+        }
+    `);
+
+  const positionAttributeLocation = gl.getAttribLocation(prog, "a_position");
+  const colorUniformLocation = gl.getUniformLocation(prog, "u_color")!;
+  gl.enableVertexAttribArray(positionAttributeLocation);
+
+  // Create a buffer and bind it
+  const positionBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+  gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
+
+  // Set rectangle vertices
+  const vertices = new Float32Array([
+    -0.5, -0.5,
+    0.5, -0.5,
+    -0.5, 0.5,
+    0.5, 0.5,
+  ]);
+  gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+  return { prog, positionAttributeLocation, colorUniformLocation };
 }

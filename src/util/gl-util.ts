@@ -17,10 +17,15 @@ export function attributeCreateAndSetFloats(
 
 export function attributeSetFloats(
   gl: WebGL2RenderingContext,
+  prog: WebGLProgram,
+  attr_name: string,
+  rsize: number,
   buffer: WebGLBuffer,
-  arr: number[]
+  arr: number[],
 ) {
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+  const attr = gl.getAttribLocation(prog, attr_name);
+  gl.vertexAttribPointer(attr, rsize, gl.FLOAT, false, 0, 0);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr), gl.DYNAMIC_DRAW);
 }
 

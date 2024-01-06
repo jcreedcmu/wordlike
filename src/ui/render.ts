@@ -431,7 +431,11 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
   }
 
   const illegalDrag = ms.t == 'drag_tile' && getWidgetPoint(cs, ms.p_in_canvas).t == 'hand' && proposedHandDragOverLimit(cs, ms);
-  drawHand(illegalDrag);
+  if (glEnabled) {
+    clearRect(d, hand_bds_in_canvas);
+  }
+  else
+    drawHand(illegalDrag);
   drawShuffleButton();
   const mp = midpointOfRect(canvas_bds_in_canvas);
   if (cs.winState.t == 'lost') {
