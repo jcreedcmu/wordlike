@@ -64,6 +64,17 @@ export function fillRect(d: CanvasRenderingContext2D, rect: Rect, color: string)
   d.fillRect(rect.p.x, rect.p.y, rect.sz.x, rect.sz.y);
 }
 
+export function colorOfRgbColor(c: RgbColor): string {
+  return `rgb(${c[0]},${c[1]},${c[2]})`;
+}
+
+// This is assumed to be 0..255
+export type RgbColor = [number, number, number];
+
+export function fillRectRgb(d: CanvasRenderingContext2D, rect: Rect, color: RgbColor) {
+  fillRect(d, rect, colorOfRgbColor(color));
+}
+
 export function clearRect(d: CanvasRenderingContext2D, rect: Rect) {
   d.clearRect(rect.p.x, rect.p.y, rect.sz.x, rect.sz.y);
 }

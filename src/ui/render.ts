@@ -10,7 +10,7 @@ import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from '..
 import { BOMB_RADIUS, getCurrentTool, getCurrentTools, rectOfTool } from '../core/tools';
 import { shouldDisplayBackButton } from '../core/winState';
 import { DEBUG, doOnceEvery } from '../util/debug';
-import { clearRect, drawImage, fillRect, fillText, lineTo, moveTo, pathRectCircle, strokeRect } from '../util/dutil';
+import { clearRect, drawImage, fillRect, fillRectRgb, fillText, lineTo, moveTo, pathRectCircle, strokeRect } from '../util/dutil';
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from '../util/se2-extra';
 import { Point, Rect } from '../util/types';
@@ -18,7 +18,7 @@ import { boundRect, midpointOfRect, scaleRectToCenter } from '../util/util';
 import { vadd, vdiv, vequal, vm, vscale, vsub, vtrans } from '../util/vutil';
 import { drawAnimation } from './drawAnimation';
 import { drawBonus } from './drawBonus';
-import { drawPanicBar } from './drawPanicBar';
+import { renderPanicBar } from './drawPanicBar';
 import { CanvasInfo } from './use-canvas';
 import { canvas_from_drag_tile, cell_in_canvas, drawBubble, pan_canvas_from_world_of_state } from './view-helpers';
 import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, getWidgetPoint, hand_bds_in_canvas, pause_button_bds_in_canvas, shuffle_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
@@ -27,6 +27,9 @@ const interfaceCyanColor = 'rgb(0,255,255,0.5)';
 const shadowColor = 'rgb(128,128,100,0.4)';
 const backgroundGray = '#eeeeee';
 const backgroundRed = '#ffaaaa';
+
+export type RenderableRect = { rect: Rect, color: [number, number, number] };
+
 
 const DRAW_TILE_SHADOWS = false;
 
@@ -382,7 +385,12 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
     d.fillText(`${getScore(cs)}`, scoreLoc.x, scoreLoc.y);
 
     // draw panic bar
-    drawPanicBar(d, cs.panic, cs.game_from_clock);
+    if (!glEnabled) {
+      if (cs.panic) {
+        const rr = renderPanicBar(cs.panic, cs.game_from_clock);
+        fillRectRgb(d, rr.rect, rr.color)
+      }
+    }
 
     // draw selection
     if (ms.t == 'drag_selection') {
