@@ -3,14 +3,14 @@ import { getAssets } from "../core/assets";
 import { getBonusFromLayer } from "../core/bonus-helpers";
 import { getCachedSelection } from "../core/cache-state";
 import { Chunk, WORLD_CHUNK_SIZE, activeChunks, getChunk, mkChunk } from "../core/chunk";
-import { GameState } from "../core/state";
+import { CoreState, GameState } from "../core/state";
 import { getTileId } from "../core/tile-helpers";
 import { DEBUG, doOnce, doOnceEvery, logger } from "../util/debug";
-import { imageDataOfBuffer } from "../util/dutil";
+import { RgbColor, imageDataOfBuffer } from "../util/dutil";
 import { attributeCreateAndSetFloats, attributeSetFloats, shaderProgram } from "../util/gl-util";
 import { SE2, apply, compose, composen, inverse, scale, translate } from "../util/se2";
 import { apply_to_rect } from "../util/se2-extra";
-import { Point } from "../util/types";
+import { Point, Rect } from "../util/types";
 import { rectPts } from "../util/util";
 import { vadd, vdiag, vinv, vm, vscale, vsub } from "../util/vutil";
 import { renderPanicBar } from "./drawPanicBar";
@@ -21,7 +21,7 @@ import { CanvasGlInfo } from "./use-canvas";
 import { canvas_from_drag_tile, pan_canvas_from_world_of_state } from "./view-helpers";
 import { canvas_bds_in_canvas, hand_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
 
-const backgroundGrayRgba = [14 / 15, 14 / 15, 14 / 15, 1];
+const backgroundGrayRgb: RgbColor = [238, 238, 238];
 
 export type RectDrawer = {
   prog: WebGLProgram,
@@ -257,6 +257,27 @@ function drawOneTile(gl: WebGL2RenderingContext, env: GlEnv, letter: string, sta
 
 }
 
+function glFillRect(gl: WebGL2RenderingContext, env: GlEnv, rect_in_canvas: Rect, color: RgbColor): void {
+  gl.useProgram(env.rectDrawer.prog);
+  gl.bindBuffer(gl.ARRAY_BUFFER, env.rectDrawer.positionBuffer);
+  gl.vertexAttribPointer(env.rectDrawer.positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
+  gl.uniform4fv(env.rectDrawer.colorUniformLocation, [color[0] / 255, color[1] / 255, color[2] / 255, 1]);
+  const hand_bds_in_gl = apply_to_rect(gl_from_canvas, rect_in_canvas);
+  const [p1, p2] = rectPts(hand_bds_in_gl);
+  attributeSetFloats(gl, env.rectDrawer.prog, 'a_position', 2, env.rectDrawer.positionBuffer, [
+    p1.x, p2.y,
+    p2.x, p2.y,
+    p1.x, p1.y,
+    p2.x, p1.y,
+  ]);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+}
+
+function drawHand(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState): void {
+  glFillRect(gl, env, hand_bds_in_canvas, backgroundGrayRgb);
+}
+
 const shouldDebug = { v: false };
 let oldState: GameState | null = null;
 export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): void {
@@ -293,35 +314,13 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
       drawChunk(gl, env, p, state, chunk_from_canvas, inverse(pan_canvas_from_world_of_state(state)));
     });
 
-    // Draw hand
-    gl.useProgram(env.rectDrawer.prog);
-    gl.bindBuffer(gl.ARRAY_BUFFER, env.rectDrawer.positionBuffer);
-    gl.vertexAttribPointer(env.rectDrawer.positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
-    gl.uniform4fv(env.rectDrawer.colorUniformLocation, backgroundGrayRgba);
-    const hand_bds_in_gl = apply_to_rect(gl_from_canvas, hand_bds_in_canvas);
-    const [p1, p2] = rectPts(hand_bds_in_gl);
-    attributeSetFloats(gl, env.rectDrawer.prog, 'a_position', 2, env.rectDrawer.positionBuffer, [
-      p1.x, p2.y,
-      p2.x, p2.y,
-      p1.x, p1.y,
-      p2.x, p1.y,
-    ]);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    // draw hand
+    drawHand(gl, env, state.coreState);
 
+    // draw panic bar
     if (state.coreState.panic) {
-      // reuse the vertex attrib pointer from above?
       const rr = renderPanicBar(state.coreState.panic, state.coreState.game_from_clock);
-      gl.uniform4fv(env.rectDrawer.colorUniformLocation, [rr.color[0] / 255, rr.color[1] / 255, rr.color[2] / 255, 1]);
-      const [p1, p2] = rectPts(apply_to_rect(gl_from_canvas, rr.rect));
-
-      attributeSetFloats(gl, env.rectDrawer.prog, 'a_position', 2, env.rectDrawer.positionBuffer, [
-        p1.x, p2.y,
-        p2.x, p2.y,
-        p1.x, p1.y,
-        p2.x, p1.y,
-      ]);
-
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      glFillRect(gl, env, rr.rect, rr.color);
     }
 
     gl.useProgram(prog);
