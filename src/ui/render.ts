@@ -131,6 +131,10 @@ function formatTime(x: number) {
   return rv;
 }
 
+export function canvas_from_hand_tile(index: number): SE2 {
+  return compose(canvas_from_hand(), translate({ x: 0, y: index }));
+}
+
 export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
   const cs = state.coreState;
 
@@ -150,7 +154,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
   function canvas_from_tile(tile: TileEntity): SE2 {
     switch (tile.loc.t) {
       case 'hand':
-        return compose(canvas_from_hand(), translate(tile.loc.p_in_hand_int));
+        return canvas_from_hand_tile(tile.loc.p_in_hand_int.y);
       case 'world':
         return compose(pan_canvas_from_world, translate(tile.loc.p_in_world_int));
       case 'nowhere':

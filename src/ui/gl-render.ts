@@ -4,7 +4,7 @@ import { getBonusFromLayer } from "../core/bonus-helpers";
 import { getCachedSelection } from "../core/cache-state";
 import { Chunk, WORLD_CHUNK_SIZE, activeChunks, getChunk, mkChunk } from "../core/chunk";
 import { CoreState, GameState } from "../core/state";
-import { getTileId } from "../core/tile-helpers";
+import { getTileId, get_hand_tiles, isSelectedForDrag } from "../core/tile-helpers";
 import { DEBUG, doOnce, doOnceEvery, logger } from "../util/debug";
 import { RgbColor, imageDataOfBuffer } from "../util/dutil";
 import { attributeCreateAndSetFloats, attributeSetFloats, shaderProgram } from "../util/gl-util";
@@ -15,11 +15,12 @@ import { rectPts } from "../util/util";
 import { vadd, vdiag, vinv, vm, vscale, vsub } from "../util/vutil";
 import { renderPanicBar } from "./drawPanicBar";
 import { gl_from_canvas } from "./gl-helpers";
+import { canvas_from_hand_tile } from "./render";
 import { spriteLocOfBonus, spriteLocOfChunkValue } from "./sprite-sheet";
 import { resizeView } from "./ui-helpers";
 import { CanvasGlInfo } from "./use-canvas";
 import { canvas_from_drag_tile, pan_canvas_from_world_of_state } from "./view-helpers";
-import { canvas_bds_in_canvas, hand_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
+import { canvas_bds_in_canvas, canvas_from_hand, hand_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
 
 const backgroundGrayRgb: RgbColor = [238, 238, 238];
 
@@ -358,6 +359,14 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
         drawOneTile(gl, env, tile.letter, state, canvas_from_drag_tile(cs, ms));
       }
     }
+
+    // draw hand tiles
+    get_hand_tiles(cs).forEach(tile => {
+      if (isSelectedForDrag(state, tile))
+        return;
+      drawOneTile(gl, env, tile.letter, state, canvas_from_hand_tile(tile.loc.p_in_hand_int.y));
+    });
+
   };
 
   if (DEBUG.glProfiling) {
