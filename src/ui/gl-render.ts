@@ -18,12 +18,15 @@ import { spriteLocOfBonus, spriteLocOfChunkValue } from "./sprite-sheet";
 import { resizeView } from "./ui-helpers";
 import { CanvasGlInfo } from "./use-canvas";
 import { canvas_from_drag_tile, pan_canvas_from_world_of_state } from "./view-helpers";
-import { canvas_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
+import { canvas_bds_in_canvas, hand_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
+
+const backgroundGrayRgba = [14 / 15, 14 / 15, 14 / 15, 1];
 
 export type RectDrawer = {
   prog: WebGLProgram,
   positionAttributeLocation: number,
   colorUniformLocation: WebGLUniformLocation,
+  positionBuffer: WebGLBuffer,
 };
 
 export type GlEnv = {
@@ -287,6 +290,17 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
       drawChunk(gl, env, p, state, chunk_from_canvas, inverse(pan_canvas_from_world_of_state(state)));
     });
 
+
+    // Draw hand
+    gl.useProgram(env.rectDrawer.prog);
+    gl.bindBuffer(gl.ARRAY_BUFFER, env.rectDrawer.positionBuffer);
+    gl.vertexAttribPointer(env.rectDrawer.positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
+    gl.uniform4fv(env.rectDrawer.colorUniformLocation, backgroundGrayRgba);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+    gl.useProgram(prog);
+
+    // Here's where we draw dragged tiles in general
     const cs = state.coreState;
     const ms = state.mouseState;
     // draw dragged tiles from selection
@@ -319,11 +333,6 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
         drawOneTile(gl, env, tile.letter, state, canvas_from_drag_tile(cs, ms));
       }
     }
-
-    // draw hand background???
-    gl.useProgram(env.rectDrawer.prog);
-    gl.uniform4fv(env.rectDrawer.colorUniformLocation, [1, 1, 0, 1]);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   };
 
   if (DEBUG.glProfiling) {
@@ -451,17 +460,21 @@ function mkRectDrawer(gl: WebGL2RenderingContext): RectDrawer {
 
   // Create a buffer and bind it
   const positionBuffer = gl.createBuffer();
+  if (positionBuffer == null)
+    throw new Error(`couldn't allocate position buffer`);
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
   gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
 
+  const hand_bds_in_gl = apply_to_rect(gl_from_canvas, hand_bds_in_canvas);
+  const [h1, h2] = rectPts(hand_bds_in_gl);
   // Set rectangle vertices
   const vertices = new Float32Array([
-    -0.5, -0.5,
-    0.5, -0.5,
-    -0.5, 0.5,
-    0.5, 0.5,
+    h1.x, h1.y,
+    h2.x, h1.y,
+    h1.x, h2.y,
+    h2.x, h2.y,
   ]);
   gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
-  return { prog, positionAttributeLocation, colorUniformLocation };
+  return { prog: prog, positionAttributeLocation, colorUniformLocation, positionBuffer };
 }
