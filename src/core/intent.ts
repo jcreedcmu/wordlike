@@ -83,7 +83,12 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
       const p_in_world_int = vm(wp.p_in_local, Math.floor);
       let state2 = state;
       const sel = cs.selected;
-      const toErase: Point[] = sel
+
+      // toErase is needed for the GL board rendering cache.
+      // We're erasing any tiles that are "picked up".
+      // If a selection is active *and* the tile we clicked on is in the selection,
+      // then we're dragging all the selected tiles. Otherwise we're dragging the clicked tile.
+      const toErase: Point[] = sel && sel.selectedIds.includes(intent.id)
         ? sel.selectedIds.map(id => {
           const loc = getTileLoc(cs, id);
           if (loc.t !== 'world')
