@@ -35,7 +35,6 @@ export function renderPanicBar(panic: PanicData, game_from_clock: SE1): Renderab
   const panic_fraction = getPanicFraction(panic, game_from_clock);
 
   const c: RgbColor = lerpSpline(panicColorSpline, panic_fraction) as RgbColor;
-  console.log(c);
 
   if (panic_fraction > 0.9 && Math.floor(200 * panic_fraction) % 2 == 0) {
     return { rect: rectOfPanic_in_canvas(0), color: flashColor };

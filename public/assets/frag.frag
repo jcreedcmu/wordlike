@@ -116,6 +116,13 @@ vec4 get_sprite_pixel(vec2 p_in_world_fp, vec2 sprite_coords) {
   return texture(u_spriteTexture, (p_in_world_fp + sprite_coords) / NUM_SPRITES_PER_SHEET);
 }
 
+vec4 blendOver(vec4 a, vec4 b) {
+    float newAlpha = mix(b.a, 1.0, a.a);
+    vec3 newColor = mix(b.a * b.rgb, a.rgb, a.a);
+    float divideFactor = (newAlpha > 0.001 ? (1.0 / newAlpha) : 1.0);
+    return vec4(divideFactor * newColor, newAlpha);
+}
+
 vec4 getColor() {
   vec3 p_in_canvas = vec3(gl_FragCoord.xy, 1.0);
   p_in_canvas.y = u_canvasSize.y - p_in_canvas.y;
@@ -133,14 +140,26 @@ vec4 getColor() {
   vec2 p_in_world_fp = p_in_world - floor(p_in_world); // fractional part
 
   vec2 sprite_coords = round(255.0 * texture(u_chunkDataTexture, (coords_within_chunk + vec2(0.5,0.5)) / float(CHUNK_SIZE) )).xy;
-  vec4 bgcolor = get_sprite_pixel(p_in_world_fp, sprite_coords);
+
+  float is_origin = float(u_chunk_origin_in_world == vec2(0.,0.) && coords_within_chunk == vec2(0.,0.));
+
+  float vlen = length(p_in_world_fp - vec2(0.5));
+
+  // origin alpha factor
+  float oam = clamp(0.5 + 5. * get_sharpness() * (0.35 - vlen), 0., 1.)
+    * clamp(0.5 + 5. * get_sharpness() * (vlen - 0.3), 0., 1.);
+
+  vec4 origin_color = mix(vec4(0.,0.,0.,0.), vec4(0.,0.,0.,0.5), oam * is_origin);
+  vec4 bgcolor = blendOver(origin_color, get_sprite_pixel(p_in_world_fp, sprite_coords));
+
+
 
   vec2 off = abs(p_in_world - p_in_world_r);
   float ch_amount = max(crosshair(off.xy), crosshair(off.yx));
 
   vec3 ch_color = mix(BOARD_BG_COLOR, vec3(0.), 0.4); // crosshairs color
-  vec3 whiteBack = bgcolor.rgb * bgcolor.a + BOARD_BG_COLOR * (1. - bgcolor.a);
-  return ch_amount * vec4(ch_color, 1.) + (1. - ch_amount) * vec4(whiteBack, 1.);
+  vec3 whiteBack = mix(BOARD_BG_COLOR, bgcolor.rgb, bgcolor.a);
+  return vec4(mix(whiteBack, ch_color, ch_amount), 1.);
 }
 
 void main() {
