@@ -123,6 +123,18 @@ vec4 blendOver(vec4 a, vec4 b) {
     return vec4(divideFactor * newColor, newAlpha);
 }
 
+vec4 get_origin_pixel(vec2 coords_within_chunk, vec2 p_in_world_fp) {
+  float is_origin = float(u_chunk_origin_in_world == vec2(0.,0.) && coords_within_chunk == vec2(0.,0.));
+
+  float vlen = length(p_in_world_fp - vec2(0.5));
+
+  // origin alpha factor
+  float oam = clamp(0.5 + 5. * get_sharpness() * (0.35 - vlen), 0., 1.)
+    * clamp(0.5 + 5. * get_sharpness() * (vlen - 0.3), 0., 1.);
+
+  return mix(vec4(0.,0.,0.,0.), vec4(0.,0.,0.,0.5), oam * is_origin);
+}
+
 vec4 getColor() {
   vec3 p_in_canvas = vec3(gl_FragCoord.xy, 1.0);
   p_in_canvas.y = u_canvasSize.y - p_in_canvas.y;
@@ -139,26 +151,24 @@ vec4 getColor() {
   vec2 p_in_world_r = round(p_in_world);
   vec2 p_in_world_fp = p_in_world - floor(p_in_world); // fractional part
 
-  vec2 sprite_coords = round(255.0 * texture(u_chunkDataTexture, (coords_within_chunk + vec2(0.5,0.5)) / float(CHUNK_SIZE) )).xy;
+  // gridData holds cached information about this particular square world cell.
+  // .rg: which sprite or tile we should show here
+  // .b: some metadata. bit 0 is whether it's selected
+  vec4 gridData = round(255.0 * texture(u_chunkDataTexture, (coords_within_chunk + vec2(0.5,0.5)) / float(CHUNK_SIZE) ));
 
-  float is_origin = float(u_chunk_origin_in_world == vec2(0.,0.) && coords_within_chunk == vec2(0.,0.));
+  vec2 sprite_coords = gridData.xy;
 
-  float vlen = length(p_in_world_fp - vec2(0.5));
+  vec4 sprite_pixel = get_sprite_pixel(p_in_world_fp, sprite_coords);
 
-  // origin alpha factor
-  float oam = clamp(0.5 + 5. * get_sharpness() * (0.35 - vlen), 0., 1.)
-    * clamp(0.5 + 5. * get_sharpness() * (vlen - 0.3), 0., 1.);
-
-  vec4 origin_color = mix(vec4(0.,0.,0.,0.), vec4(0.,0.,0.,0.5), oam * is_origin);
-  vec4 bgcolor = blendOver(origin_color, get_sprite_pixel(p_in_world_fp, sprite_coords));
-
-
+  // maybe render origin
+  vec4 main_color = blendOver(get_origin_pixel(coords_within_chunk, p_in_world_fp), sprite_pixel);
 
   vec2 off = abs(p_in_world - p_in_world_r);
+  // Amount to show crosshairs ∈ [0,1]
   float ch_amount = max(crosshair(off.xy), crosshair(off.yx));
-
   vec3 ch_color = mix(BOARD_BG_COLOR, vec3(0.), 0.4); // crosshairs color
-  vec3 whiteBack = mix(BOARD_BG_COLOR, bgcolor.rgb, bgcolor.a);
+
+  vec3 whiteBack = mix(BOARD_BG_COLOR, main_color.rgb, main_color.a);
   return vec4(mix(whiteBack, ch_color, ch_amount), 1.);
 }
 
