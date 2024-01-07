@@ -16,8 +16,9 @@ export type ChunkValue = { t: 'bonus', bonus: Bonus } | { t: 'tile', tile: Rende
 
 export type Chunk = {
   size: Point,
-  data: ChunkValue[];
-  spritePos: Point[];
+  data: ChunkValue[],
+  spritePos: Point[],
+  metadata: number[], // bytes, in each byte bit 76543210, bit 0 = selected
 }
 
 export function setChunkData(chunk: Chunk, kont: (p: Point) => ChunkValue): void {
@@ -26,12 +27,13 @@ export function setChunkData(chunk: Chunk, kont: (p: Point) => ChunkValue): void
       const cval = kont({ x, y });
       chunk.data[x + y * chunk.size.x] = cval;
       chunk.spritePos[x + y * chunk.size.x] = spriteLocOfChunkValue(cval);
+      chunk.metadata[x + y * chunk.size.x] = 1;
     }
   }
 }
 
 function getWorldChunkData(cs: CoreState, p_in_chunk: Point): Chunk {
-  const chunk: Chunk = { size: WORLD_CHUNK_SIZE, data: [], spritePos: [] };
+  const chunk: Chunk = { size: WORLD_CHUNK_SIZE, data: [], spritePos: [], metadata: [] };
   setChunkData(chunk, (p_in_local_chunk) => ({
     t: 'bonus',
     bonus: getBonusFromLayer(cs, vm3(p_in_chunk, p_in_local_chunk, chunk.size, (c, p, s) => c * s + p))
@@ -79,6 +81,18 @@ export function updateChunkCache(cache: Overlay<Chunk>, cs: CoreState, p_in_worl
   });
 }
 
+// XXX unify with updateChunkCache maybe?
+export function updateChunkCacheMeta(cache: Overlay<Chunk>, cs: CoreState, p_in_world: Point, metadata: number): Overlay<Chunk> {
+  const p_in_chunk = vm2(p_in_world, WORLD_CHUNK_SIZE, (x, wcs) => Math.floor(x / wcs));
+  if (!getOverlay(cache, p_in_chunk))
+    cache = ensureChunk(cache, cs, p_in_chunk);
+  const { x, y } = vsub(p_in_world, vmul(p_in_chunk, WORLD_CHUNK_SIZE));
+  return produce(cache, c => {
+    const chunk = getOverlay(c, p_in_chunk)!;
+    chunk.metadata[x + y * chunk.size.x] = metadata;
+  });
+}
+
 // returns list of p_in_chunk of chunks that are at least partly visible
 export function activeChunks(canvas_from_world: SE2): Point[] {
   const chunk_from_canvas = compose(scale(vinv(WORLD_CHUNK_SIZE)), inverse(canvas_from_world));
@@ -100,5 +114,6 @@ export function mkChunk(size: Point): Chunk {
     size,
     data: [],
     spritePos: [],
+    metadata: [],
   };
 }
