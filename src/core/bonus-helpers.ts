@@ -12,5 +12,6 @@ export function getBonusFromLayer(cs: CoreState, p: Point): Bonus {
 
 export function setBonusLayer(cs: Draft<CoreState>, p_in_world_int: Point, bonus: Bonus): void {
   setOverlay(cs.bonusOverlay, p_in_world_int, bonus);
-  updateChunkCache(cs._cachedTileChunkMap, cs, p_in_world_int, { t: 'bonus', bonus });
+  // XXX Is this ok? I'm constructing data inside a produce
+  cs._cachedTileChunkMap = updateChunkCache(cs._cachedTileChunkMap, cs, p_in_world_int, { t: 'bonus', bonus });
 }
