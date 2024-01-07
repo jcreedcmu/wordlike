@@ -82,14 +82,15 @@ export function updateChunkCache(cache: Overlay<Chunk>, cs: CoreState, p_in_worl
 }
 
 // XXX unify with updateChunkCache maybe?
-export function updateChunkCacheMeta(cache: Overlay<Chunk>, cs: CoreState, p_in_world: Point, metadata: number): Overlay<Chunk> {
+export function updateChunkCacheMeta(cache: Overlay<Chunk>, cs: CoreState, p_in_world: Point, kont: (metadata: number) => number): Overlay<Chunk> {
   const p_in_chunk = vm2(p_in_world, WORLD_CHUNK_SIZE, (x, wcs) => Math.floor(x / wcs));
   if (!getOverlay(cache, p_in_chunk))
     cache = ensureChunk(cache, cs, p_in_chunk);
   const { x, y } = vsub(p_in_world, vmul(p_in_chunk, WORLD_CHUNK_SIZE));
   return produce(cache, c => {
     const chunk = getOverlay(c, p_in_chunk)!;
-    chunk.metadata[x + y * chunk.size.x] = metadata;
+    const index = x + y * chunk.size.x;
+    chunk.metadata[index] = kont(chunk.metadata[index]);
   });
 }
 

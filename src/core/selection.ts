@@ -4,7 +4,8 @@ import { apply_to_rect } from "../util/se2-extra";
 import { boundRect, pointInRect } from "../util/util";
 import { vadd, vsub } from "../util/vutil";
 import { getCacheState } from "./cache-state";
-import { Overlay, mkOverlay, setOverlay } from "./layer";
+import { updateChunkCacheMeta } from "./chunk";
+import { Overlay, mkOverlay, overlayForEach, setOverlay } from "./layer";
 import { CoreState, MouseState } from "./state";
 import { getTileId, get_main_tiles } from "./tile-helpers";
 
@@ -76,8 +77,23 @@ export function selectionOperationOfMods(mods: Set<string>): SelectionOperation 
 
 export function setSelected(state: CoreState, sel: SelectionState | undefined): CoreState {
   getCacheState(state).selection.dirty = true;
+
+  let cache = state._cachedTileChunkMap;
+
+  if (state.selected) {
+    overlayForEach(state.selected.overlay, p => {
+      cache = updateChunkCacheMeta(cache, state, p, x => (x & (0xff & ~1)));
+    });
+  }
+
+  if (sel) {
+    overlayForEach(sel.overlay, p => {
+      cache = updateChunkCacheMeta(cache, state, p, x => (x | 1));
+    });
+  }
   return produce(state, s => {
     s.selected = sel;
+    s._cachedTileChunkMap = cache;
   });
 }
 
