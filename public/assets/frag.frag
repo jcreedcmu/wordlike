@@ -7,6 +7,9 @@ const vec3 TILE_MED_COLOR = vec3( 0.8980392156862745, 0.7294117647058823, 0.2901
 const vec3 BOARD_BG_COLOR = vec3(248. / 255., 234. / 255., 213. / 255.);
 const vec3 TILE_FOREGROUND_COLOR = vec3(0.,0.,0.);
 
+
+const vec2 BONUS_POINT_SPRITE = vec2(1.,1.);
+
 const vec3 TILE_SELECTED_COLOR = vec3(.06, .25, .68);
 
 const float REQUIRED_BONUS_COLUMN = 12.;
@@ -95,6 +98,14 @@ vec4 get_tile_pixel(vec2 p_in_tile, int letter) {
 // p_in_world_fp is the fractional part of p_in_world. It is in [0,1]²
 // sprite_coords is actually an ivec. It is in  [0,NUM_SPRITES_PER_SHEET]²
 vec4 get_sprite_pixel(vec2 p_in_world_fp, vec2 sprite_coords) {
+  // special case for the single-point sprite.
+  if (sprite_coords == BONUS_POINT_SPRITE) {
+
+    float vlen = length(p_in_world_fp - vec2(0.5));
+    float amount = clamp(0.5 + 5. * get_sharpness() * (vlen - 0.4), 0., 1.);
+    return vec4(0., 0., 1., mix(0.5, 0.0, amount));
+  }
+
   // tile
   if (sprite_coords.x >= TILE_COLUMN) {
     int letter = int((sprite_coords.x - TILE_COLUMN) * NUM_SPRITES_PER_SHEET + sprite_coords.y);
