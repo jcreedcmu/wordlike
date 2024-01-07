@@ -113,11 +113,12 @@ function drawChunk(
   for (let x = 0; x < chunk.size.x; x++) {
     for (let y = 0; y < chunk.size.y; y++) {
       const ix = 4 * (y * chunk.size.x + x);
-      const spritePos = chunk.spritePos[x + y * chunk.size.x];
+      const index = x + y * chunk.size.x;
+      const spritePos = chunk.spritePos[index];
       chunkImdat.data[ix + 0] = spritePos.x;
       chunkImdat.data[ix + 1] = spritePos.y;
-      chunkImdat.data[ix + 2] = 0;
-      chunkImdat.data[ix + 3] = 255;
+      chunkImdat.data[ix + 2] = chunk.metadata[index];
+      chunkImdat.data[ix + 3] = 255; // Am I even using this?
     }
   }
 

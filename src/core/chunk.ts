@@ -27,7 +27,7 @@ export function setChunkData(chunk: Chunk, kont: (p: Point) => ChunkValue): void
       const cval = kont({ x, y });
       chunk.data[x + y * chunk.size.x] = cval;
       chunk.spritePos[x + y * chunk.size.x] = spriteLocOfChunkValue(cval);
-      chunk.metadata[x + y * chunk.size.x] = 1;
+      chunk.metadata[x + y * chunk.size.x] = 0;
     }
   }
 }

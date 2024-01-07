@@ -7,6 +7,7 @@ const vec3 TILE_MED_COLOR = vec3( 0.8980392156862745, 0.7294117647058823, 0.2901
 const vec3 BOARD_BG_COLOR = vec3(248. / 255., 234. / 255., 213. / 255.);
 const vec3 TILE_FOREGROUND_COLOR = vec3(0.,0.,0.);
 
+const vec3 TILE_SELECTED_COLOR = vec3(.06, .25, .68);
 
 const float REQUIRED_BONUS_COLUMN = 12.;
 const float TILE_COLUMN = 14.;
@@ -156,9 +157,13 @@ vec4 getColor() {
   // .b: some metadata. bit 0 is whether it's selected
   vec4 gridData = round(255.0 * texture(u_chunkDataTexture, (coords_within_chunk + vec2(0.5,0.5)) / float(CHUNK_SIZE) ));
 
+
   vec2 sprite_coords = gridData.xy;
 
   vec4 sprite_pixel = get_sprite_pixel(p_in_world_fp, sprite_coords);
+
+  float selected_amount = float(int(gridData.b) & 1) * 0.5;
+  sprite_pixel = vec4(mix(sprite_pixel.rgb, TILE_SELECTED_COLOR, selected_amount), sprite_pixel.a);
 
   // maybe render origin
   vec4 main_color = blendOver(get_origin_pixel(coords_within_chunk, p_in_world_fp), sprite_pixel);
