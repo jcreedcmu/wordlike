@@ -203,7 +203,18 @@ export function putTilesInHandFromNotHand(state: CoreState, ids: string[], ix: n
   if (ix < 0)
     ix = 0;
 
+  let cache = state._cachedTileChunkMap;
+
+  for (const id of ids) {
+    const tile = getTileId(state, id);
+    if (tile.loc.t == 'world') {
+      const p = tile.loc.p_in_world_int;
+      cache = updateChunkCache(cache, state, p, { t: 'bonus', bonus: getBonusFromLayer(state, p) });
+    }
+  }
+
   return produce(state, s => {
+    s._cachedTileChunkMap = cache;
     for (let i = ix; i < handTiles.length; i++) {
       setTileLoc(s, handTiles[i].id, { t: 'hand', p_in_hand_int: { x: 0, y: i + ids.length } });
     }

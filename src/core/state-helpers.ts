@@ -10,6 +10,7 @@ import { Animation, mkPointDecayAnimation, mkScoreAnimation, mkWinAnimation } fr
 import { getAssets } from "./assets";
 import { Bonus, ScoringBonus, adjacentScoringOfBonus, isBlocking, overlapScoringOfBonus, resolveScoring } from "./bonus";
 import { getBonusFromLayer, setBonusLayer } from "./bonus-helpers";
+import { updateChunkCache } from "./chunk";
 import { PANIC_INTERVAL_MS, PanicData, PauseData, WORD_BONUS_INTERVAL_MS, now_in_game } from "./clock";
 import { DrawForce, getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
@@ -135,6 +136,15 @@ export function resolveValid(state: CoreState, validWords: Set<string>): CoreSta
     tmpState = resolveScoring(tmpState, scoring);
   });
 
+  let cache = state._cachedTileChunkMap;
+  scorings.forEach(scoring => {
+    if (scoring.destroy) {
+      cache = updateChunkCache(cache, state, scoring.p_in_world_int, { t: 'bonus', bonus: { t: 'empty' } });
+    }
+  });
+  tmpState = produce(tmpState, cs => {
+    cs._cachedTileChunkMap = cache;
+  });
 
   return resolveHighWaterMark(tmpState);
 }

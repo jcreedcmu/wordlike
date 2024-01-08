@@ -230,6 +230,7 @@ function resolveMouseupInner(state: GameState): GameLowAction {
           const selectedIds = state.coreState.selected.selectedIds;
           return {
             t: 'multiple', actions: [
+              { t: 'deselect' },
               { t: 'putTilesInHandFromNotHand', ids: selectedIds, ix: new_tile_in_hand_int.y },
               { t: 'checkValid' },
             ]
