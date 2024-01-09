@@ -3,9 +3,8 @@ import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { vequal, vint } from "../util/vutil";
 import { Animation, mkExplosionAnimation } from './animations';
-import { getBonusFromLayer } from "./bonus-helpers";
+import { getBonusFromLayer, updateBonusLayer } from "./bonus-helpers";
 import { KillIntent } from './intent';
-import { setOverlay } from "./layer";
 import { getScore, incrementScore } from "./scoring";
 import { CoreState, MainTile } from "./state";
 import { checkValid } from './state-helpers';
@@ -73,13 +72,11 @@ function killTileOfState(state: CoreState, wp: DragWidgetPoint, intent: KillInte
           state = removeTile(state, tileAtP.id);
       });
       // remove all killable bonuses in radius
-      state = produce(state, s => {
-        tilesToDestroy.forEach(p => {
-          if (killableBonusAt(p))
-            setOverlay(s.bonusOverlay, p, { t: 'empty' });
-        });
+      tilesToDestroy.forEach(p => {
+        if (killableBonusAt(p)) {
+          state = updateBonusLayer(state, p, { t: 'empty' });
+        }
       });
-
       return checkValid(produce(spendKillIntent(state, intent), s => {
         s.animations.push(anim);
       }));

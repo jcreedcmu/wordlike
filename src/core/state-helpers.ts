@@ -9,8 +9,7 @@ import { vadd, vequal, vm } from "../util/vutil";
 import { Animation, mkPointDecayAnimation, mkScoreAnimation, mkWinAnimation } from './animations';
 import { getAssets } from "./assets";
 import { Bonus, ScoringBonus, adjacentScoringOfBonus, isBlocking, overlapScoringOfBonus, resolveScoring } from "./bonus";
-import { getBonusFromLayer, setBonusLayer } from "./bonus-helpers";
-import { updateChunkCache } from "./chunk";
+import { getBonusFromLayer, updateBonusLayer } from "./bonus-helpers";
 import { PANIC_INTERVAL_MS, PanicData, PauseData, WORD_BONUS_INTERVAL_MS, now_in_game } from "./clock";
 import { DrawForce, getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
@@ -130,22 +129,12 @@ export function resolveValid(state: CoreState, validWords: Set<string>): CoreSta
 
   scorings.forEach(scoring => {
     if (scoring.destroy) {
+      tmpState = updateBonusLayer(tmpState, scoring.p_in_world_int, { t: 'empty' }, scoring.leave_tile);
       tmpState = produce(tmpState, s => {
-        setBonusLayer(s, scoring.p_in_world_int, { t: 'empty' });
         s.animations.push(mkPointDecayAnimation(scoring.p_in_world_int, state.game_from_clock));
       });
     }
     tmpState = resolveScoring(tmpState, scoring);
-  });
-
-  let cache = state._cachedTileChunkMap;
-  scorings.forEach(scoring => {
-    if (scoring.destroy && !scoring.leave_tile) {
-      cache = updateChunkCache(cache, state, scoring.p_in_world_int, { t: 'bonus', bonus: { t: 'empty' } });
-    }
-  });
-  tmpState = produce(tmpState, cs => {
-    cs._cachedTileChunkMap = cache;
   });
 
   return resolveHighWaterMark(tmpState);
