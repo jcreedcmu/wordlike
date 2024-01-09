@@ -25,6 +25,7 @@ export type Scoring = {
   bonus: ScoringBonus | { t: 'wordAchieved', word: string },
   p_in_world_int: Point,
   destroy: boolean,
+  leave_tile?: boolean,
 };
 
 export function addWorldTiles(state: CoreState, tiles: Tile[]): CoreState {
@@ -112,6 +113,7 @@ export function resolveValid(state: CoreState, validWords: Set<string>): CoreSta
   const wordAchievedScorings: Scoring[] = state.wordBonusState.active.filter(x => validWords.has(x.word)).map(x => ({
     bonus: { t: 'wordAchieved', word: x.word },
     destroy: true,
+    leave_tile: false,
     p_in_world_int: x.p_in_world_int,
   }));
 
@@ -138,7 +140,7 @@ export function resolveValid(state: CoreState, validWords: Set<string>): CoreSta
 
   let cache = state._cachedTileChunkMap;
   scorings.forEach(scoring => {
-    if (scoring.destroy) {
+    if (scoring.destroy && !scoring.leave_tile) {
       cache = updateChunkCache(cache, state, scoring.p_in_world_int, { t: 'bonus', bonus: { t: 'empty' } });
     }
   });
