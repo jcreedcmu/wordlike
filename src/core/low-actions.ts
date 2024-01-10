@@ -377,7 +377,10 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
             s.coreState.winState = { t: 'lost' };
           });
         }
-        return produce(state, s => { s.coreState.panic!.currentTime_in_game = t_in_game; });
+        if (state.coreState.renderToGl)
+          return state;
+        else
+          return produce(state, s => { s.coreState.panic!.currentTime_in_game = t_in_game; });
       }
       else {
         return state;
