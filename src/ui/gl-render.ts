@@ -4,9 +4,11 @@ import { getBonusFromLayer } from "../core/bonus-helpers";
 import { getCachedSelection } from "../core/cache-state";
 import { Chunk, WORLD_CHUNK_SIZE, activeChunks, getChunk, mkChunk } from "../core/chunk";
 import { CoreState, GameState } from "../core/state";
+import { pointFall } from "../core/state-helpers";
 import { getTileId, get_hand_tiles, isSelectedForDrag } from "../core/tile-helpers";
+import { BOMB_RADIUS, getCurrentTool } from "../core/tools";
 import { DEBUG, doOnce, doOnceEvery, logger } from "../util/debug";
-import { RgbColor, imageDataOfBuffer } from "../util/dutil";
+import { RgbColor, RgbaColor, imageDataOfBuffer } from "../util/dutil";
 import { attributeCreateAndSetFloats, attributeSetFloats, shaderProgram } from "../util/gl-util";
 import { SE2, apply, compose, composen, inverse, scale, translate } from "../util/se2";
 import { apply_to_rect } from "../util/se2-extra";
@@ -19,10 +21,11 @@ import { canvas_from_hand_tile } from "./render";
 import { spriteLocOfBonus, spriteLocOfChunkValue } from "./sprite-sheet";
 import { resizeView } from "./ui-helpers";
 import { CanvasGlInfo } from "./use-canvas";
-import { canvas_from_drag_tile, pan_canvas_from_world_of_state } from "./view-helpers";
-import { canvas_bds_in_canvas, canvas_from_hand, hand_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
+import { canvas_from_drag_tile, cell_in_canvas, pan_canvas_from_world_of_state } from "./view-helpers";
+import { canvas_bds_in_canvas, canvas_from_hand, getWidgetPoint, hand_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
 
 const backgroundGrayRgb: RgbColor = [238, 238, 238];
+const shadowColorRgba: RgbaColor = [128, 128, 100, Math.floor(0.4 * 255)];
 
 export type RectDrawer = {
   prog: WebGLProgram,
@@ -187,11 +190,11 @@ function drawOneTile(gl: WebGL2RenderingContext, env: GlEnv, letter: string, sta
 
 }
 
-function glFillRect(gl: WebGL2RenderingContext, env: GlEnv, rect_in_canvas: Rect, color: RgbColor): void {
+function glFillRecta(gl: WebGL2RenderingContext, env: GlEnv, rect_in_canvas: Rect, color: RgbaColor): void {
   gl.useProgram(env.rectDrawer.prog);
   gl.bindBuffer(gl.ARRAY_BUFFER, env.rectDrawer.positionBuffer);
   gl.vertexAttribPointer(env.rectDrawer.positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
-  gl.uniform4fv(env.rectDrawer.colorUniformLocation, [color[0] / 255, color[1] / 255, color[2] / 255, 1]);
+  gl.uniform4fv(env.rectDrawer.colorUniformLocation, [color[0] / 255, color[1] / 255, color[2] / 255, color[3] / 255]);
   const hand_bds_in_gl = apply_to_rect(gl_from_canvas, rect_in_canvas);
   const [p1, p2] = rectPts(hand_bds_in_gl);
   attributeSetFloats(gl, env.rectDrawer.prog, 'a_position', 2, env.rectDrawer.positionBuffer, [
@@ -202,6 +205,10 @@ function glFillRect(gl: WebGL2RenderingContext, env: GlEnv, rect_in_canvas: Rect
   ]);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
+}
+
+function glFillRect(gl: WebGL2RenderingContext, env: GlEnv, rect_in_canvas: Rect, color: RgbColor): void {
+  glFillRecta(gl, env, rect_in_canvas, [...color, 255]);
 }
 
 function drawHand(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState): void {
@@ -228,6 +235,9 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
 
 
   const actuallyRender = () => {
+    const cs = state.coreState;
+    const ms = state.mouseState;
+
     gl.clearColor(1.0, 1.0, 1.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
@@ -244,6 +254,17 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
       drawChunk(gl, env, p, state, chunk_from_canvas, inverse(pan_canvas_from_world_of_state(state)));
     });
 
+    // draw bomb shadow
+    const currentTool = getCurrentTool(cs);
+    if (currentTool == 'bomb' && getWidgetPoint(cs, ms.p_in_canvas).t == 'world') {
+      const radius = BOMB_RADIUS;
+      for (let x = -radius; x <= radius; x++) {
+        for (let y = -radius; y <= radius; y++) {
+          glFillRecta(gl, env, cell_in_canvas(vadd({ x, y }, pointFall(cs, ms.p_in_canvas)), canvas_from_world), shadowColorRgba);
+        }
+      }
+    }
+
     // draw hand
     drawHand(gl, env, state.coreState);
 
@@ -256,8 +277,6 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
     gl.useProgram(prog);
 
     // Here's where we draw dragged tiles in general
-    const cs = state.coreState;
-    const ms = state.mouseState;
     // draw dragged tiles from selection
     if (ms.t == 'drag_tile') {
 

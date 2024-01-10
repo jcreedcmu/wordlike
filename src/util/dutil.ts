@@ -70,6 +70,7 @@ export function colorOfRgbColor(c: RgbColor): string {
 
 // This is assumed to be 0..255
 export type RgbColor = [number, number, number];
+export type RgbaColor = [number, number, number, number];
 
 export function fillRectRgb(d: CanvasRenderingContext2D, rect: Rect, color: RgbColor) {
   fillRect(d, rect, colorOfRgbColor(color));
