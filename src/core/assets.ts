@@ -1,4 +1,5 @@
 import { prerenderFontSheet, prerenderSpriteSheet } from "../ui/sprite-sheet";
+import { asyncReplace } from "../util/async-replace";
 import { Buffer, imgProm } from "../util/dutil";
 import { grab } from "../util/util";
 
@@ -28,9 +29,18 @@ let assets: Assets = {
   tileShaders: { frag: '', vert: '' },
 }
 
+async function preprocess(shaderText: string): Promise<string> {
+  return await asyncReplace(shaderText, /^#include "(.*?)"/mg, async (ms) => {
+    const file = ms[1];
+    // XXX recursively preprocess?
+    // XXX cache fetches?
+    return await grab(`assets/${file}`);
+  });
+}
+
 async function getShaders(prefix: string): Promise<ShaderProgramText> {
-  const vert = await grab(`assets/${prefix}.vert`);
-  const frag = await grab(`assets/${prefix}.frag`);
+  const vert = await preprocess(await grab(`assets/${prefix}.vert`));
+  const frag = await preprocess(await grab(`assets/${prefix}.frag`));
   return { vert, frag };
 }
 
