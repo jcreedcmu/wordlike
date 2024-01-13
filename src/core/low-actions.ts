@@ -5,7 +5,7 @@ import { produce } from '../util/produce';
 import { SE2, apply, compose, composen, inverse, scale, translate } from '../util/se2';
 import { Point } from '../util/types';
 import { getRandomOrder } from '../util/util';
-import { vm, vscale, vsub } from '../util/vutil';
+import { vequal, vm, vscale, vsub } from '../util/vutil';
 import { GameAction, GameLowAction, LowAction } from './action';
 import { mkPointDecayAnimation } from './animations';
 import { getBonusLayer } from './bonus';
@@ -199,18 +199,19 @@ function resolveMouseupInner(state: GameState): GameLowAction {
           };
         }
         else {
-
+          const letter = getTileId(state.coreState, ms.id).letter;
+          const dest_in_world_int = vm(compose(
+            inverse(state.coreState.canvas_from_world),
+            canvas_from_drag_tile(state.coreState, ms)).translate,
+            Math.round);
           const moveTile: MoveTile = {
-            p_in_world_int: vm(compose(
-              inverse(state.coreState.canvas_from_world),
-              canvas_from_drag_tile(state.coreState, ms)).translate,
-              Math.round),
+            p_in_world_int: dest_in_world_int,
             id: ms.id,
-            letter: getTileId(state.coreState, ms.id).letter,
+            letter: letter,
           }
-
-          const afterDrop: GameLowAction = !isOccupied(state.coreState, moveTile)
-            ? { t: 'putTileInWorld', id: ms.id, p_in_world_int: moveTile.p_in_world_int }
+          const is_noop = ms.orig_loc.t == 'world' && vequal(dest_in_world_int, ms.orig_loc.p_in_world_int);
+          const afterDrop: GameLowAction = !isOccupied(state.coreState, moveTile) || is_noop
+            ? { t: 'putTilesInWorld', moves: [{ id: ms.id, p_in_world_int: moveTile.p_in_world_int, letter: letter }] }
             : { t: 'none' };
           return { t: 'multiple', actions: [afterDrop, { t: 'checkValid' }] };
         }
