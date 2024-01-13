@@ -34,11 +34,15 @@ export type RectDrawer = {
   positionBuffer: WebGLBuffer,
 };
 
-export type GlEnv = {
-  chunkImdat: ImageData,
+export type ChunkDrawer = {
   prog: WebGLProgram,
-  rectDrawer: RectDrawer,
+  chunkImdat: ImageData,
   chunkBoundsBuffer: WebGLBuffer,
+};
+
+export type GlEnv = {
+  chunkDrawer: ChunkDrawer,
+  rectDrawer: RectDrawer,
 }
 
 const SPRITE_TEXTURE_UNIT = 0;
@@ -53,7 +57,7 @@ function drawChunk(
   chunk_from_canvas: SE2,
   world_from_canvas_SE2: SE2
 ): void {
-  const { prog, chunkBoundsBuffer, chunkImdat } = env;
+  const { prog, chunkBoundsBuffer, chunkImdat } = env.chunkDrawer;
 
   const chunk_rect_in_chunk = { p: p_in_chunk, sz: vdiag(1.) };
 
@@ -134,7 +138,7 @@ function drawChunk(
 }
 
 function drawOneTile(gl: WebGL2RenderingContext, env: GlEnv, letter: string, state: GameState, canvas_from_chunk_local: SE2): void {
-  const { prog, chunkBoundsBuffer, chunkImdat } = env;
+  const { prog, chunkBoundsBuffer, chunkImdat } = env.chunkDrawer;
 
   const chunk_rect_in_canvas = apply_to_rect(canvas_from_chunk_local, { p: vdiag(0), sz: { x: 1, y: 1 } });
   const chunk_rect_in_gl = apply_to_rect(gl_from_canvas, chunk_rect_in_canvas);
@@ -231,7 +235,7 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
   oldState = state;
 
   const { d: gl } = ci;
-  const { prog } = env;
+  const { prog } = env.chunkDrawer;
 
 
   const actuallyRender = () => {
@@ -417,7 +421,10 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
     throw new Error(`Couldn't allocate chunk bounds buffer`);
   }
 
-  return { prog, chunkBoundsBuffer, chunkImdat, rectDrawer: mkRectDrawer(gl) };
+  return {
+    chunkDrawer: { prog, chunkBoundsBuffer, chunkImdat },
+    rectDrawer: mkRectDrawer(gl)
+  };
 }
 
 
