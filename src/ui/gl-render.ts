@@ -198,7 +198,7 @@ function glFillRecta(gl: WebGL2RenderingContext, env: GlEnv, rect_in_canvas: Rec
   gl.uniform4fv(env.rectDrawer.colorUniformLocation, [color[0] / 255, color[1] / 255, color[2] / 255, color[3] / 255]);
   const hand_bds_in_gl = apply_to_rect(gl_from_canvas, rect_in_canvas);
   const [p1, p2] = rectPts(hand_bds_in_gl);
-  attributeSetFloats(gl, env.rectDrawer.prog, 'a_position', 2, env.rectDrawer.positionBuffer, [
+  attributeSetFloats(gl, env.rectDrawer.prog, 'pos', 2, env.rectDrawer.positionBuffer, [
     p1.x, p2.y,
     p2.x, p2.y,
     p1.x, p1.y,
@@ -439,9 +439,9 @@ function mkTileDrawer(gl: WebGL2RenderingContext): TileDrawer {
 function mkRectDrawer(gl: WebGL2RenderingContext): RectDrawer {
   // Create rect drawer data
   const prog = shaderProgram(gl, `
-        attribute vec4 a_position;
+        attribute vec3 pos;
         void main() {
-            gl_Position = a_position;
+            gl_Position = vec4(pos, 1.);
         }
 `, `
         precision mediump float;
@@ -452,7 +452,7 @@ function mkRectDrawer(gl: WebGL2RenderingContext): RectDrawer {
     `);
 
   const colorUniformLocation = gl.getUniformLocation(prog, "u_color")!;
-  const positionAttributeLocation = gl.getAttribLocation(prog, "a_position");
+  const positionAttributeLocation = gl.getAttribLocation(prog, "pos");
   gl.enableVertexAttribArray(positionAttributeLocation);
 
   // Create a buffer and bind it
