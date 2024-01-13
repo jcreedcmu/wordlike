@@ -9,7 +9,7 @@ import { getTileId, get_hand_tiles, isSelectedForDrag } from "../core/tile-helpe
 import { BOMB_RADIUS, getCurrentTool } from "../core/tools";
 import { DEBUG, doOnce, doOnceEvery, logger } from "../util/debug";
 import { RgbColor, RgbaColor, imageDataOfBuffer } from "../util/dutil";
-import { BufferAttr, attributeCreate, attributeSetFloats, bufferSetFloats, shaderProgram } from "../util/gl-util";
+import { BufferAttr, attributeCreate, bufferSetFloats, shaderProgram } from "../util/gl-util";
 import { SE2, apply, compose, composen, inverse, scale, translate } from "../util/se2";
 import { apply_to_rect } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
