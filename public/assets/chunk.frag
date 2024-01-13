@@ -42,12 +42,6 @@ uniform sampler2D u_fontTexture;
 // Chunk data
 uniform sampler2D u_chunkDataTexture;
 
-// Draw tile
-uniform bool u_drawTile;
-
-// Tile letter
-uniform int u_tileLetter;
-
 float crosshair(vec2 p) {
   if (p.x < 1.5 * u_world_from_canvas[0][0] && p.y < 0.5 * u_world_from_canvas[0][0])
     return 1.0;
@@ -151,11 +145,6 @@ vec4 getColor() {
   vec3 p_in_canvas = vec3(gl_FragCoord.xy, 1.0);
   p_in_canvas.y = u_canvasSize.y - p_in_canvas.y;
   vec2 p_in_world = (u_world_from_canvas * p_in_canvas).xy;
-
-
-  if (u_drawTile) {
-    return get_tile_pixel(p_in_world, u_tileLetter);
-  }
 
   vec2 p_in_world_int = floor(p_in_world);
 

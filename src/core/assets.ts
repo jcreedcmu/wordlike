@@ -2,12 +2,17 @@ import { prerenderFontSheet, prerenderSpriteSheet } from "../ui/sprite-sheet";
 import { Buffer, imgProm } from "../util/dutil";
 import { grab } from "../util/util";
 
+export type ShaderProgramText = {
+  vert: string,
+  frag: string,
+};
+
 type Assets = {
   dictionary: Record<string, boolean>,
   spriteSheetBuf: Buffer,
   fontSheetBuf: Buffer,
-  vert: string,
-  frag: string,
+  chunkShaders: ShaderProgramText,
+  tileShaders: ShaderProgramText,
 };
 
 // Any data that goes here is effectively test data for consumption by
@@ -15,17 +20,23 @@ type Assets = {
 // initialization in actual execution, will overwrite it.
 let assets: Assets = {
   dictionary: { 'foo': true, 'bar': true, 'baz': true },
-  spriteSheetBuf: undefined as any, // cheating here and assuming tests won't use toolbarImg
-  fontSheetBuf: undefined as any, // cheating here and assuming tests won't use fontSheetImg
-  vert: '',
-  frag: '',
+
+  // We assume tests don't exercise any of the below data:
+  spriteSheetBuf: undefined as any,
+  fontSheetBuf: undefined as any,
+  chunkShaders: { frag: '', vert: '' },
+  tileShaders: { frag: '', vert: '' },
+}
+
+async function getShaders(prefix: string): Promise<ShaderProgramText> {
+  const vert = await grab(`assets/${prefix}.vert`);
+  const frag = await grab(`assets/${prefix}.frag`);
+  return { vert, frag };
 }
 
 export async function initAssets() {
   const spriteSheetImg = await imgProm('assets/toolbar.png');
   const fontSheetImg = await imgProm('assets/font-sheet.png');
-  const vert = await grab('assets/vertex.vert');
-  const frag = await grab('assets/frag.frag');
   const wordlist = (await (await fetch('assets/dictionary.txt')).text())
     .split('\n').filter(x => x);
   const dictionary = Object.fromEntries(wordlist.map(word => [word, true]));
@@ -33,8 +44,8 @@ export async function initAssets() {
     dictionary,
     spriteSheetBuf: prerenderSpriteSheet(spriteSheetImg),
     fontSheetBuf: prerenderFontSheet(fontSheetImg),
-    vert,
-    frag,
+    chunkShaders: await getShaders('chunk'),
+    tileShaders: await getShaders('tile'),
   };
 }
 
