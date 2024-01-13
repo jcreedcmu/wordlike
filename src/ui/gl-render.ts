@@ -1,7 +1,6 @@
 import { Dispatch } from "../core/action";
 import { getAssets } from "../core/assets";
 import { getBonusFromLayer } from "../core/bonus-helpers";
-import { getCachedSelection } from "../core/cache-state";
 import { Chunk, WORLD_CHUNK_SIZE, activeChunks, getChunk, mkChunk } from "../core/chunk";
 import { CoreState, GameState } from "../core/state";
 import { pointFall } from "../core/state-helpers";
@@ -117,21 +116,8 @@ function drawChunk(
     return;
   }
 
-  // Set chunk data
-  for (let x = 0; x < chunk.size.x; x++) {
-    for (let y = 0; y < chunk.size.y; y++) {
-      const ix = 4 * (y * chunk.size.x + x);
-      const index = x + y * chunk.size.x;
-      const spritePos = chunk.spritePos[index];
-      chunkImdat.data[ix + 0] = spritePos.x;
-      chunkImdat.data[ix + 1] = spritePos.y;
-      chunkImdat.data[ix + 2] = chunk.metadata[index];
-      chunkImdat.data[ix + 3] = 255; // Am I even using this?
-    }
-  }
-
   gl.activeTexture(gl.TEXTURE0 + CHUNK_DATA_TEXTURE_UNIT);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, chunkImdat);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, chunk.imdat);
 
 
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);

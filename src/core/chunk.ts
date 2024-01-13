@@ -19,21 +19,30 @@ export type Chunk = {
   data: ChunkValue[],
   spritePos: Point[],
   metadata: number[], // bytes, in each byte bit 76543210, bit 0 = selected
+  imdat: ImageData,
 }
 
 export function setChunkData(chunk: Chunk, kont: (p: Point) => ChunkValue): void {
-  for (let x = 0; x < chunk.size.x; x++) {
-    for (let y = 0; y < chunk.size.y; y++) {
+  const { imdat, size, data, metadata } = chunk;
+  for (let x = 0; x < size.x; x++) {
+    for (let y = 0; y < size.y; y++) {
       const cval = kont({ x, y });
-      chunk.data[x + y * chunk.size.x] = cval;
-      chunk.spritePos[x + y * chunk.size.x] = spriteLocOfChunkValue(cval);
-      chunk.metadata[x + y * chunk.size.x] = 0;
+      const spritePos = spriteLocOfChunkValue(cval);
+      const ix = x + y * chunk.size.x;
+      const fix = 4 * ix;
+      data[ix] = cval;
+      chunk.spritePos[ix] = spritePos;
+      metadata[ix] = 0;
+      imdat.data[fix + 0] = spritePos.x;
+      imdat.data[fix + 1] = spritePos.y;
+      imdat.data[fix + 2] = metadata[ix];
+      imdat.data[fix + 3] = 255; // Am I even using this?
     }
   }
 }
 
 function getWorldChunkData(cs: CoreState, p_in_chunk: Point): Chunk {
-  const chunk: Chunk = { size: WORLD_CHUNK_SIZE, data: [], spritePos: [], metadata: [] };
+  const chunk: Chunk = mkChunk(WORLD_CHUNK_SIZE);
   setChunkData(chunk, (p_in_local_chunk) => ({
     t: 'bonus',
     bonus: getBonusFromLayer(cs, vm3(p_in_chunk, p_in_local_chunk, chunk.size, (c, p, s) => c * s + p))
@@ -76,8 +85,11 @@ export function updateChunkCache(cache: Overlay<Chunk>, cs: CoreState, p_in_worl
   const { x, y } = vsub(p_in_world, vmul(p_in_chunk, WORLD_CHUNK_SIZE));
   return produce(cache, c => {
     const chunk = getOverlay(c, p_in_chunk)!;
-    chunk.data[x + y * chunk.size.x] = cval;
-    chunk.spritePos[x + y * chunk.size.x] = spritePos;
+    const ix = x + y * chunk.size.x;
+    chunk.data[ix] = cval;
+    chunk.spritePos[ix] = spritePos;
+    chunk.imdat.data[4 * ix + 0] = spritePos.x;
+    chunk.imdat.data[4 * ix + 1] = spritePos.y;
   });
 }
 
@@ -89,8 +101,10 @@ export function updateChunkCacheMeta(cache: Overlay<Chunk>, cs: CoreState, p_in_
   const { x, y } = vsub(p_in_world, vmul(p_in_chunk, WORLD_CHUNK_SIZE));
   return produce(cache, c => {
     const chunk = getOverlay(c, p_in_chunk)!;
-    const index = x + y * chunk.size.x;
-    chunk.metadata[index] = kont(chunk.metadata[index]);
+    const ix = x + y * chunk.size.x;
+    const meta = kont(chunk.metadata[ix]);
+    chunk.metadata[ix] = meta;
+    chunk.imdat.data[4 * ix + 2] = meta;
   });
 }
 
@@ -116,5 +130,6 @@ export function mkChunk(size: Point): Chunk {
     data: [],
     spritePos: [],
     metadata: [],
+    imdat: new ImageData(size.x, size.y)
   };
 }
