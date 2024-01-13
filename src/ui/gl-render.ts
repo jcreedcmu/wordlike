@@ -9,7 +9,7 @@ import { getTileId, get_hand_tiles, isSelectedForDrag } from "../core/tile-helpe
 import { BOMB_RADIUS, getCurrentTool } from "../core/tools";
 import { DEBUG, doOnce, doOnceEvery, logger } from "../util/debug";
 import { RgbColor, RgbaColor, imageDataOfBuffer } from "../util/dutil";
-import { attributeCreateAndSetFloats, attributeSetFloats, shaderProgram } from "../util/gl-util";
+import { BufferAttr, attributeCreate, attributeSetFloats, bufferSetFloats, shaderProgram } from "../util/gl-util";
 import { SE2, apply, compose, composen, inverse, scale, translate } from "../util/se2";
 import { apply_to_rect } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
@@ -29,20 +29,19 @@ const shadowColorRgba: RgbaColor = [128, 128, 100, Math.floor(0.4 * 255)];
 
 export type RectDrawer = {
   prog: WebGLProgram,
-  positionAttributeLocation: number,
+  position: BufferAttr,
   colorUniformLocation: WebGLUniformLocation,
-  positionBuffer: WebGLBuffer,
 };
 
 export type ChunkDrawer = {
   prog: WebGLProgram,
   chunkImdat: ImageData,
-  chunkBoundsBuffer: WebGLBuffer,
+  position: BufferAttr,
 };
 
 export type TileDrawer = {
   prog: WebGLProgram,
-  tileBoundsBuffer: WebGLBuffer,
+  position: BufferAttr,
 };
 
 export type GlEnv = {
@@ -63,7 +62,7 @@ function drawChunk(
   chunk_from_canvas: SE2,
   world_from_canvas_SE2: SE2
 ): void {
-  const { prog, chunkBoundsBuffer, chunkImdat } = env.chunkDrawer;
+  const { prog, position, chunkImdat } = env.chunkDrawer;
   gl.useProgram(prog);
 
   const chunk_rect_in_chunk = { p: p_in_chunk, sz: vdiag(1.) };
@@ -72,9 +71,7 @@ function drawChunk(
   const chunk_rect_in_gl = apply_to_rect(gl_from_chunk, chunk_rect_in_chunk);
 
   const [p1, p2] = rectPts(chunk_rect_in_gl);
-  attributeSetFloats(gl,
-    prog, "pos", 2,
-    chunkBoundsBuffer, [
+  bufferSetFloats(gl, position, [
     p1.x, p2.y,
     p2.x, p2.y,
     p1.x, p1.y,
@@ -142,16 +139,14 @@ function drawChunk(
 }
 
 function drawOneTile(gl: WebGL2RenderingContext, env: GlEnv, letter: string, state: GameState, canvas_from_chunk_local: SE2): void {
-  const { prog, tileBoundsBuffer } = env.tileDrawer;
+  const { prog, position } = env.tileDrawer;
   gl.useProgram(prog);
 
   const chunk_rect_in_canvas = apply_to_rect(canvas_from_chunk_local, { p: vdiag(0), sz: { x: 1, y: 1 } });
   const chunk_rect_in_gl = apply_to_rect(gl_from_canvas, chunk_rect_in_canvas);
 
   const [p1, p2] = rectPts(chunk_rect_in_gl);
-  attributeSetFloats(gl,
-    prog, "pos", 2,
-    tileBoundsBuffer, [
+  bufferSetFloats(gl, position, [
     p1.x, p2.y,
     p2.x, p2.y,
     p1.x, p1.y,
@@ -161,14 +156,8 @@ function drawOneTile(gl: WebGL2RenderingContext, env: GlEnv, letter: string, sta
   const u_tileLetter = gl.getUniformLocation(prog, 'u_tileLetter');
   gl.uniform1i(u_tileLetter, letter.charCodeAt(0) - 97);
 
-  const u_spriteTexture = gl.getUniformLocation(prog, 'u_spriteTexture');
-  gl.uniform1i(u_spriteTexture, SPRITE_TEXTURE_UNIT);
-
   const u_fontTexture = gl.getUniformLocation(prog, 'u_fontTexture');
   gl.uniform1i(u_fontTexture, FONT_TEXTURE_UNIT);
-
-  const u_chunkDataTexture = gl.getUniformLocation(prog, 'u_chunkDataTexture');
-  gl.uniform1i(u_chunkDataTexture, CHUNK_DATA_TEXTURE_UNIT);
 
   const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
   gl.uniform2f(u_canvasSize, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
@@ -184,28 +173,22 @@ function drawOneTile(gl: WebGL2RenderingContext, env: GlEnv, letter: string, sta
   ];
   const u_world_from_canvas = gl.getUniformLocation(prog, "u_world_from_canvas");
   gl.uniformMatrix3fv(u_world_from_canvas, false, world_from_canvas);
-
   gl.viewport(0, 0, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
-
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
 }
 
 function glFillRecta(gl: WebGL2RenderingContext, env: GlEnv, rect_in_canvas: Rect, color: RgbaColor): void {
   gl.useProgram(env.rectDrawer.prog);
-  gl.bindBuffer(gl.ARRAY_BUFFER, env.rectDrawer.positionBuffer);
-  gl.vertexAttribPointer(env.rectDrawer.positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
-  gl.uniform4fv(env.rectDrawer.colorUniformLocation, [color[0] / 255, color[1] / 255, color[2] / 255, color[3] / 255]);
   const hand_bds_in_gl = apply_to_rect(gl_from_canvas, rect_in_canvas);
   const [p1, p2] = rectPts(hand_bds_in_gl);
-  attributeSetFloats(gl, env.rectDrawer.prog, 'pos', 2, env.rectDrawer.positionBuffer, [
+  bufferSetFloats(gl, env.rectDrawer.position, [
     p1.x, p2.y,
     p2.x, p2.y,
     p1.x, p1.y,
     p2.x, p1.y,
   ]);
+  gl.uniform4fv(env.rectDrawer.colorUniformLocation, [color[0] / 255, color[1] / 255, color[2] / 255, color[3] / 255]);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
 }
 
 function glFillRect(gl: WebGL2RenderingContext, env: GlEnv, rect_in_canvas: Rect, color: RgbColor): void {
@@ -407,33 +390,20 @@ function mkChunkDrawer(gl: WebGL2RenderingContext): ChunkDrawer {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 
   // Chunk bounds vertex attribute array
-  const chunkBoundsBuffer = attributeCreateAndSetFloats(gl, prog, "pos", 2, [
-    0, 0,
-    0, 0,
-    0, 0,
-    0, 0,
-  ]);
-  if (chunkBoundsBuffer == null) {
-    throw new Error(`Couldn't allocate chunk bounds buffer`);
+  const position = attributeCreate(gl, prog, 'pos', 2);
+  if (position == null) {
+    throw new Error(`Couldn't allocate position buffer`);
   }
 
-  return { prog, chunkBoundsBuffer, chunkImdat };
+  return { prog, position, chunkImdat };
 }
 
 function mkTileDrawer(gl: WebGL2RenderingContext): TileDrawer {
   const prog = shaderProgram(gl, getAssets().tileShaders);
-
-  const positionAttributeLocation = gl.getAttribLocation(prog, "pos");
-  gl.enableVertexAttribArray(positionAttributeLocation);
-
-  // Create a buffer and bind it
-  const positionBuffer = gl.createBuffer();
-  if (positionBuffer == null)
+  const position = attributeCreate(gl, prog, 'pos', 2);
+  if (position == null)
     throw new Error(`couldn't allocate position buffer`);
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-  gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
-
-  return { prog, tileBoundsBuffer: positionBuffer };
+  return { prog, position };
 }
 
 function mkRectDrawer(gl: WebGL2RenderingContext): RectDrawer {
@@ -452,15 +422,8 @@ function mkRectDrawer(gl: WebGL2RenderingContext): RectDrawer {
         }`});
 
   const colorUniformLocation = gl.getUniformLocation(prog, "u_color")!;
-  const positionAttributeLocation = gl.getAttribLocation(prog, "pos");
-  gl.enableVertexAttribArray(positionAttributeLocation);
-
-  // Create a buffer and bind it
-  const positionBuffer = gl.createBuffer();
-  if (positionBuffer == null)
+  const position = attributeCreate(gl, prog, 'pos', 2);
+  if (position == null)
     throw new Error(`couldn't allocate position buffer`);
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-  gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
-
-  return { prog: prog, positionAttributeLocation, colorUniformLocation, positionBuffer };
+  return { prog: prog, position, colorUniformLocation };
 }

@@ -1,18 +1,34 @@
-export function attributeCreateAndSetFloats(
+export type BufferAttr = {
+  attr: number,
+  buffer: WebGLBuffer,
+  rsize: number,
+}
+
+export function attributeCreate(
   gl: WebGL2RenderingContext,
   prog: WebGLProgram,
   attr_name: string,
   rsize: number,
-  arr: number[]
-): WebGLBuffer | null {
+): BufferAttr | null {
   const buffer = gl.createBuffer();
+  if (buffer == null)
+    return null;
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr),
-    gl.DYNAMIC_DRAW);
+
   const attr = gl.getAttribLocation(prog, attr_name);
   gl.enableVertexAttribArray(attr);
   gl.vertexAttribPointer(attr, rsize, gl.FLOAT, false, 0, 0);
-  return buffer;
+  return { attr, buffer, rsize };
+}
+
+export function bufferSetFloats(
+  gl: WebGL2RenderingContext,
+  ba: BufferAttr,
+  arr: number[],
+) {
+  gl.bindBuffer(gl.ARRAY_BUFFER, ba.buffer);
+  gl.vertexAttribPointer(ba.attr, ba.rsize, gl.FLOAT, false, 0, 0);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr), gl.DYNAMIC_DRAW);
 }
 
 export function attributeSetFloats(
