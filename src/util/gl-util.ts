@@ -29,7 +29,8 @@ export function attributeSetFloats(
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr), gl.DYNAMIC_DRAW);
 }
 
-export function shaderProgram(gl: WebGL2RenderingContext, vs: string, fs: string) {
+export function shaderProgram(gl: WebGL2RenderingContext, shaderTexts: { vert: string, frag: string }) {
+  const { vert: vs, frag: fs } = shaderTexts;
   const prog = gl.createProgram();
   if (prog == null) {
     throw `Couldn't create WebGL program`;

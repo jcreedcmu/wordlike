@@ -353,10 +353,6 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
   dispatch({ t: 'resize', vd: resizeView(ci.c) });
   const { d: gl } = ci;
 
-  const { frag, vert } = getAssets().chunkShaders;
-  const prog = shaderProgram(gl, vert, frag);
-  gl.useProgram(prog);
-
   // Sprite texture
   const spriteTexture = gl.createTexture();
   if (spriteTexture == null) {
@@ -387,6 +383,16 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, fontImdat);
 
+  return {
+    tileDrawer: mkTileDrawer(gl),
+    chunkDrawer: mkChunkDrawer(gl),
+    rectDrawer: mkRectDrawer(gl)
+  };
+}
+
+function mkChunkDrawer(gl: WebGL2RenderingContext): ChunkDrawer {
+  const prog = shaderProgram(gl, getAssets().chunkShaders);
+
   // Chunk data texture
   const chunkDataTexture = gl.createTexture();
   if (chunkDataTexture == null) {
@@ -411,17 +417,11 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
     throw new Error(`Couldn't allocate chunk bounds buffer`);
   }
 
-  return {
-    tileDrawer: mkTileDrawer(gl),
-    chunkDrawer: { prog, chunkBoundsBuffer, chunkImdat },
-    rectDrawer: mkRectDrawer(gl)
-  };
+  return { prog, chunkBoundsBuffer, chunkImdat };
 }
 
-
 function mkTileDrawer(gl: WebGL2RenderingContext): TileDrawer {
-  const { vert, frag } = getAssets().tileShaders;
-  const prog = shaderProgram(gl, vert, frag);
+  const prog = shaderProgram(gl, getAssets().tileShaders);
 
   const positionAttributeLocation = gl.getAttribLocation(prog, "pos");
   gl.enableVertexAttribArray(positionAttributeLocation);
@@ -438,18 +438,18 @@ function mkTileDrawer(gl: WebGL2RenderingContext): TileDrawer {
 
 function mkRectDrawer(gl: WebGL2RenderingContext): RectDrawer {
   // Create rect drawer data
-  const prog = shaderProgram(gl, `
+  const prog = shaderProgram(gl, {
+    vert: `
         attribute vec3 pos;
         void main() {
             gl_Position = vec4(pos, 1.);
-        }
-`, `
+        }`,
+    frag: `
         precision mediump float;
         uniform vec4 u_color;
         void main() {
             gl_FragColor = u_color;
-        }
-    `);
+        }`});
 
   const colorUniformLocation = gl.getUniformLocation(prog, "u_color")!;
   const positionAttributeLocation = gl.getAttribLocation(prog, "pos");
