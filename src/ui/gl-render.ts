@@ -462,18 +462,5 @@ function mkRectDrawer(gl: WebGL2RenderingContext): RectDrawer {
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
   gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
 
-  // XXX: Is this initialization necessary?
-
-  const hand_bds_in_gl = apply_to_rect(gl_from_canvas, hand_bds_in_canvas);
-  const [h1, h2] = rectPts(hand_bds_in_gl);
-  // Set rectangle vertices
-  const vertices = new Float32Array([
-    h1.x, h1.y,
-    h2.x, h1.y,
-    h1.x, h2.y,
-    h2.x, h2.y,
-  ]);
-  gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.DYNAMIC_DRAW);
-
   return { prog: prog, positionAttributeLocation, colorUniformLocation, positionBuffer };
 }
