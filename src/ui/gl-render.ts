@@ -73,12 +73,12 @@ function drawChunk(
 
   const [p1, p2] = rectPts(chunk_rect_in_gl);
   attributeSetFloats(gl,
-    prog, "pos", 3,
+    prog, "pos", 2,
     chunkBoundsBuffer, [
-    p1.x, p2.y, 0,
-    p2.x, p2.y, 0,
-    p1.x, p1.y, 0,
-    p2.x, p1.y, 0
+    p1.x, p2.y,
+    p2.x, p2.y,
+    p1.x, p1.y,
+    p2.x, p1.y,
   ]);
 
   const u_chunk_origin_in_world = gl.getUniformLocation(prog, 'u_chunk_origin_in_world');
@@ -401,11 +401,11 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 
   // Chunk bounds vertex attribute array
-  const chunkBoundsBuffer = attributeCreateAndSetFloats(gl, prog, "pos", 3, [
-    0, 0, 0,
-    0, 0, 0,
-    0, 0, 0,
-    0, 0, 0
+  const chunkBoundsBuffer = attributeCreateAndSetFloats(gl, prog, "pos", 2, [
+    0, 0,
+    0, 0,
+    0, 0,
+    0, 0,
   ]);
   if (chunkBoundsBuffer == null) {
     throw new Error(`Couldn't allocate chunk bounds buffer`);
