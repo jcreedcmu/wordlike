@@ -425,8 +425,6 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     }
     case 'putTilesInWorld':
       return withCoreState(state, cs => putTilesInWorld(cs, action.moves));
-    case 'putTileInWorld':
-      return withCoreState(state, cs => putTileInWorld(cs, action.id, action.p_in_world_int));
     case 'setSelected':
       return withCoreState(state, cs => setSelected(cs, action.sel));
     case 'checkValid':

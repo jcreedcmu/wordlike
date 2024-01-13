@@ -35,7 +35,6 @@ export type GameLowAction =
   | { t: 'dragSelectionEnd', ms: MouseState & { t: 'drag_selection' } }
   | { t: 'set_canvas_from_world', canvas_from_world: SE2 }
   | { t: 'putTilesInWorld', moves: MoveTile[] }
-  | { t: 'putTileInWorld', id: string, p_in_world_int: Point }
   | { t: 'putTilesInHandFromNotHand', ids: string[], ix: number }
   | { t: 'putTileInHand', id: string, ix: number }
   | { t: 'setSelected', sel: SelectionState | undefined }
