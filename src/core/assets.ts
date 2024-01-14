@@ -14,6 +14,7 @@ type Assets = {
   fontSheetBuf: Buffer,
   chunkShaders: ShaderProgramText,
   tileShaders: ShaderProgramText,
+  texQuadShaders: ShaderProgramText,
 };
 
 // Any data that goes here is effectively test data for consumption by
@@ -27,6 +28,7 @@ let assets: Assets = {
   fontSheetBuf: undefined as any,
   chunkShaders: { frag: '', vert: '' },
   tileShaders: { frag: '', vert: '' },
+  texQuadShaders: { frag: '', vert: '' },
 }
 
 async function preprocess(shaderText: string): Promise<string> {
@@ -56,6 +58,7 @@ export async function initAssets() {
     fontSheetBuf: prerenderFontSheet(fontSheetImg),
     chunkShaders: await getShaders('chunk'),
     tileShaders: await getShaders('tile'),
+    texQuadShaders: await getShaders('tex-quad'),
   };
 }
 

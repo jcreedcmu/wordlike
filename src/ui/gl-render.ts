@@ -43,10 +43,16 @@ export type TileDrawer = {
   position: BufferAttr,
 };
 
+export type TexQuadDrawer = {
+  prog: WebGLProgram,
+  position: BufferAttr,
+};
+
 export type GlEnv = {
   tileDrawer: TileDrawer,
   chunkDrawer: ChunkDrawer,
   rectDrawer: RectDrawer,
+  texQuadDrawer: TexQuadDrawer,
 }
 
 const SPRITE_TEXTURE_UNIT = 0;
@@ -122,6 +128,45 @@ function drawChunk(
 
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
+}
+
+function drawChunkDebugging(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState) {
+  const { prog, position } = env.texQuadDrawer;
+  gl.useProgram(prog);
+  const offset_in_canvas = vdiag(100);
+  const sz_in_canvas = vdiag(160);
+  const rect_in_canvas = { p: offset_in_canvas, sz: sz_in_canvas };
+  const rect_in_gl = apply_to_rect(gl_from_canvas, rect_in_canvas);
+
+  const chunkCache = state._cachedTileChunkMap;
+  const chunk = getChunk(chunkCache, { x: 0, y: 0 });
+  if (chunk == undefined) {
+    logger('missedChunkRendering', `missing data for chunk in debugging`);
+    return;
+  }
+  gl.activeTexture(gl.TEXTURE0 + CHUNK_DATA_TEXTURE_UNIT);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, chunk.imdat);
+
+
+  const [p1, p2] = rectPts(rect_in_gl);
+  bufferSetFloats(gl, position, [
+    p1.x, p2.y,
+    p2.x, p2.y,
+    p1.x, p1.y,
+    p2.x, p1.y,
+  ]);
+  const u_texture = gl.getUniformLocation(prog, "u_texture")!;
+  gl.uniform1i(u_texture, CHUNK_DATA_TEXTURE_UNIT);
+  const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
+  gl.uniform2f(u_canvasSize, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
+  const texture_from_canvas = [
+    1 / rect_in_canvas.sz.x, 0.0, 0.0,
+    0.0, 1 / rect_in_canvas.sz.y, 0.0,
+    -rect_in_canvas.p.x / rect_in_canvas.sz.x, -rect_in_canvas.p.y / rect_in_canvas.sz.y, 1.0,
+  ];
+  const u_texture_from_canvas = gl.getUniformLocation(prog, "u_texture_from_canvas");
+  gl.uniformMatrix3fv(u_texture_from_canvas, false, texture_from_canvas);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 }
 
 function drawOneTile(gl: WebGL2RenderingContext, env: GlEnv, letter: string, state: GameState, canvas_from_chunk_local: SE2): void {
@@ -279,6 +324,7 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
       drawOneTile(gl, env, tile.letter, state, canvas_from_hand_tile(tile.loc.p_in_hand_int.y));
     });
 
+    drawChunkDebugging(gl, env, state.coreState);
   };
 
   if (DEBUG.glProfiling) {
@@ -355,7 +401,8 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
   return {
     tileDrawer: mkTileDrawer(gl),
     chunkDrawer: mkChunkDrawer(gl),
-    rectDrawer: mkRectDrawer(gl)
+    rectDrawer: mkRectDrawer(gl),
+    texQuadDrawer: mkTexQuadDrawer(gl)
   };
 }
 
@@ -386,6 +433,14 @@ function mkChunkDrawer(gl: WebGL2RenderingContext): ChunkDrawer {
 
 function mkTileDrawer(gl: WebGL2RenderingContext): TileDrawer {
   const prog = shaderProgram(gl, getAssets().tileShaders);
+  const position = attributeCreate(gl, prog, 'pos', 2);
+  if (position == null)
+    throw new Error(`couldn't allocate position buffer`);
+  return { prog, position };
+}
+
+function mkTexQuadDrawer(gl: WebGL2RenderingContext): TexQuadDrawer {
+  const prog = shaderProgram(gl, getAssets().texQuadShaders);
   const position = attributeCreate(gl, prog, 'pos', 2);
   if (position == null)
     throw new Error(`couldn't allocate position buffer`);
