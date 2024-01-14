@@ -59,11 +59,13 @@ export type GlEnv = {
   chunkDrawer: ChunkDrawer,
   rectDrawer: RectDrawer,
   texQuadDrawer: TexQuadDrawer,
+  fb: FrameBufferHelper,
 }
 
 const SPRITE_TEXTURE_UNIT = 0;
 const CHUNK_DATA_TEXTURE_UNIT = 1;
 const FONT_TEXTURE_UNIT = 2;
+const FB_TEXTURE_UNIT = 3;
 
 function drawChunk(
   gl: WebGL2RenderingContext,
@@ -134,10 +136,9 @@ function drawChunk(
 
 }
 
-function drawChunkDebugging(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState) {
+function drawChunkDebugging(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState, offset_in_canvas: Point, src_texture: number) {
   const { prog, position } = env.texQuadDrawer;
   gl.useProgram(prog);
-  const offset_in_canvas = { x: 200, y: 0 };
   const sz_in_canvas = vdiag(160);
   const rect_in_canvas = { p: offset_in_canvas, sz: sz_in_canvas };
   const rect_in_gl = apply_to_rect(gl_from_canvas, rect_in_canvas);
@@ -159,7 +160,7 @@ function drawChunkDebugging(gl: WebGL2RenderingContext, env: GlEnv, state: CoreS
     p2.x, p1.y,
   ]);
   const u_texture = gl.getUniformLocation(prog, "u_texture")!;
-  gl.uniform1i(u_texture, CHUNK_DATA_TEXTURE_UNIT);
+  gl.uniform1i(u_texture, src_texture);
   const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
   gl.uniform2f(u_canvasSize, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
   const canvas_from_texture = mkSE2(rect_in_canvas.sz, rect_in_canvas.p);
@@ -209,8 +210,8 @@ function drawOneTile(gl: WebGL2RenderingContext, env: GlEnv, letter: string, sta
 
 function glFillRecta(gl: WebGL2RenderingContext, env: GlEnv, rect_in_canvas: Rect, color: RgbaColor): void {
   gl.useProgram(env.rectDrawer.prog);
-  const hand_bds_in_gl = apply_to_rect(gl_from_canvas, rect_in_canvas);
-  const [p1, p2] = rectPts(hand_bds_in_gl);
+  const rect_in_gl = apply_to_rect(gl_from_canvas, rect_in_canvas);
+  const [p1, p2] = rectPts(rect_in_gl);
   bufferSetFloats(gl, env.rectDrawer.position, [
     p1.x, p2.y,
     p2.x, p2.y,
@@ -323,7 +324,26 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
       drawOneTile(gl, env, tile.letter, state, canvas_from_hand_tile(tile.loc.p_in_hand_int.y));
     });
 
-    drawChunkDebugging(gl, env, state.coreState);
+    useFrameBuffer(gl, env.fb);
+    gl.clearColor(1.0, 0.0, 0.0, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+
+    gl.useProgram(env.rectDrawer.prog);
+    const [p1, p2] = [{ x: -1, y: -1 }, { x: 0, y: 0 }]
+    bufferSetFloats(gl, env.rectDrawer.position, [
+      p1.x, p2.y,
+      p2.x, p2.y,
+      p1.x, p1.y,
+      p2.x, p1.y,
+    ]);
+    gl.uniform4fv(env.rectDrawer.colorUniformLocation, [1, 1, 1, 1]);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+
+    endFrameBuffer(gl);
+    drawChunkDebugging(gl, env, state.coreState, { x: 200, y: 0 }, CHUNK_DATA_TEXTURE_UNIT);
+    drawChunkDebugging(gl, env, state.coreState, { x: 360, y: 0 }, FB_TEXTURE_UNIT);
   };
 
   if (DEBUG.glProfiling) {
@@ -401,7 +421,8 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
     tileDrawer: mkTileDrawer(gl),
     chunkDrawer: mkChunkDrawer(gl),
     rectDrawer: mkRectDrawer(gl),
-    texQuadDrawer: mkTexQuadDrawer(gl)
+    texQuadDrawer: mkTexQuadDrawer(gl),
+    fb: mkFrameBuffer(gl, { x: 16, y: 16 }),
   };
 }
 
@@ -448,13 +469,15 @@ function mkTexQuadDrawer(gl: WebGL2RenderingContext): TexQuadDrawer {
 
 function mkFrameBuffer(gl: WebGL2RenderingContext, size: Point): FrameBufferHelper {
   const texture = gl.createTexture()!;
+  gl.activeTexture(gl.TEXTURE0 + FB_TEXTURE_UNIT);
   gl.bindTexture(gl.TEXTURE_2D, texture);
 
   const data = null;
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, size.x, size.y, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
 
   // set the filtering so we don't need mips
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
