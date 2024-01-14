@@ -24,3 +24,17 @@ export function matchScale(t: SE2, p0: Point, p1: Point): SE2 {
     translate: vsub(p1, vmul(p0, t.scale)),
   };
 }
+
+// Returns homogeneous coordinate affine transform matrix
+// [c11, c12, c13,
+//  c21, c22, c23,
+//  c31, c32, c33]
+// sutiable for shipping off to WebGL
+export function asMatrix(u: SE2): number[] {
+  const { scale: s, translate: t } = u;
+  return [
+    s.x, 0, 0,
+    0, s.y, 0,
+    t.x, t.y, 1,
+  ]
+}

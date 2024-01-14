@@ -9,8 +9,8 @@ import { BOMB_RADIUS, getCurrentTool } from "../core/tools";
 import { DEBUG, doOnce, doOnceEvery, logger } from "../util/debug";
 import { RgbColor, RgbaColor, imageDataOfBuffer } from "../util/dutil";
 import { BufferAttr, attributeCreate, bufferSetFloats, shaderProgram } from "../util/gl-util";
-import { SE2, apply, compose, composen, inverse, scale, translate } from "../util/se2";
-import { apply_to_rect } from "../util/se2-extra";
+import { SE2, apply, compose, composen, inverse, mkSE2, scale, translate } from "../util/se2";
+import { apply_to_rect, asMatrix } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
 import { rectPts } from "../util/util";
 import { vadd, vdiag, vinv, vm, vscale, vsub } from "../util/vutil";
@@ -46,6 +46,12 @@ export type TileDrawer = {
 export type TexQuadDrawer = {
   prog: WebGLProgram,
   position: BufferAttr,
+};
+
+export type FrameBufferHelper = {
+  buffer: WebGLFramebuffer,
+  size: Point,
+  texture: WebGLTexture,
 };
 
 export type GlEnv = {
@@ -111,8 +117,6 @@ function drawChunk(
 
   gl.viewport(0, 0, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
 
-  // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
   const ms = state.mouseState;
   const chunkCache = ms.t == 'drag_tile' ? ms._chunkCache : state.coreState._cachedTileChunkMap;
   const chunk = getChunk(chunkCache, p_in_chunk);
@@ -133,7 +137,7 @@ function drawChunk(
 function drawChunkDebugging(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState) {
   const { prog, position } = env.texQuadDrawer;
   gl.useProgram(prog);
-  const offset_in_canvas = vdiag(100);
+  const offset_in_canvas = { x: 200, y: 0 };
   const sz_in_canvas = vdiag(160);
   const rect_in_canvas = { p: offset_in_canvas, sz: sz_in_canvas };
   const rect_in_gl = apply_to_rect(gl_from_canvas, rect_in_canvas);
@@ -147,7 +151,6 @@ function drawChunkDebugging(gl: WebGL2RenderingContext, env: GlEnv, state: CoreS
   gl.activeTexture(gl.TEXTURE0 + CHUNK_DATA_TEXTURE_UNIT);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, chunk.imdat);
 
-
   const [p1, p2] = rectPts(rect_in_gl);
   bufferSetFloats(gl, position, [
     p1.x, p2.y,
@@ -159,13 +162,9 @@ function drawChunkDebugging(gl: WebGL2RenderingContext, env: GlEnv, state: CoreS
   gl.uniform1i(u_texture, CHUNK_DATA_TEXTURE_UNIT);
   const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
   gl.uniform2f(u_canvasSize, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
-  const texture_from_canvas = [
-    1 / rect_in_canvas.sz.x, 0.0, 0.0,
-    0.0, 1 / rect_in_canvas.sz.y, 0.0,
-    -rect_in_canvas.p.x / rect_in_canvas.sz.x, -rect_in_canvas.p.y / rect_in_canvas.sz.y, 1.0,
-  ];
+  const canvas_from_texture = mkSE2(rect_in_canvas.sz, rect_in_canvas.p);
   const u_texture_from_canvas = gl.getUniformLocation(prog, "u_texture_from_canvas");
-  gl.uniformMatrix3fv(u_texture_from_canvas, false, texture_from_canvas);
+  gl.uniformMatrix3fv(u_texture_from_canvas, false, asMatrix(inverse(canvas_from_texture)));
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 }
 
@@ -445,6 +444,39 @@ function mkTexQuadDrawer(gl: WebGL2RenderingContext): TexQuadDrawer {
   if (position == null)
     throw new Error(`couldn't allocate position buffer`);
   return { prog, position };
+}
+
+function mkFrameBuffer(gl: WebGL2RenderingContext, size: Point): FrameBufferHelper {
+  const texture = gl.createTexture()!;
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+
+  const data = null;
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, size.x, size.y, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
+
+  // set the filtering so we don't need mips
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+  const buffer = gl.createFramebuffer()!;
+  gl.bindFramebuffer(gl.FRAMEBUFFER, buffer);
+
+  // attach the texture as the first color attachment
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+  return { buffer, size, texture };
+}
+
+function useFrameBuffer(gl: WebGL2RenderingContext, fb: FrameBufferHelper): void {
+  gl.bindFramebuffer(gl.FRAMEBUFFER, fb.buffer);
+  gl.viewport(0, 0, fb.size.x, fb.size.y);
+}
+
+function endFrameBuffer(gl: WebGL2RenderingContext): void {
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  gl.viewport(0, 0, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
 }
 
 function mkRectDrawer(gl: WebGL2RenderingContext): RectDrawer {
