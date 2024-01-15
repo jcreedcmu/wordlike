@@ -14,6 +14,13 @@ export const WORLD_CHUNK_SIZE = { x: 16, y: 16 };
 
 export type ChunkValue = { t: 'bonus', bonus: Bonus } | { t: 'tile', tile: RenderableTile };
 
+export type ChunkUpdate =
+  | { t: 'bonus', bonus: Bonus }
+  | { t: 'addTile', tile: RenderableTile }
+  | { t: 'setSelected' }
+  | { t: 'clearSelected' }
+  | { t: 'restoreTile', tile: RenderableTile }
+
 export type Chunk = {
   size: Point,
   data: ChunkValue[],
@@ -77,34 +84,58 @@ export function readChunkCache(cache: Overlay<Chunk>, cs: CoreState, p_in_world:
   return chunk.data[x + y * chunk.size.x];
 }
 
-export function updateChunkCache(cache: Overlay<Chunk>, cs: CoreState, p_in_world: Point, cval: ChunkValue): Overlay<Chunk> {
-  const spritePos = spriteLocOfChunkValue(cval);
-  const p_in_chunk = vm2(p_in_world, WORLD_CHUNK_SIZE, (x, wcs) => Math.floor(x / wcs));
-  if (!getOverlay(cache, p_in_chunk))
-    cache = ensureChunk(cache, cs, p_in_chunk);
-  const { x, y } = vsub(p_in_world, vmul(p_in_chunk, WORLD_CHUNK_SIZE));
-  return produce(cache, c => {
-    const chunk = getOverlay(c, p_in_chunk)!;
-    const ix = x + y * chunk.size.x;
-    chunk.data[ix] = cval;
-    chunk.spritePos[ix] = spritePos;
-    chunk.imdat.data[4 * ix + 0] = spritePos.x;
-    chunk.imdat.data[4 * ix + 1] = spritePos.y;
-  });
+function processChunkUpdate(cu: ChunkUpdate, oldVec: number[]): number[] {
+  const rv = [...oldVec];
+  switch (cu.t) {
+    case 'bonus': {
+      const spritePos = spriteLocOfChunkValue({ t: 'bonus', bonus: cu.bonus });
+      rv[0] = spritePos.x;
+      rv[1] = spritePos.y;
+      return rv;
+    }
+    case 'addTile': {
+      const spritePos = spriteLocOfChunkValue({ t: 'tile', tile: cu.tile });
+      rv[0] = spritePos.x;
+      rv[1] = spritePos.y;
+      rv[2] = 0;
+      return rv;
+    }
+    case 'setSelected': {
+      rv[2] |= 1;
+      return rv;
+    }
+    case 'clearSelected': {
+      rv[2] &= (0xff - 1);
+      return rv;
+    }
+    case 'restoreTile': {
+      const spritePos = spriteLocOfChunkValue({ t: 'tile', tile: cu.tile });
+      rv[0] = spritePos.x;
+      rv[1] = spritePos.y;
+      return rv;
+    }
+  }
 }
 
-// XXX unify with updateChunkCache maybe?
-export function updateChunkCacheMeta(cache: Overlay<Chunk>, cs: CoreState, p_in_world: Point, kont: (metadata: number) => number): Overlay<Chunk> {
+export function updateChunkCache(cache: Overlay<Chunk>, cs: CoreState, p_in_world: Point, cu: ChunkUpdate): Overlay<Chunk> {
   const p_in_chunk = vm2(p_in_world, WORLD_CHUNK_SIZE, (x, wcs) => Math.floor(x / wcs));
   if (!getOverlay(cache, p_in_chunk))
     cache = ensureChunk(cache, cs, p_in_chunk);
   const { x, y } = vsub(p_in_world, vmul(p_in_chunk, WORLD_CHUNK_SIZE));
+  const chunk = getOverlay(cache, p_in_chunk)!;
+  const ix = x + y * chunk.size.x;
+  const newVec = processChunkUpdate(cu, [
+    chunk.imdat.data[4 * ix + 0],
+    chunk.imdat.data[4 * ix + 1],
+    chunk.imdat.data[4 * ix + 2],
+    chunk.imdat.data[4 * ix + 3]
+  ]);
   return produce(cache, c => {
     const chunk = getOverlay(c, p_in_chunk)!;
-    const ix = x + y * chunk.size.x;
-    const meta = kont(chunk.metadata[ix]);
-    chunk.metadata[ix] = meta;
-    chunk.imdat.data[4 * ix + 2] = meta;
+    chunk.imdat.data[4 * ix + 0] = newVec[0];
+    chunk.imdat.data[4 * ix + 1] = newVec[1];
+    chunk.imdat.data[4 * ix + 2] = newVec[2];
+    chunk.imdat.data[4 * ix + 3] = newVec[3];
   });
 }
 

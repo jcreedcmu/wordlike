@@ -87,7 +87,7 @@ export function addWorldTile(state: Draft<CoreState>, tile: TileOptionalId): voi
     letter: tile.letter, loc: { t: 'world', p_in_world_int: tile.p_in_world_int }
   });
   state.tile_entities[newTile.id] = newTile;
-  state._cachedTileChunkMap = updateChunkCache(state._cachedTileChunkMap, state, tile.p_in_world_int, { t: 'tile', tile: { letter: tile.letter } });
+  state._cachedTileChunkMap = updateChunkCache(state._cachedTileChunkMap, state, tile.p_in_world_int, { t: 'addTile', tile: { letter: tile.letter } });
 }
 
 export function addHandTile(state: Draft<CoreState>, tile: Tile): void {
@@ -101,7 +101,7 @@ export function addHandTile(state: Draft<CoreState>, tile: Tile): void {
 export function putTileInWorld(state: CoreState, id: string, p_in_world_int: Point): CoreState {
   const nowhere = putTileNowhere(state, id);
   const tile = getTileId(state, id);
-  const newCache = updateChunkCache(nowhere._cachedTileChunkMap, nowhere, p_in_world_int, { t: 'tile', tile: { letter: tile.letter } });
+  const newCache = updateChunkCache(nowhere._cachedTileChunkMap, nowhere, p_in_world_int, { t: 'addTile', tile: { letter: tile.letter } });
   return produce(nowhere, s => {
     setTileLoc(s, id, { t: 'world', p_in_world_int });
     s._cachedTileChunkMap = newCache;
@@ -115,7 +115,7 @@ export function putTilesInWorld(state: CoreState, moves: MoveTile[]): CoreState 
   }
   for (const move of moves) {
     const tile = getTileId(state, move.id);
-    const newCache = updateChunkCache(cs._cachedTileChunkMap, cs, move.p_in_world_int, { t: 'tile', tile: { letter: tile.letter } });
+    const newCache = updateChunkCache(cs._cachedTileChunkMap, cs, move.p_in_world_int, { t: 'addTile', tile: { letter: tile.letter } });
     cs = produce(cs, s => {
       setTileLoc(s, move.id, { t: 'world', p_in_world_int: move.p_in_world_int });
       s._cachedTileChunkMap = newCache;
@@ -137,7 +137,7 @@ export function moveTiles(state: CoreState, moves: GenMoveTile[]): CoreState {
     const loc = move.loc;
     switch (loc.t) {
       case 'world':
-        newCache = updateChunkCache(newCache, cs, loc.p_in_world_int, { t: 'tile', tile: { letter: tile.letter } });
+        newCache = updateChunkCache(newCache, cs, loc.p_in_world_int, { t: 'addTile', tile: { letter: tile.letter } });
         break;
       case 'nowhere':
         break;
@@ -273,6 +273,5 @@ export function restoreTileToWorld(cs: CoreState, overlay: Overlay<Chunk>, tile:
   if (tile.loc.t != 'world') {
     throw new Error(`Expected tile ${tile.id} to be in world`);
   }
-  const cval: ChunkValue = { t: 'tile', tile: { letter: tile.letter } };
-  return updateChunkCache(overlay, cs, tile.loc.p_in_world_int, cval);
+  return updateChunkCache(overlay, cs, tile.loc.p_in_world_int, { t: 'restoreTile', tile: { letter: tile.letter } });
 }
