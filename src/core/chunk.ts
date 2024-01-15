@@ -35,8 +35,8 @@ export function setChunkData(chunk: Chunk, kont: (p: Point) => ChunkValue): void
       const spritePos = spriteLocOfChunkValue(cval);
       const ix = x + y * chunk.size.x;
       const fix = 4 * ix;
-      imdat.data[fix + 0] = spritePos.x;
-      imdat.data[fix + 1] = spritePos.y;
+      imdat.data[fix + 0] = (spritePos.x << 4) + spritePos.y;
+      imdat.data[fix + 1] = 0;
       imdat.data[fix + 2] = 0;
       imdat.data[fix + 3] = 255; // Am I even using this?
     }
@@ -70,14 +70,12 @@ function processChunkUpdate(cu: ChunkUpdate, oldVec: number[]): number[] {
   switch (cu.t) {
     case 'bonus': {
       const spritePos = spriteLocOfChunkValue({ t: 'bonus', bonus: cu.bonus });
-      rv[0] = spritePos.x;
-      rv[1] = spritePos.y;
+      rv[0] = (spritePos.x << 4) + spritePos.y;
       return rv;
     }
     case 'addTile': {
       const spritePos = spriteLocOfChunkValue({ t: 'tile', tile: cu.tile });
-      rv[0] = spritePos.x;
-      rv[1] = spritePos.y;
+      rv[0] = (spritePos.x << 4) + spritePos.y;
       rv[2] = 0;
       return rv;
     }
@@ -91,8 +89,7 @@ function processChunkUpdate(cu: ChunkUpdate, oldVec: number[]): number[] {
     }
     case 'restoreTile': {
       const spritePos = spriteLocOfChunkValue({ t: 'tile', tile: cu.tile });
-      rv[0] = spritePos.x;
-      rv[1] = spritePos.y;
+      rv[0] = (spritePos.x << 4) + spritePos.y;
       return rv;
     }
   }

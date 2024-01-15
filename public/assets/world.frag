@@ -99,12 +99,12 @@ vec4 getColor() {
   vec2 p_in_world_fp = p_in_world - floor(p_in_world); // fractional part
 
   // gridData holds cached information about this particular square world cell.
-  // .rg: which sprite or tile we should show here
+  // .r: which sprite or tile we should show here. High 4 bits are x, low 4 bits are y.
+  // .g: unused
   // .b: some metadata. bit 0 is whether it's selected
   vec4 gridData = round(255.0 * texture(u_prepassTexture, (p_in_prepass + vec2(0.5,0.5)) / float(PREPASS_BUFFER_SIZE) ));
-//  gridData = vec4(0., 0., 0., 0.);
 
-  vec2 sprite_coords = gridData.xy;
+  vec2 sprite_coords = vec2(int(gridData.x) >> 4, int(gridData.x) & 0xf);
 
   vec4 sprite_pixel = get_sprite_pixel(p_in_world_fp, sprite_coords);
 
