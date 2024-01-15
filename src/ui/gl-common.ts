@@ -15,15 +15,10 @@ export type RectDrawer = {
   colorUniformLocation: WebGLUniformLocation,
 };
 
-export type ChunkDrawer = {
-  prog: WebGLProgram,
-  chunkImdat: ImageData,
-  position: BufferAttr,
-};
-
 export type WorldDrawer = {
   prog: WebGLProgram,
   position: BufferAttr,
+  chunkImdat: ImageData,
 };
 
 export type TileDrawer = {
@@ -44,7 +39,6 @@ export type FrameBufferHelper = {
 
 export type GlEnv = {
   tileDrawer: TileDrawer,
-  chunkDrawer: ChunkDrawer,
   worldDrawer: WorldDrawer,
   rectDrawer: RectDrawer,
   texQuadDrawer: TexQuadDrawer,
@@ -52,9 +46,12 @@ export type GlEnv = {
   fb: FrameBufferHelper,
 }
 
-// Partially deprecated? May need to keep the CHUNK_DATA_TEXTURE_UNIT around
-export function mkChunkDrawer(gl: WebGL2RenderingContext): ChunkDrawer {
-  const prog = shaderProgram(gl, getAssets().chunkShaders);
+export function mkWorldDrawer(gl: WebGL2RenderingContext): WorldDrawer {
+  const prog = shaderProgram(gl, getAssets().worldShaders);
+  const position = attributeCreate(gl, prog, 'pos', 2);
+  if (position == null) {
+    throw new Error(`Couldn't allocate position buffer`);
+  }
 
   // Chunk data texture
   const chunkDataTexture = gl.createTexture();
@@ -69,21 +66,7 @@ export function mkChunkDrawer(gl: WebGL2RenderingContext): ChunkDrawer {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 
-  const position = attributeCreate(gl, prog, 'pos', 2);
-  if (position == null) {
-    throw new Error(`Couldn't allocate position buffer`);
-  }
-
   return { prog, position, chunkImdat };
-}
-
-export function mkWorldDrawer(gl: WebGL2RenderingContext): WorldDrawer {
-  const prog = shaderProgram(gl, getAssets().worldShaders);
-  const position = attributeCreate(gl, prog, 'pos', 2);
-  if (position == null) {
-    throw new Error(`Couldn't allocate position buffer`);
-  }
-  return { prog, position };
 }
 
 export function mkTileDrawer(gl: WebGL2RenderingContext): TileDrawer {

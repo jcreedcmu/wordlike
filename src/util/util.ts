@@ -119,7 +119,10 @@ export function randPointInRect(rect: Rect): Point {
 }
 
 export async function grab(path: string): Promise<string> {
-  return (await fetch(path, { cache: "no-cache" })).text();
+  const resp = await fetch(path, { cache: "no-cache" });
+  if (resp.status != 200)
+    throw new Error(`Couldn't load ${path}, status code ${resp.status}`);
+  return await resp.text();
 }
 
 export function rectPts(rect: Rect): [Point, Point] {

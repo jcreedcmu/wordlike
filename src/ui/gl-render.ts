@@ -12,9 +12,9 @@ import { SE2, compose, inverse, scale, translate } from "../util/se2";
 import { apply_to_rect, asMatrix } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
 import { rectPts } from "../util/util";
-import { vadd, vdiag, vinv, vmul, vsub } from "../util/vutil";
+import { vadd, vdiag, vmul, vsub } from "../util/vutil";
 import { renderPanicBar } from "./drawPanicBar";
-import { CHUNK_DATA_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, PREPASS_FB_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, endFrameBuffer, mkChunkDrawer, mkDebugQuadDrawer, mkFrameBuffer, mkRectDrawer, mkTexQuadDrawer, mkTileDrawer, mkWorldDrawer, useFrameBuffer } from "./gl-common";
+import { CHUNK_DATA_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, PREPASS_FB_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, endFrameBuffer, mkDebugQuadDrawer, mkFrameBuffer, mkRectDrawer, mkTexQuadDrawer, mkTileDrawer, mkWorldDrawer, useFrameBuffer } from "./gl-common";
 import { gl_from_canvas } from "./gl-helpers";
 import { canvas_from_hand_tile } from "./render";
 import { resizeView } from "./ui-helpers";
@@ -42,74 +42,6 @@ export const prepass_from_gl: SE2 = {
 };
 
 export const gl_from_prepass: SE2 = inverse(prepass_from_gl);
-
-function drawChunk(
-  gl: WebGL2RenderingContext,
-  env: GlEnv,
-  p_in_chunk: Point,
-  state: GameState,
-  chunk_from_canvas: SE2,
-  world_from_canvas_SE2: SE2
-): void {
-  const { prog, position, chunkImdat } = env.chunkDrawer;
-  gl.useProgram(prog);
-
-  const chunk_rect_in_chunk = { p: p_in_chunk, sz: vdiag(1.) };
-
-  const gl_from_chunk = compose(gl_from_canvas, inverse(chunk_from_canvas));
-  const chunk_rect_in_gl = apply_to_rect(gl_from_chunk, chunk_rect_in_chunk);
-
-  const [p1, p2] = rectPts(chunk_rect_in_gl);
-  bufferSetFloats(gl, position, [
-    p1.x, p2.y,
-    p2.x, p2.y,
-    p1.x, p1.y,
-    p2.x, p1.y,
-  ]);
-
-  const u_chunk_origin_in_world = gl.getUniformLocation(prog, 'u_chunk_origin_in_world');
-  gl.uniform2f(u_chunk_origin_in_world, p_in_chunk.x * WORLD_CHUNK_SIZE.x, p_in_chunk.y * WORLD_CHUNK_SIZE.y);
-
-  const u_spriteTexture = gl.getUniformLocation(prog, 'u_spriteTexture');
-  gl.uniform1i(u_spriteTexture, SPRITE_TEXTURE_UNIT);
-
-  const u_fontTexture = gl.getUniformLocation(prog, 'u_fontTexture');
-  gl.uniform1i(u_fontTexture, FONT_TEXTURE_UNIT);
-
-  const u_chunkDataTexture = gl.getUniformLocation(prog, 'u_chunkDataTexture');
-  gl.uniform1i(u_chunkDataTexture, CHUNK_DATA_TEXTURE_UNIT);
-
-  const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
-  gl.uniform2f(u_canvasSize, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
-
-  const s = world_from_canvas_SE2.scale;
-  const t = world_from_canvas_SE2.translate;
-
-  const world_from_canvas = [
-    s.x, 0.0, 0.0,
-    0.0, s.y, 0.0,
-    t.x, t.y, 1.0,
-  ];
-  const u_world_from_canvas = gl.getUniformLocation(prog, "u_world_from_canvas");
-  gl.uniformMatrix3fv(u_world_from_canvas, false, world_from_canvas);
-
-  // XXX is this called redundantly?
-  gl.viewport(0, 0, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
-
-  const ms = state.mouseState;
-  const chunkCache = ms.t == 'drag_tile' ? ms._chunkCache : state.coreState._cachedTileChunkMap;
-  const chunk = getChunk(chunkCache, p_in_chunk);
-
-  if (chunk == undefined) {
-    logger('missedChunkRendering', `missing data for chunk ${JSON.stringify(p_in_chunk)}`);
-    return;
-  }
-
-  gl.activeTexture(gl.TEXTURE0 + CHUNK_DATA_TEXTURE_UNIT);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, chunk.imdat);
-  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
-}
 
 // the prepass coordinate system is (0,0) at the upper left of the
 // prepass framebuffer, and is measured in framebuffer pixels.
@@ -247,14 +179,6 @@ function renderPrepass(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState,
 
 
 function drawWorld(gl: WebGL2RenderingContext, env: GlEnv, state: GameState, canvas_from_world: SE2, aci: ActiveChunkInfo): void {
-  if (0) {  // XXX some redundant transforms going on here, we also compute chunk_from_canvas in chunk.ts
-    const chunk_from_canvas = compose(scale(vinv(WORLD_CHUNK_SIZE)), inverse(canvas_from_world));
-
-    aci.ps_in_chunk.forEach(p => {
-      drawChunk(gl, env, p, state, chunk_from_canvas, inverse(pan_canvas_from_world_of_state(state)));
-    });
-  }
-
   const { prog, position } = env.worldDrawer;
   gl.useProgram(prog);
 
@@ -455,7 +379,6 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
 
   return {
     tileDrawer: mkTileDrawer(gl),
-    chunkDrawer: mkChunkDrawer(gl),
     worldDrawer: mkWorldDrawer(gl),
     rectDrawer: mkRectDrawer(gl),
     texQuadDrawer: mkTexQuadDrawer(gl),

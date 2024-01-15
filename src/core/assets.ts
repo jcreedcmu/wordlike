@@ -12,7 +12,6 @@ type Assets = {
   dictionary: Record<string, boolean>,
   spriteSheetBuf: Buffer,
   fontSheetBuf: Buffer,
-  chunkShaders: ShaderProgramText,
   worldShaders: ShaderProgramText,
   tileShaders: ShaderProgramText,
   texQuadShaders: ShaderProgramText,
@@ -28,7 +27,6 @@ let assets: Assets = {
   // We assume tests don't exercise any of the below data:
   spriteSheetBuf: undefined as any,
   fontSheetBuf: undefined as any,
-  chunkShaders: { frag: '', vert: '' },
   worldShaders: { frag: '', vert: '' },
   tileShaders: { frag: '', vert: '' },
   texQuadShaders: { frag: '', vert: '' },
@@ -60,7 +58,6 @@ export async function initAssets() {
     dictionary,
     spriteSheetBuf: prerenderSpriteSheet(spriteSheetImg),
     fontSheetBuf: prerenderFontSheet(fontSheetImg),
-    chunkShaders: await getShaders('chunk'),
     worldShaders: await getShaders('world'),
     tileShaders: await getShaders('tile'),
     texQuadShaders: await getShaders('tex-quad'),
