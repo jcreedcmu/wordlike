@@ -304,6 +304,15 @@ function renderPrepass(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState,
   gl.clear(gl.COLOR_BUFFER_BIT);
 
   // Try drawing a prepass chunk into the framebuffer
+
+  // XXX I think I want to have activeChunks return just a bit
+  // larger of a region than it currently is.
+  //
+  // My reasoning is this. Every fragment in the canvas is something
+  // I need to render. I can map this fragment point to a world
+  // point p. To render point p, I need to sample the bonus-cell
+  // value at p + (±0.5, ±0.5). To do that I need to know about the
+  // bonus data at ⌊p + (±0.5, ±0.5)⌋.
   const aci = activeChunks(canvas_from_world);
   aci.ps_in_chunk.forEach(p => {
     const chunk = getChunk(state._cachedTileChunkMap, p);
@@ -357,14 +366,6 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
     // XXX some redundant transforms going on here, we also compute chunk_from_canvas in chunk.ts
     const chunk_from_canvas = compose(scale(vinv(WORLD_CHUNK_SIZE)), inverse(canvas_from_world));
 
-    // XXX I think I want to have activeChunks return just a bit
-    // larger of a region than it currently is.
-    //
-    // My reasoning is this. Every fragment in the canvas is something
-    // I need to render. I can map this fragment point to a world
-    // point p. To render point p, I need to sample the bonus-cell
-    // value at p + (±0.5, ±0.5). To do that I need to know about the
-    // bonus data at ⌊p + (±0.5, ±0.5)⌋.
     const aci = activeChunks(canvas_from_world);
     aci.ps_in_chunk.forEach(p => {
       drawChunk(gl, env, p, state, chunk_from_canvas, inverse(pan_canvas_from_world_of_state(state)));
