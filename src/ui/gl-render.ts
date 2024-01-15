@@ -81,6 +81,7 @@ export type FrameBufferHelper = {
 export type GlEnv = {
   tileDrawer: TileDrawer,
   chunkDrawer: ChunkDrawer,
+  worldDrawer: WorldDrawer,
   rectDrawer: RectDrawer,
   texQuadDrawer: TexQuadDrawer,
   fb: FrameBufferHelper,
@@ -89,7 +90,7 @@ export type GlEnv = {
 const SPRITE_TEXTURE_UNIT = 0;
 const CHUNK_DATA_TEXTURE_UNIT = 1;
 const FONT_TEXTURE_UNIT = 2;
-const FB_TEXTURE_UNIT = 3;
+const PREPASS_FB_TEXTURE_UNIT = 3;
 
 function drawChunk(
   gl: WebGL2RenderingContext,
@@ -141,6 +142,7 @@ function drawChunk(
   const u_world_from_canvas = gl.getUniformLocation(prog, "u_world_from_canvas");
   gl.uniformMatrix3fv(u_world_from_canvas, false, world_from_canvas);
 
+  // XXX is this called redundantly?
   gl.viewport(0, 0, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
 
   const ms = state.mouseState;
@@ -334,16 +336,46 @@ function renderPrepass(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState,
 
 function debugPrepass(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState): void {
   // debug the state of the framebuffer
-  drawChunkDebugging(gl, env, state, { x: 100, y: 0 }, FB_TEXTURE_UNIT);
+  drawChunkDebugging(gl, env, state, { x: 100, y: 0 }, PREPASS_FB_TEXTURE_UNIT);
 }
 
 function drawWorld(gl: WebGL2RenderingContext, env: GlEnv, state: GameState, canvas_from_world: SE2, aci: ActiveChunkInfo): void {
-  // XXX some redundant transforms going on here, we also compute chunk_from_canvas in chunk.ts
-  const chunk_from_canvas = compose(scale(vinv(WORLD_CHUNK_SIZE)), inverse(canvas_from_world));
+  if (0) {  // XXX some redundant transforms going on here, we also compute chunk_from_canvas in chunk.ts
+    const chunk_from_canvas = compose(scale(vinv(WORLD_CHUNK_SIZE)), inverse(canvas_from_world));
 
-  aci.ps_in_chunk.forEach(p => {
-    drawChunk(gl, env, p, state, chunk_from_canvas, inverse(pan_canvas_from_world_of_state(state)));
-  });
+    aci.ps_in_chunk.forEach(p => {
+      drawChunk(gl, env, p, state, chunk_from_canvas, inverse(pan_canvas_from_world_of_state(state)));
+    });
+  }
+
+  const { prog, position } = env.worldDrawer;
+  gl.useProgram(prog);
+
+  const canvas_rect_in_gl = apply_to_rect(gl_from_canvas, canvas_bds_in_canvas);
+  // XXX PERF this rect should never change, so we don't need to set it every time
+  const [p1, p2] = rectPts(canvas_rect_in_gl);
+  bufferSetFloats(gl, position, [
+    p1.x, p2.y,
+    p2.x, p2.y,
+    p1.x, p1.y,
+    p2.x, p1.y,
+  ]);
+
+  const u_spriteTexture = gl.getUniformLocation(prog, 'u_spriteTexture');
+  gl.uniform1i(u_spriteTexture, SPRITE_TEXTURE_UNIT);
+  const u_fontTexture = gl.getUniformLocation(prog, 'u_fontTexture');
+  gl.uniform1i(u_fontTexture, FONT_TEXTURE_UNIT);
+  const u_chunkDataTexture = gl.getUniformLocation(prog, 'u_prepassTexture');
+  gl.uniform1i(u_chunkDataTexture, PREPASS_FB_TEXTURE_UNIT);
+  const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
+  gl.uniform2f(u_canvasSize, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
+  const u_min_p_in_chunk = gl.getUniformLocation(prog, 'u_min_p_in_chunk');
+  gl.uniform2f(u_min_p_in_chunk, aci.min_p_in_chunk.x, aci.min_p_in_chunk.y);
+
+  const u_world_from_canvas = gl.getUniformLocation(prog, "u_world_from_canvas");
+  gl.uniformMatrix3fv(u_world_from_canvas, false, asMatrix(inverse(canvas_from_world)));
+
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 }
 
 const shouldDebug = { v: false };
@@ -517,6 +549,7 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
   return {
     tileDrawer: mkTileDrawer(gl),
     chunkDrawer: mkChunkDrawer(gl),
+    worldDrawer: mkWorldDrawer(gl),
     rectDrawer: mkRectDrawer(gl),
     texQuadDrawer: mkTexQuadDrawer(gl),
     fb: mkFrameBuffer(gl, PREPASS_FRAME_BUFFER_SIZE),
@@ -575,7 +608,7 @@ function mkTexQuadDrawer(gl: WebGL2RenderingContext): TexQuadDrawer {
 
 function mkFrameBuffer(gl: WebGL2RenderingContext, size: Point): FrameBufferHelper {
   const texture = gl.createTexture()!;
-  gl.activeTexture(gl.TEXTURE0 + FB_TEXTURE_UNIT);
+  gl.activeTexture(gl.TEXTURE0 + PREPASS_FB_TEXTURE_UNIT);
   gl.bindTexture(gl.TEXTURE_2D, texture);
 
   const data = null;

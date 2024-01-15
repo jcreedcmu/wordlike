@@ -75,8 +75,8 @@ vec4 blendOver(vec4 a, vec4 b) {
     return vec4(divideFactor * newColor, newAlpha);
 }
 
-vec4 get_origin_pixel(vec2 p_in_prepass, vec2 p_in_world_fp) {
-  float is_origin = 0.; // XXX FIXME
+vec4 get_origin_pixel(vec2 p_in_world_int, vec2 p_in_world_fp) {
+  float is_origin = float(p_in_world_int == vec2(0.,0.));
 
   float vlen = length(p_in_world_fp - vec2(0.5));
 
@@ -112,7 +112,7 @@ vec4 getColor() {
   sprite_pixel = vec4(mix(sprite_pixel.rgb, TILE_SELECTED_COLOR, selected_amount), sprite_pixel.a);
 
   // maybe render origin
-  vec4 main_color = blendOver(get_origin_pixel(p_in_prepass, p_in_world_fp), sprite_pixel);
+  vec4 main_color = blendOver(get_origin_pixel(p_in_world_int, p_in_world_fp), sprite_pixel);
 
   vec2 off = abs(p_in_world - p_in_world_r);
   // Amount to show crosshairs ∈ [0,1]
