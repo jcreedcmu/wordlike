@@ -37,6 +37,9 @@ const shadowColorRgba: RgbaColor = [128, 128, 100, Math.floor(0.4 * 255)];
 // having >100 × 100 cells per screen is already probably plenty)
 const PREPASS_FRAME_BUFFER_SIZE: Point = { x: 256, y: 256 };
 
+// Scale up the colors by this much during debugging so I can see what's going on
+const DEBUG_COLOR_SCALE = 10.0;
+
 export const prepass_from_gl: SE2 = {
   scale: { x: PREPASS_FRAME_BUFFER_SIZE.x / 2, y: -PREPASS_FRAME_BUFFER_SIZE.y / 2 },
   translate: { x: PREPASS_FRAME_BUFFER_SIZE.x / 2, y: PREPASS_FRAME_BUFFER_SIZE.y / 2 },
@@ -182,6 +185,9 @@ function drawPrepassChunk(gl: WebGL2RenderingContext, env: GlEnv, chunk: Chunk, 
   const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
   gl.uniform2f(u_canvasSize, PREPASS_FRAME_BUFFER_SIZE.x, PREPASS_FRAME_BUFFER_SIZE.y);
 
+  const u_colorScale = gl.getUniformLocation(prog, 'u_colorScale');
+  gl.uniform1f(u_colorScale, 1.);
+
   // - the chunk texture coordinate frame is the relevant texture coordinate frame
   // - the prepass framebuffer is playing the role of 'canvas'
   const u_chunk_texture_from_prepass = gl.getUniformLocation(prog, 'u_texture_from_canvas');
@@ -218,6 +224,10 @@ function drawChunkDebugging(gl: WebGL2RenderingContext, env: GlEnv, state: CoreS
   gl.uniform1i(u_texture, src_texture);
   const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
   gl.uniform2f(u_canvasSize, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
+
+  const u_colorScale = gl.getUniformLocation(prog, 'u_colorScale');
+  gl.uniform1f(u_colorScale, DEBUG_COLOR_SCALE);
+
   const canvas_from_texture = mkSE2(rect_in_canvas.sz, rect_in_canvas.p);
   const u_texture_from_canvas = gl.getUniformLocation(prog, 'u_texture_from_canvas');
   gl.uniformMatrix3fv(u_texture_from_canvas, false, asMatrix(inverse(canvas_from_texture)));
@@ -393,7 +403,7 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
     useFrameBuffer(gl, env.fb);
 
     // clear framebuffer
-    gl.clearColor(1.0, 0.0, 0.0, 1.0);
+    gl.clearColor(0.03, 0.03, 0.05, 0.05); // predivided by DEBUG_COLOR_SCALE
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     // Try drawing a prepass chunk into the framebuffer
@@ -408,11 +418,8 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
     // go back to drawing to canvas
     endFrameBuffer(gl);
 
-    // debug a data chunk
-    drawChunkDebugging(gl, env, state.coreState, { x: 100, y: 0 }, CHUNK_DATA_TEXTURE_UNIT);
-
     // debug the state of the framebuffer
-    drawChunkDebugging(gl, env, state.coreState, { x: 356, y: 0 }, FB_TEXTURE_UNIT);
+    drawChunkDebugging(gl, env, state.coreState, { x: 100, y: 0 }, FB_TEXTURE_UNIT);
   };
 
   if (DEBUG.glProfiling) {
