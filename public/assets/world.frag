@@ -66,7 +66,8 @@ vec4 get_bonus_pixel(vec2 p_in_world_fp, vec2 sprite_coords) {
 }
 
 int is_land(vec4 cell_data) {
-  return int(cell_data.x == 7.);
+  int ci = int(round(cell_data.x));
+  return int(!(ci == 16 || (ci >> 4) >= 12));
 }
 
 vec4 get_terrain_pixel(vec2 p_in_world) {
