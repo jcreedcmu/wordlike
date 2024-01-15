@@ -26,6 +26,17 @@ import { canvas_bds_in_canvas, canvas_from_hand, getWidgetPoint, hand_bds_in_can
 const backgroundGrayRgb: RgbColor = [238, 238, 238];
 const shadowColorRgba: RgbaColor = [128, 128, 100, Math.floor(0.4 * 255)];
 
+// This is for a frame buffer into which I render one pixel per world
+// *cell*, containing information about bonuses and tile occupancy at
+// that cell. I think 256 is probably big enough to cover, because
+// maybe at max zoom-out a cell could be like 8 pixels, and 8 * 512 =
+// 2048 should be as big as any reasonable screen.
+//
+// (A 4k monitor has twice as many pixels, but in that case I think
+// max-zoom-out should have a cell be 16 double-resolution pixels...
+// having >100 × 100 cells per screen is already probably plenty)
+const PREPASS_FRAME_BUFFER_SIZE: Point = { x: 256, y: 256 };
+
 export type RectDrawer = {
   prog: WebGLProgram,
   position: BufferAttr,
@@ -431,7 +442,7 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
     chunkDrawer: mkChunkDrawer(gl),
     rectDrawer: mkRectDrawer(gl),
     texQuadDrawer: mkTexQuadDrawer(gl),
-    fb: mkFrameBuffer(gl, { x: 16, y: 16 }),
+    fb: mkFrameBuffer(gl, PREPASS_FRAME_BUFFER_SIZE),
   };
 }
 
