@@ -354,8 +354,9 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
 
       // ensure chunk cache is full enough
       let cache = state.coreState._cachedTileChunkMap;
-      for (const p of activeChunks(pan_canvas_from_world_of_state(state))) {
-        cache = ensureChunk(cache, state.coreState, p);
+      const aci = activeChunks(pan_canvas_from_world_of_state(state));
+      for (const p_in_chunk of aci.ps_in_chunk) {
+        cache = ensureChunk(cache, state.coreState, p_in_chunk);
       }
 
       const t_in_game = now_in_game(state.coreState.game_from_clock);

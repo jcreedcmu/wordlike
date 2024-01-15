@@ -364,8 +364,8 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
     // point p. To render point p, I need to sample the bonus-cell
     // value at p + (±0.5, ±0.5). To do that I need to know about the
     // bonus data at ⌊p + (±0.5, ±0.5)⌋.
-    const chunks = activeChunks(canvas_from_world);
-    chunks.forEach(p => {
+    const aci = activeChunks(canvas_from_world);
+    aci.ps_in_chunk.forEach(p => {
       drawChunk(gl, env, p, state, chunk_from_canvas, inverse(pan_canvas_from_world_of_state(state)));
     });
 

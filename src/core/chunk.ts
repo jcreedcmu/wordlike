@@ -108,20 +108,29 @@ export function updateChunkCacheMeta(cache: Overlay<Chunk>, cs: CoreState, p_in_
   });
 }
 
-// returns list of p_in_chunk of chunks that are at least partly visible
-export function activeChunks(canvas_from_world: SE2): Point[] {
+export type ActiveChunkInfo = {
+  // list of p_in_chunk of chunks that are at least partly visible
+  ps_in_chunk: Point[],
+  min_p_in_chunk: Point,
+}
+
+// returns
+export function activeChunks(canvas_from_world: SE2): ActiveChunkInfo {
   const chunk_from_canvas = compose(scale(vinv(WORLD_CHUNK_SIZE)), inverse(canvas_from_world));
   const top_left_in_canvas = world_bds_in_canvas.p;
   const bot_right_in_canvas = vadd(world_bds_in_canvas.p, world_bds_in_canvas.sz);
   const top_left_in_chunk = vm(apply(chunk_from_canvas, top_left_in_canvas), Math.floor);
   const bot_right_in_chunk = vm(apply(chunk_from_canvas, bot_right_in_canvas), Math.ceil);
   const chunks: Point[] = [];
+  let min_p_in_chunk: Point = { x: Infinity, y: Infinity };
   for (let x = top_left_in_chunk.x; x < bot_right_in_chunk.x; x++) {
     for (let y = top_left_in_chunk.y; y < bot_right_in_chunk.y; y++) {
       chunks.push({ x, y });
+      min_p_in_chunk.x = Math.min(x, min_p_in_chunk.x);
+      min_p_in_chunk.y = Math.min(y, min_p_in_chunk.y);
     }
   }
-  return chunks;
+  return { ps_in_chunk: chunks, min_p_in_chunk };
 }
 
 export function mkChunk(size: Point): Chunk {
