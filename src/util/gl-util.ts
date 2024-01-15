@@ -46,8 +46,21 @@ export function shaderProgram(gl: WebGL2RenderingContext, shaderTexts: { vert: s
     gl.shaderSource(s, source);
     gl.compileShader(s);
     if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+      const msg = gl.getShaderInfoLog(s);
+      if (msg) {
+        const re = /ERROR: 0:(\d+):/;
+        let m;
+        if (m = re.exec(msg)) {
+          const line = parseInt(m[1]) - 1;
+          const context = 2;
+          const contextLines = source.split('\n').slice(line - context, line + context + 1);
+          contextLines.splice(context + 1, 0, contextLines[context].replace(/\S/g, '^'));
+          console.error(contextLines.join('\n'));
+        }
+      }
+      //      console.error(source);
       throw "Could not compile " + tp +
-      " shader:\n\n" + gl.getShaderInfoLog(s);
+      " shader:\n\n" + msg;
     }
     gl.attachShader(prog, s);
   };

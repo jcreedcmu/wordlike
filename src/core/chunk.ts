@@ -1,15 +1,15 @@
-import { spriteLocOfBonus, spriteLocOfChunkValue } from "../ui/sprite-sheet";
+import { spriteLocOfChunkValue } from "../ui/sprite-sheet";
 import { world_bds_in_canvas } from "../ui/widget-helpers";
 import { ImageData } from "../util/image-data";
 import { produce } from "../util/produce";
 import { SE2, apply, compose, inverse, scale } from "../util/se2";
 import { Point } from "../util/types";
-import { vadd, vdiag, vinv, vm, vm2, vm3, vmul, vscale, vsub } from "../util/vutil";
+import { vadd, vinv, vm, vm2, vm3, vmul, vsub } from "../util/vutil";
 import { Bonus } from "./bonus";
 import { getBonusFromLayer } from "./bonus-helpers";
 import { Overlay, getOverlay, setOverlay } from "./layer";
 import { CoreState } from "./state";
-import { RenderableTile, TileId } from "./tile-helpers";
+import { RenderableTile } from "./tile-helpers";
 
 export const WORLD_CHUNK_SIZE = { x: 16, y: 16 };
 
@@ -18,6 +18,7 @@ export type ChunkValue = { t: 'bonus', bonus: Bonus } | { t: 'tile', tile: Rende
 export type ChunkUpdate =
   | { t: 'bonus', bonus: Bonus }
   | { t: 'addTile', tile: RenderableTile }
+  | { t: 'removeTile' }
   | { t: 'setSelected' }
   | { t: 'clearSelected' }
   | { t: 'restoreTile', tile: RenderableTile }
@@ -36,7 +37,7 @@ export function setChunkData(chunk: Chunk, kont: (p: Point) => ChunkValue): void
       const ix = x + y * chunk.size.x;
       const fix = 4 * ix;
       imdat.data[fix + 0] = (spritePos.x << 4) + spritePos.y;
-      imdat.data[fix + 1] = 0;
+      imdat.data[fix + 1] = 32;
       imdat.data[fix + 2] = 0;
       imdat.data[fix + 3] = 255; // Am I even using this?
     }
@@ -74,8 +75,12 @@ function processChunkUpdate(cu: ChunkUpdate, oldVec: number[]): number[] {
       return rv;
     }
     case 'addTile': {
-      const spritePos = spriteLocOfChunkValue({ t: 'tile', tile: cu.tile });
-      rv[0] = (spritePos.x << 4) + spritePos.y;
+      rv[1] = cu.tile.letter.charCodeAt(0) - 97;
+      rv[2] = 0;
+      return rv;
+    }
+    case 'removeTile': {
+      rv[1] = 32;
       rv[2] = 0;
       return rv;
     }
@@ -89,7 +94,7 @@ function processChunkUpdate(cu: ChunkUpdate, oldVec: number[]): number[] {
     }
     case 'restoreTile': {
       const spritePos = spriteLocOfChunkValue({ t: 'tile', tile: cu.tile });
-      rv[0] = (spritePos.x << 4) + spritePos.y;
+      rv[1] = cu.tile.letter.charCodeAt(0) - 97;
       return rv;
     }
   }

@@ -37,19 +37,13 @@ float crosshair(vec2 p) {
 
 // p_in_world_fp is the fractional part of p_in_world. It is in [0,1]²
 // sprite_coords is actually an ivec. It is in  [0,NUM_SPRITES_PER_SHEET]²
-vec4 get_sprite_pixel(vec2 p_in_world_fp, vec2 sprite_coords) {
+vec4 get_bonus_pixel(vec2 p_in_world_fp, vec2 sprite_coords) {
   // special case for the single-point sprite.
   if (sprite_coords == BONUS_POINT_SPRITE) {
 
     float vlen = length(p_in_world_fp - vec2(0.5));
     float amount = clamp(0.5 + 5. * get_sharpness() * (vlen - 0.4), 0., 1.);
     return vec4(0., 0., 1., mix(0.5, 0.0, amount));
-  }
-
-  // tile
-  if (sprite_coords.x >= TILE_COLUMN) {
-    int letter = int((sprite_coords.x - TILE_COLUMN) * NUM_SPRITES_PER_SHEET + sprite_coords.y);
-    return get_tile_pixel(p_in_world_fp, letter);
   }
 
   // required bonus
@@ -87,6 +81,21 @@ vec4 get_origin_pixel(vec2 p_in_world_int, vec2 p_in_world_fp) {
   return mix(vec4(0.,0.,0.,0.), vec4(0.,0.,0.,0.5), oam * is_origin);
 }
 
+// grid_data holds cached information about this particular square world cell.
+// .r: which sprite or tile we should show here. High 4 bits are x, low 4 bits are y.
+// .g: unused
+// .b: some metadata. bit 0 is whether it's selected
+vec4 get_cell_pixel(vec2 p_in_world_fp, ivec3 cell_data) {
+  int letter = cell_data.g;
+
+  if (letter == 32) {
+    vec2 bonus_coords = vec2(cell_data.r >> 4, cell_data.r & 0xf);
+    return get_bonus_pixel(p_in_world_fp, bonus_coords);
+  }
+
+  return get_tile_pixel(p_in_world_fp, letter);
+}
+
 vec4 getColor() {
   vec3 p_in_canvas = vec3(gl_FragCoord.xy, 1.0);
   p_in_canvas.y = u_canvasSize.y - p_in_canvas.y;
@@ -98,21 +107,15 @@ vec4 getColor() {
   vec2 p_in_world_r = round(p_in_world);
   vec2 p_in_world_fp = p_in_world - floor(p_in_world); // fractional part
 
-  // gridData holds cached information about this particular square world cell.
-  // .r: which sprite or tile we should show here. High 4 bits are x, low 4 bits are y.
-  // .g: unused
-  // .b: some metadata. bit 0 is whether it's selected
-  vec4 gridData = round(255.0 * texture(u_prepassTexture, (p_in_prepass + vec2(0.5,0.5)) / float(PREPASS_BUFFER_SIZE) ));
+  vec4 cell_data = round(255.0 * texture(u_prepassTexture, (p_in_prepass + vec2(0.5,0.5)) / float(PREPASS_BUFFER_SIZE) ));
 
-  vec2 sprite_coords = vec2(int(gridData.x) >> 4, int(gridData.x) & 0xf);
+  vec4 cell_pixel = get_cell_pixel(p_in_world_fp, ivec3(cell_data));
 
-  vec4 sprite_pixel = get_sprite_pixel(p_in_world_fp, sprite_coords);
-
-  float selected_amount = float(int(gridData.b) & 1) * 0.5;
-  sprite_pixel = vec4(mix(sprite_pixel.rgb, TILE_SELECTED_COLOR, selected_amount), sprite_pixel.a);
+  float selected_amount = float(int(cell_data.b) & 1) * 0.5;
+  cell_pixel = vec4(mix(cell_pixel.rgb, TILE_SELECTED_COLOR, selected_amount), cell_pixel.a);
 
   // maybe render origin
-  vec4 main_color = blendOver(get_origin_pixel(p_in_world_int, p_in_world_fp), sprite_pixel);
+  vec4 main_color = blendOver(get_origin_pixel(p_in_world_int, p_in_world_fp), cell_pixel);
 
   vec2 off = abs(p_in_world - p_in_world_r);
   // Amount to show crosshairs ∈ [0,1]

@@ -177,8 +177,7 @@ export function putTileNowhere(state: CoreState, id: string): CoreState {
 
   switch (loc.t) {
     case 'world':
-      const bonus = getBonusFromLayer(state, loc.p_in_world_int);
-      const newCache = updateChunkCache(state._cachedTileChunkMap, state, loc.p_in_world_int, { t: 'bonus', bonus });
+      const newCache = updateChunkCache(state._cachedTileChunkMap, state, loc.p_in_world_int, { t: 'removeTile' });
       return produce(state, s => {
         setTileLoc(s, id, { t: 'nowhere' });
         s._cachedTileChunkMap = newCache;
@@ -209,7 +208,7 @@ export function putTilesInHandFromNotHand(state: CoreState, ids: string[], ix: n
     const tile = getTileId(state, id);
     if (tile.loc.t == 'world') {
       const p = tile.loc.p_in_world_int;
-      cache = updateChunkCache(cache, state, p, { t: 'bonus', bonus: getBonusFromLayer(state, p) });
+      cache = updateChunkCache(cache, state, p, { t: 'removeTile' });
     }
   }
 
@@ -265,8 +264,7 @@ export function tileAtPoint(state: CoreState, p_in_world: Point): TileEntity | u
 // These are some unfortunately low-level cache management operations.
 
 export function clearTileAtPosition(cs: CoreState, overlay: Overlay<Chunk>, p_in_world: Point): Overlay<Chunk> {
-  const cval: ChunkValue = { t: 'bonus', bonus: getBonusFromLayer(cs, p_in_world) };
-  return updateChunkCache(overlay, cs, p_in_world, cval);
+  return updateChunkCache(overlay, cs, p_in_world, { t: 'removeTile' });
 }
 
 export function restoreTileToWorld(cs: CoreState, overlay: Overlay<Chunk>, tile: TileEntity): Overlay<Chunk> {
