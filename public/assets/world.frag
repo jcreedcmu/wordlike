@@ -131,12 +131,16 @@ vec4 get_origin_pixel(vec2 p_in_world_int, vec2 p_in_world_fp) {
 vec4 get_cell_pixel(vec2 p_in_world, vec2 p_in_world_fp, ivec3 cell_data) {
   int letter = cell_data.g;
 
-  if (letter == 32) {
-    vec2 bonus_coords = vec2(cell_data.r >> 4, cell_data.r & 0xf);
-    return pre_get_bonus_pixel(p_in_world, p_in_world_fp, bonus_coords);
+  vec2 bonus_coords = vec2(cell_data.r >> 4, cell_data.r & 0xf);
+  vec4 bonus_pixel = pre_get_bonus_pixel(p_in_world, p_in_world_fp, bonus_coords);
+
+  vec4 tile_pixel = vec4(0.,0.,0.,0.);
+
+  if (letter != 32) {
+    tile_pixel = get_tile_pixel(p_in_world_fp, letter);
   }
 
-  return get_tile_pixel(p_in_world_fp, letter);
+  return blendOver(tile_pixel, bonus_pixel);
 }
 
 vec4 getColor() {
