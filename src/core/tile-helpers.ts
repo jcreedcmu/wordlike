@@ -6,7 +6,7 @@ import { CoreState, GameState, HandTile, Location, MainTile, Tile, TileEntity, T
 import { Bonus, getBonusLayer } from "./bonus";
 import { getBonusFromLayer } from "./bonus-helpers";
 import { ensureId } from "./tile-id-helpers";
-import { Chunk, ChunkValue, readChunkCache, updateChunkCache } from "./chunk";
+import { Chunk, ChunkValue, updateChunkCache } from "./chunk";
 import { Overlay, getOverlay } from "./layer";
 import { GenMoveTile, MoveTile } from "./state-helpers";
 

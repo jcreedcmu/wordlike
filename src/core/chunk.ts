@@ -1,5 +1,6 @@
 import { spriteLocOfBonus, spriteLocOfChunkValue } from "../ui/sprite-sheet";
 import { world_bds_in_canvas } from "../ui/widget-helpers";
+import { ImageData } from "../util/image-data";
 import { produce } from "../util/produce";
 import { SE2, apply, compose, inverse, scale } from "../util/se2";
 import { Point } from "../util/types";
@@ -23,26 +24,20 @@ export type ChunkUpdate =
 
 export type Chunk = {
   size: Point,
-  data: ChunkValue[],
-  spritePos: Point[],
-  metadata: number[], // bytes, in each byte bit 76543210, bit 0 = selected
   imdat: ImageData,
 }
 
 export function setChunkData(chunk: Chunk, kont: (p: Point) => ChunkValue): void {
-  const { imdat, size, data, metadata } = chunk;
+  const { imdat, size } = chunk;
   for (let x = 0; x < size.x; x++) {
     for (let y = 0; y < size.y; y++) {
       const cval = kont({ x, y });
       const spritePos = spriteLocOfChunkValue(cval);
       const ix = x + y * chunk.size.x;
       const fix = 4 * ix;
-      data[ix] = cval;
-      chunk.spritePos[ix] = spritePos;
-      metadata[ix] = 0;
       imdat.data[fix + 0] = spritePos.x;
       imdat.data[fix + 1] = spritePos.y;
-      imdat.data[fix + 2] = metadata[ix];
+      imdat.data[fix + 2] = 0;
       imdat.data[fix + 3] = 255; // Am I even using this?
     }
   }
@@ -68,20 +63,6 @@ export function ensureChunk(cache: Overlay<Chunk>, cs: CoreState, p_in_chunk: Po
 
 export function getChunk(cache: Overlay<Chunk>, p_in_chunk: Point): Chunk | undefined {
   return getOverlay(cache, p_in_chunk);
-}
-
-// I don't currently expect to use this for any reason other than debugging.
-// gl-render.ts expects the chunk cache to be already up-to-date
-// This also doesn't statefully update the cache if we're reading chunks that don't exist yet,
-// and so is bad for performance.
-export function readChunkCache(cache: Overlay<Chunk>, cs: CoreState, p_in_world: Point): ChunkValue {
-  const p_in_chunk = vm2(p_in_world, WORLD_CHUNK_SIZE, (x, wcs) => Math.floor(x / wcs));
-  const { x, y } = vsub(p_in_world, vmul(p_in_chunk, WORLD_CHUNK_SIZE));
-  if (!getOverlay(cache, p_in_chunk)) {
-    cache = ensureChunk(cache, cs, p_in_chunk);
-  }
-  const chunk = getOverlay(cache, p_in_chunk)!;
-  return chunk.data[x + y * chunk.size.x];
 }
 
 function processChunkUpdate(cu: ChunkUpdate, oldVec: number[]): number[] {
@@ -167,9 +148,6 @@ export function activeChunks(canvas_from_world: SE2): ActiveChunkInfo {
 export function mkChunk(size: Point): Chunk {
   return {
     size,
-    data: [],
-    spritePos: [],
-    metadata: [],
     imdat: new ImageData(size.x, size.y)
   };
 }
