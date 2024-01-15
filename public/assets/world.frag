@@ -69,36 +69,30 @@ int is_land(vec4 cell_data) {
   return int(cell_data.x == 7.);
 }
 
-vec4 pre_get_bonus_pixel(vec2 p_in_world, vec2 p_in_world_fp, vec2 sprite_coords) {
-  if (sprite_coords == EMPTY_SPRITE || sprite_coords == BLOCK_SPRITE) {
+vec4 get_terrain_pixel(vec2 p_in_world) {
+  // Experimental "land and water" drawing
 
-    // Experimental "land and water" drawing
+  // All these h-suffixed values are minus 0.5 in world coordinates from the "real" p.
+  vec2 p_in_world_h = p_in_world - vec2(0.5);
+  vec2 p_in_world_hint = floor(p_in_world_h);
+  vec2 p_in_world_hfp = p_in_world_h - p_in_world_hint;
 
-    // All these h-suffixed values are minus 0.5 in world coordinates from the "real" p.
-    vec2 p_in_world_h = p_in_world - vec2(0.5);
-    vec2 p_in_world_hint = floor(p_in_world_h);
-    vec2 p_in_world_hfp = p_in_world_h - p_in_world_hint;
+  vec2 ul_in_prepass = p_in_world_hint - u_min_p_in_chunk * 16.;
 
-    vec2 ul_in_prepass = p_in_world_hint - u_min_p_in_chunk * 16.;
+  int bit_1 = is_land(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(0.5,0.5)) / float(PREPASS_BUFFER_SIZE) )));
+  int bit_2 = is_land(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(1.5,0.5)) / float(PREPASS_BUFFER_SIZE) )));
+  int bit_4 = is_land(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(0.5,1.5)) / float(PREPASS_BUFFER_SIZE) )));
+  int bit_8 = is_land(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(1.5,1.5)) / float(PREPASS_BUFFER_SIZE) )));
 
-    int bit_1 = is_land(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(0.5,0.5)) / float(PREPASS_BUFFER_SIZE) )));
-    int bit_2 = is_land(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(1.5,0.5)) / float(PREPASS_BUFFER_SIZE) )));
-    int bit_4 = is_land(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(0.5,1.5)) / float(PREPASS_BUFFER_SIZE) )));
-    int bit_8 = is_land(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(1.5,1.5)) / float(PREPASS_BUFFER_SIZE) )));
+  vec2 bonus_coords = vec2(
+                           2.,
+                           (bit_8 << 3) +
+                           (bit_4 << 2) +
+                           (bit_2 << 1) +
+                           (bit_1 << 0)
+                           );
 
-    vec2 bonus_coords = vec2(
-                             2.,
-                             (bit_8 << 3) +
-                             (bit_4 << 2) +
-                             (bit_2 << 1) +
-                             (bit_1 << 0)
-                             );
-
-    return get_bonus_pixel(p_in_world_hfp, bonus_coords);
-  }
-  else {
-    return get_bonus_pixel(p_in_world_fp, sprite_coords);
-  }
+  return get_bonus_pixel(p_in_world_hfp, bonus_coords);
 }
 
 // a over b
@@ -107,6 +101,14 @@ vec4 blendOver(vec4 a, vec4 b) {
     vec3 newColor = mix(b.a * b.rgb, a.rgb, a.a);
     float divideFactor = (newAlpha > 0.001 ? (1.0 / newAlpha) : 1.0);
     return vec4(divideFactor * newColor, newAlpha);
+}
+
+vec4 pre_get_bonus_pixel(vec2 p_in_world, vec2 p_in_world_fp, vec2 sprite_coords) {
+  vec4 bonus_pixel = vec4(0.,0.,0.,0.);
+  if (sprite_coords != EMPTY_SPRITE && sprite_coords != BLOCK_SPRITE) {
+    bonus_pixel = get_bonus_pixel(p_in_world_fp, sprite_coords);
+  }
+  return blendOver(bonus_pixel, get_terrain_pixel(p_in_world));
 }
 
 vec4 get_origin_pixel(vec2 p_in_world_int, vec2 p_in_world_fp) {
