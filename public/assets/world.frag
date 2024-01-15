@@ -55,7 +55,7 @@ vec4 get_bonus_pixel(vec2 p_in_world_fp, vec2 sprite_coords) {
     vec2 font_coords = vec2(letter / int( NUM_FONT_CELLS_PER_SHEET), letter % int(NUM_FONT_CELLS_PER_SHEET));
     float sdf = texture(u_fontTexture, (p_in_world_fp + font_coords) / NUM_FONT_CELLS_PER_SHEET).r;
     float amount = clamp(0.5 + get_sharpness() * (sdf - 0.5), 0., 1.);
-    return vec4(amount * vec3(0.6) + (1. - amount) * vec3(1.), 1.);
+    return vec4(vec3(0.,0.,1.), mix(0.0, 0.5, amount));
   }
 
   // Avoid glitches due to sprites leaking into each other on the sheet with
