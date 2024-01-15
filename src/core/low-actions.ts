@@ -1,6 +1,6 @@
 import { canvas_from_drag_tile, pan_canvas_from_canvas_of_mouse_state, pan_canvas_from_world_of_state } from '../ui/view-helpers';
 import { WidgetPoint, canvas_from_hand, getWidgetPoint } from '../ui/widget-helpers';
-import { debugTiles } from '../util/debug';
+import { DEBUG, debugTiles } from '../util/debug';
 import { produce } from '../util/produce';
 import { SE2, apply, compose, composen, inverse, scale, translate } from '../util/se2';
 import { Point } from '../util/types';
@@ -305,6 +305,11 @@ export function resolveGameLowActions(state: GameState, gameLowActions: GameLowA
 }
 
 function resolveGameLowAction(state: GameState, action: GameLowAction): GameState {
+  if (DEBUG.lowActions) {
+    if (action.t != 'repaint' && action.t != 'mouseMove')
+      console.log(action.t);
+  }
+
   switch (action.t) {
     case 'zoom': return reduceZoom(state, action.center, action.amount)
     case 'drawTile': return withCoreState(state, cs => drawOfState(cs));

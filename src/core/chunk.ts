@@ -81,7 +81,6 @@ function processChunkUpdate(cu: ChunkUpdate, oldVec: number[]): number[] {
     }
     case 'removeTile': {
       rv[1] = 32;
-      rv[2] = 0;
       return rv;
     }
     case 'setSelected': {
