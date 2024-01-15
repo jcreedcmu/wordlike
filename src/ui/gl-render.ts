@@ -334,6 +334,15 @@ function debugPrepass(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState):
   drawChunkDebugging(gl, env, state, { x: 100, y: 0 }, FB_TEXTURE_UNIT);
 }
 
+function drawWorld(gl: WebGL2RenderingContext, env: GlEnv, state: State, canvas_from_world: SE2, aci: ActiveChunkInfo): void {
+  // XXX some redundant transforms going on here, we also compute chunk_from_canvas in chunk.ts
+  const chunk_from_canvas = compose(scale(vinv(WORLD_CHUNK_SIZE)), inverse(canvas_from_world));
+
+  aci.ps_in_chunk.forEach(p => {
+    drawChunk(gl, env, p, state, chunk_from_canvas, inverse(pan_canvas_from_world_of_state(state)));
+  });
+}
+
 const shouldDebug = { v: false };
 let oldState: GameState | null = null;
 export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): void {
@@ -359,18 +368,14 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
     const canvas_from_world = pan_canvas_from_world_of_state(state);
     const aci = renderPrepass(gl, env, cs, canvas_from_world);
 
+    // clear canvas & initialize blending
     gl.clearColor(1.0, 1.0, 1.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
-
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-    // XXX some redundant transforms going on here, we also compute chunk_from_canvas in chunk.ts
-    const chunk_from_canvas = compose(scale(vinv(WORLD_CHUNK_SIZE)), inverse(canvas_from_world));
-
-    aci.ps_in_chunk.forEach(p => {
-      drawChunk(gl, env, p, state, chunk_from_canvas, inverse(pan_canvas_from_world_of_state(state)));
-    });
+    // draw world
+    drawWorld(gl, env, state, canvas_from_world, aci);
 
     // draw bomb shadow
     const currentTool = getCurrentTool(cs);
@@ -431,8 +436,7 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
       drawOneTile(gl, env, tile.letter, state, canvas_from_hand_tile(tile.loc.p_in_hand_int.y));
     });
 
-
-    // show the prepass framebuffer
+    // show the prepass framebuffer for debugging reasons
     debugPrepass(gl, env, state.coreState);
   };
 
