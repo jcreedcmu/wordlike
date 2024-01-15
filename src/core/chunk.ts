@@ -120,11 +120,11 @@ export function activeChunks(canvas_from_world: SE2): ActiveChunkInfo {
   const top_left_in_canvas = world_bds_in_canvas.p;
   const bot_right_in_canvas = vadd(world_bds_in_canvas.p, world_bds_in_canvas.sz);
   const top_left_in_chunk = vm(apply(chunk_from_canvas, top_left_in_canvas), Math.floor);
-  const bot_right_in_chunk = vm(apply(chunk_from_canvas, bot_right_in_canvas), Math.ceil);
+  const bot_right_in_chunk = vm(apply(chunk_from_canvas, bot_right_in_canvas), Math.floor);
   const chunks: Point[] = [];
   let min_p_in_chunk: Point = { x: Infinity, y: Infinity };
-  for (let x = top_left_in_chunk.x; x < bot_right_in_chunk.x; x++) {
-    for (let y = top_left_in_chunk.y; y < bot_right_in_chunk.y; y++) {
+  for (let x = top_left_in_chunk.x; x <= bot_right_in_chunk.x; x++) {
+    for (let y = top_left_in_chunk.y; y <= bot_right_in_chunk.y; y++) {
       chunks.push({ x, y });
       min_p_in_chunk.x = Math.min(x, min_p_in_chunk.x);
       min_p_in_chunk.y = Math.min(y, min_p_in_chunk.y);
