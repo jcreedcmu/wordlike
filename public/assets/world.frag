@@ -138,6 +138,9 @@ vec4 get_cell_pixel(vec2 p_in_world, vec2 p_in_world_fp, ivec3 cell_data) {
 
   if (letter != 32) {
     tile_pixel = get_tile_pixel(p_in_world_fp, letter);
+
+    float selected_amount = float(int(cell_data.b) & 1) * 0.5;
+    tile_pixel = vec4(mix(tile_pixel.rgb, TILE_SELECTED_COLOR, selected_amount), tile_pixel.a);
   }
 
   return blendOver(tile_pixel, bonus_pixel);
@@ -157,9 +160,6 @@ vec4 getColor() {
   vec4 cell_data = round(255.0 * texture(u_prepassTexture, (p_in_prepass + vec2(0.5,0.5)) / float(PREPASS_BUFFER_SIZE) ));
 
   vec4 cell_pixel = get_cell_pixel(p_in_world, p_in_world_fp, ivec3(cell_data));
-
-  float selected_amount = float(int(cell_data.b) & 1) * 0.5;
-  cell_pixel = vec4(mix(cell_pixel.rgb, TILE_SELECTED_COLOR, selected_amount), cell_pixel.a);
 
   // maybe render origin
   vec4 main_color = blendOver(get_origin_pixel(p_in_world_int, p_in_world_fp), cell_pixel);
