@@ -13,7 +13,7 @@ import { SE2, apply, compose, composen, inverse, mkSE2, scale, translate } from 
 import { apply_to_rect, asMatrix } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
 import { rectPts } from "../util/util";
-import { vadd, vdiag, vinv, vm, vscale, vsub } from "../util/vutil";
+import { vadd, vdiag, vinv, vm, vmul, vscale, vsub } from "../util/vutil";
 import { renderPanicBar } from "./drawPanicBar";
 import { gl_from_canvas } from "./gl-helpers";
 import { canvas_from_hand_tile } from "./render";
@@ -295,7 +295,7 @@ function drawHand(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState): voi
   glFillRect(gl, env, hand_bds_in_canvas, backgroundGrayRgb);
 }
 
-function renderPrepass(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState): void {
+function renderPrepass(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState, canvas_from_world: SE2): void {
   // start drawing into framebuffer
   useFrameBuffer(gl, env.fb);
 
@@ -304,14 +304,15 @@ function renderPrepass(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState)
   gl.clear(gl.COLOR_BUFFER_BIT);
 
   // Try drawing a prepass chunk into the framebuffer
-  const chunk = getChunk(state._cachedTileChunkMap, { x: 0, y: 0 });
-  if (chunk == undefined) {
-    logger('missedChunkRendering', `missing data for debug2 chunk`);
-    return;
-  }
-
-  drawPrepassChunk(gl, env, chunk, translate({ x: 0, y: 0 }));
-  drawPrepassChunk(gl, env, chunk, translate({ x: 16, y: 16 }));
+  const aci = activeChunks(canvas_from_world);
+  aci.ps_in_chunk.forEach(p => {
+    const chunk = getChunk(state._cachedTileChunkMap, p);
+    if (chunk == undefined) {
+      logger('missedChunkRendering', `missing data for debug2 chunk`);
+      return;
+    }
+    drawPrepassChunk(gl, env, chunk, translate(vmul(WORLD_CHUNK_SIZE, vsub(p, aci.min_p_in_chunk))));
+  });
 
   // go back to drawing to canvas
   endFrameBuffer(gl);
@@ -344,7 +345,8 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
     const ms = state.mouseState;
 
     // render the prepass
-    renderPrepass(gl, env, cs);
+    const canvas_from_world = pan_canvas_from_world_of_state(state);
+    renderPrepass(gl, env, cs, canvas_from_world);
 
     gl.clearColor(1.0, 1.0, 1.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -353,7 +355,6 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
     // XXX some redundant transforms going on here, we also compute chunk_from_canvas in chunk.ts
-    const canvas_from_world = pan_canvas_from_world_of_state(state);
     const chunk_from_canvas = compose(scale(vinv(WORLD_CHUNK_SIZE)), inverse(canvas_from_world));
 
     // XXX I think I want to have activeChunks return just a bit
