@@ -82,8 +82,8 @@ vec4 get_origin_pixel(vec2 p_in_world_int, vec2 p_in_world_fp) {
 }
 
 // grid_data holds cached information about this particular square world cell.
-// .r: which sprite or tile we should show here. High 4 bits are x, low 4 bits are y.
-// .g: unused
+// .r: which bonus we should show here. High 4 bits are x coord on the sprite sheet, low 4 bits are y.
+// .g: which letter tile we should draw here, 32 = none, 0 = A, ..., 25 = Z
 // .b: some metadata. bit 0 is whether it's selected
 vec4 get_cell_pixel(vec2 p_in_world_fp, ivec3 cell_data) {
   int letter = cell_data.g;
