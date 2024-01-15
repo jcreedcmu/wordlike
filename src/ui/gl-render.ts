@@ -84,6 +84,7 @@ export type GlEnv = {
   worldDrawer: WorldDrawer,
   rectDrawer: RectDrawer,
   texQuadDrawer: TexQuadDrawer,
+  debugQuadDrawer: TexQuadDrawer,
   fb: FrameBufferHelper,
 }
 
@@ -190,9 +191,6 @@ function drawPrepassChunk(gl: WebGL2RenderingContext, env: GlEnv, chunk: Chunk, 
   const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
   gl.uniform2f(u_canvasSize, PREPASS_FRAME_BUFFER_SIZE.x, PREPASS_FRAME_BUFFER_SIZE.y);
 
-  const u_colorScale = gl.getUniformLocation(prog, 'u_colorScale');
-  gl.uniform1f(u_colorScale, 1.);
-
   // - the chunk texture coordinate frame is the relevant texture coordinate frame
   // - the prepass framebuffer is playing the role of 'canvas'
   const u_chunk_texture_from_prepass = gl.getUniformLocation(prog, 'u_texture_from_canvas');
@@ -203,7 +201,7 @@ function drawPrepassChunk(gl: WebGL2RenderingContext, env: GlEnv, chunk: Chunk, 
 }
 
 function drawChunkDebugging(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState, offset_in_canvas: Point, src_texture: number) {
-  const { prog, position } = env.texQuadDrawer;
+  const { prog, position } = env.debugQuadDrawer;
   gl.useProgram(prog);
   const sz_in_canvas = vdiag(256);
   const rect_in_canvas = { p: offset_in_canvas, sz: sz_in_canvas };
@@ -552,6 +550,7 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
     worldDrawer: mkWorldDrawer(gl),
     rectDrawer: mkRectDrawer(gl),
     texQuadDrawer: mkTexQuadDrawer(gl),
+    debugQuadDrawer: mkDebugQuadDrawer(gl),
     fb: mkFrameBuffer(gl, PREPASS_FRAME_BUFFER_SIZE),
   };
 }
@@ -600,6 +599,14 @@ function mkTileDrawer(gl: WebGL2RenderingContext): TileDrawer {
 
 function mkTexQuadDrawer(gl: WebGL2RenderingContext): TexQuadDrawer {
   const prog = shaderProgram(gl, getAssets().texQuadShaders);
+  const position = attributeCreate(gl, prog, 'pos', 2);
+  if (position == null)
+    throw new Error(`couldn't allocate position buffer`);
+  return { prog, position };
+}
+
+function mkDebugQuadDrawer(gl: WebGL2RenderingContext): TexQuadDrawer {
+  const prog = shaderProgram(gl, getAssets().debugQuadShaders);
   const position = attributeCreate(gl, prog, 'pos', 2);
   if (position == null)
     throw new Error(`couldn't allocate position buffer`);

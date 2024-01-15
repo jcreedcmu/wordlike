@@ -9,11 +9,16 @@ uniform sampler2D u_texture;
 // might be a framebuffer.
 uniform vec2 u_canvasSize;
 
+// Scale up colors by this amount
+uniform float u_colorScale;
+
 // Transformation matrix
 uniform mat3 u_texture_from_canvas;
 
 void main() {
   vec3 p_in_canvas = vec3(gl_FragCoord.xy, 1.0);
+  p_in_canvas.y = u_canvasSize.y - p_in_canvas.y;
   vec2 p_in_texture = (u_texture_from_canvas * p_in_canvas).xy;
-  outputColor = texture(u_texture, p_in_texture);
+
+  outputColor = texture(u_texture, p_in_texture) * u_colorScale;
 }
