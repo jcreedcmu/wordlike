@@ -17,6 +17,6 @@ void main() {
   p_in_canvas.y = u_canvasSize.y - p_in_canvas.y;
   vec2 p_in_texture = (u_texture_from_canvas * p_in_canvas).xy;
 
-  outputColor = texture(u_texture, p_in_texture) * 10.;
+  outputColor = texture(u_texture, p_in_texture);
 
 }

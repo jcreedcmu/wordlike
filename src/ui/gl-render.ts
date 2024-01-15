@@ -37,6 +37,13 @@ const shadowColorRgba: RgbaColor = [128, 128, 100, Math.floor(0.4 * 255)];
 // having >100 × 100 cells per screen is already probably plenty)
 const PREPASS_FRAME_BUFFER_SIZE: Point = { x: 256, y: 256 };
 
+export const prepass_from_gl: SE2 = {
+  scale: { x: PREPASS_FRAME_BUFFER_SIZE.x / 2, y: -PREPASS_FRAME_BUFFER_SIZE.y / 2 },
+  translate: { x: PREPASS_FRAME_BUFFER_SIZE.x / 2, y: PREPASS_FRAME_BUFFER_SIZE.y / 2 },
+};
+
+export const gl_from_prepass: SE2 = inverse(prepass_from_gl);
+
 export type RectDrawer = {
   prog: WebGLProgram,
   position: BufferAttr,
@@ -141,16 +148,53 @@ function drawChunk(
 
   gl.activeTexture(gl.TEXTURE0 + CHUNK_DATA_TEXTURE_UNIT);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, chunk.imdat);
-
-
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
+}
+
+// the prepass coordinate system is (0,0) at the upper left of the
+// prepass framebuffer, and is measured in framebuffer pixels.
+
+// the chunk_local coordinate system is (0,0) at the upper left of the
+// chunk, and extends to chunk.size at the bottom right.
+
+// the chunk_texture coordinate system is (0,0) at the upper left of the
+// chunk, and extends to (1,1) at the bottom right.
+function drawPrepassChunk(gl: WebGL2RenderingContext, env: GlEnv, chunk: Chunk, prepass_from_chunk_local: SE2): void {
+  const { prog, position } = env.texQuadDrawer;
+  gl.useProgram(prog);
+  const rect_in_chunk_local = { p: vdiag(0), sz: chunk.size };
+  const rect_in_prepass = apply_to_rect(prepass_from_chunk_local, rect_in_chunk_local);
+  const rect_in_gl = apply_to_rect(gl_from_prepass, rect_in_prepass);
+
+  gl.activeTexture(gl.TEXTURE0 + CHUNK_DATA_TEXTURE_UNIT);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, chunk.imdat);
+
+  const [p1, p2] = rectPts(rect_in_gl);
+  bufferSetFloats(gl, position, [
+    p1.x, p2.y,
+    p2.x, p2.y,
+    p1.x, p1.y,
+    p2.x, p1.y,
+  ]);
+  const u_texture = gl.getUniformLocation(prog, 'u_texture')!;
+  gl.uniform1i(u_texture, CHUNK_DATA_TEXTURE_UNIT);
+  const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
+  gl.uniform2f(u_canvasSize, PREPASS_FRAME_BUFFER_SIZE.x, PREPASS_FRAME_BUFFER_SIZE.y);
+
+  // - the chunk texture coordinate frame is the relevant texture coordinate frame
+  // - the prepass framebuffer is playing the role of 'canvas'
+  const u_chunk_texture_from_prepass = gl.getUniformLocation(prog, 'u_texture_from_canvas');
+  const chunk_local_from_chunk_texture = scale(chunk.size);
+  const chunk_texture_from_prepass = inverse(compose(prepass_from_chunk_local, chunk_local_from_chunk_texture));
+  gl.uniformMatrix3fv(u_chunk_texture_from_prepass, false, asMatrix(chunk_texture_from_prepass));
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 }
 
 function drawChunkDebugging(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState, offset_in_canvas: Point, src_texture: number) {
   const { prog, position } = env.texQuadDrawer;
   gl.useProgram(prog);
-  const sz_in_canvas = vdiag(160);
+  const sz_in_canvas = vdiag(256);
   const rect_in_canvas = { p: offset_in_canvas, sz: sz_in_canvas };
   const rect_in_gl = apply_to_rect(gl_from_canvas, rect_in_canvas);
 
@@ -170,12 +214,12 @@ function drawChunkDebugging(gl: WebGL2RenderingContext, env: GlEnv, state: CoreS
     p1.x, p1.y,
     p2.x, p1.y,
   ]);
-  const u_texture = gl.getUniformLocation(prog, "u_texture")!;
+  const u_texture = gl.getUniformLocation(prog, 'u_texture')!;
   gl.uniform1i(u_texture, src_texture);
   const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
   gl.uniform2f(u_canvasSize, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
   const canvas_from_texture = mkSE2(rect_in_canvas.sz, rect_in_canvas.p);
-  const u_texture_from_canvas = gl.getUniformLocation(prog, "u_texture_from_canvas");
+  const u_texture_from_canvas = gl.getUniformLocation(prog, 'u_texture_from_canvas');
   gl.uniformMatrix3fv(u_texture_from_canvas, false, asMatrix(inverse(canvas_from_texture)));
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 }
@@ -213,7 +257,7 @@ function drawOneTile(gl: WebGL2RenderingContext, env: GlEnv, letter: string, sta
     0.0, s.y, 0.0,
     t.x, t.y, 1.0,
   ];
-  const u_world_from_canvas = gl.getUniformLocation(prog, "u_world_from_canvas");
+  const u_world_from_canvas = gl.getUniformLocation(prog, 'u_world_from_canvas');
   gl.uniformMatrix3fv(u_world_from_canvas, false, world_from_canvas);
   gl.viewport(0, 0, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -344,26 +388,31 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
       drawOneTile(gl, env, tile.letter, state, canvas_from_hand_tile(tile.loc.p_in_hand_int.y));
     });
 
+
+    // start drawing into framebuffer
     useFrameBuffer(gl, env.fb);
+
+    // clear framebuffer
     gl.clearColor(1.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
+    // Try drawing a prepass chunk into the framebuffer
+    const chunk = getChunk(state.coreState._cachedTileChunkMap, { x: 0, y: 0 });
+    if (chunk == undefined) {
+      logger('missedChunkRendering', `missing data for debug2 chunk`);
+      return;
+    }
+    drawPrepassChunk(gl, env, chunk, translate({ x: 0, y: 0 }));
+    drawPrepassChunk(gl, env, chunk, translate({ x: 16, y: 16 }));
 
-    gl.useProgram(env.rectDrawer.prog);
-    const [p1, p2] = [{ x: -1, y: -1 }, { x: 0, y: 0 }]
-    bufferSetFloats(gl, env.rectDrawer.position, [
-      p1.x, p2.y,
-      p2.x, p2.y,
-      p1.x, p1.y,
-      p2.x, p1.y,
-    ]);
-    gl.uniform4fv(env.rectDrawer.colorUniformLocation, [1, 1, 1, 1]);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
-
+    // go back to drawing to canvas
     endFrameBuffer(gl);
-    drawChunkDebugging(gl, env, state.coreState, { x: 200, y: 0 }, CHUNK_DATA_TEXTURE_UNIT);
-    drawChunkDebugging(gl, env, state.coreState, { x: 360, y: 0 }, FB_TEXTURE_UNIT);
+
+    // debug a data chunk
+    drawChunkDebugging(gl, env, state.coreState, { x: 100, y: 0 }, CHUNK_DATA_TEXTURE_UNIT);
+
+    // debug the state of the framebuffer
+    drawChunkDebugging(gl, env, state.coreState, { x: 356, y: 0 }, FB_TEXTURE_UNIT);
   };
 
   if (DEBUG.glProfiling) {
@@ -537,7 +586,7 @@ function mkRectDrawer(gl: WebGL2RenderingContext): RectDrawer {
             gl_FragColor = u_color;
         }`});
 
-  const colorUniformLocation = gl.getUniformLocation(prog, "u_color")!;
+  const colorUniformLocation = gl.getUniformLocation(prog, 'u_color')!;
   const position = attributeCreate(gl, prog, 'pos', 2);
   if (position == null)
     throw new Error(`couldn't allocate position buffer`);
