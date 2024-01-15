@@ -295,6 +295,33 @@ function drawHand(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState): voi
   glFillRect(gl, env, hand_bds_in_canvas, backgroundGrayRgb);
 }
 
+function renderPrepass(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState): void {
+  // start drawing into framebuffer
+  useFrameBuffer(gl, env.fb);
+
+  // clear framebuffer
+  gl.clearColor(0.03, 0.03, 0.05, 0.05); // predivided by DEBUG_COLOR_SCALE
+  gl.clear(gl.COLOR_BUFFER_BIT);
+
+  // Try drawing a prepass chunk into the framebuffer
+  const chunk = getChunk(state._cachedTileChunkMap, { x: 0, y: 0 });
+  if (chunk == undefined) {
+    logger('missedChunkRendering', `missing data for debug2 chunk`);
+    return;
+  }
+
+  drawPrepassChunk(gl, env, chunk, translate({ x: 0, y: 0 }));
+  drawPrepassChunk(gl, env, chunk, translate({ x: 16, y: 16 }));
+
+  // go back to drawing to canvas
+  endFrameBuffer(gl);
+}
+
+function debugPrepass(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState): void {
+  // debug the state of the framebuffer
+  drawChunkDebugging(gl, env, state, { x: 100, y: 0 }, FB_TEXTURE_UNIT);
+}
+
 const shouldDebug = { v: false };
 let oldState: GameState | null = null;
 export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): void {
@@ -315,6 +342,9 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
   const actuallyRender = () => {
     const cs = state.coreState;
     const ms = state.mouseState;
+
+    // render the prepass
+    renderPrepass(gl, env, cs);
 
     gl.clearColor(1.0, 1.0, 1.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -399,27 +429,8 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
     });
 
 
-    // start drawing into framebuffer
-    useFrameBuffer(gl, env.fb);
-
-    // clear framebuffer
-    gl.clearColor(0.03, 0.03, 0.05, 0.05); // predivided by DEBUG_COLOR_SCALE
-    gl.clear(gl.COLOR_BUFFER_BIT);
-
-    // Try drawing a prepass chunk into the framebuffer
-    const chunk = getChunk(state.coreState._cachedTileChunkMap, { x: 0, y: 0 });
-    if (chunk == undefined) {
-      logger('missedChunkRendering', `missing data for debug2 chunk`);
-      return;
-    }
-    drawPrepassChunk(gl, env, chunk, translate({ x: 0, y: 0 }));
-    drawPrepassChunk(gl, env, chunk, translate({ x: 16, y: 16 }));
-
-    // go back to drawing to canvas
-    endFrameBuffer(gl);
-
-    // debug the state of the framebuffer
-    drawChunkDebugging(gl, env, state.coreState, { x: 100, y: 0 }, FB_TEXTURE_UNIT);
+    // show the prepass framebuffer
+    debugPrepass(gl, env, state.coreState);
   };
 
   if (DEBUG.glProfiling) {
