@@ -1,7 +1,7 @@
 import { Dispatch } from "../core/action";
 import { getAssets } from "../core/assets";
 import { getBonusFromLayer } from "../core/bonus-helpers";
-import { Chunk, WORLD_CHUNK_SIZE, activeChunks, getChunk, mkChunk } from "../core/chunk";
+import { ActiveChunkInfo, Chunk, WORLD_CHUNK_SIZE, activeChunks, getChunk, mkChunk } from "../core/chunk";
 import { CoreState, GameState } from "../core/state";
 import { pointFall } from "../core/state-helpers";
 import { getTileId, get_hand_tiles, isSelectedForDrag } from "../core/tile-helpers";
@@ -295,7 +295,7 @@ function drawHand(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState): voi
   glFillRect(gl, env, hand_bds_in_canvas, backgroundGrayRgb);
 }
 
-function renderPrepass(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState, canvas_from_world: SE2): void {
+function renderPrepass(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState, canvas_from_world: SE2): ActiveChunkInfo {
   // start drawing into framebuffer
   useFrameBuffer(gl, env.fb);
 
@@ -325,6 +325,8 @@ function renderPrepass(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState,
 
   // go back to drawing to canvas
   endFrameBuffer(gl);
+
+  return aci;
 }
 
 function debugPrepass(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState): void {
@@ -355,7 +357,7 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
 
     // render the prepass
     const canvas_from_world = pan_canvas_from_world_of_state(state);
-    renderPrepass(gl, env, cs, canvas_from_world);
+    const aci = renderPrepass(gl, env, cs, canvas_from_world);
 
     gl.clearColor(1.0, 1.0, 1.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -366,7 +368,6 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
     // XXX some redundant transforms going on here, we also compute chunk_from_canvas in chunk.ts
     const chunk_from_canvas = compose(scale(vinv(WORLD_CHUNK_SIZE)), inverse(canvas_from_world));
 
-    const aci = activeChunks(canvas_from_world);
     aci.ps_in_chunk.forEach(p => {
       drawChunk(gl, env, p, state, chunk_from_canvas, inverse(pan_canvas_from_world_of_state(state)));
     });
