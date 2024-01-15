@@ -12,7 +12,8 @@ import { CanvasGlInfo, CanvasInfo, useCanvas, useCanvasGl, useNonreactiveCanvasG
 import { useEffectfulReducer } from './ui/use-effectful-reducer';
 import { DEBUG } from './util/debug';
 import { relpos } from './util/dutil';
-import { GlEnv, glInitialize, renderGlPane } from './ui/gl-render';
+import { glInitialize, renderGlPane } from './ui/gl-render';
+import { GlEnv } from './ui/gl-common';
 
 const ANIMATION_INTERVAL_MS = 35;
 

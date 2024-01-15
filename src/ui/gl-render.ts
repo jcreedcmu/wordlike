@@ -7,13 +7,14 @@ import { getTileId, get_hand_tiles, isSelectedForDrag } from "../core/tile-helpe
 import { BOMB_RADIUS, getCurrentTool } from "../core/tools";
 import { DEBUG, doOnce, doOnceEvery, logger } from "../util/debug";
 import { RgbColor, RgbaColor, imageDataOfBuffer } from "../util/dutil";
-import { BufferAttr, attributeCreate, bufferSetFloats, shaderProgram } from "../util/gl-util";
-import { SE2, compose, inverse, mkSE2, scale, translate } from "../util/se2";
+import { bufferSetFloats } from "../util/gl-util";
+import { SE2, compose, inverse, scale, translate } from "../util/se2";
 import { apply_to_rect, asMatrix } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
 import { rectPts } from "../util/util";
 import { vadd, vdiag, vinv, vmul, vsub } from "../util/vutil";
 import { renderPanicBar } from "./drawPanicBar";
+import { CHUNK_DATA_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, PREPASS_FB_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, endFrameBuffer, mkChunkDrawer, mkDebugQuadDrawer, mkFrameBuffer, mkRectDrawer, mkTexQuadDrawer, mkTileDrawer, mkWorldDrawer, useFrameBuffer } from "./gl-common";
 import { gl_from_canvas } from "./gl-helpers";
 import { canvas_from_hand_tile } from "./render";
 import { resizeView } from "./ui-helpers";
@@ -35,63 +36,12 @@ const shadowColorRgba: RgbaColor = [128, 128, 100, Math.floor(0.4 * 255)];
 // having >100 × 100 cells per screen is already probably plenty)
 const PREPASS_FRAME_BUFFER_SIZE: Point = { x: 256, y: 256 };
 
-// Scale up the colors by this much during debugging so I can see what's going on
-const DEBUG_COLOR_SCALE = 10.0;
-
 export const prepass_from_gl: SE2 = {
   scale: { x: PREPASS_FRAME_BUFFER_SIZE.x / 2, y: PREPASS_FRAME_BUFFER_SIZE.y / 2 },
   translate: { x: PREPASS_FRAME_BUFFER_SIZE.x / 2, y: PREPASS_FRAME_BUFFER_SIZE.y / 2 },
 };
 
 export const gl_from_prepass: SE2 = inverse(prepass_from_gl);
-
-export type RectDrawer = {
-  prog: WebGLProgram,
-  position: BufferAttr,
-  colorUniformLocation: WebGLUniformLocation,
-};
-
-export type ChunkDrawer = {
-  prog: WebGLProgram,
-  chunkImdat: ImageData,
-  position: BufferAttr,
-};
-
-export type WorldDrawer = {
-  prog: WebGLProgram,
-  position: BufferAttr,
-};
-
-export type TileDrawer = {
-  prog: WebGLProgram,
-  position: BufferAttr,
-};
-
-export type TexQuadDrawer = {
-  prog: WebGLProgram,
-  position: BufferAttr,
-};
-
-export type FrameBufferHelper = {
-  buffer: WebGLFramebuffer,
-  size: Point,
-  texture: WebGLTexture,
-};
-
-export type GlEnv = {
-  tileDrawer: TileDrawer,
-  chunkDrawer: ChunkDrawer,
-  worldDrawer: WorldDrawer,
-  rectDrawer: RectDrawer,
-  texQuadDrawer: TexQuadDrawer,
-  debugQuadDrawer: TexQuadDrawer,
-  fb: FrameBufferHelper,
-}
-
-const SPRITE_TEXTURE_UNIT = 0;
-const CHUNK_DATA_TEXTURE_UNIT = 1;
-const FONT_TEXTURE_UNIT = 2;
-const PREPASS_FB_TEXTURE_UNIT = 3;
 
 function drawChunk(
   gl: WebGL2RenderingContext,
@@ -200,43 +150,6 @@ function drawPrepassChunk(gl: WebGL2RenderingContext, env: GlEnv, chunk: Chunk, 
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 }
 
-function drawChunkDebugging(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState, offset_in_canvas: Point, src_texture: number) {
-  const { prog, position } = env.debugQuadDrawer;
-  gl.useProgram(prog);
-  const sz_in_canvas = vdiag(256);
-  const rect_in_canvas = { p: offset_in_canvas, sz: sz_in_canvas };
-  const rect_in_gl = apply_to_rect(gl_from_canvas, rect_in_canvas);
-
-  const chunkCache = state._cachedTileChunkMap;
-  const chunk = getChunk(chunkCache, { x: 0, y: 0 });
-  if (chunk == undefined) {
-    logger('missedChunkRendering', `missing data for chunk in debugging`);
-    return;
-  }
-  gl.activeTexture(gl.TEXTURE0 + CHUNK_DATA_TEXTURE_UNIT);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, chunk.imdat);
-
-  const [p1, p2] = rectPts(rect_in_gl);
-  bufferSetFloats(gl, position, [
-    p1.x, p2.y,
-    p2.x, p2.y,
-    p1.x, p1.y,
-    p2.x, p1.y,
-  ]);
-  const u_texture = gl.getUniformLocation(prog, 'u_texture')!;
-  gl.uniform1i(u_texture, src_texture);
-  const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
-  gl.uniform2f(u_canvasSize, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
-
-  const u_colorScale = gl.getUniformLocation(prog, 'u_colorScale');
-  gl.uniform1f(u_colorScale, DEBUG_COLOR_SCALE);
-
-  const canvas_from_texture = mkSE2(rect_in_canvas.sz, rect_in_canvas.p);
-  const u_texture_from_canvas = gl.getUniformLocation(prog, 'u_texture_from_canvas');
-  gl.uniformMatrix3fv(u_texture_from_canvas, false, asMatrix(inverse(canvas_from_texture)));
-  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-}
-
 function drawOneTile(gl: WebGL2RenderingContext, env: GlEnv, letter: string, state: GameState, canvas_from_chunk_local: SE2): void {
   const { prog, position } = env.tileDrawer;
   gl.useProgram(prog);
@@ -332,10 +245,6 @@ function renderPrepass(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState,
   return aci;
 }
 
-function debugPrepass(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState): void {
-  // debug the state of the framebuffer
-  drawChunkDebugging(gl, env, state, { x: 100, y: 0 }, PREPASS_FB_TEXTURE_UNIT);
-}
 
 function drawWorld(gl: WebGL2RenderingContext, env: GlEnv, state: GameState, canvas_from_world: SE2, aci: ActiveChunkInfo): void {
   if (0) {  // XXX some redundant transforms going on here, we also compute chunk_from_canvas in chunk.ts
@@ -469,8 +378,8 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
       drawOneTile(gl, env, tile.letter, state, canvas_from_hand_tile(tile.loc.p_in_hand_int.y));
     });
 
-    // show the prepass framebuffer for debugging reasons
-    debugPrepass(gl, env, state.coreState);
+    //// show the prepass framebuffer for debugging reasons
+    // debugPrepass(gl, env, state.coreState);
   };
 
   if (DEBUG.glProfiling) {
@@ -553,119 +462,4 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
     debugQuadDrawer: mkDebugQuadDrawer(gl),
     fb: mkFrameBuffer(gl, PREPASS_FRAME_BUFFER_SIZE),
   };
-}
-
-// Partially deprecated? May need to keep the CHUNK_DATA_TEXTURE_UNIT around
-function mkChunkDrawer(gl: WebGL2RenderingContext): ChunkDrawer {
-  const prog = shaderProgram(gl, getAssets().chunkShaders);
-
-  // Chunk data texture
-  const chunkDataTexture = gl.createTexture();
-  if (chunkDataTexture == null) {
-    throw new Error(`couldn't create chunk data texture`);
-  }
-  gl.activeTexture(gl.TEXTURE0 + CHUNK_DATA_TEXTURE_UNIT);
-  gl.bindTexture(gl.TEXTURE_2D, chunkDataTexture);
-
-  const chunkImdat = new ImageData(WORLD_CHUNK_SIZE.x, WORLD_CHUNK_SIZE.y);
-
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-
-  const position = attributeCreate(gl, prog, 'pos', 2);
-  if (position == null) {
-    throw new Error(`Couldn't allocate position buffer`);
-  }
-
-  return { prog, position, chunkImdat };
-}
-
-function mkWorldDrawer(gl: WebGL2RenderingContext): WorldDrawer {
-  const prog = shaderProgram(gl, getAssets().worldShaders);
-  const position = attributeCreate(gl, prog, 'pos', 2);
-  if (position == null) {
-    throw new Error(`Couldn't allocate position buffer`);
-  }
-  return { prog, position };
-}
-
-function mkTileDrawer(gl: WebGL2RenderingContext): TileDrawer {
-  const prog = shaderProgram(gl, getAssets().tileShaders);
-  const position = attributeCreate(gl, prog, 'pos', 2);
-  if (position == null)
-    throw new Error(`couldn't allocate position buffer`);
-  return { prog, position };
-}
-
-function mkTexQuadDrawer(gl: WebGL2RenderingContext): TexQuadDrawer {
-  const prog = shaderProgram(gl, getAssets().texQuadShaders);
-  const position = attributeCreate(gl, prog, 'pos', 2);
-  if (position == null)
-    throw new Error(`couldn't allocate position buffer`);
-  return { prog, position };
-}
-
-function mkDebugQuadDrawer(gl: WebGL2RenderingContext): TexQuadDrawer {
-  const prog = shaderProgram(gl, getAssets().debugQuadShaders);
-  const position = attributeCreate(gl, prog, 'pos', 2);
-  if (position == null)
-    throw new Error(`couldn't allocate position buffer`);
-  return { prog, position };
-}
-
-function mkFrameBuffer(gl: WebGL2RenderingContext, size: Point): FrameBufferHelper {
-  const texture = gl.createTexture()!;
-  gl.activeTexture(gl.TEXTURE0 + PREPASS_FB_TEXTURE_UNIT);
-  gl.bindTexture(gl.TEXTURE_2D, texture);
-
-  const data = null;
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, size.x, size.y, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
-
-  // set the filtering so we don't need mips
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-  const buffer = gl.createFramebuffer()!;
-  gl.bindFramebuffer(gl.FRAMEBUFFER, buffer);
-
-  // attach the texture as the first color attachment
-  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-  return { buffer, size, texture };
-}
-
-function useFrameBuffer(gl: WebGL2RenderingContext, fb: FrameBufferHelper): void {
-  gl.bindFramebuffer(gl.FRAMEBUFFER, fb.buffer);
-  gl.viewport(0, 0, fb.size.x, fb.size.y);
-}
-
-function endFrameBuffer(gl: WebGL2RenderingContext): void {
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-  gl.viewport(0, 0, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
-}
-
-function mkRectDrawer(gl: WebGL2RenderingContext): RectDrawer {
-  // Create rect drawer data
-  const prog = shaderProgram(gl, {
-    vert: `
-        attribute vec3 pos;
-        void main() {
-            gl_Position = vec4(pos, 1.);
-        }`,
-    frag: `
-        precision mediump float;
-        uniform vec4 u_color;
-        void main() {
-            gl_FragColor = u_color;
-        }`});
-
-  const colorUniformLocation = gl.getUniformLocation(prog, 'u_color')!;
-  const position = attributeCreate(gl, prog, 'pos', 2);
-  if (position == null)
-    throw new Error(`couldn't allocate position buffer`);
-  return { prog: prog, position, colorUniformLocation };
 }
