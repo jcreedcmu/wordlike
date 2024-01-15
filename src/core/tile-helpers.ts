@@ -262,7 +262,17 @@ export function tileAtPoint(state: CoreState, p_in_world: Point): TileEntity | u
   return undefined;
 }
 
-export function clearTileAtPositions(cs: CoreState, overlay: Overlay<Chunk>, p_in_world: Point): Overlay<Chunk> {
+// These are some unfortunately low-level cache management operations.
+
+export function clearTileAtPosition(cs: CoreState, overlay: Overlay<Chunk>, p_in_world: Point): Overlay<Chunk> {
   const cval: ChunkValue = { t: 'bonus', bonus: getBonusFromLayer(cs, p_in_world) };
   return updateChunkCache(overlay, cs, p_in_world, cval);
+}
+
+export function restoreTileToWorld(cs: CoreState, overlay: Overlay<Chunk>, tile: TileEntity): Overlay<Chunk> {
+  if (tile.loc.t != 'world') {
+    throw new Error(`Expected tile ${tile.id} to be in world`);
+  }
+  const cval: ChunkValue = { t: 'tile', tile: { letter: tile.letter } };
+  return updateChunkCache(overlay, cs, tile.loc.p_in_world_int, cval);
 }

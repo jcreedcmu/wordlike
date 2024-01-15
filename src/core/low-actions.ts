@@ -19,7 +19,7 @@ import { incrementScore, setScore } from './scoring';
 import { deselect, resolveSelection, setSelected } from './selection';
 import { CoreState, GameState, Location, SceneState } from './state';
 import { MoveTile, addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isCollision, isOccupied, isTilePinned, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
-import { cellAtPoint, getTileId, get_hand_tiles, get_tiles, moveTiles, moveToHandLoc, putTileInHand, putTileInWorld, putTilesInHandFromNotHand, putTilesInWorld, removeAllTiles, tileAtPoint } from "./tile-helpers";
+import { cellAtPoint, getTileId, get_hand_tiles, get_tiles, moveTiles, moveToHandLoc, putTileInHand, putTileInWorld, putTilesInHandFromNotHand, putTilesInWorld, removeAllTiles, restoreTileToWorld, tileAtPoint } from "./tile-helpers";
 import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
 import { shouldDisplayBackButton } from './winState';
 
@@ -148,11 +148,13 @@ function resolveMouseupInner(state: GameState): GameLowAction {
     }
 
     case 'drag_tile': {
+      const selected = state.coreState.selected;
+
+      // This is what we want to return if the mouseup is "bad", in order to put the tiles back in the cache
+      const bailout: GameLowAction = { t: 'restoreTiles', ids: selected ? selected.selectedIds : [ms.id] };
 
       const wp = getWidgetPoint(state.coreState, ms.p_in_canvas);
       if (wp.t == 'world') {
-
-        const selected = state.coreState.selected;
         if (selected) {
 
           // FIXME: ensure the dragged tile is in the selection
@@ -162,7 +164,7 @@ function resolveMouseupInner(state: GameState): GameLowAction {
           const old_tile_loc: Location = ms.orig_loc;
           if (old_tile_loc.t != 'world') {
             console.error(`Unexpected non-world tile`);
-            return { t: 'none' };
+            return bailout;
           }
           const old_tile_in_world_int = old_tile_loc.p_in_world_int;
           const new_tile_from_old_tile: SE2 = translate(vsub(new_tile_in_world_int, old_tile_in_world_int));
@@ -187,7 +189,7 @@ function resolveMouseupInner(state: GameState): GameLowAction {
 
           const tgts = moves.map(x => x.p_in_world_int);
           if (isCollision(remainingTiles, moves, state.coreState.bonusOverlay, getBonusLayer(state.coreState.bonusLayerSeed))) {
-            return { t: 'none' };
+            return bailout;
           }
 
           return {
@@ -212,7 +214,7 @@ function resolveMouseupInner(state: GameState): GameLowAction {
           const is_noop = ms.orig_loc.t == 'world' && vequal(dest_in_world_int, ms.orig_loc.p_in_world_int);
           const afterDrop: GameLowAction = !isOccupied(state.coreState, moveTile) || is_noop
             ? { t: 'putTilesInWorld', moves: [{ id: ms.id, p_in_world_int: moveTile.p_in_world_int, letter: letter }] }
-            : { t: 'none' };
+            : bailout;
           return { t: 'multiple', actions: [afterDrop, { t: 'checkValid' }] };
         }
       }
@@ -224,7 +226,7 @@ function resolveMouseupInner(state: GameState): GameLowAction {
           Math.round);
 
         if (proposedHandDragOverLimit(state.coreState, state.mouseState)) {
-          return { t: 'none' };
+          return bailout;
         }
 
         if (state.coreState.selected) {
@@ -248,7 +250,7 @@ function resolveMouseupInner(state: GameState): GameLowAction {
       }
       else {
         // we dragged somewhere other than world or hand
-        return { t: 'none' };
+        return bailout;
       }
     }
     case 'exchange_tiles': {
@@ -467,6 +469,16 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
 
     case 'setPanic':
       return produce(state, s => { s.coreState.panic = action.panic; });
+
+    case 'restoreTiles': {
+      let cache = state.coreState._cachedTileChunkMap;
+      action.ids.forEach(id => {
+        cache = restoreTileToWorld(state.coreState, cache, getTileId(state.coreState, id));
+      });
+      return produce(state, s => {
+        s.coreState._cachedTileChunkMap = cache;
+      });
+    }
   }
 }
 

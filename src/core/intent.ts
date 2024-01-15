@@ -7,7 +7,7 @@ import { vacuous_down } from './low-actions';
 import { SelectionOperation, deselect, selectionOperationOfMods } from './selection';
 import { GameState } from './state';
 import { checkValid, drawSpecific, withCoreState } from './state-helpers';
-import { CellContents, clearTileAtPositions, getTileLoc, tileAtPoint } from './tile-helpers';
+import { CellContents, clearTileAtPosition, getTileLoc, tileAtPoint } from './tile-helpers';
 import { Tool, bombIntent, copyIntent, dynamiteIntent } from './tools';
 
 export type KillIntent =
@@ -98,7 +98,7 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
         : [p_in_world_int];
       let overlay = cs._cachedTileChunkMap;
       toErase.forEach(p => {
-        overlay = clearTileAtPositions(cs, overlay, p);
+        overlay = clearTileAtPosition(cs, overlay, p);
       });
       if (sel) {
         // If we start dragging a tile not in the selection, we should deselect it first

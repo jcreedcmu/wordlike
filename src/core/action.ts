@@ -44,6 +44,7 @@ export type GameLowAction =
   | { t: 'drawConsonant' }
   | { t: 'drawVowel' }
   | { t: 'setPanic', panic: PanicData }
+  | { t: 'restoreTiles', ids: string[] } // put held tiles back in cache
   ;
 
 export type LowAction =
