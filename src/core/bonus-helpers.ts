@@ -11,12 +11,10 @@ export function getBonusFromLayer(cs: CoreState, p: Point): Bonus {
   return getOverlayLayer(cs.bonusOverlay, getBonusLayer(cs.bonusLayerSeed), p);
 }
 
-export function updateBonusLayer(state: CoreState, p_in_world_int: Point, bonus: Bonus, retainTile?: boolean): CoreState {
+export function updateBonusLayer(state: CoreState, p_in_world_int: Point, bonus: Bonus): CoreState {
   const newState = produce(state, cs => {
     setOverlay(cs.bonusOverlay, p_in_world_int, bonus);
   });
-  if (retainTile)
-    return newState;
 
   const newCache = updateChunkCache(state._cachedTileChunkMap, state, p_in_world_int, { t: 'bonus', bonus });
 

@@ -122,7 +122,7 @@ export function adjacentScoringOfBonus(bonus: Bonus, p_in_world_int: Point): Sco
 
 export function overlapScoringOfBonus(bonus: Bonus, p_in_world_int: Point): Scoring[] {
   switch (bonus.t) {
-    case 'required': return [{ bonus, p_in_world_int, destroy: true, leave_tile: true }];
+    case 'required': return [{ bonus, p_in_world_int, destroy: true }];
     default: return [];
   }
 }
