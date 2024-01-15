@@ -39,7 +39,7 @@ const PREPASS_FRAME_BUFFER_SIZE: Point = { x: 256, y: 256 };
 const DEBUG_COLOR_SCALE = 10.0;
 
 export const prepass_from_gl: SE2 = {
-  scale: { x: PREPASS_FRAME_BUFFER_SIZE.x / 2, y: -PREPASS_FRAME_BUFFER_SIZE.y / 2 },
+  scale: { x: PREPASS_FRAME_BUFFER_SIZE.x / 2, y: PREPASS_FRAME_BUFFER_SIZE.y / 2 },
   translate: { x: PREPASS_FRAME_BUFFER_SIZE.x / 2, y: PREPASS_FRAME_BUFFER_SIZE.y / 2 },
 };
 

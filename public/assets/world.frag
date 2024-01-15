@@ -94,7 +94,7 @@ vec4 getColor() {
 
   vec2 p_in_world_int = floor(p_in_world);
 
-  vec2 p_in_prepass = vec2(0.,0.); // XXX FIXME
+  vec2 p_in_prepass = p_in_world_int - u_min_p_in_chunk * 16.;
   vec2 p_in_world_r = round(p_in_world);
   vec2 p_in_world_fp = p_in_world - floor(p_in_world); // fractional part
 
@@ -102,7 +102,7 @@ vec4 getColor() {
   // .rg: which sprite or tile we should show here
   // .b: some metadata. bit 0 is whether it's selected
   vec4 gridData = round(255.0 * texture(u_prepassTexture, (p_in_prepass + vec2(0.5,0.5)) / float(PREPASS_BUFFER_SIZE) ));
-
+//  gridData = vec4(0., 0., 0., 0.);
 
   vec2 sprite_coords = gridData.xy;
 
