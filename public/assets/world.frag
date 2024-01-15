@@ -6,6 +6,8 @@ precision mediump float;
 const vec3 BOARD_BG_COLOR = vec3(248. / 255., 234. / 255., 213. / 255.);
 
 const vec2 BONUS_POINT_SPRITE = vec2(1.,1.);
+const vec2 EMPTY_SPRITE = vec2(0.,7.);
+const vec2 BLOCK_SPRITE = vec2(1.,0.);
 
 const vec3 TILE_SELECTED_COLOR = vec3(.06, .25, .68);
 
@@ -38,6 +40,7 @@ float crosshair(vec2 p) {
 // p_in_world_fp is the fractional part of p_in_world. It is in [0,1]²
 // sprite_coords is actually an ivec. It is in  [0,NUM_SPRITES_PER_SHEET]²
 vec4 get_bonus_pixel(vec2 p_in_world_fp, vec2 sprite_coords) {
+
   // special case for the single-point sprite.
   if (sprite_coords == BONUS_POINT_SPRITE) {
 
@@ -62,6 +65,43 @@ vec4 get_bonus_pixel(vec2 p_in_world_fp, vec2 sprite_coords) {
   return texture(u_spriteTexture, (p_in_world_fp + sprite_coords) / NUM_SPRITES_PER_SHEET);
 }
 
+int is_land(vec4 cell_data) {
+  return int(cell_data.x == 7.);
+}
+
+vec4 pre_get_bonus_pixel(vec2 p_in_world, vec2 p_in_world_fp, vec2 sprite_coords) {
+  if (sprite_coords == EMPTY_SPRITE || sprite_coords == BLOCK_SPRITE) {
+
+    // Experimental "land and water" drawing
+
+    // All these h-suffixed values are minus 0.5 in world coordinates from the "real" p.
+    vec2 p_in_world_h = p_in_world - vec2(0.5);
+    vec2 p_in_world_hint = floor(p_in_world_h);
+    vec2 p_in_world_hfp = p_in_world_h - p_in_world_hint;
+
+    vec2 ul_in_prepass = p_in_world_hint - u_min_p_in_chunk * 16.;
+
+    int bit_1 = is_land(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(0.5,0.5)) / float(PREPASS_BUFFER_SIZE) )));
+    int bit_2 = is_land(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(1.5,0.5)) / float(PREPASS_BUFFER_SIZE) )));
+    int bit_4 = is_land(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(0.5,1.5)) / float(PREPASS_BUFFER_SIZE) )));
+    int bit_8 = is_land(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(1.5,1.5)) / float(PREPASS_BUFFER_SIZE) )));
+
+    vec2 bonus_coords = vec2(
+                             2.,
+                             (bit_8 << 3) +
+                             (bit_4 << 2) +
+                             (bit_2 << 1) +
+                             (bit_1 << 0)
+                             );
+
+    return get_bonus_pixel(p_in_world_hfp, bonus_coords);
+  }
+  else {
+    return get_bonus_pixel(p_in_world_fp, sprite_coords);
+  }
+}
+
+// a over b
 vec4 blendOver(vec4 a, vec4 b) {
     float newAlpha = mix(b.a, 1.0, a.a);
     vec3 newColor = mix(b.a * b.rgb, a.rgb, a.a);
@@ -85,12 +125,12 @@ vec4 get_origin_pixel(vec2 p_in_world_int, vec2 p_in_world_fp) {
 // .r: which bonus we should show here. High 4 bits are x coord on the sprite sheet, low 4 bits are y.
 // .g: which letter tile we should draw here, 32 = none, 0 = A, ..., 25 = Z
 // .b: some metadata. bit 0 is whether it's selected
-vec4 get_cell_pixel(vec2 p_in_world_fp, ivec3 cell_data) {
+vec4 get_cell_pixel(vec2 p_in_world, vec2 p_in_world_fp, ivec3 cell_data) {
   int letter = cell_data.g;
 
   if (letter == 32) {
     vec2 bonus_coords = vec2(cell_data.r >> 4, cell_data.r & 0xf);
-    return get_bonus_pixel(p_in_world_fp, bonus_coords);
+    return pre_get_bonus_pixel(p_in_world, p_in_world_fp, bonus_coords);
   }
 
   return get_tile_pixel(p_in_world_fp, letter);
@@ -109,7 +149,7 @@ vec4 getColor() {
 
   vec4 cell_data = round(255.0 * texture(u_prepassTexture, (p_in_prepass + vec2(0.5,0.5)) / float(PREPASS_BUFFER_SIZE) ));
 
-  vec4 cell_pixel = get_cell_pixel(p_in_world_fp, ivec3(cell_data));
+  vec4 cell_pixel = get_cell_pixel(p_in_world, p_in_world_fp, ivec3(cell_data));
 
   float selected_amount = float(int(cell_data.b) & 1) * 0.5;
   cell_pixel = vec4(mix(cell_pixel.rgb, TILE_SELECTED_COLOR, selected_amount), cell_pixel.a);
