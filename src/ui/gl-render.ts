@@ -1,7 +1,6 @@
 import { Dispatch } from "../core/action";
 import { getAssets } from "../core/assets";
-import { getBonusFromLayer } from "../core/bonus-helpers";
-import { ActiveChunkInfo, Chunk, WORLD_CHUNK_SIZE, activeChunks, getChunk, mkChunk } from "../core/chunk";
+import { ActiveChunkInfo, Chunk, WORLD_CHUNK_SIZE, activeChunks, getChunk } from "../core/chunk";
 import { CoreState, GameState } from "../core/state";
 import { pointFall } from "../core/state-helpers";
 import { getTileId, get_hand_tiles, isSelectedForDrag } from "../core/tile-helpers";
@@ -9,19 +8,18 @@ import { BOMB_RADIUS, getCurrentTool } from "../core/tools";
 import { DEBUG, doOnce, doOnceEvery, logger } from "../util/debug";
 import { RgbColor, RgbaColor, imageDataOfBuffer } from "../util/dutil";
 import { BufferAttr, attributeCreate, bufferSetFloats, shaderProgram } from "../util/gl-util";
-import { SE2, apply, compose, composen, inverse, mkSE2, scale, translate } from "../util/se2";
+import { SE2, compose, inverse, mkSE2, scale, translate } from "../util/se2";
 import { apply_to_rect, asMatrix } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
 import { rectPts } from "../util/util";
-import { vadd, vdiag, vinv, vm, vmul, vscale, vsub } from "../util/vutil";
+import { vadd, vdiag, vinv, vmul, vsub } from "../util/vutil";
 import { renderPanicBar } from "./drawPanicBar";
 import { gl_from_canvas } from "./gl-helpers";
 import { canvas_from_hand_tile } from "./render";
-import { spriteLocOfBonus, spriteLocOfChunkValue } from "./sprite-sheet";
 import { resizeView } from "./ui-helpers";
 import { CanvasGlInfo } from "./use-canvas";
 import { canvas_from_drag_tile, cell_in_canvas, pan_canvas_from_world_of_state } from "./view-helpers";
-import { canvas_bds_in_canvas, canvas_from_hand, getWidgetPoint, hand_bds_in_canvas, world_bds_in_canvas } from "./widget-helpers";
+import { canvas_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas } from "./widget-helpers";
 
 const backgroundGrayRgb: RgbColor = [238, 238, 238];
 const shadowColorRgba: RgbaColor = [128, 128, 100, Math.floor(0.4 * 255)];
@@ -56,6 +54,11 @@ export type RectDrawer = {
 export type ChunkDrawer = {
   prog: WebGLProgram,
   chunkImdat: ImageData,
+  position: BufferAttr,
+};
+
+export type WorldDrawer = {
+  prog: WebGLProgram,
   position: BufferAttr,
 };
 
@@ -334,7 +337,7 @@ function debugPrepass(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState):
   drawChunkDebugging(gl, env, state, { x: 100, y: 0 }, FB_TEXTURE_UNIT);
 }
 
-function drawWorld(gl: WebGL2RenderingContext, env: GlEnv, state: State, canvas_from_world: SE2, aci: ActiveChunkInfo): void {
+function drawWorld(gl: WebGL2RenderingContext, env: GlEnv, state: GameState, canvas_from_world: SE2, aci: ActiveChunkInfo): void {
   // XXX some redundant transforms going on here, we also compute chunk_from_canvas in chunk.ts
   const chunk_from_canvas = compose(scale(vinv(WORLD_CHUNK_SIZE)), inverse(canvas_from_world));
 
@@ -520,6 +523,7 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
   };
 }
 
+// Partially deprecated? May need to keep the CHUNK_DATA_TEXTURE_UNIT around
 function mkChunkDrawer(gl: WebGL2RenderingContext): ChunkDrawer {
   const prog = shaderProgram(gl, getAssets().chunkShaders);
 
@@ -536,13 +540,21 @@ function mkChunkDrawer(gl: WebGL2RenderingContext): ChunkDrawer {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 
-  // Chunk bounds vertex attribute array
   const position = attributeCreate(gl, prog, 'pos', 2);
   if (position == null) {
     throw new Error(`Couldn't allocate position buffer`);
   }
 
   return { prog, position, chunkImdat };
+}
+
+function mkWorldDrawer(gl: WebGL2RenderingContext): WorldDrawer {
+  const prog = shaderProgram(gl, getAssets().worldShaders);
+  const position = attributeCreate(gl, prog, 'pos', 2);
+  if (position == null) {
+    throw new Error(`Couldn't allocate position buffer`);
+  }
+  return { prog, position };
 }
 
 function mkTileDrawer(gl: WebGL2RenderingContext): TileDrawer {
