@@ -22,6 +22,8 @@ export type ChunkUpdate =
   | { t: 'setSelected' }
   | { t: 'clearSelected' }
   | { t: 'restoreTile', tile: RenderableTile }
+  | { t: 'setConnected' }
+  | { t: 'clearConnected' }
 
 export type Chunk = {
   size: Point,
@@ -91,6 +93,15 @@ function processChunkUpdate(cu: ChunkUpdate, oldVec: number[]): number[] {
       rv[2] &= (0xff - 1);
       return rv;
     }
+    case 'setConnected': {
+      rv[2] |= 2;
+      return rv;
+    }
+    case 'clearConnected': {
+      rv[2] &= (0xff - 2);
+      return rv;
+    }
+
     case 'restoreTile': {
       const spritePos = spriteLocOfChunkValue({ t: 'tile', tile: cu.tile });
       rv[1] = cu.tile.letter.charCodeAt(0) - 97;

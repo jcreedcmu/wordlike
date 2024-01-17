@@ -10,9 +10,10 @@ import { Animation, mkPointDecayAnimation, mkScoreAnimation, mkWinAnimation } fr
 import { getAssets } from "./assets";
 import { Bonus, ScoringBonus, adjacentScoringOfBonus, isBlocking, overlapScoringOfBonus, resolveScoring } from "./bonus";
 import { getBonusFromLayer, updateBonusLayer } from "./bonus-helpers";
+import { updateChunkCache } from "./chunk";
 import { PANIC_INTERVAL_MS, PanicData, PauseData, WORD_BONUS_INTERVAL_MS, now_in_game } from "./clock";
 import { DrawForce, getLetterSample } from "./distribution";
-import { checkConnected, checkGridWords, mkGridOfMainTiles } from "./grid";
+import { checkConnected, checkGridWords, gridKeys, mkGridOfMainTiles } from "./grid";
 import { Layer, Overlay, getOverlayLayer, mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
 import { PROGRESS_ANIMATION_POINTS, getHighWaterMark, getScore, setHighWaterMark } from "./scoring";
 import { CoreState, GameState, HAND_TILE_LIMIT, Location, MouseState, Tile, TileEntity, WordBonusState } from "./state";
@@ -169,6 +170,8 @@ export function checkValid(state: CoreState): CoreState {
   const tiles = get_main_tiles(state);
   const grid = mkGridOfMainTiles(tiles);
 
+  const oldConnectedSet = state.connectedSet;
+
   const { validWords, invalidWords } = checkGridWords(grid, word => getAssets().dictionary[word] || DEBUG.allWords);
   const { allConnected, connectedSet } = checkConnected(grid);
   let allValid = false;
@@ -192,12 +195,21 @@ export function checkValid(state: CoreState): CoreState {
     animations = [...animations, mkWinAnimation(state.game_from_clock)];
   }
 
+  let newCache = state._cachedTileChunkMap;
+  gridKeys(oldConnectedSet).forEach(p_in_world => {
+    newCache = updateChunkCache(newCache, state, p_in_world, { t: 'clearConnected' });
+  });
+  gridKeys(connectedSet).forEach(p_in_world => {
+    newCache = updateChunkCache(newCache, state, p_in_world, { t: 'setConnected' });
+  });
+
   return produce(state, s => {
     s.panic = panic;
     s.invalidWords = invalidWords;
     s.connectedSet = connectedSet;
     s.winState = winState;
     s.animations = animations;
+    s._cachedTileChunkMap = newCache;
 
     // XXX: is this the right place to do this?
     if (state.currentTool != 'dynamite')

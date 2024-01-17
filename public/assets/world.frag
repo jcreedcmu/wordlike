@@ -8,6 +8,8 @@ const vec2 BLOCK_SPRITE = vec2(1.,0.);
 
 const vec3 TILE_SELECTED_COLOR = vec3(.06, .25, .68);
 
+const vec3 TILE_DISCONNECTED_COLOR = vec3(0.9, 0., 0.);
+
 const float REQUIRED_BONUS_COLUMN = 12.;
 const float TILE_COLUMN = 14.;
 
@@ -119,7 +121,9 @@ vec4 get_origin_pixel(vec2 p_in_world_int, vec2 p_in_world_fp) {
 // grid_data holds cached information about this particular square world cell.
 // .r: which bonus we should show here. High 4 bits are x coord on the sprite sheet, low 4 bits are y.
 // .g: which letter tile we should draw here, 32 = none, 0 = A, ..., 25 = Z
-// .b: some metadata. bit 0 is whether it's selected
+// .b: some metadata.
+//       bit 0: tile is selected
+//       bit 1: tile is connected to origin
 vec4 get_cell_pixel(vec2 p_in_world, vec2 p_in_world_fp, ivec3 cell_data) {
   int letter = cell_data.g;
 
@@ -131,8 +135,14 @@ vec4 get_cell_pixel(vec2 p_in_world, vec2 p_in_world_fp, ivec3 cell_data) {
   if (letter != 32) {
     tile_pixel = get_tile_pixel(p_in_world_fp, letter);
 
-    float selected_amount = float(int(cell_data.b) & 1) * 0.5;
-    tile_pixel = vec4(mix(tile_pixel.rgb, TILE_SELECTED_COLOR, selected_amount), tile_pixel.a);
+    int flags = int(cell_data.b);
+    bool selected = (flags & 1) != 0;
+    bool connected = (flags & 2) != 0;
+
+    vec3 pixel = tile_pixel.rgb;
+    pixel = mix(pixel, TILE_SELECTED_COLOR, float(selected) * 0.5);
+    pixel = mix(pixel, TILE_DISCONNECTED_COLOR, float(!connected && !selected) * 0.4);
+    tile_pixel = vec4(pixel, tile_pixel.a);
   }
 
   return blendOver(tile_pixel, bonus_pixel);
