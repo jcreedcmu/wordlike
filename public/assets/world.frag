@@ -3,8 +3,6 @@ precision mediump float;
 
 #include "common.frag"
 
-const vec3 BOARD_BG_COLOR = vec3(248. / 255., 234. / 255., 213. / 255.);
-
 const vec2 EMPTY_SPRITE = vec2(0.,7.);
 const vec2 BLOCK_SPRITE = vec2(1.,0.);
 
@@ -18,6 +16,9 @@ const int PREPASS_BUFFER_SIZE = 256; // XXX should be a uniform maybe?
 const float NUM_SPRITES_PER_SHEET = 16.; // in both directions
 const float SPRITE_SIZE = 32.;
 
+const float CROSSHAIR_OPACITY = 0.3;
+const float CROSSHAIR_LENGTH = 1.;
+
 out vec4 outputColor;
 
 // Minimum chunk identifier that occurs in prepass framebuffer
@@ -30,7 +31,7 @@ uniform sampler2D u_spriteTexture;
 uniform sampler2D u_prepassTexture;
 
 float crosshair(vec2 p) {
-  if (p.x < 1.5 * u_world_from_canvas[0][0] && p.y < 0.5 * u_world_from_canvas[0][0])
+  if (p.x < (CROSSHAIR_LENGTH + 0.5) * u_world_from_canvas[0][0] && p.y < 0.5 * u_world_from_canvas[0][0])
     return 1.0;
   else
     return 0.0;
@@ -158,10 +159,9 @@ vec4 getColor() {
   vec2 off = abs(p_in_world - p_in_world_r);
   // Amount to show crosshairs ∈ [0,1]
   float ch_amount = max(crosshair(off.xy), crosshair(off.yx));
-  vec3 ch_color = mix(BOARD_BG_COLOR, vec3(0.), 0.4); // crosshairs color
+  vec4 ch_color = vec4(0., 0., 0., CROSSHAIR_OPACITY * ch_amount);
 
-  vec3 whiteBack = mix(BOARD_BG_COLOR, main_color.rgb, main_color.a);
-  return vec4(mix(whiteBack, ch_color, ch_amount), 1.);
+  return blendOver(ch_color, main_color);
 }
 
 void main() {
