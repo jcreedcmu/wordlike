@@ -307,7 +307,7 @@ export function resolveGameLowActions(state: GameState, gameLowActions: GameLowA
 function resolveGameLowAction(state: GameState, action: GameLowAction): GameState {
   if (DEBUG.lowActions) {
     if (action.t != 'repaint' && action.t != 'mouseMove')
-      console.log(action.t);
+      console.log(JSON.stringify(action));
   }
 
   switch (action.t) {

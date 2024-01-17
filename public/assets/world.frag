@@ -5,7 +5,6 @@ precision mediump float;
 
 const vec3 BOARD_BG_COLOR = vec3(248. / 255., 234. / 255., 213. / 255.);
 
-const vec2 BONUS_POINT_SPRITE = vec2(1.,1.);
 const vec2 EMPTY_SPRITE = vec2(0.,7.);
 const vec2 BLOCK_SPRITE = vec2(1.,0.);
 
@@ -41,15 +40,7 @@ float crosshair(vec2 p) {
 // sprite_coords is actually an ivec. It is in  [0,NUM_SPRITES_PER_SHEET]²
 vec4 get_bonus_pixel(vec2 p_in_world_fp, vec2 sprite_coords) {
 
-  // special case for the single-point sprite.
-  if (sprite_coords == BONUS_POINT_SPRITE) {
-
-    float vlen = length(p_in_world_fp - vec2(0.5));
-    float amount = clamp(0.5 + 5. * get_sharpness() * (vlen - 0.4), 0., 1.);
-    return vec4(0., 0., 1., mix(0.5, 0.0, amount));
-  }
-
-  // required bonus
+  // required letter bonus
   if (sprite_coords.x >= REQUIRED_BONUS_COLUMN) {
     int letter = int((sprite_coords.x - REQUIRED_BONUS_COLUMN) * NUM_SPRITES_PER_SHEET + sprite_coords.y);
     vec2 font_coords = vec2(letter / int( NUM_FONT_CELLS_PER_SHEET), letter % int(NUM_FONT_CELLS_PER_SHEET));
