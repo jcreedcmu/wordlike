@@ -162,12 +162,11 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
         const res = drawSpecific(state.coreState, hoverTile.letter);
         if (res == undefined)
           return state;
-        res.cs = produce(res.cs, s => {
-          s.selected = undefined;
+        let newCs = produce(deselect(res.cs), s => {
           s.inventory.copies--;
         });
         return produce(state, s => {
-          s.coreState = checkValid(res.cs);
+          s.coreState = checkValid(newCs);
           s.mouseState = {
             t: 'drag_tile',
             orig_loc: { t: 'hand', p_in_hand_int: { x: 0, y: 0 } }, // XXX: Seems like this orig_loc being wrong is harmless?
