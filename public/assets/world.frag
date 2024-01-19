@@ -19,7 +19,7 @@ const float NUM_SPRITES_PER_SHEET = 16.; // in both directions
 const float SPRITE_SIZE = 32.;
 
 const float CROSSHAIR_OPACITY = 0.3;
-const float CROSSHAIR_LENGTH = 1.;
+const float CROSSHAIR_LENGTH = 2.;
 
 out vec4 outputColor;
 

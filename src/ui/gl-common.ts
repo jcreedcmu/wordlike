@@ -125,7 +125,7 @@ export function useFrameBuffer(gl: WebGL2RenderingContext, fb: FrameBufferHelper
 
 export function endFrameBuffer(gl: WebGL2RenderingContext): void {
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-  gl.viewport(0, 0, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
+  gl.viewport(0, 0, devicePixelRatio * canvas_bds_in_canvas.sz.x, devicePixelRatio * canvas_bds_in_canvas.sz.y);
 }
 
 export function mkRectDrawer(gl: WebGL2RenderingContext): RectDrawer {

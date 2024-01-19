@@ -104,20 +104,11 @@ function drawOneTile(gl: WebGL2RenderingContext, env: GlEnv, letter: string, sta
   gl.uniform1i(u_fontTexture, FONT_TEXTURE_UNIT);
 
   const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
-  gl.uniform2f(u_canvasSize, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
+  gl.uniform2f(u_canvasSize, devicePixelRatio * canvas_bds_in_canvas.sz.x, devicePixelRatio * canvas_bds_in_canvas.sz.y);
 
-  const world_from_canvas_SE2 = inverse(canvas_from_chunk_local);
-  const s = world_from_canvas_SE2.scale;
-  const t = world_from_canvas_SE2.translate;
+  const u_world_from_canvas = gl.getUniformLocation(prog, "u_world_from_canvas");
+  gl.uniformMatrix3fv(u_world_from_canvas, false, asMatrix(inverse(compose(scale(vdiag(devicePixelRatio)), canvas_from_chunk_local))));
 
-  const world_from_canvas = [
-    s.x, 0.0, 0.0,
-    0.0, s.y, 0.0,
-    t.x, t.y, 1.0,
-  ];
-  const u_world_from_canvas = gl.getUniformLocation(prog, 'u_world_from_canvas');
-  gl.uniformMatrix3fv(u_world_from_canvas, false, world_from_canvas);
-  gl.viewport(0, 0, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 }
 
@@ -199,12 +190,12 @@ function drawWorld(gl: WebGL2RenderingContext, env: GlEnv, state: GameState, can
   const u_chunkDataTexture = gl.getUniformLocation(prog, 'u_prepassTexture');
   gl.uniform1i(u_chunkDataTexture, PREPASS_FB_TEXTURE_UNIT);
   const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
-  gl.uniform2f(u_canvasSize, canvas_bds_in_canvas.sz.x, canvas_bds_in_canvas.sz.y);
+  gl.uniform2f(u_canvasSize, devicePixelRatio * canvas_bds_in_canvas.sz.x, devicePixelRatio * canvas_bds_in_canvas.sz.y);
   const u_min_p_in_chunk = gl.getUniformLocation(prog, 'u_min_p_in_chunk');
   gl.uniform2f(u_min_p_in_chunk, aci.min_p_in_chunk.x, aci.min_p_in_chunk.y);
 
   const u_world_from_canvas = gl.getUniformLocation(prog, "u_world_from_canvas");
-  gl.uniformMatrix3fv(u_world_from_canvas, false, asMatrix(inverse(canvas_from_world)));
+  gl.uniformMatrix3fv(u_world_from_canvas, false, asMatrix(inverse(compose(scale(vdiag(devicePixelRatio)), canvas_from_world))));
 
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 }
