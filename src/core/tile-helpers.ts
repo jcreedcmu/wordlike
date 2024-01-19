@@ -269,7 +269,7 @@ export function clearTileAtPosition(cs: CoreState, overlay: Overlay<Chunk>, p_in
 
 export function restoreTileToWorld(cs: CoreState, overlay: Overlay<Chunk>, tile: TileEntity): Overlay<Chunk> {
   if (tile.loc.t != 'world') {
-    throw new Error(`Expected tile ${tile.id} to be in world`);
+    return overlay; // do nothing
   }
   return updateChunkCache(overlay, cs, tile.loc.p_in_world_int, { t: 'restoreTile', tile: { letter: tile.letter } });
 }
