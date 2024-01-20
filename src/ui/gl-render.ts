@@ -133,7 +133,7 @@ function glFillRect(env: GlEnv, rect_in_canvas: Rect, color: RgbColor): void {
   glFillRecta(env, rect_in_canvas, [...color, 255]);
 }
 
-function drawHand(env: GlEnv, state: CoreState): void {
+function drawHandBackground(env: GlEnv, state: CoreState): void {
   glFillRect(env, hand_bds_in_canvas, backgroundGrayRgb);
 }
 
@@ -252,13 +252,20 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
     }
 
     // draw hand
-    drawHand(env, state.coreState);
+    drawHandBackground(env, state.coreState);
 
     // draw panic bar
     if (state.coreState.winState.t != 'lost' && state.coreState.panic) {
       const rr = renderPanicBar(state.coreState.panic, state.coreState.game_from_clock);
       glFillRect(env, rr.rect, rr.color);
     }
+
+    // draw hand tiles
+    get_hand_tiles(cs).forEach(tile => {
+      if (isSelectedForDrag(state, tile))
+        return;
+      drawOneTile(env, tile.letter, state, canvas_from_hand_tile(tile.loc.p_in_hand_int.y));
+    });
 
     // Here's where we draw dragged tiles in general
     // draw dragged tiles from selection
@@ -291,13 +298,6 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
         drawOneTile(env, tile.letter, state, canvas_from_drag_tile(cs, ms));
       }
     }
-
-    // draw hand tiles
-    get_hand_tiles(cs).forEach(tile => {
-      if (isSelectedForDrag(state, tile))
-        return;
-      drawOneTile(env, tile.letter, state, canvas_from_hand_tile(tile.loc.p_in_hand_int.y));
-    });
 
     //// show the prepass framebuffer for debugging reasons
     // debugPrepass(env, state.coreState);
