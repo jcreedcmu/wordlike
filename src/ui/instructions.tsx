@@ -121,6 +121,7 @@ function exampleState(): GameState {
   const state: GameState = {
     coreState: {
       slowState: {
+        generation: 0,
         inventory: {
           bombs: 3,
           vowels: 0,

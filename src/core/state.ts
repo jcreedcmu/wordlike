@@ -112,6 +112,7 @@ export type InventoryItems = {
 };
 
 export type SlowState = {
+  generation: number, // an arbitrary mechanism for forcing a redraw
   inventory: InventoryItems,
   scoring: ScoreState,
   currentTool: Tool,
@@ -161,6 +162,7 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
   return {
     coreState: {
       slowState: {
+        generation: 0,
         inventory: {
           bombs: 0,
           vowels: 0,
