@@ -41,7 +41,7 @@ export function setChunkData(chunk: Chunk, kont: (p: Point) => ChunkValue): void
       imdat.data[fix + 0] = (spritePos.x << 4) + spritePos.y;
       imdat.data[fix + 1] = 32;
       imdat.data[fix + 2] = 0;
-      imdat.data[fix + 3] = 255; // Am I even using this?
+      imdat.data[fix + 3] = 0;
     }
   }
 }
