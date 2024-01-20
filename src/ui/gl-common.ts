@@ -1,9 +1,12 @@
 import { getAssets } from "../core/assets";
 import { WORLD_CHUNK_SIZE } from "../core/chunk";
+import { GameState } from "../core/state";
 import { BufferAttr, attributeCreate, bufferSetFloats, shaderProgram } from "../util/gl-util";
-import { apply_to_rect } from "../util/se2-extra";
+import { SE2, compose, inverse, scale } from "../util/se2";
+import { apply_to_rect, asMatrix } from "../util/se2-extra";
 import { Point } from "../util/types";
 import { rectPts } from "../util/util";
+import { vdiag } from "../util/vutil";
 import { canvas_from_gl, gl_from_canvas } from "./gl-helpers";
 import { canvas_bds_in_canvas } from "./widget-helpers";
 
@@ -41,6 +44,10 @@ export type CanvasDrawer = {
   texture: WebGLTexture,
 };
 
+export type BonusDrawer = {
+  prog: WebGLProgram,
+};
+
 export type PrepassHelper = {
   size: Point,
   texture: WebGLTexture,
@@ -54,6 +61,7 @@ export type GlEnv = {
   debugQuadDrawer: DebugQuadDrawer,
   canvasDrawer: CanvasDrawer,
   prepassHelper: PrepassHelper,
+  bonusDrawer: BonusDrawer,
 }
 
 export function mkWorldDrawer(gl: WebGL2RenderingContext): WorldDrawer {
@@ -82,9 +90,6 @@ export function mkWorldDrawer(gl: WebGL2RenderingContext): WorldDrawer {
     }
   }
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, chunkImdat);
-
-
-
 
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
@@ -181,8 +186,44 @@ export function mkRectDrawer(gl: WebGL2RenderingContext): RectDrawer {
   return { prog: prog, position, colorUniformLocation };
 }
 
+export function mkBonusDrawer(gl: WebGL2RenderingContext): BonusDrawer {
+  const prog = shaderProgram(gl, getAssets().bonusShaders);
+  return { prog };
+}
+
 export function glCopyCanvas(env: GlEnv, c: HTMLCanvasElement): void {
   const { gl } = env;
   gl.activeTexture(gl.TEXTURE0 + CANVAS_TEXTURE_UNIT);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, c.width, c.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, c);
+}
+
+export function drawOneTile(env: GlEnv, letter: string, canvas_from_tile: SE2): void {
+  const { gl } = env;
+  const { prog, position } = env.tileDrawer;
+  gl.useProgram(prog);
+
+  const chunk_rect_in_canvas = apply_to_rect(canvas_from_tile, { p: vdiag(0), sz: { x: 1, y: 1 } });
+  const chunk_rect_in_gl = apply_to_rect(gl_from_canvas, chunk_rect_in_canvas);
+
+  const [p1, p2] = rectPts(chunk_rect_in_gl);
+  bufferSetFloats(gl, position, [
+    p1.x, p2.y,
+    p2.x, p2.y,
+    p1.x, p1.y,
+    p2.x, p1.y,
+  ]);
+
+  const u_tileLetter = gl.getUniformLocation(prog, 'u_tileLetter');
+  gl.uniform1i(u_tileLetter, letter.charCodeAt(0) - 97);
+
+  const u_fontTexture = gl.getUniformLocation(prog, 'u_fontTexture');
+  gl.uniform1i(u_fontTexture, FONT_TEXTURE_UNIT);
+
+  const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
+  gl.uniform2f(u_canvasSize, devicePixelRatio * canvas_bds_in_canvas.sz.x, devicePixelRatio * canvas_bds_in_canvas.sz.y);
+
+  const u_world_from_canvas = gl.getUniformLocation(prog, "u_world_from_canvas");
+  gl.uniformMatrix3fv(u_world_from_canvas, false, asMatrix(inverse(compose(scale(vdiag(devicePixelRatio)), canvas_from_tile))));
+
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 }

@@ -16,6 +16,7 @@ type Assets = {
   tileShaders: ShaderProgramText,
   debugQuadShaders: ShaderProgramText,
   canvasShaders: ShaderProgramText,
+  bonusShaders: ShaderProgramText,
 };
 
 // Any data that goes here is effectively test data for consumption by
@@ -31,6 +32,7 @@ let assets: Assets = {
   tileShaders: { frag: '', vert: '' },
   debugQuadShaders: { frag: '', vert: '' },
   canvasShaders: { frag: '', vert: '' },
+  bonusShaders: { frag: '', vert: '' },
 }
 
 async function preprocess(shaderText: string): Promise<string> {
@@ -62,6 +64,7 @@ export async function initAssets() {
     tileShaders: await getShaders('tile'),
     debugQuadShaders: await getShaders('debug-quad'),
     canvasShaders: await getShaders('canvas'),
+    bonusShaders: await getShaders('bonus'),
   };
 }
 

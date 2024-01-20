@@ -1,6 +1,8 @@
 import { Dispatch } from "../core/action";
+import { Animation } from "../core/animations";
 import { getAssets } from "../core/assets";
 import { ActiveChunkInfo, WORLD_CHUNK_SIZE, activeChunks, getChunk } from "../core/chunk";
+import { now_in_game } from "../core/clock";
 import { CoreState, GameState } from "../core/state";
 import { pointFall } from "../core/state-helpers";
 import { getTileId, get_hand_tiles, isSelectedForDrag } from "../core/tile-helpers";
@@ -13,8 +15,9 @@ import { apply_to_rect, asMatrix } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
 import { rectPts } from "../util/util";
 import { vadd, vdiag, vmul, vsub } from "../util/vutil";
+import { drawGlAnimation } from "./drawGlAnimation";
 import { renderPanicBar } from "./drawPanicBar";
-import { CANVAS_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, PREPASS_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, mkCanvasDrawer, mkDebugQuadDrawer, mkPrepassHelper, mkRectDrawer, mkTileDrawer, mkWorldDrawer } from "./gl-common";
+import { CANVAS_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, PREPASS_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, drawOneTile, mkBonusDrawer, mkCanvasDrawer, mkDebugQuadDrawer, mkPrepassHelper, mkRectDrawer, mkTileDrawer, mkWorldDrawer } from "./gl-common";
 import { gl_from_canvas } from "./gl-helpers";
 import { canvas_from_hand_tile } from "./render";
 import { resizeView } from "./ui-helpers";
@@ -67,37 +70,6 @@ function drawCanvas(env: GlEnv): void {
     p1.x, p1.y,
     p2.x, p1.y,
   ]);
-
-  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-}
-
-function drawOneTile(env: GlEnv, letter: string, state: GameState, canvas_from_chunk_local: SE2): void {
-  const { gl } = env;
-  const { prog, position } = env.tileDrawer;
-  gl.useProgram(prog);
-
-  const chunk_rect_in_canvas = apply_to_rect(canvas_from_chunk_local, { p: vdiag(0), sz: { x: 1, y: 1 } });
-  const chunk_rect_in_gl = apply_to_rect(gl_from_canvas, chunk_rect_in_canvas);
-
-  const [p1, p2] = rectPts(chunk_rect_in_gl);
-  bufferSetFloats(gl, position, [
-    p1.x, p2.y,
-    p2.x, p2.y,
-    p1.x, p1.y,
-    p2.x, p1.y,
-  ]);
-
-  const u_tileLetter = gl.getUniformLocation(prog, 'u_tileLetter');
-  gl.uniform1i(u_tileLetter, letter.charCodeAt(0) - 97);
-
-  const u_fontTexture = gl.getUniformLocation(prog, 'u_fontTexture');
-  gl.uniform1i(u_fontTexture, FONT_TEXTURE_UNIT);
-
-  const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
-  gl.uniform2f(u_canvasSize, devicePixelRatio * canvas_bds_in_canvas.sz.x, devicePixelRatio * canvas_bds_in_canvas.sz.y);
-
-  const u_world_from_canvas = gl.getUniformLocation(prog, "u_world_from_canvas");
-  gl.uniformMatrix3fv(u_world_from_canvas, false, asMatrix(inverse(compose(scale(vdiag(devicePixelRatio)), canvas_from_chunk_local))));
 
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 }
@@ -190,6 +162,13 @@ function drawWorld(env: GlEnv, state: GameState, canvas_from_world: SE2, aci: Ac
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 }
 
+
+function drawAnimations(env: GlEnv, canvas_from_world: SE2, animations: Animation[], time_ms: number) {
+  animations.forEach(anim => {
+    drawGlAnimation(env, canvas_from_world, anim, time_ms);
+  });
+}
+
 const shouldDebug = { v: false };
 let oldState: GameState | null = null;
 export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): void {
@@ -235,7 +214,10 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
       }
     }
 
-    // draw hand
+    // draw animations
+    drawAnimations(env, canvas_from_world, cs.animations, now_in_game(cs.game_from_clock));
+
+    // draw background
     drawHandBackground(env, state.coreState);
 
     // draw miscellaneous html-canvas-rendered ui
@@ -251,7 +233,7 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
     get_hand_tiles(cs).forEach(tile => {
       if (isSelectedForDrag(state, tile))
         return;
-      drawOneTile(env, tile.letter, state, canvas_from_hand_tile(tile.loc.p_in_hand_int.y));
+      drawOneTile(env, tile.letter, canvas_from_hand_tile(tile.loc.p_in_hand_int.y));
     });
 
     // Here's where we draw dragged tiles in general
@@ -276,13 +258,13 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
             }
 
             const canvas_from_other_tile = compose(canvas_from_drag_tile(cs, ms), drag_tile_from_other_tile);
-            drawOneTile(env, tile.letter, state, canvas_from_other_tile);
+            drawOneTile(env, tile.letter, canvas_from_other_tile);
           }
         });
       }
       else {
         const tile = getTileId(cs, ms.id);
-        drawOneTile(env, tile.letter, state, canvas_from_drag_tile(cs, ms));
+        drawOneTile(env, tile.letter, canvas_from_drag_tile(cs, ms));
       }
     }
 
@@ -371,5 +353,6 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
     debugQuadDrawer: mkDebugQuadDrawer(gl),
     canvasDrawer: mkCanvasDrawer(gl),
     prepassHelper: mkPrepassHelper(gl, PREPASS_SIZE),
+    bonusDrawer: mkBonusDrawer(gl),
   };
 }

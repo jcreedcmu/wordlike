@@ -459,7 +459,8 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
   }
   else {
     drawOtherUi(glEnabled);
-    drawAnimations(now_in_game(cs.game_from_clock));
+    if (!glEnabled)
+      drawAnimations(now_in_game(cs.game_from_clock));
   }
   if (cs.winState.t == 'won') {
     d.textAlign = 'center';
