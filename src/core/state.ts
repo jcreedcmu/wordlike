@@ -111,7 +111,12 @@ export type InventoryItems = {
   times: number,
 };
 
+export type SlowState = {
+
+}
+
 export type CoreState = {
+  slowState: SlowState,
   renderToGl: boolean,
   animations: Animation[],
   currentTool: Tool,
@@ -156,6 +161,7 @@ const epsilon = 0.0001;
 export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: number): GameState {
   return {
     coreState: {
+      slowState: {},
       wordBonusState: {
         shown: undefined,
         active: [],

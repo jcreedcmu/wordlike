@@ -120,6 +120,7 @@ function render(ci: CanvasInfo, props: CanvasProps) {
 function exampleState(): GameState {
   const state: GameState = {
     coreState: {
+      slowState: {},
       wordBonusState: {
         shown: undefined,
         active: [],
