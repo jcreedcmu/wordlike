@@ -112,7 +112,7 @@ export type InventoryItems = {
 };
 
 export type SlowState = {
-
+  inventory: InventoryItems,
 }
 
 export type CoreState = {
@@ -134,7 +134,6 @@ export type CoreState = {
   paused: PauseData | undefined,
   game_from_clock: SE1,
   wordBonusState: WordBonusState,
-  inventory: InventoryItems
   bonusLayerSeed: number,  // immutable during game play
   _cachedTileChunkMap: Overlay<Chunk>;
 };
@@ -161,7 +160,15 @@ const epsilon = 0.0001;
 export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: number): GameState {
   return {
     coreState: {
-      slowState: {},
+      slowState: {
+        inventory: {
+          bombs: 0,
+          vowels: 0,
+          consonants: 0,
+          copies: 0,
+          times: 0,
+        },
+      },
       wordBonusState: {
         shown: undefined,
         active: [],
@@ -188,13 +195,6 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
       panic: undefined,
       paused: undefined,
       game_from_clock: se1.translate(-Date.now()),
-      inventory: {
-        bombs: 0,
-        vowels: 0,
-        consonants: 0,
-        copies: 0,
-        times: 0,
-      },
       bonusLayerSeed,
       _cachedTileChunkMap: mkOverlay<Chunk>(),
     },

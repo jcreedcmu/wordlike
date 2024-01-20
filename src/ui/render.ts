@@ -99,19 +99,19 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
     drawImage(d, spriteSheet, rectOfTool(tool), rect_in_canvas);
 
     if (tool == 'bomb') {
-      drawToolbarCount(d, rect_in_canvas, state.inventory.bombs);
+      drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.bombs);
     }
     else if (tool == 'vowel') {
-      drawToolbarCount(d, rect_in_canvas, state.inventory.vowels);
+      drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.vowels);
     }
     else if (tool == 'consonant') {
-      drawToolbarCount(d, rect_in_canvas, state.inventory.consonants);
+      drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.consonants);
     }
     else if (tool == 'copy') {
-      drawToolbarCount(d, rect_in_canvas, state.inventory.copies);
+      drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.copies);
     }
     else if (tool == 'time') {
-      drawToolbarCount(d, rect_in_canvas, state.inventory.times);
+      drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.times);
     }
 
     // indicate current tool

@@ -14,13 +14,13 @@ import { BOMB_RADIUS } from './tools';
 function eligibleKillIntent(state: CoreState, intent: KillIntent): boolean {
   switch (intent.t) {
     case 'kill': return getScore(state) >= intent.cost;
-    case 'bomb': return state.inventory.bombs >= 1;
+    case 'bomb': return state.slowState.inventory.bombs >= 1;
   }
 }
 function spendKillIntent(state: CoreState, intent: KillIntent): CoreState {
   switch (intent.t) {
     case 'kill': return produce(state, s => { incrementScore(s, -intent.cost); });
-    case 'bomb': return produce(state, s => { s.inventory.bombs--; });
+    case 'bomb': return produce(state, s => { s.slowState.inventory.bombs--; });
   }
 }
 

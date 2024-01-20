@@ -120,7 +120,15 @@ function render(ci: CanvasInfo, props: CanvasProps) {
 function exampleState(): GameState {
   const state: GameState = {
     coreState: {
-      slowState: {},
+      slowState: {
+        inventory: {
+          bombs: 3,
+          vowels: 0,
+          consonants: 0,
+          copies: 0,
+          times: 0,
+        },
+      },
       wordBonusState: {
         shown: undefined,
         active: [],
@@ -189,13 +197,7 @@ function exampleState(): GameState {
       winState: { t: 'playing' },
       panic: { currentTime_in_game: Date.now(), lastClear_in_game: Date.now() - PANIC_INTERVAL_MS / 3 },
       paused: undefined,
-      inventory: {
-        bombs: 3,
-        vowels: 0,
-        consonants: 0,
-        copies: 0,
-        times: 0,
-      },
+
     },
     mouseState: {
       t: "up",

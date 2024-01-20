@@ -51,19 +51,19 @@ export function getCurrentTools(state: CoreState): Tool[] {
   if (getScore(state) >= dynamiteIntent.cost) {
     tools.push('dynamite');
   }
-  if (state.inventory.bombs > 0) {
+  if (state.slowState.inventory.bombs > 0) {
     tools.push('bomb');
   }
-  if (state.inventory.vowels > 0) {
+  if (state.slowState.inventory.vowels > 0) {
     tools.push('vowel');
   }
-  if (state.inventory.consonants > 0) {
+  if (state.slowState.inventory.consonants > 0) {
     tools.push('consonant');
   }
-  if (state.inventory.copies > 0) {
+  if (state.slowState.inventory.copies > 0) {
     tools.push('copy');
   }
-  if (state.inventory.times > 0) {
+  if (state.slowState.inventory.times > 0) {
     tools.push('time');
   }
   return tools;
@@ -95,13 +95,13 @@ export function reduceToolSelect(state: CoreState, tool: Tool): GameLowAction {
 
 export function toolPrecondition(state: CoreState, tool: Tool): boolean {
   switch (tool) {
-    case 'bomb': return state.inventory.bombs >= 1;
+    case 'bomb': return state.slowState.inventory.bombs >= 1;
     case 'pointer': return true;
     case 'hand': return true;
     case 'dynamite': return getScore(state) >= 1;
-    case 'vowel': return state.inventory.vowels >= 1;
-    case 'consonant': return state.inventory.consonants >= 1;
-    case 'copy': return state.inventory.copies >= 1;
-    case 'time': return state.inventory.times >= 1;
+    case 'vowel': return state.slowState.inventory.vowels >= 1;
+    case 'consonant': return state.slowState.inventory.consonants >= 1;
+    case 'copy': return state.slowState.inventory.copies >= 1;
+    case 'time': return state.slowState.inventory.times >= 1;
   }
 }

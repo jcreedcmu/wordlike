@@ -327,11 +327,11 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     case 'debug': {
       return withCoreState(state, cs => checkValid(produce(addWorldTiles(removeAllTiles(cs), debugTiles()), s => {
         setScore(s, 900);
-        s.inventory.bombs = 15;
-        s.inventory.vowels = 15;
-        s.inventory.consonants = 15;
-        s.inventory.copies = 15;
-        s.inventory.times = 15;
+        s.slowState.inventory.bombs = 15;
+        s.slowState.inventory.vowels = 15;
+        s.slowState.inventory.consonants = 15;
+        s.slowState.inventory.copies = 15;
+        s.slowState.inventory.times = 15;
       })));
     }
     case 'incrementScore':
@@ -449,14 +449,14 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
       return withCoreState(state, cs => putTileInHand(cs, action.id, action.ix));
 
     case 'decrement':
-      return produce(state, s => { s.coreState.inventory[action.which]--; });
+      return produce(state, s => { s.coreState.slowState.inventory[action.which]--; });
 
     case 'drawConsonant': {
       let newState = drawOfState(state.coreState, 'consonant');
       if (newState == state.coreState)
         return state;
       else {
-        newState = produce(newState, cs => { cs.inventory.consonants--; });
+        newState = produce(newState, cs => { cs.slowState.inventory.consonants--; });
         return produce(state, s => { s.coreState = newState; });
       }
     }
@@ -466,7 +466,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
       if (newState == state.coreState)
         return state;
       else {
-        newState = produce(newState, cs => { cs.inventory.vowels--; });
+        newState = produce(newState, cs => { cs.slowState.inventory.vowels--; });
         return produce(state, s => { s.coreState = newState; });
       }
     }

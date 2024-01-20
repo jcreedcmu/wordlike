@@ -163,7 +163,7 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
         if (res == undefined)
           return state;
         let newCs = produce(deselect(res.cs), s => {
-          s.inventory.copies--;
+          s.slowState.inventory.copies--;
         });
         return produce(state, s => {
           s.coreState = checkValid(newCs);

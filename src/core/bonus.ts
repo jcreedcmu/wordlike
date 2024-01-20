@@ -131,11 +131,11 @@ export function resolveScoring(state: CoreState, scoring: Scoring): CoreState {
   const bonus = scoring.bonus;
   switch (bonus.t) {
     case 'bonus': return produce(state, s => { incrementScore(s); });
-    case 'bomb': return produce(state, s => { s.inventory.bombs++; });
+    case 'bomb': return produce(state, s => { s.slowState.inventory.bombs++; });
     case 'required': return produce(state, s => { incrementScore(s, 10); });
-    case 'vowel': return produce(state, s => { s.inventory.vowels += 5; });
-    case 'consonant': return produce(state, s => { s.inventory.consonants += 5; });
-    case 'copy': return produce(state, s => { s.inventory.copies += 3; });
+    case 'vowel': return produce(state, s => { s.slowState.inventory.vowels += 5; });
+    case 'consonant': return produce(state, s => { s.slowState.inventory.consonants += 5; });
+    case 'copy': return produce(state, s => { s.slowState.inventory.copies += 3; });
     case 'word': {
       const { state: state1, wordBonus } = mkActiveWordBonus(state, scoring.p_in_world_int);
       return produce(state1, s => {
@@ -144,7 +144,7 @@ export function resolveScoring(state: CoreState, scoring: Scoring): CoreState {
       });
     }
     case 'wordAchieved': return produce(state, s => { incrementScore(s, bonus.word.length * 10 + 10); });
-    case 'time': return produce(state, s => { s.inventory.times++; });
+    case 'time': return produce(state, s => { s.slowState.inventory.times++; });
   }
 }
 
