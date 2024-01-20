@@ -1,6 +1,6 @@
 import { Dispatch } from "../core/action";
 import { getAssets } from "../core/assets";
-import { ActiveChunkInfo, Chunk, WORLD_CHUNK_SIZE, activeChunks, getChunk } from "../core/chunk";
+import { ActiveChunkInfo, WORLD_CHUNK_SIZE, activeChunks, getChunk } from "../core/chunk";
 import { CoreState, GameState } from "../core/state";
 import { pointFall } from "../core/state-helpers";
 import { getTileId, get_hand_tiles, isSelectedForDrag } from "../core/tile-helpers";
@@ -14,7 +14,7 @@ import { Point, Rect } from "../util/types";
 import { rectPts } from "../util/util";
 import { vadd, vdiag, vmul, vsub } from "../util/vutil";
 import { renderPanicBar } from "./drawPanicBar";
-import { CANVAS_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, PREPASS_FB_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, mkCanvasDrawer, mkDebugQuadDrawer, mkFrameBuffer, mkRectDrawer, mkTileDrawer, mkWorldDrawer } from "./gl-common";
+import { CANVAS_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, PREPASS_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, mkCanvasDrawer, mkDebugQuadDrawer, mkPrepassHelper, mkRectDrawer, mkTileDrawer, mkWorldDrawer } from "./gl-common";
 import { gl_from_canvas } from "./gl-helpers";
 import { canvas_from_hand_tile } from "./render";
 import { resizeView } from "./ui-helpers";
@@ -25,20 +25,20 @@ import { canvas_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas } from "./widg
 const backgroundGrayRgb: RgbColor = [238, 238, 238];
 const shadowColorRgba: RgbaColor = [128, 128, 100, Math.floor(0.4 * 255)];
 
-// This is for a frame buffer into which I render one pixel per world
-// *cell*, containing information about bonuses and tile occupancy at
-// that cell. I think 256 is probably big enough to cover, because
-// maybe at max zoom-out a cell could be like 8 pixels, and 8 * 512 =
-// 2048 should be as big as any reasonable screen.
+// This is for an offscreen texture into which I render one pixel per
+// world *cell*, containing information about bonuses and tile
+// occupancy at that cell. I think 256 is probably big enough to
+// cover, because maybe at max zoom-out a cell could be like 8 pixels,
+// and 8 * 512 = 2048 should be as big as any reasonable screen.
 //
 // (A 4k monitor has twice as many pixels, but in that case I think
 // max-zoom-out should have a cell be 16 double-resolution pixels...
 // having >100 × 100 cells per screen is already probably plenty)
-const PREPASS_FRAME_BUFFER_SIZE: Point = { x: 256, y: 256 };
+const PREPASS_SIZE: Point = { x: 256, y: 256 };
 
 export const prepass_from_gl: SE2 = {
-  scale: { x: PREPASS_FRAME_BUFFER_SIZE.x / 2, y: PREPASS_FRAME_BUFFER_SIZE.y / 2 },
-  translate: { x: PREPASS_FRAME_BUFFER_SIZE.x / 2, y: PREPASS_FRAME_BUFFER_SIZE.y / 2 },
+  scale: { x: PREPASS_SIZE.x / 2, y: PREPASS_SIZE.y / 2 },
+  translate: { x: PREPASS_SIZE.x / 2, y: PREPASS_SIZE.y / 2 },
 };
 
 export const gl_from_prepass: SE2 = inverse(prepass_from_gl);
@@ -129,11 +129,9 @@ function renderPrepass(env: GlEnv, state: CoreState, canvas_from_world: SE2): Ac
   const { gl } = env;
 
 
-  // clear framebuffer
+  // clear offscreen texture
   gl.clearColor(0.03, 0.03, 0.05, 0.05); // predivided by DEBUG_COLOR_SCALE
   gl.clear(gl.COLOR_BUFFER_BIT);
-
-  // Try drawing a prepass chunk into the framebuffer
 
   // XXX I think I want to have activeChunks return just a bit
   // larger of a region than it currently is.
@@ -144,7 +142,7 @@ function renderPrepass(env: GlEnv, state: CoreState, canvas_from_world: SE2): Ac
   // value at p + (±0.5, ±0.5). To do that I need to know about the
   // bonus data at ⌊p + (±0.5, ±0.5)⌋.
   const aci = activeChunks(canvas_from_world);
-  gl.activeTexture(gl.TEXTURE0 + PREPASS_FB_TEXTURE_UNIT);
+  gl.activeTexture(gl.TEXTURE0 + PREPASS_TEXTURE_UNIT);
 
   aci.ps_in_chunk.forEach(p => {
     const chunk = getChunk(state._cachedTileChunkMap, p);
@@ -180,7 +178,7 @@ function drawWorld(env: GlEnv, state: GameState, canvas_from_world: SE2, aci: Ac
   const u_fontTexture = gl.getUniformLocation(prog, 'u_fontTexture');
   gl.uniform1i(u_fontTexture, FONT_TEXTURE_UNIT);
   const u_chunkDataTexture = gl.getUniformLocation(prog, 'u_prepassTexture');
-  gl.uniform1i(u_chunkDataTexture, PREPASS_FB_TEXTURE_UNIT);
+  gl.uniform1i(u_chunkDataTexture, PREPASS_TEXTURE_UNIT);
   const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
   gl.uniform2f(u_canvasSize, devicePixelRatio * canvas_bds_in_canvas.sz.x, devicePixelRatio * canvas_bds_in_canvas.sz.y);
   const u_min_p_in_chunk = gl.getUniformLocation(prog, 'u_min_p_in_chunk');
@@ -288,7 +286,7 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
       }
     }
 
-    //// show the prepass framebuffer for debugging reasons
+    //// show the prepass for debugging reasons
     // debugPrepass(env, state.coreState);
   };
 
@@ -372,6 +370,6 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
     rectDrawer: mkRectDrawer(gl),
     debugQuadDrawer: mkDebugQuadDrawer(gl),
     canvasDrawer: mkCanvasDrawer(gl),
-    fb: mkFrameBuffer(gl, PREPASS_FRAME_BUFFER_SIZE),
+    prepassHelper: mkPrepassHelper(gl, PREPASS_SIZE),
   };
 }

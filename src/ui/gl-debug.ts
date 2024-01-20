@@ -7,7 +7,7 @@ import { apply_to_rect, asMatrix } from "../util/se2-extra";
 import { Point } from "../util/types";
 import { rectPts } from "../util/util";
 import { vdiag } from "../util/vutil";
-import { CHUNK_DATA_TEXTURE_UNIT, GlEnv, PREPASS_FB_TEXTURE_UNIT } from "./gl-common";
+import { CHUNK_DATA_TEXTURE_UNIT, GlEnv, PREPASS_TEXTURE_UNIT } from "./gl-common";
 import { gl_from_canvas } from "./gl-helpers";
 import { canvas_bds_in_canvas } from "./widget-helpers";
 
@@ -52,6 +52,6 @@ function drawChunkDebugging(gl: WebGL2RenderingContext, env: GlEnv, state: CoreS
 }
 
 export function debugPrepass(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState): void {
-  // debug the state of the framebuffer
-  drawChunkDebugging(gl, env, state, { x: 100, y: 0 }, PREPASS_FB_TEXTURE_UNIT);
+  // debug the state of the prepass
+  drawChunkDebugging(gl, env, state, { x: 100, y: 0 }, PREPASS_TEXTURE_UNIT);
 }

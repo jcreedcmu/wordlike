@@ -10,7 +10,7 @@ import { canvas_bds_in_canvas } from "./widget-helpers";
 export const SPRITE_TEXTURE_UNIT = 0;
 export const CHUNK_DATA_TEXTURE_UNIT = 1;
 export const FONT_TEXTURE_UNIT = 2;
-export const PREPASS_FB_TEXTURE_UNIT = 3;
+export const PREPASS_TEXTURE_UNIT = 3;
 export const CANVAS_TEXTURE_UNIT = 4;
 
 export type RectDrawer = {
@@ -41,10 +41,7 @@ export type CanvasDrawer = {
   texture: WebGLTexture,
 };
 
-// XXX A little badly named now; it's just an offscreen texture that
-// we merely write to with texSubImage2d, not set up as a framebuffer
-// we actually draw to.
-export type FrameBufferHelper = {
+export type PrepassHelper = {
   size: Point,
   texture: WebGLTexture,
 };
@@ -56,7 +53,7 @@ export type GlEnv = {
   rectDrawer: RectDrawer,
   debugQuadDrawer: DebugQuadDrawer,
   canvasDrawer: CanvasDrawer,
-  fb: FrameBufferHelper,
+  prepassHelper: PrepassHelper,
 }
 
 export function mkWorldDrawer(gl: WebGL2RenderingContext): WorldDrawer {
@@ -145,9 +142,9 @@ export function mkCanvasDrawer(gl: WebGL2RenderingContext): CanvasDrawer {
   return { prog, position, texture };
 }
 
-export function mkFrameBuffer(gl: WebGL2RenderingContext, size: Point): FrameBufferHelper {
+export function mkPrepassHelper(gl: WebGL2RenderingContext, size: Point): PrepassHelper {
   const texture = gl.createTexture()!;
-  gl.activeTexture(gl.TEXTURE0 + PREPASS_FB_TEXTURE_UNIT);
+  gl.activeTexture(gl.TEXTURE0 + PREPASS_TEXTURE_UNIT);
   gl.bindTexture(gl.TEXTURE_2D, texture);
 
   const data = null;
