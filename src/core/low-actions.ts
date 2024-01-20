@@ -350,7 +350,9 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
         }));
       else return state;
     case 'mouseDownIntent':
-      return reduceIntent(state, action.intent, action.wp);
+      return produce(reduceIntent(state, action.intent, action.wp), s => {
+        s.coreState.slowState.generation++;
+      });
     case 'mouseMove': return produce(state, s => {
       s.mouseState.p_in_canvas = action.p;
     });
@@ -403,6 +405,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     case 'startDragHandTile': {
       const tiles = get_hand_tiles(state.coreState);
       return produce(withCoreState(state, deselect), s => {
+        s.coreState.slowState.generation++;
         s.mouseState = {
           t: 'drag_tile',
           orig_loc: { t: 'hand', p_in_hand_int: action.p_in_hand_int },
