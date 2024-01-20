@@ -206,7 +206,7 @@ export function checkValid(state: CoreState): CoreState {
 
   return produce(state, s => {
     s.panic = panic;
-    s.invalidWords = invalidWords;
+    s.slowState.invalidWords = invalidWords;
     s.connectedSet = connectedSet;
     s.winState = winState;
     s.animations = animations;

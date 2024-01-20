@@ -115,6 +115,7 @@ export type SlowState = {
   inventory: InventoryItems,
   scoring: ScoreState,
   currentTool: Tool,
+  invalidWords: LocatedWord[],
 }
 
 export type CoreState = {
@@ -122,7 +123,6 @@ export type CoreState = {
   renderToGl: boolean,
   animations: Animation[],
   tile_entities: Record<string, TileEntity>,
-  invalidWords: LocatedWord[],
   connectedSet: Grid<boolean>,
   energies: Energies,
   canvas_from_world: SE2,
@@ -170,6 +170,7 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
         },
         scoring: { score: 0, highWaterMark: 0 },
         currentTool: 'pointer',
+        invalidWords: [],
       },
       wordBonusState: {
         shown: undefined,
@@ -179,7 +180,6 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
       renderToGl: false,
       animations: [],
       tile_entities: {},
-      invalidWords: [],
       bonusOverlay: mkOverlay<Bonus>(),
       canvas_from_world: {
         scale: { x: DEFAULT_SCALE, y: DEFAULT_SCALE },

@@ -133,6 +133,7 @@ function exampleState(): GameState {
           highWaterMark: 7,
         },
         currentTool: 'pointer',
+        invalidWords: [],
       },
       wordBonusState: {
         shown: undefined,
@@ -142,7 +143,6 @@ function exampleState(): GameState {
       _cachedTileChunkMap: mkOverlay<Chunk>(),
       renderToGl: false,
       animations: [],
-      invalidWords: [],
       tile_entities: {},
       connectedSet: mkGridOf([]),
       energies: {

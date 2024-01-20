@@ -437,7 +437,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
 
   // draw invalid words
   if (ms.t == 'up') {
-    cs.invalidWords.forEach(lw => {
+    cs.slowState.invalidWords.forEach(lw => {
       drawInvalidWord(d, pan_canvas_from_world, lw);
     });
   }
