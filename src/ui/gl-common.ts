@@ -147,7 +147,7 @@ export function mkPrepassHelper(gl: WebGL2RenderingContext, size: Point): Prepas
   gl.activeTexture(gl.TEXTURE0 + PREPASS_TEXTURE_UNIT);
   gl.bindTexture(gl.TEXTURE_2D, texture);
 
-  const data = null;
+  const data = new Uint8Array(size.x * size.y * 4); // avoid lazy texture initialization warning
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, size.x, size.y, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
 
   // set the filtering so we don't need mips
