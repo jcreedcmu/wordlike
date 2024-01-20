@@ -161,7 +161,7 @@ vec4 getColor() {
 
   vec4 cell_data = round(255.0 * texture(u_prepassTexture, (p_in_prepass + vec2(0.5,0.5)) / float(PREPASS_BUFFER_SIZE) ));
 
-  vec4 cell_pixel = get_cell_pixel(p_in_world, p_in_world_fp, ivec3(cell_data));
+  vec4 cell_pixel = get_cell_pixel(p_in_world, p_in_world_fp, ivec3(cell_data.rgb));
 
   // maybe render origin
   vec4 main_color = blendOver(get_origin_pixel(p_in_world_int, p_in_world_fp), cell_pixel);

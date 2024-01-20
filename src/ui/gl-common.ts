@@ -74,6 +74,19 @@ export function mkWorldDrawer(gl: WebGL2RenderingContext): WorldDrawer {
   gl.bindTexture(gl.TEXTURE_2D, chunkDataTexture);
 
   const chunkImdat = new ImageData(WORLD_CHUNK_SIZE.x, WORLD_CHUNK_SIZE.y);
+  for (let y = 0; y < 16; y++) {
+    for (let x = 0; x < 16; x++) {
+      const ix = 4 * (y * 16 + x);
+      chunkImdat.data[ix + 0] = 7;
+      chunkImdat.data[ix + 1] = 32;
+      chunkImdat.data[ix + 2] = 0;
+      chunkImdat.data[ix + 3] = 0;
+    }
+  }
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, chunkImdat);
+
+
+
 
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);

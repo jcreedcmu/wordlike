@@ -71,47 +71,10 @@ function drawCanvas(env: GlEnv): void {
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 }
 
-// the prepass coordinate system is (0,0) at the upper left of the
-// prepass framebuffer, and is measured in framebuffer pixels.
-
-// the chunk_local coordinate system is (0,0) at the upper left of the
-// chunk, and extends to chunk.size at the bottom right.
-
-// the chunk_texture coordinate system is (0,0) at the upper left of the
-// chunk, and extends to (1,1) at the bottom right.
-//
-// XXX: This approach is deprecated, and so is TexQuadDrawer in
-// principle: I should just be texSubimage2D-ing instead.
-function drawPrepassChunk(env: GlEnv, chunk: Chunk, prepass_from_chunk_local: SE2): void {
+function drawPrepassChunk(env: GlEnv, chunk: Chunk, offset: Point): void {
   const { gl } = env;
   const { prog, position } = env.texQuadDrawer;
-  gl.useProgram(prog);
-  const rect_in_chunk_local = { p: vdiag(0), sz: chunk.size };
-  const rect_in_prepass = apply_to_rect(prepass_from_chunk_local, rect_in_chunk_local);
-  const rect_in_gl = apply_to_rect(gl_from_prepass, rect_in_prepass);
 
-  gl.activeTexture(gl.TEXTURE0 + CHUNK_DATA_TEXTURE_UNIT);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, chunk.imdat);
-
-  const [p1, p2] = rectPts(rect_in_gl);
-  bufferSetFloats(gl, position, [
-    p1.x, p2.y,
-    p2.x, p2.y,
-    p1.x, p1.y,
-    p2.x, p1.y,
-  ]);
-  const u_texture = gl.getUniformLocation(prog, 'u_texture')!;
-  gl.uniform1i(u_texture, CHUNK_DATA_TEXTURE_UNIT);
-  const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
-  gl.uniform2f(u_canvasSize, PREPASS_FRAME_BUFFER_SIZE.x, PREPASS_FRAME_BUFFER_SIZE.y);
-
-  // - the chunk texture coordinate frame is the relevant texture coordinate frame
-  // - the prepass framebuffer is playing the role of 'canvas'
-  const u_chunk_texture_from_prepass = gl.getUniformLocation(prog, 'u_texture_from_canvas');
-  const chunk_local_from_chunk_texture = scale(chunk.size);
-  const chunk_texture_from_prepass = inverse(compose(prepass_from_chunk_local, chunk_local_from_chunk_texture));
-  gl.uniformMatrix3fv(u_chunk_texture_from_prepass, false, asMatrix(chunk_texture_from_prepass));
-  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 }
 
 function drawOneTile(env: GlEnv, letter: string, state: GameState, canvas_from_chunk_local: SE2): void {
@@ -171,8 +134,6 @@ function drawHandBackground(env: GlEnv, state: CoreState): void {
 function renderPrepass(env: GlEnv, state: CoreState, canvas_from_world: SE2): ActiveChunkInfo {
   const { gl } = env;
 
-  // start drawing into framebuffer
-  useFrameBuffer(gl, env.fb);
 
   // clear framebuffer
   gl.clearColor(0.03, 0.03, 0.05, 0.05); // predivided by DEBUG_COLOR_SCALE
@@ -189,17 +150,17 @@ function renderPrepass(env: GlEnv, state: CoreState, canvas_from_world: SE2): Ac
   // value at p + (±0.5, ±0.5). To do that I need to know about the
   // bonus data at ⌊p + (±0.5, ±0.5)⌋.
   const aci = activeChunks(canvas_from_world);
+  gl.activeTexture(gl.TEXTURE0 + PREPASS_FB_TEXTURE_UNIT);
+
   aci.ps_in_chunk.forEach(p => {
     const chunk = getChunk(state._cachedTileChunkMap, p);
     if (chunk == undefined) {
       logger('missedChunkRendering', `missing data for debug2 chunk`);
       return;
     }
-    drawPrepassChunk(env, chunk, translate(vmul(WORLD_CHUNK_SIZE, vsub(p, aci.min_p_in_chunk))));
+    const offset = vmul(WORLD_CHUNK_SIZE, vsub(p, aci.min_p_in_chunk));
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, offset.x, offset.y, 16, 16, gl.RGBA, gl.UNSIGNED_BYTE, chunk.imdat);
   });
-
-  // go back to drawing to canvas
-  endFrameBuffer(gl);
 
   return aci;
 }
@@ -407,6 +368,8 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, fontImdat);
+
+  gl.viewport(0, 0, devicePixelRatio * canvas_bds_in_canvas.sz.x, devicePixelRatio * canvas_bds_in_canvas.sz.y);
 
   return {
     gl,
