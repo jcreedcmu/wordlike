@@ -51,7 +51,8 @@ export const gl_from_prepass: SE2 = inverse(prepass_from_gl);
 
 // the chunk_texture coordinate system is (0,0) at the upper left of the
 // chunk, and extends to (1,1) at the bottom right.
-function drawPrepassChunk(gl: WebGL2RenderingContext, env: GlEnv, chunk: Chunk, prepass_from_chunk_local: SE2): void {
+function drawPrepassChunk(env: GlEnv, chunk: Chunk, prepass_from_chunk_local: SE2): void {
+  const { gl } = env;
   const { prog, position } = env.texQuadDrawer;
   gl.useProgram(prog);
   const rect_in_chunk_local = { p: vdiag(0), sz: chunk.size };
@@ -82,7 +83,8 @@ function drawPrepassChunk(gl: WebGL2RenderingContext, env: GlEnv, chunk: Chunk, 
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 }
 
-function drawOneTile(gl: WebGL2RenderingContext, env: GlEnv, letter: string, state: GameState, canvas_from_chunk_local: SE2): void {
+function drawOneTile(env: GlEnv, letter: string, state: GameState, canvas_from_chunk_local: SE2): void {
+  const { gl } = env;
   const { prog, position } = env.tileDrawer;
   gl.useProgram(prog);
 
@@ -112,7 +114,8 @@ function drawOneTile(gl: WebGL2RenderingContext, env: GlEnv, letter: string, sta
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 }
 
-function glFillRecta(gl: WebGL2RenderingContext, env: GlEnv, rect_in_canvas: Rect, color: RgbaColor): void {
+function glFillRecta(env: GlEnv, rect_in_canvas: Rect, color: RgbaColor): void {
+  const { gl } = env;
   gl.useProgram(env.rectDrawer.prog);
   const rect_in_gl = apply_to_rect(gl_from_canvas, rect_in_canvas);
   const [p1, p2] = rectPts(rect_in_gl);
@@ -126,15 +129,17 @@ function glFillRecta(gl: WebGL2RenderingContext, env: GlEnv, rect_in_canvas: Rec
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 }
 
-function glFillRect(gl: WebGL2RenderingContext, env: GlEnv, rect_in_canvas: Rect, color: RgbColor): void {
-  glFillRecta(gl, env, rect_in_canvas, [...color, 255]);
+function glFillRect(env: GlEnv, rect_in_canvas: Rect, color: RgbColor): void {
+  glFillRecta(env, rect_in_canvas, [...color, 255]);
 }
 
-function drawHand(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState): void {
-  glFillRect(gl, env, hand_bds_in_canvas, backgroundGrayRgb);
+function drawHand(env: GlEnv, state: CoreState): void {
+  glFillRect(env, hand_bds_in_canvas, backgroundGrayRgb);
 }
 
-function renderPrepass(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState, canvas_from_world: SE2): ActiveChunkInfo {
+function renderPrepass(env: GlEnv, state: CoreState, canvas_from_world: SE2): ActiveChunkInfo {
+  const { gl } = env;
+
   // start drawing into framebuffer
   useFrameBuffer(gl, env.fb);
 
@@ -159,7 +164,7 @@ function renderPrepass(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState,
       logger('missedChunkRendering', `missing data for debug2 chunk`);
       return;
     }
-    drawPrepassChunk(gl, env, chunk, translate(vmul(WORLD_CHUNK_SIZE, vsub(p, aci.min_p_in_chunk))));
+    drawPrepassChunk(env, chunk, translate(vmul(WORLD_CHUNK_SIZE, vsub(p, aci.min_p_in_chunk))));
   });
 
   // go back to drawing to canvas
@@ -169,7 +174,8 @@ function renderPrepass(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState,
 }
 
 
-function drawWorld(gl: WebGL2RenderingContext, env: GlEnv, state: GameState, canvas_from_world: SE2, aci: ActiveChunkInfo): void {
+function drawWorld(env: GlEnv, state: GameState, canvas_from_world: SE2, aci: ActiveChunkInfo): void {
+  const { gl } = env;
   const { prog, position } = env.worldDrawer;
   gl.useProgram(prog);
 
@@ -223,7 +229,7 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
 
     // render the prepass
     const canvas_from_world = pan_canvas_from_world_of_state(state);
-    const aci = renderPrepass(gl, env, cs, canvas_from_world);
+    const aci = renderPrepass(env, cs, canvas_from_world);
 
     // clear canvas & initialize blending
     gl.clearColor(1.0, 1.0, 1.0, 1.0);
@@ -232,7 +238,7 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
     // draw world
-    drawWorld(gl, env, state, canvas_from_world, aci);
+    drawWorld(env, state, canvas_from_world, aci);
 
     // draw bomb shadow
     const currentTool = getCurrentTool(cs);
@@ -240,18 +246,18 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
       const radius = BOMB_RADIUS;
       for (let x = -radius; x <= radius; x++) {
         for (let y = -radius; y <= radius; y++) {
-          glFillRecta(gl, env, cell_in_canvas(vadd({ x, y }, pointFall(cs, ms.p_in_canvas)), canvas_from_world), shadowColorRgba);
+          glFillRecta(env, cell_in_canvas(vadd({ x, y }, pointFall(cs, ms.p_in_canvas)), canvas_from_world), shadowColorRgba);
         }
       }
     }
 
     // draw hand
-    drawHand(gl, env, state.coreState);
+    drawHand(env, state.coreState);
 
     // draw panic bar
     if (state.coreState.winState.t != 'lost' && state.coreState.panic) {
       const rr = renderPanicBar(state.coreState.panic, state.coreState.game_from_clock);
-      glFillRect(gl, env, rr.rect, rr.color);
+      glFillRect(env, rr.rect, rr.color);
     }
 
     // Here's where we draw dragged tiles in general
@@ -276,13 +282,13 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
             }
 
             const canvas_from_other_tile = compose(canvas_from_drag_tile(cs, ms), drag_tile_from_other_tile);
-            drawOneTile(gl, env, tile.letter, state, canvas_from_other_tile);
+            drawOneTile(env, tile.letter, state, canvas_from_other_tile);
           }
         });
       }
       else {
         const tile = getTileId(cs, ms.id);
-        drawOneTile(gl, env, tile.letter, state, canvas_from_drag_tile(cs, ms));
+        drawOneTile(env, tile.letter, state, canvas_from_drag_tile(cs, ms));
       }
     }
 
@@ -290,11 +296,11 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
     get_hand_tiles(cs).forEach(tile => {
       if (isSelectedForDrag(state, tile))
         return;
-      drawOneTile(gl, env, tile.letter, state, canvas_from_hand_tile(tile.loc.p_in_hand_int.y));
+      drawOneTile(env, tile.letter, state, canvas_from_hand_tile(tile.loc.p_in_hand_int.y));
     });
 
     //// show the prepass framebuffer for debugging reasons
-    // debugPrepass(gl, env, state.coreState);
+    // debugPrepass(env, state.coreState);
   };
 
   if (DEBUG.glProfiling) {
