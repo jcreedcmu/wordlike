@@ -14,7 +14,6 @@ type Assets = {
   fontSheetBuf: Buffer,
   worldShaders: ShaderProgramText,
   tileShaders: ShaderProgramText,
-  texQuadShaders: ShaderProgramText,
   debugQuadShaders: ShaderProgramText,
   canvasShaders: ShaderProgramText,
 };
@@ -30,7 +29,6 @@ let assets: Assets = {
   fontSheetBuf: undefined as any,
   worldShaders: { frag: '', vert: '' },
   tileShaders: { frag: '', vert: '' },
-  texQuadShaders: { frag: '', vert: '' },
   debugQuadShaders: { frag: '', vert: '' },
   canvasShaders: { frag: '', vert: '' },
 }
@@ -62,7 +60,6 @@ export async function initAssets() {
     fontSheetBuf: prerenderFontSheet(fontSheetImg),
     worldShaders: await getShaders('world'),
     tileShaders: await getShaders('tile'),
-    texQuadShaders: await getShaders('tex-quad'),
     debugQuadShaders: await getShaders('debug-quad'),
     canvasShaders: await getShaders('canvas'),
   };

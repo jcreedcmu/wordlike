@@ -14,7 +14,7 @@ import { Point, Rect } from "../util/types";
 import { rectPts } from "../util/util";
 import { vadd, vdiag, vmul, vsub } from "../util/vutil";
 import { renderPanicBar } from "./drawPanicBar";
-import { CANVAS_TEXTURE_UNIT, CHUNK_DATA_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, PREPASS_FB_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, endFrameBuffer, mkCanvasDrawer, mkDebugQuadDrawer, mkFrameBuffer, mkRectDrawer, mkTexQuadDrawer, mkTileDrawer, mkWorldDrawer, useFrameBuffer } from "./gl-common";
+import { CANVAS_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, PREPASS_FB_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, mkCanvasDrawer, mkDebugQuadDrawer, mkFrameBuffer, mkRectDrawer, mkTileDrawer, mkWorldDrawer } from "./gl-common";
 import { gl_from_canvas } from "./gl-helpers";
 import { canvas_from_hand_tile } from "./render";
 import { resizeView } from "./ui-helpers";
@@ -69,12 +69,6 @@ function drawCanvas(env: GlEnv): void {
   ]);
 
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-}
-
-function drawPrepassChunk(env: GlEnv, chunk: Chunk, offset: Point): void {
-  const { gl } = env;
-  const { prog, position } = env.texQuadDrawer;
-
 }
 
 function drawOneTile(env: GlEnv, letter: string, state: GameState, canvas_from_chunk_local: SE2): void {
@@ -376,7 +370,6 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
     tileDrawer: mkTileDrawer(gl),
     worldDrawer: mkWorldDrawer(gl),
     rectDrawer: mkRectDrawer(gl),
-    texQuadDrawer: mkTexQuadDrawer(gl),
     debugQuadDrawer: mkDebugQuadDrawer(gl),
     canvasDrawer: mkCanvasDrawer(gl),
     fb: mkFrameBuffer(gl, PREPASS_FRAME_BUFFER_SIZE),

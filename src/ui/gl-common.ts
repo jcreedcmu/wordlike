@@ -30,7 +30,7 @@ export type TileDrawer = {
   position: BufferAttr,
 };
 
-export type TexQuadDrawer = {
+export type DebugQuadDrawer = {
   prog: WebGLProgram,
   position: BufferAttr,
 };
@@ -41,8 +41,10 @@ export type CanvasDrawer = {
   texture: WebGLTexture,
 };
 
+// XXX A little badly named now; it's just an offscreen texture that
+// we merely write to with texSubImage2d, not set up as a framebuffer
+// we actually draw to.
 export type FrameBufferHelper = {
-  buffer: WebGLFramebuffer,
   size: Point,
   texture: WebGLTexture,
 };
@@ -52,8 +54,7 @@ export type GlEnv = {
   tileDrawer: TileDrawer,
   worldDrawer: WorldDrawer,
   rectDrawer: RectDrawer,
-  texQuadDrawer: TexQuadDrawer,
-  debugQuadDrawer: TexQuadDrawer,
+  debugQuadDrawer: DebugQuadDrawer,
   canvasDrawer: CanvasDrawer,
   fb: FrameBufferHelper,
 }
@@ -102,15 +103,7 @@ export function mkTileDrawer(gl: WebGL2RenderingContext): TileDrawer {
   return { prog, position };
 }
 
-export function mkTexQuadDrawer(gl: WebGL2RenderingContext): TexQuadDrawer {
-  const prog = shaderProgram(gl, getAssets().texQuadShaders);
-  const position = attributeCreate(gl, prog, 'pos', 2);
-  if (position == null)
-    throw new Error(`couldn't allocate position buffer`);
-  return { prog, position };
-}
-
-export function mkDebugQuadDrawer(gl: WebGL2RenderingContext): TexQuadDrawer {
+export function mkDebugQuadDrawer(gl: WebGL2RenderingContext): DebugQuadDrawer {
   const prog = shaderProgram(gl, getAssets().debugQuadShaders);
   const position = attributeCreate(gl, prog, 'pos', 2);
   if (position == null)
@@ -166,25 +159,7 @@ export function mkFrameBuffer(gl: WebGL2RenderingContext, size: Point): FrameBuf
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-  const buffer = gl.createFramebuffer()!;
-  gl.bindFramebuffer(gl.FRAMEBUFFER, buffer);
-
-  // attach the texture as the first color attachment
-  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-  return { buffer, size, texture };
-}
-
-export function useFrameBuffer(gl: WebGL2RenderingContext, fb: FrameBufferHelper): void {
-  gl.bindFramebuffer(gl.FRAMEBUFFER, fb.buffer);
-  gl.viewport(0, 0, fb.size.x, fb.size.y);
-}
-
-export function endFrameBuffer(gl: WebGL2RenderingContext): void {
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-  gl.viewport(0, 0, devicePixelRatio * canvas_bds_in_canvas.sz.x, devicePixelRatio * canvas_bds_in_canvas.sz.y);
+  return { size, texture };
 }
 
 export function mkRectDrawer(gl: WebGL2RenderingContext): RectDrawer {
