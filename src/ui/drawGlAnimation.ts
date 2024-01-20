@@ -1,6 +1,6 @@
 import { Animation } from '../core/animations';
 import { bufferSetFloats } from '../util/gl-util';
-import { SE2, compose, inverse, translate } from '../util/se2';
+import { SE2, compose, inverse, scale, translate } from '../util/se2';
 import { apply_to_rect, asMatrix } from '../util/se2-extra';
 import { Point } from '../util/types';
 import { rectPts, unreachable } from "../util/util";
@@ -31,7 +31,7 @@ function drawBonusPoint(env: GlEnv, canvas_from_world: SE2, p_in_world: Point, f
   gl.uniform2f(u_canvasSize, devicePixelRatio * canvas_bds_in_canvas.sz.x, devicePixelRatio * canvas_bds_in_canvas.sz.y);
 
   const u_tile_from_canvas = gl.getUniformLocation(prog, "u_tile_from_canvas");
-  gl.uniformMatrix3fv(u_tile_from_canvas, false, asMatrix(inverse(canvas_from_tile)));
+  gl.uniformMatrix3fv(u_tile_from_canvas, false, asMatrix(inverse(compose(scale(vdiag(devicePixelRatio)), canvas_from_tile))));
 
   const u_fraction = gl.getUniformLocation(prog, "u_fraction");
   gl.uniform1f(u_fraction, fraction);
