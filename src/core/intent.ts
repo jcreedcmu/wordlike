@@ -107,15 +107,15 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
         }
       }
       return produce(state2, s => {
-        s.mouseState = {
-          t: 'drag_tile',
-          orig_loc: { t: 'world', p_in_world_int },
-          id: intent.id,
-          orig_p_in_canvas: wp.p_in_canvas,
-          p_in_canvas: wp.p_in_canvas,
-          flipped: false,
-          _chunkCache: overlay,
-        };
+        s.coreState._cachedTileChunkMap = overlay,
+          s.mouseState = {
+            t: 'drag_tile',
+            orig_loc: { t: 'world', p_in_world_int },
+            id: intent.id,
+            orig_p_in_canvas: wp.p_in_canvas,
+            p_in_canvas: wp.p_in_canvas,
+            flipped: false,
+          };
       });
     }
     case 'exchangeTiles': {
@@ -174,7 +174,6 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
             orig_p_in_canvas: wp.p_in_canvas,
             p_in_canvas: wp.p_in_canvas,
             flipped: false,
-            _chunkCache: state.coreState._cachedTileChunkMap,
           };
         });
 

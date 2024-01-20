@@ -27,7 +27,6 @@ export type MouseState =
     p_in_canvas: Point,
     id: string,
     flipped: boolean,
-    _chunkCache: Overlay<Chunk> // XXX I think this stored chunk cache is deprecated?
   }
   ;
 

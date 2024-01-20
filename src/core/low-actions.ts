@@ -410,7 +410,6 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
           orig_p_in_canvas: action.wp.p_in_canvas,
           p_in_canvas: action.wp.p_in_canvas,
           flipped: false,
-          _chunkCache: state.coreState._cachedTileChunkMap,
         }
       });
     }
