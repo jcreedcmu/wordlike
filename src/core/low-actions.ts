@@ -341,7 +341,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
 
     case 'toggleGl':
       return withCoreState(state, cs => produce(cs, s => {
-        s.renderToGl = !s.renderToGl;
+        s.slowState.renderToGl = !s.slowState.renderToGl;
       }));
     case 'setTool':
       if (toolPrecondition(state.coreState, action.tool))
@@ -386,7 +386,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
             s.coreState.winState = { t: 'lost' };
           });
         }
-        if (state.coreState.renderToGl)
+        if (state.coreState.slowState.renderToGl)
           return state;
         else
           return produce(state, s => { s.coreState.panic!.currentTime_in_game = t_in_game; });

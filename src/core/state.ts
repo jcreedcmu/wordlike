@@ -116,11 +116,11 @@ export type SlowState = {
   scoring: ScoreState,
   currentTool: Tool,
   invalidWords: LocatedWord[],
+  renderToGl: boolean,
 }
 
 export type CoreState = {
   slowState: SlowState,
-  renderToGl: boolean,
   animations: Animation[],
   tile_entities: Record<string, TileEntity>,
   connectedSet: Grid<boolean>,
@@ -171,13 +171,13 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
         scoring: { score: 0, highWaterMark: 0 },
         currentTool: 'pointer',
         invalidWords: [],
+        renderToGl: false,
       },
       wordBonusState: {
         shown: undefined,
         active: [],
         numAllocated: 0,
       },
-      renderToGl: false,
       animations: [],
       tile_entities: {},
       bonusOverlay: mkOverlay<Bonus>(),

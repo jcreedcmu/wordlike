@@ -70,7 +70,7 @@ export function App(props: {}): JSX.Element {
 }
 
 function glRender(ci: CanvasGlInfo, env: GlEnv, props: CanvasProps): void {
-  if (props.main.coreState.renderToGl && !DEBUG.fastAnimation) {
+  if (props.main.coreState.slowState.renderToGl && !DEBUG.fastAnimation) {
     renderGlPane(ci, env, props.main);
   }
 }
@@ -101,10 +101,10 @@ export function Game(props: GameProps): JSX.Element {
   const cs = state.coreState;
 
   function withCanvas(k: (c: HTMLCanvasElement) => void): void {
-    if (!cs.renderToGl && mc.current) {
+    if (!cs.slowState.renderToGl && mc.current) {
       k(mc.current.c);
     }
-    else if (cs.renderToGl && glmc.current) {
+    else if (cs.slowState.renderToGl && glmc.current) {
       k(glmc.current.ci.c);
     }
   }
@@ -228,7 +228,7 @@ export function Game(props: GameProps): JSX.Element {
 
   const normalStyle: React.CSSProperties = {
     cursor: cursorOfState(state),
-    display: state.coreState.renderToGl ? undefined : undefined,
+    display: state.coreState.slowState.renderToGl ? undefined : undefined,
     zIndex: 1000,
     position: 'absolute',
     top: 0,
@@ -236,7 +236,7 @@ export function Game(props: GameProps): JSX.Element {
   };
   const glStyle: React.CSSProperties = {
     cursor: cursorOfState(state),
-    display: state.coreState.renderToGl ? undefined : 'none',
+    display: state.coreState.slowState.renderToGl ? undefined : 'none',
     zIndex: 0,
     position: 'absolute',
     top: 0,
@@ -266,7 +266,7 @@ export function Game(props: GameProps): JSX.Element {
 }
 
 function render(ci: CanvasInfo, props: CanvasProps) {
-  paintWithScale(ci, props.main, props.main.coreState.renderToGl);
+  paintWithScale(ci, props.main, props.main.coreState.slowState.renderToGl);
 }
 
 

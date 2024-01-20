@@ -134,6 +134,7 @@ function exampleState(): GameState {
         },
         currentTool: 'pointer',
         invalidWords: [],
+        renderToGl: false,
       },
       wordBonusState: {
         shown: undefined,
@@ -141,7 +142,6 @@ function exampleState(): GameState {
         numAllocated: 0,
       },
       _cachedTileChunkMap: mkOverlay<Chunk>(),
-      renderToGl: false,
       animations: [],
       tile_entities: {},
       connectedSet: mkGridOf([]),
