@@ -369,6 +369,7 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, fontImdat);
 
   return {
+    gl,
     tileDrawer: mkTileDrawer(gl),
     worldDrawer: mkWorldDrawer(gl),
     rectDrawer: mkRectDrawer(gl),

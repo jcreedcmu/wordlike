@@ -38,6 +38,7 @@ export type FrameBufferHelper = {
 };
 
 export type GlEnv = {
+  gl: WebGL2RenderingContext,
   tileDrawer: TileDrawer,
   worldDrawer: WorldDrawer,
   rectDrawer: RectDrawer,
