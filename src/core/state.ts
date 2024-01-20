@@ -113,13 +113,14 @@ export type InventoryItems = {
 
 export type SlowState = {
   inventory: InventoryItems,
+  scoring: ScoreState,
+  currentTool: Tool,
 }
 
 export type CoreState = {
   slowState: SlowState,
   renderToGl: boolean,
   animations: Animation[],
-  currentTool: Tool,
   tile_entities: Record<string, TileEntity>,
   invalidWords: LocatedWord[],
   connectedSet: Grid<boolean>,
@@ -128,7 +129,6 @@ export type CoreState = {
   seed: number, // changes during game play, determines which letters are drawn
   bonusOverlay: Overlay<Bonus>,
   selected?: SelectionState,
-  scoring: ScoreState,
   winState: WinState,
   panic: PanicData | undefined,
   paused: PauseData | undefined,
@@ -168,6 +168,8 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
           copies: 0,
           times: 0,
         },
+        scoring: { score: 0, highWaterMark: 0 },
+        currentTool: 'pointer',
       },
       wordBonusState: {
         shown: undefined,
@@ -176,7 +178,6 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
       },
       renderToGl: false,
       animations: [],
-      currentTool: 'pointer',
       tile_entities: {},
       invalidWords: [],
       bonusOverlay: mkOverlay<Bonus>(),
@@ -190,7 +191,6 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
       connectedSet: mkGridOf([]),
       energies: initialEnergies(),
       seed,
-      scoring: { score: 0, highWaterMark: 0 },
       winState: { t: creative ? 'creative' : 'playing' },
       panic: undefined,
       paused: undefined,

@@ -19,6 +19,7 @@ import { PROGRESS_ANIMATION_POINTS, getHighWaterMark, getScore, setHighWaterMark
 import { CoreState, GameState, HAND_TILE_LIMIT, Location, MouseState, Tile, TileEntity, WordBonusState } from "./state";
 import { addHandTile, addWorldTile, get_hand_tiles, get_main_tiles, get_tiles, putTileInWorld } from "./tile-helpers";
 import { ensureTileId } from "./tile-id-helpers";
+import { getCurrentTool } from "./tools";
 import { WIN_SCORE, canWinFromState, shouldStartPanicBar } from "./winState";
 
 export type Scoring = {
@@ -212,8 +213,8 @@ export function checkValid(state: CoreState): CoreState {
     s._cachedTileChunkMap = newCache;
 
     // XXX: is this the right place to do this?
-    if (state.currentTool != 'dynamite')
-      s.currentTool = 'pointer';
+    if (getCurrentTool(state) != 'dynamite')
+      s.slowState.currentTool = 'pointer';
   });
 }
 

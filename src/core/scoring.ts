@@ -4,21 +4,21 @@ import { CoreState } from "./state";
 export const PROGRESS_ANIMATION_POINTS = 100;
 
 export function getScore(state: CoreState) {
-  return state.scoring.score;
+  return state.slowState.scoring.score;
 }
 
 export function getHighWaterMark(state: CoreState) {
-  return state.scoring.highWaterMark;
+  return state.slowState.scoring.highWaterMark;
 }
 
 export function incrementScore(state: Draft<CoreState>, amount: number = 1): void {
-  state.scoring.score += amount;
+  state.slowState.scoring.score += amount;
 }
 
 export function setScore(state: Draft<CoreState>, amount: number): void {
-  state.scoring.score = amount;
+  state.slowState.scoring.score = amount;
 }
 
 export function setHighWaterMark(state: Draft<CoreState>, amount: number): void {
-  state.scoring.highWaterMark = amount;
+  state.slowState.scoring.highWaterMark = amount;
 }

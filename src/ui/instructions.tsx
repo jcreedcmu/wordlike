@@ -128,6 +128,11 @@ function exampleState(): GameState {
           copies: 0,
           times: 0,
         },
+        scoring: {
+          score: 7,
+          highWaterMark: 7,
+        },
+        currentTool: 'pointer',
       },
       wordBonusState: {
         shown: undefined,
@@ -137,7 +142,6 @@ function exampleState(): GameState {
       _cachedTileChunkMap: mkOverlay<Chunk>(),
       renderToGl: false,
       animations: [],
-      currentTool: 'pointer',
       invalidWords: [],
       tile_entities: {},
       connectedSet: mkGridOf([]),
@@ -189,10 +193,6 @@ function exampleState(): GameState {
         cells: {
 
         }
-      },
-      scoring: {
-        score: 7,
-        highWaterMark: 7,
       },
       winState: { t: 'playing' },
       panic: { currentTime_in_game: Date.now(), lastClear_in_game: Date.now() - PANIC_INTERVAL_MS / 3 },

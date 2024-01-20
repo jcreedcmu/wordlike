@@ -346,7 +346,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     case 'setTool':
       if (toolPrecondition(state.coreState, action.tool))
         return withCoreState(state, cs => produce(cs, s => {
-          s.currentTool = action.tool;
+          s.slowState.currentTool = action.tool;
         }));
       else return state;
     case 'mouseDownIntent':

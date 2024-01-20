@@ -35,7 +35,7 @@ export function getCurrentTool(state: CoreState): Tool {
   if (state.winState.t == 'lost') {
     return 'hand';
   }
-  return state.currentTool;
+  return state.slowState.currentTool;
 }
 
 export const dynamiteIntent: Intent & { t: 'kill' } = { t: 'kill', radius: 0, cost: 1 };
