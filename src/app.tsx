@@ -91,8 +91,10 @@ export function Game(props: GameProps): JSX.Element {
     : useCanvasGl<CanvasProps, GlEnv>(
       { main: state }, glRender, [state.coreState], ci => glInitialize(ci, dispatch));
 
+  const canvasDependency = DEBUG.renderSlowState ? state.coreState.slowState : state.coreState;
+
   const [cref, mc] = useCanvas<CanvasProps>(
-    { main: state }, render, [state.coreState], ci => {
+    { main: state }, render, [canvasDependency], ci => {
       dispatch({ t: 'resize', vd: resizeView(ci.c) });
     });
 
