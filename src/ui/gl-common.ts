@@ -8,6 +8,7 @@ export const SPRITE_TEXTURE_UNIT = 0;
 export const CHUNK_DATA_TEXTURE_UNIT = 1;
 export const FONT_TEXTURE_UNIT = 2;
 export const PREPASS_FB_TEXTURE_UNIT = 3;
+export const CANVAS_TEXTURE_UNIT = 4;
 
 export type RectDrawer = {
   prog: WebGLProgram,
@@ -31,6 +32,12 @@ export type TexQuadDrawer = {
   position: BufferAttr,
 };
 
+export type CanvasDrawer = {
+  prog: WebGLProgram,
+  position: BufferAttr,
+  texture: WebGLTexture,
+};
+
 export type FrameBufferHelper = {
   buffer: WebGLFramebuffer,
   size: Point,
@@ -44,6 +51,7 @@ export type GlEnv = {
   rectDrawer: RectDrawer,
   texQuadDrawer: TexQuadDrawer,
   debugQuadDrawer: TexQuadDrawer,
+  canvasDrawer: TexQuadDrawer,
   fb: FrameBufferHelper,
 }
 
@@ -92,6 +100,30 @@ export function mkDebugQuadDrawer(gl: WebGL2RenderingContext): TexQuadDrawer {
   if (position == null)
     throw new Error(`couldn't allocate position buffer`);
   return { prog, position };
+}
+
+export function mkCanvasDrawer(gl: WebGL2RenderingContext): CanvasDrawer {
+  const prog = shaderProgram(gl, getAssets().texQuadShaders);
+  const position = attributeCreate(gl, prog, 'pos', 2);
+  if (position == null)
+    throw new Error(`couldn't allocate position buffer`);
+
+  const texture = gl.createTexture()!;
+  gl.activeTexture(gl.TEXTURE0 + CANVAS_TEXTURE_UNIT);
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+
+  const data = null;
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,
+    canvas_bds_in_canvas.sz.x * devicePixelRatio,
+    canvas_bds_in_canvas.sz.y * devicePixelRatio, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
+
+  // set the filtering so we don't need mips
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+  return { prog, position, texture };
 }
 
 export function mkFrameBuffer(gl: WebGL2RenderingContext, size: Point): FrameBufferHelper {
@@ -149,4 +181,10 @@ export function mkRectDrawer(gl: WebGL2RenderingContext): RectDrawer {
   if (position == null)
     throw new Error(`couldn't allocate position buffer`);
   return { prog: prog, position, colorUniformLocation };
+}
+
+export function glCopyCanvas(env: GlEnv, c: HTMLCanvasElement): void {
+  const { gl } = env;
+  gl.activeTexture(gl.TEXTURE0 + CANVAS_TEXTURE_UNIT);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, c.width, c.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, c);
 }

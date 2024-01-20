@@ -14,7 +14,7 @@ import { Point, Rect } from "../util/types";
 import { rectPts } from "../util/util";
 import { vadd, vdiag, vmul, vsub } from "../util/vutil";
 import { renderPanicBar } from "./drawPanicBar";
-import { CHUNK_DATA_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, PREPASS_FB_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, endFrameBuffer, mkDebugQuadDrawer, mkFrameBuffer, mkRectDrawer, mkTexQuadDrawer, mkTileDrawer, mkWorldDrawer, useFrameBuffer } from "./gl-common";
+import { CHUNK_DATA_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, PREPASS_FB_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, endFrameBuffer, mkCanvasDrawer, mkDebugQuadDrawer, mkFrameBuffer, mkRectDrawer, mkTexQuadDrawer, mkTileDrawer, mkWorldDrawer, useFrameBuffer } from "./gl-common";
 import { gl_from_canvas } from "./gl-helpers";
 import { canvas_from_hand_tile } from "./render";
 import { resizeView } from "./ui-helpers";
@@ -381,6 +381,7 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
     rectDrawer: mkRectDrawer(gl),
     texQuadDrawer: mkTexQuadDrawer(gl),
     debugQuadDrawer: mkDebugQuadDrawer(gl),
+    canvasDrawer: mkCanvasDrawer(gl),
     fb: mkFrameBuffer(gl, PREPASS_FRAME_BUFFER_SIZE),
   };
 }

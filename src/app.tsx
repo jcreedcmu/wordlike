@@ -13,7 +13,7 @@ import { useEffectfulReducer } from './ui/use-effectful-reducer';
 import { DEBUG } from './util/debug';
 import { relpos } from './util/dutil';
 import { glInitialize, renderGlPane } from './ui/gl-render';
-import { GlEnv } from './ui/gl-common';
+import { GlEnv, glCopyCanvas } from './ui/gl-common';
 
 const ANIMATION_INTERVAL_MS = 35;
 
@@ -94,6 +94,11 @@ export function Game(props: GameProps): JSX.Element {
   const canvasDependency = (state.coreState.slowState.renderToGl && !DEBUG.noRenderSlowState)
     ? state.coreState.slowState
     : state.coreState;
+
+  const render = (ci: CanvasInfo, props: CanvasProps) => {
+    paintWithScale(ci, props.main, props.main.coreState.slowState.renderToGl);
+    glCopyCanvas(glmc.current!.env, ci.c);
+  };
 
   const [cref, mc] = useCanvas<CanvasProps>(
     { main: state }, render, [canvasDependency], ci => {
@@ -231,6 +236,7 @@ export function Game(props: GameProps): JSX.Element {
   const normalStyle: React.CSSProperties = {
     cursor: cursorOfState(state),
     display: state.coreState.slowState.renderToGl ? undefined : undefined,
+    opacity: state.coreState.slowState.renderToGl ? 0.5 : 1,
     zIndex: 1000,
     position: 'absolute',
     top: 0,
@@ -266,11 +272,6 @@ export function Game(props: GameProps): JSX.Element {
     {glCanvas}
   </div>;
 }
-
-function render(ci: CanvasInfo, props: CanvasProps) {
-  paintWithScale(ci, props.main, props.main.coreState.slowState.renderToGl);
-}
-
 
 
 export function doEffect(state: SceneState, dispatch: (action: Action) => void, effect: Effect): void {
