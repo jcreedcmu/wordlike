@@ -1,7 +1,10 @@
 import { getAssets } from "../core/assets";
 import { WORLD_CHUNK_SIZE } from "../core/chunk";
-import { BufferAttr, attributeCreate, shaderProgram } from "../util/gl-util";
+import { BufferAttr, attributeCreate, bufferSetFloats, shaderProgram } from "../util/gl-util";
+import { apply_to_rect } from "../util/se2-extra";
 import { Point } from "../util/types";
+import { rectPts } from "../util/util";
+import { canvas_from_gl, gl_from_canvas } from "./gl-helpers";
 import { canvas_bds_in_canvas } from "./widget-helpers";
 
 export const SPRITE_TEXTURE_UNIT = 0;
@@ -51,7 +54,7 @@ export type GlEnv = {
   rectDrawer: RectDrawer,
   texQuadDrawer: TexQuadDrawer,
   debugQuadDrawer: TexQuadDrawer,
-  canvasDrawer: TexQuadDrawer,
+  canvasDrawer: CanvasDrawer,
   fb: FrameBufferHelper,
 }
 
@@ -103,7 +106,9 @@ export function mkDebugQuadDrawer(gl: WebGL2RenderingContext): TexQuadDrawer {
 }
 
 export function mkCanvasDrawer(gl: WebGL2RenderingContext): CanvasDrawer {
-  const prog = shaderProgram(gl, getAssets().texQuadShaders);
+  const prog = shaderProgram(gl, getAssets().canvasShaders);
+  gl.useProgram(prog);
+
   const position = attributeCreate(gl, prog, 'pos', 2);
   if (position == null)
     throw new Error(`couldn't allocate position buffer`);
@@ -122,6 +127,14 @@ export function mkCanvasDrawer(gl: WebGL2RenderingContext): CanvasDrawer {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+  const [p1, p2] = rectPts(apply_to_rect(gl_from_canvas, canvas_bds_in_canvas));
+  bufferSetFloats(gl, position, [
+    p1.x, p2.y,
+    p2.x, p2.y,
+    p1.x, p1.y,
+    p2.x, p1.y,
+  ]);
 
   return { prog, position, texture };
 }

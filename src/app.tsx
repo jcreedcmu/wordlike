@@ -235,8 +235,7 @@ export function Game(props: GameProps): JSX.Element {
 
   const normalStyle: React.CSSProperties = {
     cursor: cursorOfState(state),
-    display: state.coreState.slowState.renderToGl ? undefined : undefined,
-    opacity: state.coreState.slowState.renderToGl ? 0.5 : 1,
+    display: state.coreState.slowState.renderToGl ? 'none' : undefined,
     zIndex: 1000,
     position: 'absolute',
     top: 0,

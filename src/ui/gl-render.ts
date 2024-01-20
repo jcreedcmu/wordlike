@@ -8,13 +8,13 @@ import { BOMB_RADIUS, getCurrentTool } from "../core/tools";
 import { DEBUG, doOnce, doOnceEvery, logger } from "../util/debug";
 import { RgbColor, RgbaColor, imageDataOfBuffer } from "../util/dutil";
 import { bufferSetFloats } from "../util/gl-util";
-import { SE2, compose, inverse, scale, translate } from "../util/se2";
+import { SE2, compose, inverse, mkSE2, scale, translate } from "../util/se2";
 import { apply_to_rect, asMatrix } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
 import { rectPts } from "../util/util";
 import { vadd, vdiag, vmul, vsub } from "../util/vutil";
 import { renderPanicBar } from "./drawPanicBar";
-import { CHUNK_DATA_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, PREPASS_FB_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, endFrameBuffer, mkCanvasDrawer, mkDebugQuadDrawer, mkFrameBuffer, mkRectDrawer, mkTexQuadDrawer, mkTileDrawer, mkWorldDrawer, useFrameBuffer } from "./gl-common";
+import { CANVAS_TEXTURE_UNIT, CHUNK_DATA_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, PREPASS_FB_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, endFrameBuffer, mkCanvasDrawer, mkDebugQuadDrawer, mkFrameBuffer, mkRectDrawer, mkTexQuadDrawer, mkTileDrawer, mkWorldDrawer, useFrameBuffer } from "./gl-common";
 import { gl_from_canvas } from "./gl-helpers";
 import { canvas_from_hand_tile } from "./render";
 import { resizeView } from "./ui-helpers";
@@ -43,6 +43,34 @@ export const prepass_from_gl: SE2 = {
 
 export const gl_from_prepass: SE2 = inverse(prepass_from_gl);
 
+function drawCanvas(env: GlEnv): void {
+  const { gl, canvasDrawer: { prog, position } } = env;
+  gl.useProgram(prog);
+
+  const u_texture = gl.getUniformLocation(prog, 'u_texture')!;
+  gl.uniform1i(u_texture, CANVAS_TEXTURE_UNIT);
+  const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
+  gl.uniform2f(u_canvasSize, devicePixelRatio * canvas_bds_in_canvas.sz.x, devicePixelRatio * canvas_bds_in_canvas.sz.y);
+
+  const u_texture_from_canvas = gl.getUniformLocation(prog, 'u_texture_from_canvas');
+  const texture_from_canvas = inverse(
+    mkSE2(
+      { x: devicePixelRatio * canvas_bds_in_canvas.sz.x, y: -devicePixelRatio * canvas_bds_in_canvas.sz.y },
+      { x: 0, y: devicePixelRatio * canvas_bds_in_canvas.sz.y }
+    ));
+  gl.uniformMatrix3fv(u_texture_from_canvas, false, asMatrix(texture_from_canvas));
+
+  const [p1, p2] = rectPts(apply_to_rect(gl_from_canvas, canvas_bds_in_canvas));
+  bufferSetFloats(gl, position, [
+    p1.x, p2.y,
+    p2.x, p2.y,
+    p1.x, p1.y,
+    p2.x, p1.y,
+  ]);
+
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+}
+
 // the prepass coordinate system is (0,0) at the upper left of the
 // prepass framebuffer, and is measured in framebuffer pixels.
 
@@ -51,6 +79,9 @@ export const gl_from_prepass: SE2 = inverse(prepass_from_gl);
 
 // the chunk_texture coordinate system is (0,0) at the upper left of the
 // chunk, and extends to (1,1) at the bottom right.
+//
+// XXX: This approach is deprecated, and so is TexQuadDrawer in
+// principle: I should just be texSubimage2D-ing instead.
 function drawPrepassChunk(env: GlEnv, chunk: Chunk, prepass_from_chunk_local: SE2): void {
   const { gl } = env;
   const { prog, position } = env.texQuadDrawer;
@@ -253,6 +284,9 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
 
     // draw hand
     drawHandBackground(env, state.coreState);
+
+    // draw miscellaneous html-canvas-rendered ui
+    drawCanvas(env);
 
     // draw panic bar
     if (state.coreState.winState.t != 'lost' && state.coreState.panic) {
