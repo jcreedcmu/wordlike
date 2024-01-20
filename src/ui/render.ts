@@ -365,16 +365,18 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
     }
 
     // draw clock
-    const clockLoc: Point = {
-      x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x - 10,
-      y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - 24
-    };
-    d.fillStyle = '#333';
-    d.textBaseline = 'middle';
-    d.textAlign = 'right';
-    const clockFontSize = 20;
-    d.font = `bold ${clockFontSize}px sans-serif`;
-    d.fillText(`${formatTime(now_in_game(cs.game_from_clock))}`, clockLoc.x, clockLoc.y);
+    if (!glEnabled) {
+      const clockLoc: Point = {
+        x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x - 10,
+        y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - 24
+      };
+      d.fillStyle = '#333';
+      d.textBaseline = 'middle';
+      d.textAlign = 'right';
+      const clockFontSize = 20;
+      d.font = `bold ${clockFontSize}px sans-serif`;
+      d.fillText(`${formatTime(now_in_game(cs.game_from_clock))}`, clockLoc.x, clockLoc.y);
+    }
 
     // draw score
     const scoreLoc: Point = {

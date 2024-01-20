@@ -290,3 +290,7 @@ export function proposedHandDragOverLimit(state: CoreState, mouseState: MouseSta
   const numDragTiles = (state.selected == undefined ? 1 : state.selected.selectedIds.length);
   return numHandTiles + numDragTiles > HAND_TILE_LIMIT;
 }
+
+export function needsRefresh(state: MouseState): boolean {
+  return state.t == 'drag_selection' || state.t == 'exchange_tiles';
+}

@@ -18,7 +18,7 @@ import { reduceKey } from './reduceKey';
 import { incrementScore, setScore } from './scoring';
 import { deselect, resolveSelection, setSelected } from './selection';
 import { CoreState, GameState, Location, SceneState } from './state';
-import { MoveTile, addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isCollision, isOccupied, isTilePinned, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
+import { MoveTile, addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isCollision, isOccupied, isTilePinned, needsRefresh, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
 import { cellAtPoint, getTileId, get_hand_tiles, get_tiles, moveTiles, moveToHandLoc, putTileInHand, putTileInWorld, putTilesInHandFromNotHand, putTilesInWorld, removeAllTiles, restoreTileToWorld, tileAtPoint } from "./tile-helpers";
 import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
 import { shouldDisplayBackButton } from './winState';
@@ -354,6 +354,9 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
         s.coreState.slowState.generation++;
       });
     case 'mouseMove': return produce(state, s => {
+      if (!vequal(s.mouseState.p_in_canvas, action.p) && needsRefresh(s.mouseState)) {
+        s.coreState.slowState.generation++;
+      }
       s.mouseState.p_in_canvas = action.p;
     });
     case 'none': return state;
@@ -422,6 +425,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
       return resolveGameLowAction(vacuous_down(state, action.wp), action.action);
     case 'andMouseUp':
       return produce(resolveGameLowAction(state, action.action), s => {
+        s.coreState.slowState.generation++;
         s.mouseState = { t: 'up', p_in_canvas: action.p_in_canvas };
       });
     case 'dragSelectionEnd': {
