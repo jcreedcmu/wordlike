@@ -118,6 +118,7 @@ export type SlowState = {
   currentTool: Tool,
   invalidWords: LocatedWord[],
   renderToGl: boolean,
+  paused: PauseData | undefined,
 }
 
 export type CoreState = {
@@ -132,7 +133,6 @@ export type CoreState = {
   selected?: SelectionState,
   winState: WinState,
   panic: PanicData | undefined,
-  paused: PauseData | undefined,
   game_from_clock: SE1,
   wordBonusState: WordBonusState,
   bonusLayerSeed: number,  // immutable during game play
@@ -174,6 +174,7 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
         currentTool: 'pointer',
         invalidWords: [],
         renderToGl: true,
+        paused: undefined,
       },
       wordBonusState: {
         shown: undefined,
@@ -195,7 +196,6 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
       seed,
       winState: { t: creative ? 'creative' : 'playing' },
       panic: undefined,
-      paused: undefined,
       game_from_clock: se1.translate(-Date.now()),
       bonusLayerSeed,
       _cachedTileChunkMap: mkOverlay<Chunk>(),

@@ -92,7 +92,7 @@ function reduceMouseDownInToolbar(state: GameState, wp: WidgetPoint & { t: 'tool
 }
 
 function reducePauseButton(state: CoreState): CoreState {
-  return produce(state, s => { s.paused = { pauseTime_in_clock: Date.now() }; });
+  return produce(state, s => { s.slowState.paused = { pauseTime_in_clock: Date.now() }; });
 }
 
 function reduceShuffleButton(state: CoreState): CoreState {
@@ -112,7 +112,7 @@ function reduceShuffleButton(state: CoreState): CoreState {
 }
 
 function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number, mods: Set<string>): GameLowAction {
-  const paused = state.coreState.paused;
+  const paused = state.coreState.slowState.paused;
   if (paused) {
     return { t: 'vacuousDownAnd', wp, action: { t: 'unpause', paused } };
   }
@@ -367,7 +367,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     });
     case 'none': return state;
     case 'repaint': {
-      if (state.coreState.paused)
+      if (state.coreState.slowState.paused)
         return state;
 
       const t_in_game = now_in_game(state.coreState.game_from_clock);

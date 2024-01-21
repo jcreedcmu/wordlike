@@ -223,7 +223,7 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): Ga
     // draw miscellaneous html-canvas-rendered ui
     drawCanvas(env);
 
-    if (!state.coreState.paused) {
+    if (!state.coreState.slowState.paused) {
       // draw panic bar
       if (state.coreState.winState.t != 'lost' && state.coreState.panic) {
         const rr = renderPanicBar(state.coreState.panic, state.coreState.game_from_clock);

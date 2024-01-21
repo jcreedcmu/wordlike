@@ -244,7 +244,7 @@ export function filterExpiredWordBonusState(now_ms: number, wordBonusState: Word
 export function unpauseState(state: CoreState, pause: PauseData): CoreState {
   const newGame_from_clock = se1.compose(se1.translate(pause.pauseTime_in_clock - Date.now()), state.game_from_clock);
   return produce(state, s => {
-    s.paused = undefined;
+    s.slowState.paused = undefined;
     s.game_from_clock = newGame_from_clock;
   });
 

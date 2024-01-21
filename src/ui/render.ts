@@ -151,7 +151,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
   }
   const cs = state.coreState;
 
-  if (cs.paused) {
+  if (cs.slowState.paused) {
     drawPausedScreen(ci);
     return;
   }
