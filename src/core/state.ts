@@ -173,7 +173,7 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
         scoring: { score: 0, highWaterMark: 0 },
         currentTool: 'pointer',
         invalidWords: [],
-        renderToGl: false,
+        renderToGl: true,
       },
       wordBonusState: {
         shown: undefined,

@@ -135,7 +135,7 @@ function exampleState(): GameState {
         },
         currentTool: 'pointer',
         invalidWords: [],
-        renderToGl: false,
+        renderToGl: true,
       },
       wordBonusState: {
         shown: undefined,
