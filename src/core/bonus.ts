@@ -4,6 +4,7 @@ import { produce } from '../util/produce';
 import { Point, Rect } from '../util/types';
 import { lerp, point_hash } from '../util/util';
 import { vadd, vdiv, vint, vm, vsnorm, vsub } from '../util/vutil';
+import { BIT_ACTIVATED, updateChunkCache } from './chunk';
 import { deterministicLetterSample } from './distribution';
 import { Layer, mkLayer } from './layer';
 import { incrementScore } from './scoring';
@@ -138,7 +139,12 @@ export function resolveScoring(state: CoreState, scoring: Scoring): CoreState {
     case 'copy': return produce(state, s => { s.slowState.inventory.copies += 3; });
     case 'word': {
       const { state: state1, wordBonus } = mkActiveWordBonus(state, scoring.p_in_world_int);
+      const cache = updateChunkCache(
+        state1._cachedTileChunkMap, state1, wordBonus.p_in_world_int,
+        { t: 'setBit', bit: BIT_ACTIVATED }
+      );
       return produce(state1, s => {
+        s._cachedTileChunkMap = cache;
         s.wordBonusState.shown = wordBonus.p_in_world_int;
         s.wordBonusState.active.push(wordBonus);
       });

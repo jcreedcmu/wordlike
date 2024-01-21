@@ -124,10 +124,18 @@ vec4 get_origin_pixel(vec2 p_in_world_int, vec2 p_in_world_fp) {
 // .b: some metadata.
 //       bit 0: tile is selected
 //       bit 1: tile is connected to origin
+//       bit 2: tile is an activated bonus
 vec4 get_cell_pixel(vec2 p_in_world, vec2 p_in_world_fp, ivec3 cell_data) {
   int letter = cell_data.g;
+  int flags = cell_data.b;
+  bool selected = (flags & 1) != 0;
+  bool connected = (flags & 2) != 0;
+  bool activated = (flags & 4) != 0;
 
   vec2 bonus_coords = vec2(cell_data.r >> 4, cell_data.r & 0xf);
+
+  bonus_coords += float(bonus_coords == vec2(0., 8.) && activated) * vec2(0., 1.);
+
   vec4 bonus_pixel = pre_get_bonus_pixel(p_in_world, p_in_world_fp, bonus_coords);
 
   vec4 tile_pixel = vec4(0.,0.,0.,0.);
@@ -135,9 +143,6 @@ vec4 get_cell_pixel(vec2 p_in_world, vec2 p_in_world_fp, ivec3 cell_data) {
   if (letter != 32) {
     tile_pixel = get_tile_pixel(p_in_world_fp, letter);
 
-    int flags = int(cell_data.b);
-    bool selected = (flags & 1) != 0;
-    bool connected = (flags & 2) != 0;
 
     vec3 pixel = tile_pixel.rgb;
     pixel = mix(pixel, TILE_SELECTED_COLOR, float(selected) * 0.5);

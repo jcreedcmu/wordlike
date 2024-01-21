@@ -10,7 +10,7 @@ import { Animation, mkPointDecayAnimation, mkScoreAnimation, mkWinAnimation } fr
 import { getAssets } from "./assets";
 import { Bonus, ScoringBonus, adjacentScoringOfBonus, isBlocking, overlapScoringOfBonus, resolveScoring } from "./bonus";
 import { getBonusFromLayer, updateBonusLayer } from "./bonus-helpers";
-import { updateChunkCache } from "./chunk";
+import { BIT_CONNECTED, updateChunkCache } from "./chunk";
 import { PANIC_INTERVAL_MS, PanicData, PauseData, WORD_BONUS_INTERVAL_MS, now_in_game } from "./clock";
 import { DrawForce, getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, gridKeys, mkGridOfMainTiles } from "./grid";
@@ -198,10 +198,10 @@ export function checkValid(state: CoreState): CoreState {
 
   let newCache = state._cachedTileChunkMap;
   gridKeys(oldConnectedSet).forEach(p_in_world => {
-    newCache = updateChunkCache(newCache, state, p_in_world, { t: 'clearConnected' });
+    newCache = updateChunkCache(newCache, state, p_in_world, { t: 'clearBit', bit: BIT_CONNECTED });
   });
   gridKeys(connectedSet).forEach(p_in_world => {
-    newCache = updateChunkCache(newCache, state, p_in_world, { t: 'setConnected' });
+    newCache = updateChunkCache(newCache, state, p_in_world, { t: 'setBit', bit: BIT_CONNECTED });
   });
 
   return produce(state, s => {

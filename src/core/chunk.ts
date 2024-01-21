@@ -15,15 +15,17 @@ export const WORLD_CHUNK_SIZE = { x: 16, y: 16 };
 
 export type ChunkValue = { t: 'bonus', bonus: Bonus } | { t: 'tile', tile: RenderableTile };
 
+export const BIT_SELECTED = 0;
+export const BIT_CONNECTED = 1;
+export const BIT_ACTIVATED = 2;
+
 export type ChunkUpdate =
   | { t: 'bonus', bonus: Bonus }
   | { t: 'addTile', tile: RenderableTile }
   | { t: 'removeTile' }
-  | { t: 'setSelected' }
-  | { t: 'clearSelected' }
+  | { t: 'setBit', bit: number }
+  | { t: 'clearBit', bit: number }
   | { t: 'restoreTile', tile: RenderableTile }
-  | { t: 'setConnected' }
-  | { t: 'clearConnected' }
 
 export type Chunk = {
   size: Point,
@@ -85,23 +87,14 @@ function processChunkUpdate(cu: ChunkUpdate, oldVec: number[]): number[] {
       rv[1] = 32;
       return rv;
     }
-    case 'setSelected': {
-      rv[2] |= 1;
+    case 'setBit': {
+      rv[2] |= 1 << cu.bit;
       return rv;
     }
-    case 'clearSelected': {
-      rv[2] &= (0xff - 1);
+    case 'clearBit': {
+      rv[2] &= (~(1 << cu.bit));
       return rv;
     }
-    case 'setConnected': {
-      rv[2] |= 2;
-      return rv;
-    }
-    case 'clearConnected': {
-      rv[2] &= (0xff - 2);
-      return rv;
-    }
-
     case 'restoreTile': {
       const spritePos = spriteLocOfChunkValue({ t: 'tile', tile: cu.tile });
       rv[1] = cu.tile.letter.charCodeAt(0) - 97;
