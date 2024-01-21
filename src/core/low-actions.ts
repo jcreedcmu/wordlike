@@ -374,9 +374,9 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
         newAnimations.push(mkPointDecayAnimation(destroy_p, state.coreState.game_from_clock));
       });
       state = produce(state, s => {
-        //        if (activeCanvasAnimation) {
-        s.coreState.slowState.generation++;
-        //      }
+        if (activeCanvasAnimation) {
+          s.coreState.slowState.generation++;
+        }
         s.coreState.animations = newAnimations;
         s.coreState.wordBonusState = newWordBonusState;
         destroys.forEach(destroy_p => {
