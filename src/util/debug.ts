@@ -20,6 +20,7 @@ export const DEBUG = {
   missedChunkRendering: true,
   lowActions: false,
   noRenderSlowState: false,
+  rawPaint: false,
 
   // if true, every string of letters is considered a word, and required-letter bonuses admit any letter
   allWords: false,

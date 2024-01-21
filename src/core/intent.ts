@@ -185,6 +185,7 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
 
     case 'setShownWordBonus':
       return produce(state, s => {
+        s.coreState.slowState.generation++;
         s.coreState.wordBonusState.shown = intent.p_in_world_int;
       });
   }

@@ -135,7 +135,20 @@ export function canvas_from_hand_tile(index: number): SE2 {
   return compose(canvas_from_hand(), translate({ x: 0, y: index }));
 }
 
+function drawWordBubble(ci: CanvasInfo, cs: CoreState, pan_canvas_from_world: SE2) {
+  for (const wordBonus of cs.wordBonusState.active) {
+    if (cs.wordBonusState.shown !== undefined && vequal(cs.wordBonusState.shown, wordBonus.p_in_world_int)) {
+      const apex_in_canvas = apply(pan_canvas_from_world, vadd(wordBonus.p_in_world_int, { x: 0.4, y: 0.4 }));
+      const text_in_canvas = vadd({ x: -24, y: -24 }, apply(pan_canvas_from_world, vadd(wordBonus.p_in_world_int, { x: 0.4, y: 0 })));
+      drawBubble(ci.d, wordBonus.word, text_in_canvas, apex_in_canvas, getWordBonusFraction(wordBonus, cs.game_from_clock));
+    }
+  }
+}
+
 export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
+  if (DEBUG.rawPaint) {
+    console.log('rawPaint');
+  }
   const cs = state.coreState;
 
   if (cs.paused) {
@@ -227,15 +240,6 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
       0, 360,
     );
     d.stroke();
-
-    // draw word bonus bubble, if any
-    for (const wordBonus of cs.wordBonusState.active) {
-      if (cs.wordBonusState.shown !== undefined && vequal(cs.wordBonusState.shown, wordBonus.p_in_world_int)) {
-        const apex_in_canvas = apply(pan_canvas_from_world, vadd(wordBonus.p_in_world_int, { x: 0.4, y: 0.4 }));
-        const text_in_canvas = vadd({ x: -24, y: -24 }, apply(pan_canvas_from_world, vadd(wordBonus.p_in_world_int, { x: 0.4, y: 0 })));
-        drawBubble(d, wordBonus.word, text_in_canvas, apex_in_canvas, getWordBonusFraction(wordBonus, cs.game_from_clock));
-      }
-    }
     d.restore();
   }
 
@@ -431,11 +435,15 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
 
   if (!glEnabled) {
     drawWorld();
-    drawShadows();
   }
   else {
     clearRect(d, world_bds_in_canvas);
   }
+
+  drawWordBubble(ci, cs, pan_canvas_from_world);
+
+  if (!glEnabled)
+    drawShadows();
 
   // draw invalid words
   if (ms.t == 'up') {
