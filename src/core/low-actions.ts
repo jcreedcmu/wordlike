@@ -313,7 +313,11 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
   }
 
   switch (action.t) {
-    case 'zoom': return reduceZoom(state, action.center, action.amount)
+    case 'zoom': {
+      return reduceZoom(produce(state, s => {
+        s.coreState.slowState.generation++; // needed because some canvas effects, like word bubbles, depend on zoom level
+      }), action.center, action.amount);
+    }
     case 'drawTile': return withCoreState(state, cs => drawOfState(cs));
     case 'flipOrientation': {
       const ms = state.mouseState;
