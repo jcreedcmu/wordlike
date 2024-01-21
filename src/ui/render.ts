@@ -140,7 +140,7 @@ function drawWordBubble(ci: CanvasInfo, cs: CoreState, pan_canvas_from_world: SE
     if (cs.wordBonusState.shown !== undefined && vequal(cs.wordBonusState.shown, wordBonus.p_in_world_int)) {
       const apex_in_canvas = apply(pan_canvas_from_world, vadd(wordBonus.p_in_world_int, { x: 0.4, y: 0.4 }));
       const text_in_canvas = vadd({ x: -24, y: -24 }, apply(pan_canvas_from_world, vadd(wordBonus.p_in_world_int, { x: 0.4, y: 0 })));
-      drawBubble(ci.d, wordBonus.word, text_in_canvas, apex_in_canvas, getWordBonusFraction(wordBonus, cs.game_from_clock));
+      drawBubble(ci.d, wordBonus.word.toUpperCase(), text_in_canvas, apex_in_canvas, getWordBonusFraction(wordBonus, cs.game_from_clock));
     }
   }
 }
