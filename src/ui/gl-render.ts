@@ -223,48 +223,50 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): Ga
     // draw miscellaneous html-canvas-rendered ui
     drawCanvas(env);
 
-    // draw panic bar
-    if (state.coreState.winState.t != 'lost' && state.coreState.panic) {
-      const rr = renderPanicBar(state.coreState.panic, state.coreState.game_from_clock);
-      glFillRect(env, rr.rect, rr.color);
-    }
-
-    // draw hand tiles
-    get_hand_tiles(cs).forEach(tile => {
-      if (isSelectedForDrag(state, tile))
-        return;
-      drawOneTile(env, tile.letter, canvas_from_hand_tile(tile.loc.p_in_hand_int.y));
-    });
-
-    // Here's where we draw dragged tiles in general
-    // draw dragged tiles from selection
-    if (ms.t == 'drag_tile') {
-
-      const tile0 = getTileId(cs, ms.id);
-
-      if (cs.selected) {
-        const tiles = cs.selected.selectedIds.map(id => getTileId(cs, id));
-        // draw dragged tiles
-        tiles.forEach(tile => {
-          if (tile.loc.t == 'world' && tile0.loc.t == 'world') {
-            let drag_tile_from_other_tile = translate(vsub(tile.loc.p_in_world_int, tile0.loc.p_in_world_int));
-            if (ms.flipped) {
-              drag_tile_from_other_tile = {
-                scale: drag_tile_from_other_tile.scale, translate: {
-                  x: drag_tile_from_other_tile.translate.y,
-                  y: drag_tile_from_other_tile.translate.x,
-                }
-              };
-            }
-
-            const canvas_from_other_tile = compose(canvas_from_drag_tile(cs, ms), drag_tile_from_other_tile);
-            drawOneTile(env, tile.letter, canvas_from_other_tile);
-          }
-        });
+    if (!state.coreState.paused) {
+      // draw panic bar
+      if (state.coreState.winState.t != 'lost' && state.coreState.panic) {
+        const rr = renderPanicBar(state.coreState.panic, state.coreState.game_from_clock);
+        glFillRect(env, rr.rect, rr.color);
       }
-      else {
-        const tile = getTileId(cs, ms.id);
-        drawOneTile(env, tile.letter, canvas_from_drag_tile(cs, ms));
+
+      // draw hand tiles
+      get_hand_tiles(cs).forEach(tile => {
+        if (isSelectedForDrag(state, tile))
+          return;
+        drawOneTile(env, tile.letter, canvas_from_hand_tile(tile.loc.p_in_hand_int.y));
+      });
+
+      // Here's where we draw dragged tiles in general
+      // draw dragged tiles from selection
+      if (ms.t == 'drag_tile') {
+
+        const tile0 = getTileId(cs, ms.id);
+
+        if (cs.selected) {
+          const tiles = cs.selected.selectedIds.map(id => getTileId(cs, id));
+          // draw dragged tiles
+          tiles.forEach(tile => {
+            if (tile.loc.t == 'world' && tile0.loc.t == 'world') {
+              let drag_tile_from_other_tile = translate(vsub(tile.loc.p_in_world_int, tile0.loc.p_in_world_int));
+              if (ms.flipped) {
+                drag_tile_from_other_tile = {
+                  scale: drag_tile_from_other_tile.scale, translate: {
+                    x: drag_tile_from_other_tile.translate.y,
+                    y: drag_tile_from_other_tile.translate.x,
+                  }
+                };
+              }
+
+              const canvas_from_other_tile = compose(canvas_from_drag_tile(cs, ms), drag_tile_from_other_tile);
+              drawOneTile(env, tile.letter, canvas_from_other_tile);
+            }
+          });
+        }
+        else {
+          const tile = getTileId(cs, ms.id);
+          drawOneTile(env, tile.letter, canvas_from_drag_tile(cs, ms));
+        }
       }
     }
 
