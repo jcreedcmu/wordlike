@@ -411,12 +411,12 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
     }
   }
 
-  function drawAnimations(time_ms: number) {
+  function drawAnimations(time_ms: number, glEnabled: boolean) {
     if (cs.animations.length > 0) {
       d.save();
       d.clip(worldClip);
       cs.animations.forEach(anim => {
-        drawAnimation(d, pan_canvas_from_world, time_ms, anim);
+        drawAnimation(d, pan_canvas_from_world, time_ms, anim, glEnabled);
       });
       d.restore();
     }
@@ -459,8 +459,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
   }
   else {
     drawOtherUi(glEnabled);
-    if (!glEnabled)
-      drawAnimations(now_in_game(cs.game_from_clock));
+    drawAnimations(now_in_game(cs.game_from_clock), glEnabled);
   }
   if (cs.winState.t == 'won') {
     d.textAlign = 'center';

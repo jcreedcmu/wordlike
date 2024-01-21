@@ -8,7 +8,7 @@ import { vscale, vsub } from "../util/vutil";
 import { drawBonusPoint } from "./drawBonus";
 import { canvas_bds_in_canvas } from './widget-helpers';
 
-export function drawAnimation(d: CanvasRenderingContext2D, pan_canvas_from_world: SE2, time_ms: number, anim: Animation): void {
+export function drawAnimation(d: CanvasRenderingContext2D, pan_canvas_from_world: SE2, time_ms: number, anim: Animation, glEnabled: boolean): void {
   switch (anim.t) {
     case 'explosion': {
       const radius_in_world = (2 * anim.radius + 1) * 0.5 * (time_ms - anim.start_in_game) / anim.duration_ms;
@@ -28,8 +28,10 @@ export function drawAnimation(d: CanvasRenderingContext2D, pan_canvas_from_world
       return;
     } break;
     case 'point-decay': {
-      const fraction = Math.min(1, Math.max(0, 1 - (time_ms - anim.start_in_game) / anim.duration_ms));
-      drawBonusPoint(d, pan_canvas_from_world, anim.p_in_world_int, fraction);
+      if (!glEnabled) {
+        const fraction = Math.min(1, Math.max(0, 1 - (time_ms - anim.start_in_game) / anim.duration_ms));
+        drawBonusPoint(d, pan_canvas_from_world, anim.p_in_world_int, fraction);
+      }
       return;
     } break;
     case 'fireworks': {
@@ -51,4 +53,8 @@ export function drawAnimation(d: CanvasRenderingContext2D, pan_canvas_from_world
     } break;
   }
   unreachable(anim);
+}
+
+export function isActiveCanvasAnimation(anim: Animation): boolean {
+  return anim.t == 'explosion' || anim.t == 'fireworks';
 }

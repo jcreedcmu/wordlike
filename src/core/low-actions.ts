@@ -1,3 +1,4 @@
+import { isActiveCanvasAnimation } from '../ui/drawAnimation';
 import { canvas_from_drag_tile, pan_canvas_from_canvas_of_mouse_state, pan_canvas_from_world_of_state } from '../ui/view-helpers';
 import { WidgetPoint, canvas_from_hand, getWidgetPoint } from '../ui/widget-helpers';
 import { DEBUG, debugTiles } from '../util/debug';
@@ -294,6 +295,7 @@ export function getLowAction(state: GameState, action: GameAction): LowAction {
     case 'mouseUp': return gla(resolveMouseup(state));
     case 'mouseMove': return gla({ t: 'mouseMove', p: action.p });
     case 'repaint': return gla({ t: 'repaint' });
+    case 'setCache': return gla({ t: 'setCache', cache: action.cache });
   }
 }
 
@@ -364,21 +366,17 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
       if (state.coreState.paused)
         return state;
 
-      // ensure chunk cache is full enough
-      let cache = state.coreState._cachedTileChunkMap;
-      const aci = activeChunks(pan_canvas_from_world_of_state(state));
-      for (const p_in_chunk of aci.ps_in_chunk) {
-        cache = ensureChunk(cache, state.coreState, p_in_chunk);
-      }
-
       const t_in_game = now_in_game(state.coreState.game_from_clock);
+      const activeCanvasAnimation = state.coreState.animations.some(x => isActiveCanvasAnimation(x));
       const newAnimations = filterExpiredAnimations(t_in_game, state.coreState.animations);
       const [newWordBonusState, destroys] = filterExpiredWordBonusState(t_in_game, state.coreState.wordBonusState);
       destroys.forEach(destroy_p => {
         newAnimations.push(mkPointDecayAnimation(destroy_p, state.coreState.game_from_clock));
       });
       state = produce(state, s => {
-        s.coreState._cachedTileChunkMap = cache;
+        //        if (activeCanvasAnimation) {
+        s.coreState.slowState.generation++;
+        //      }
         s.coreState.animations = newAnimations;
         s.coreState.wordBonusState = newWordBonusState;
         destroys.forEach(destroy_p => {
@@ -488,6 +486,12 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
       });
       return produce(state, s => {
         s.coreState._cachedTileChunkMap = cache;
+      });
+    }
+
+    case 'setCache': {
+      return produce(state, s => {
+        s.coreState._cachedTileChunkMap = action.cache;
       });
     }
   }

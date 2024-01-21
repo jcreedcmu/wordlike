@@ -1,8 +1,9 @@
 import { Dispatch } from "../core/action";
 import { Animation } from "../core/animations";
 import { getAssets } from "../core/assets";
-import { ActiveChunkInfo, WORLD_CHUNK_SIZE, activeChunks, getChunk } from "../core/chunk";
+import { ActiveChunkInfo, Chunk, WORLD_CHUNK_SIZE, activeChunks, ensureChunk, getChunk } from "../core/chunk";
 import { now_in_game } from "../core/clock";
+import { Overlay } from "../core/layer";
 import { CoreState, GameState } from "../core/state";
 import { pointFall } from "../core/state-helpers";
 import { getTileId, get_hand_tiles, isSelectedForDrag } from "../core/tile-helpers";
@@ -10,6 +11,7 @@ import { BOMB_RADIUS, getCurrentTool } from "../core/tools";
 import { DEBUG, doOnce, doOnceEvery, logger } from "../util/debug";
 import { RgbColor, RgbaColor, imageDataOfBuffer } from "../util/dutil";
 import { bufferSetFloats } from "../util/gl-util";
+import { produce } from "../util/produce";
 import { SE2, compose, inverse, mkSE2, scale, translate } from "../util/se2";
 import { apply_to_rect, asMatrix } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
@@ -171,18 +173,16 @@ function drawAnimations(env: GlEnv, canvas_from_world: SE2, animations: Animatio
 
 const shouldDebug = { v: false };
 let oldState: GameState | null = null;
-export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): void {
+export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): GameState {
 
-  if (0) {
-    if (oldState != null && JSON.stringify(state) == JSON.stringify(oldState)) {
-      console.log('skipping');
-      return;
-    }
-    else {
-      console.log('rendering');
-    }
+  // ensure chunk cache is full enough
+  let cache = state.coreState._cachedTileChunkMap;
+  const aci = activeChunks(pan_canvas_from_world_of_state(state));
+  for (const p_in_chunk of aci.ps_in_chunk) {
+    cache = ensureChunk(cache, state.coreState, p_in_chunk);
   }
-  oldState = state;
+
+  state = produce(state, s => { s.coreState._cachedTileChunkMap = cache; });
 
   const { d: gl } = ci;
 
@@ -307,6 +307,8 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
   else {
     actuallyRender();
   }
+
+  return state;
 }
 
 export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {

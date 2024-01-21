@@ -2,8 +2,10 @@ import { ViewData } from '../ui/ui-helpers';
 import { WidgetPoint } from '../ui/widget-helpers';
 import { SE2 } from '../util/se2';
 import { Point } from '../util/types';
+import { Chunk } from './chunk';
 import { PanicData, PauseData } from './clock';
 import { Intent } from './intent';
+import { Overlay } from './layer';
 import { SelectionState } from './selection';
 import { CoreState, GameState, InventoryItems, Location, MouseState, SceneState } from './state';
 import { MoveTile } from './state-helpers';
@@ -45,6 +47,7 @@ export type GameLowAction =
   | { t: 'drawVowel' }
   | { t: 'setPanic', panic: PanicData }
   | { t: 'restoreTiles', ids: string[] } // put held tiles back in cache
+  | { t: 'setCache', cache: Overlay<Chunk> }
   ;
 
 export type LowAction =
@@ -61,6 +64,7 @@ export type GameAction =
   | { t: 'mouseMove', p: Point }
   | { t: 'wheel', p: Point, delta: number }
   | { t: 'repaint' }
+  | { t: 'setCache', cache: Overlay<Chunk> }
   ;
 
 export type Action =
