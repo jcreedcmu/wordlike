@@ -18,6 +18,7 @@ export const DEBUG = {
   glProfiling: false,
   canvasProfiling: false,
   missedChunkRendering: true,
+  actions: false,
   lowActions: false,
   noRenderSlowState: false,
   rawPaint: false,

@@ -1,7 +1,7 @@
 import { Dispatch } from "../core/action";
 import { Animation } from "../core/animations";
 import { getAssets } from "../core/assets";
-import { ActiveChunkInfo, Chunk, WORLD_CHUNK_SIZE, activeChunks, ensureChunk, getChunk } from "../core/chunk";
+import { ActiveChunkInfo, Chunk, WORLD_CHUNK_SIZE, activeChunks, cacheMiss, ensureChunk, getChunk } from "../core/chunk";
 import { now_in_game } from "../core/clock";
 import { Overlay } from "../core/layer";
 import { CoreState, GameState } from "../core/state";
@@ -173,13 +173,17 @@ function drawAnimations(env: GlEnv, canvas_from_world: SE2, animations: Animatio
 
 const shouldDebug = { v: false };
 let oldState: GameState | null = null;
-export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): GameState {
+export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): GameState | undefined {
+  let needsCacheUpdate = false;
 
   // ensure chunk cache is full enough
   let cache = state.coreState._cachedTileChunkMap;
   const aci = activeChunks(pan_canvas_from_world_of_state(state));
   for (const p_in_chunk of aci.ps_in_chunk) {
-    cache = ensureChunk(cache, state.coreState, p_in_chunk);
+    if (cacheMiss(cache, p_in_chunk)) {
+      needsCacheUpdate = true;
+      cache = ensureChunk(cache, state.coreState, p_in_chunk);
+    }
   }
 
   state = produce(state, s => { s.coreState._cachedTileChunkMap = cache; });
@@ -310,7 +314,10 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): Ga
     actuallyRender();
   }
 
-  return state;
+  if (needsCacheUpdate)
+    return state;
+  else
+    return undefined;
 }
 
 export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {

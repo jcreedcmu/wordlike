@@ -278,6 +278,11 @@ function resolveMouseupInner(state: GameState): GameLowAction {
 }
 
 export function getLowAction(state: GameState, action: GameAction): LowAction {
+  if (DEBUG.actions) {
+    if (action.t != 'repaint' && action.t != 'mouseMove')
+      console.log(`high action: ${JSON.stringify(action)}`);
+  }
+
   function gla(action: GameLowAction): LowAction {
     return { t: 'gameLowAction', action };
   }
@@ -309,7 +314,7 @@ export function resolveGameLowActions(state: GameState, gameLowActions: GameLowA
 function resolveGameLowAction(state: GameState, action: GameLowAction): GameState {
   if (DEBUG.lowActions) {
     if (action.t != 'repaint' && action.t != 'mouseMove')
-      console.log(JSON.stringify(action));
+      console.log(`low action: ${JSON.stringify(action)}`);
   }
 
   switch (action.t) {

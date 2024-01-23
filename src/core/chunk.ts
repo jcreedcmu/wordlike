@@ -57,6 +57,10 @@ function getWorldChunkData(cs: CoreState, p_in_chunk: Point): Chunk {
   return chunk;
 }
 
+export function cacheMiss(cache: Overlay<Chunk>, p_in_chunk: Point): boolean {
+  return !getOverlay(cache, p_in_chunk);
+}
+
 export function ensureChunk(cache: Overlay<Chunk>, cs: CoreState, p_in_chunk: Point): Overlay<Chunk> {
   if (getOverlay(cache, p_in_chunk))
     return cache;
