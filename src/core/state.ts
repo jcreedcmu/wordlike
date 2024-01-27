@@ -121,6 +121,8 @@ export type SlowState = {
   paused: PauseData | undefined,
 }
 
+export type CacheUpdate = never;
+
 export type CoreState = {
   slowState: SlowState,
   animations: Animation[],
@@ -136,7 +138,8 @@ export type CoreState = {
   game_from_clock: SE1,
   wordBonusState: WordBonusState,
   bonusLayerSeed: number,  // immutable during game play
-  _cachedTileChunkMap: Overlay<Chunk>;
+  _cachedTileChunkMap: Overlay<Chunk>,
+  _cacheUpdateQueue: CacheUpdate[],
 };
 
 export type GameState = {
@@ -199,6 +202,7 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
       game_from_clock: se1.translate(-Date.now()),
       bonusLayerSeed,
       _cachedTileChunkMap: mkOverlay<Chunk>(),
+      _cacheUpdateQueue: [],
     },
     mouseState: { t: 'up', p_in_canvas: { x: 0, y: 0 } },
   };
