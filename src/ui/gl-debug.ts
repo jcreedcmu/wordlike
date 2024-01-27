@@ -21,7 +21,7 @@ function drawChunkDebugging(gl: WebGL2RenderingContext, env: GlEnv, state: CoreS
   const rect_in_canvas = { p: offset_in_canvas, sz: sz_in_canvas };
   const rect_in_gl = apply_to_rect(gl_from_canvas, rect_in_canvas);
 
-  const chunkCache = state._cachedTileChunkMap;
+  const chunkCache = env._cachedTileChunkMap;
   const chunk = getChunk(chunkCache, { x: 0, y: 0 });
   if (chunk == undefined) {
     logger('missedChunkRendering', `missing data for chunk in debugging`);

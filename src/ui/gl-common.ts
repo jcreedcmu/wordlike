@@ -1,5 +1,6 @@
 import { getAssets } from "../core/assets";
-import { WORLD_CHUNK_SIZE } from "../core/chunk";
+import { Chunk, WORLD_CHUNK_SIZE } from "../core/chunk";
+import { Overlay } from "../core/layer";
 import { GameState } from "../core/state";
 import { BufferAttr, attributeCreate, bufferSetFloats, shaderProgram } from "../util/gl-util";
 import { SE2, compose, inverse, scale } from "../util/se2";
@@ -62,6 +63,7 @@ export type GlEnv = {
   canvasDrawer: CanvasDrawer,
   prepassHelper: PrepassHelper,
   bonusDrawer: BonusDrawer,
+  _cachedTileChunkMap: Overlay<Chunk>,
 }
 
 export function mkWorldDrawer(gl: WebGL2RenderingContext): WorldDrawer {

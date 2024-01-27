@@ -300,6 +300,7 @@ export function getLowAction(state: GameState, action: GameAction): LowAction {
     case 'mouseUp': return gla(resolveMouseup(state));
     case 'mouseMove': return gla({ t: 'mouseMove', p: action.p });
     case 'repaint': return gla({ t: 'repaint' });
+    case 'clearCacheUpdateQueue': return gla({ t: 'clearCacheUpdateQueue' });
   }
 }
 
@@ -500,6 +501,12 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
 
       return produce(state, s => {
         s.coreState._cacheUpdateQueue.push(...cacheUpdates);
+      });
+    }
+
+    case 'clearCacheUpdateQueue': {
+      return produce(state, s => {
+        s.coreState._cacheUpdateQueue = []; // XXX is this safe? Should I specify number of dequeues instead?
       });
     }
   }

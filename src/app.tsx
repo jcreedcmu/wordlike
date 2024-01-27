@@ -177,7 +177,8 @@ export function Game(props: GameProps): JSX.Element {
         console.log('abandoning requestanimationframe loop');
       }
       if (glmc.current) {
-        renderGlPane(glmc.current.ci, glmc.current.env, stateRef.current)
+        renderGlPane(glmc.current.ci, glmc.current.env, stateRef.current);
+        dispatch({ t: 'clearCacheUpdateQueue' });
       }
       window.requestAnimationFrame(intervalHandler);
     }

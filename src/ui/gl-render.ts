@@ -3,8 +3,8 @@ import { Animation } from "../core/animations";
 import { getAssets } from "../core/assets";
 import { ActiveChunkInfo, Chunk, WORLD_CHUNK_SIZE, activeChunks, cacheMiss, ensureChunk, getChunk } from "../core/chunk";
 import { now_in_game } from "../core/clock";
-import { Overlay } from "../core/layer";
-import { CoreState, GameState } from "../core/state";
+import { Overlay, mkOverlay } from "../core/layer";
+import { CacheUpdate, CoreState, GameState } from "../core/state";
 import { pointFall } from "../core/state-helpers";
 import { getTileId, get_hand_tiles, isSelectedForDrag } from "../core/tile-helpers";
 import { BOMB_RADIUS, getCurrentTool } from "../core/tools";
@@ -119,7 +119,7 @@ function renderPrepass(env: GlEnv, state: CoreState, canvas_from_world: SE2): Ac
   gl.activeTexture(gl.TEXTURE0 + PREPASS_TEXTURE_UNIT);
 
   aci.ps_in_chunk.forEach(p => {
-    const chunk = getChunk(state._cachedTileChunkMap, p);
+    const chunk = getChunk(env._cachedTileChunkMap, p);
     if (chunk == undefined) {
       logger('missedChunkRendering', `missing data for debug2 chunk`);
       return;
@@ -171,22 +171,25 @@ function drawAnimations(env: GlEnv, canvas_from_world: SE2, animations: Animatio
   });
 }
 
+function processCacheUpdate(env: GlEnv, cu: CacheUpdate): void {
+
+}
+
 const shouldDebug = { v: false };
 let oldState: GameState | null = null;
-export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): GameState | undefined {
-  let needsCacheUpdate = false;
-
+export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): void {
+  // process cache update queue
+  state.coreState._cacheUpdateQueue.forEach(cu => processCacheUpdate(env, cu));
   // ensure chunk cache is full enough
-  let cache = state.coreState._cachedTileChunkMap;
+  let cache = env._cachedTileChunkMap;
   const aci = activeChunks(pan_canvas_from_world_of_state(state));
   for (const p_in_chunk of aci.ps_in_chunk) {
     if (cacheMiss(cache, p_in_chunk)) {
-      needsCacheUpdate = true;
-      cache = ensureChunk(cache, state.coreState, p_in_chunk);
+      cache = ensureChunk(cache, state.coreState, p_in_chunk); // XXX: this probably could be made more imperative
     }
   }
 
-  state = produce(state, s => { s.coreState._cachedTileChunkMap = cache; });
+  env._cachedTileChunkMap = cache;
 
   const { d: gl } = ci;
 
@@ -313,11 +316,6 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): Ga
   else {
     actuallyRender();
   }
-
-  if (needsCacheUpdate)
-    return state;
-  else
-    return undefined;
 }
 
 export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
@@ -365,5 +363,6 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
     canvasDrawer: mkCanvasDrawer(gl),
     prepassHelper: mkPrepassHelper(gl, PREPASS_SIZE),
     bonusDrawer: mkBonusDrawer(gl),
+    _cachedTileChunkMap: mkOverlay<Chunk>(),
   };
 }

@@ -47,6 +47,7 @@ export type GameLowAction =
   | { t: 'drawVowel' }
   | { t: 'setPanic', panic: PanicData }
   | { t: 'restoreTiles', ids: string[] } // put held tiles back in cache
+  | { t: 'clearCacheUpdateQueue' }
   ;
 
 export type LowAction =
@@ -63,6 +64,7 @@ export type GameAction =
   | { t: 'mouseMove', p: Point }
   | { t: 'wheel', p: Point, delta: number }
   | { t: 'repaint' }
+  | { t: 'clearCacheUpdateQueue' }
   ;
 
 export type Action =
