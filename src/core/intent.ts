@@ -2,10 +2,11 @@ import { WidgetPoint } from '../ui/widget-helpers';
 import { produce } from '../util/produce';
 import { Point } from '../util/types';
 import { vint, vm } from '../util/vutil';
+import { ChunkUpdate } from './chunk';
 import { tryKillTileOfState } from './kill-helpers';
 import { vacuous_down } from './low-actions';
 import { SelectionOperation, deselect, selectionOperationOfMods } from './selection';
-import { GameState } from './state';
+import { CacheUpdate, GameState } from './state';
 import { checkValid, drawSpecific, withCoreState } from './state-helpers';
 import { CellContents, clearTileAtPosition, getTileLoc, tileAtPoint } from './tile-helpers';
 import { Tool, bombIntent, copyIntent, dynamiteIntent } from './tools';
@@ -96,10 +97,8 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
           return loc.p_in_world_int;
         })
         : [p_in_world_int];
-      let overlay = cs._cachedTileChunkMap;
-      toErase.forEach(p => {
-        overlay = clearTileAtPosition(cs, overlay, p);
-      });
+      const cacheUpdates: CacheUpdate[] = toErase.map(p_in_world_int => ({ p_in_world_int, chunkUpdate: { t: 'removeTile' } }));
+
       if (sel) {
         // If we start dragging a tile not in the selection, we should deselect it first
         if (!sel.selectedIds.includes(intent.id)) {
@@ -107,15 +106,15 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
         }
       }
       return produce(state2, s => {
-        s.coreState._cachedTileChunkMap = overlay,
-          s.mouseState = {
-            t: 'drag_tile',
-            orig_loc: { t: 'world', p_in_world_int },
-            id: intent.id,
-            orig_p_in_canvas: wp.p_in_canvas,
-            p_in_canvas: wp.p_in_canvas,
-            flipped: false,
-          };
+        s.coreState._cacheUpdateQueue.push(...cacheUpdates);
+        s.mouseState = {
+          t: 'drag_tile',
+          orig_loc: { t: 'world', p_in_world_int },
+          id: intent.id,
+          orig_p_in_canvas: wp.p_in_canvas,
+          p_in_canvas: wp.p_in_canvas,
+          flipped: false,
+        };
       });
     }
     case 'exchangeTiles': {

@@ -5,7 +5,7 @@ import { SE2 } from '../util/se2';
 import { Point } from '../util/types';
 import { Animation } from './animations';
 import { Bonus } from './bonus';
-import { Chunk } from './chunk';
+import { Chunk, ChunkUpdate } from './chunk';
 import { PanicData, PauseData } from './clock';
 import { Energies, initialEnergies } from './distribution';
 import { Grid, LocatedWord, mkGridOf } from './grid';
@@ -121,7 +121,10 @@ export type SlowState = {
   paused: PauseData | undefined,
 }
 
-export type CacheUpdate = never;
+export type CacheUpdate = {
+  p_in_world_int: Point,
+  chunkUpdate: ChunkUpdate,
+};
 
 export type CoreState = {
   slowState: SlowState,
@@ -138,7 +141,6 @@ export type CoreState = {
   game_from_clock: SE1,
   wordBonusState: WordBonusState,
   bonusLayerSeed: number,  // immutable during game play
-  _cachedTileChunkMap: Overlay<Chunk>,
   _cacheUpdateQueue: CacheUpdate[],
 };
 
@@ -201,7 +203,6 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
       panic: undefined,
       game_from_clock: se1.translate(-Date.now()),
       bonusLayerSeed,
-      _cachedTileChunkMap: mkOverlay<Chunk>(),
       _cacheUpdateQueue: [],
     },
     mouseState: { t: 'up', p_in_canvas: { x: 0, y: 0 } },

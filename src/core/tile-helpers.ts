@@ -2,7 +2,7 @@ import { Draft } from "immer";
 import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { vequal, vm } from "../util/vutil";
-import { CoreState, GameState, HandTile, Location, MainTile, Tile, TileEntity, TileEntityOptionalId, TileOptionalId } from "./state";
+import { CacheUpdate, CoreState, GameState, HandTile, Location, MainTile, Tile, TileEntity, TileEntityOptionalId, TileOptionalId } from "./state";
 import { Bonus, getBonusLayer } from "./bonus";
 import { getBonusFromLayer } from "./bonus-helpers";
 import { ensureId } from "./tile-id-helpers";
@@ -87,7 +87,7 @@ export function addWorldTile(state: Draft<CoreState>, tile: TileOptionalId): voi
     letter: tile.letter, loc: { t: 'world', p_in_world_int: tile.p_in_world_int }
   });
   state.tile_entities[newTile.id] = newTile;
-  state._cachedTileChunkMap = updateChunkCache(state._cachedTileChunkMap, state, tile.p_in_world_int, { t: 'addTile', tile: { letter: tile.letter } });
+  state._cacheUpdateQueue.push({ p_in_world_int: tile.p_in_world_int, chunkUpdate: { t: 'addTile', tile: { letter: tile.letter } } });
 }
 
 export function addHandTile(state: Draft<CoreState>, tile: Tile): void {
@@ -101,10 +101,13 @@ export function addHandTile(state: Draft<CoreState>, tile: Tile): void {
 export function putTileInWorld(state: CoreState, id: string, p_in_world_int: Point): CoreState {
   const nowhere = putTileNowhere(state, id);
   const tile = getTileId(state, id);
-  const newCache = updateChunkCache(nowhere._cachedTileChunkMap, nowhere, p_in_world_int, { t: 'addTile', tile: { letter: tile.letter } });
+  const cacheUpdate: CacheUpdate = {
+    p_in_world_int,
+    chunkUpdate: { t: 'addTile', tile: { letter: tile.letter } }
+  };
   return produce(nowhere, s => {
     setTileLoc(s, id, { t: 'world', p_in_world_int });
-    s._cachedTileChunkMap = newCache;
+    s._cacheUpdateQueue.push(cacheUpdate);
   });
 }
 
@@ -114,11 +117,14 @@ export function putTilesInWorld(state: CoreState, moves: MoveTile[]): CoreState 
     cs = putTileNowhere(cs, move.id);
   }
   for (const move of moves) {
-    const tile = getTileId(state, move.id);
-    const newCache = updateChunkCache(cs._cachedTileChunkMap, cs, move.p_in_world_int, { t: 'addTile', tile: { letter: tile.letter } });
+    const cacheUpdate: CacheUpdate = {
+      p_in_world_int: move.p_in_world_int,
+      chunkUpdate: { t: 'addTile', tile: { letter: move.letter } }
+    };
+
     cs = produce(cs, s => {
       setTileLoc(s, move.id, { t: 'world', p_in_world_int: move.p_in_world_int });
-      s._cachedTileChunkMap = newCache;
+      s._cacheUpdateQueue.push(cacheUpdate);
     });
   }
   return cs;
@@ -132,12 +138,12 @@ export function moveTiles(state: CoreState, moves: GenMoveTile[]): CoreState {
   }
   // Now tiles at their destinations
   for (const move of moves) {
-    let newCache = cs._cachedTileChunkMap;
+    let cacheUpdate: CacheUpdate | undefined = undefined;
     const tile = getTileId(state, move.id);
     const loc = move.loc;
     switch (loc.t) {
       case 'world':
-        newCache = updateChunkCache(newCache, cs, loc.p_in_world_int, { t: 'addTile', tile: { letter: tile.letter } });
+        cacheUpdate = { p_in_world_int: loc.p_in_world_int, chunkUpdate: { t: 'addTile', tile: { letter: tile.letter } } };
         break;
       case 'nowhere':
         break;
@@ -146,7 +152,8 @@ export function moveTiles(state: CoreState, moves: GenMoveTile[]): CoreState {
     }
     cs = produce(cs, s => {
       setTileLoc(s, move.id, loc);
-      s._cachedTileChunkMap = newCache;
+      if (cacheUpdate)
+        s._cacheUpdateQueue.push(cacheUpdate);
     });
 
   }
@@ -177,10 +184,10 @@ export function putTileNowhere(state: CoreState, id: string): CoreState {
 
   switch (loc.t) {
     case 'world':
-      const newCache = updateChunkCache(state._cachedTileChunkMap, state, loc.p_in_world_int, { t: 'removeTile' });
+      const cacheUpdate: CacheUpdate = { p_in_world_int: loc.p_in_world_int, chunkUpdate: { t: 'removeTile' } };
       return produce(state, s => {
         setTileLoc(s, id, { t: 'nowhere' });
-        s._cachedTileChunkMap = newCache;
+        s._cacheUpdateQueue.push(cacheUpdate);
       });
     case 'hand':
       return produce(state, s => {
@@ -202,18 +209,18 @@ export function putTilesInHandFromNotHand(state: CoreState, ids: string[], ix: n
   if (ix < 0)
     ix = 0;
 
-  let cache = state._cachedTileChunkMap;
+  const cacheUpdates: CacheUpdate[] = [];
 
   for (const id of ids) {
     const tile = getTileId(state, id);
     if (tile.loc.t == 'world') {
       const p = tile.loc.p_in_world_int;
-      cache = updateChunkCache(cache, state, p, { t: 'removeTile' });
+      cacheUpdates.push({ p_in_world_int: p, chunkUpdate: { t: 'removeTile' } });
     }
   }
 
   return produce(state, s => {
-    s._cachedTileChunkMap = cache;
+    s._cacheUpdateQueue.push(...cacheUpdates);
     for (let i = ix; i < handTiles.length; i++) {
       setTileLoc(s, handTiles[i].id, { t: 'hand', p_in_hand_int: { x: 0, y: i + ids.length } });
     }
@@ -263,10 +270,12 @@ export function tileAtPoint(state: CoreState, p_in_world: Point): TileEntity | u
 
 // These are some unfortunately low-level cache management operations.
 
+// XXX dead code?
 export function clearTileAtPosition(cs: CoreState, overlay: Overlay<Chunk>, p_in_world: Point): Overlay<Chunk> {
   return updateChunkCache(overlay, cs, p_in_world, { t: 'removeTile' });
 }
 
+// XXX dead code?
 export function restoreTileToWorld(cs: CoreState, overlay: Overlay<Chunk>, tile: TileEntity): Overlay<Chunk> {
   if (tile.loc.t != 'world') {
     return overlay; // do nothing

@@ -143,7 +143,6 @@ function exampleState(): GameState {
         active: [],
         numAllocated: 0,
       },
-      _cachedTileChunkMap: mkOverlay<Chunk>(),
       _cacheUpdateQueue: [],
       animations: [],
       tile_entities: {},

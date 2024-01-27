@@ -8,7 +8,7 @@ import { BIT_ACTIVATED, updateChunkCache } from './chunk';
 import { deterministicLetterSample } from './distribution';
 import { Layer, mkLayer } from './layer';
 import { incrementScore } from './scoring';
-import { CoreState } from './state';
+import { CacheUpdate, CoreState } from './state';
 import { MoveTile, Scoring } from './state-helpers';
 import { indexOfTool } from './tools';
 import { mkActiveWordBonus } from './word-bonus';
@@ -139,12 +139,12 @@ export function resolveScoring(state: CoreState, scoring: Scoring): CoreState {
     case 'copy': return produce(state, s => { s.slowState.inventory.copies += 3; });
     case 'word': {
       const { state: state1, wordBonus } = mkActiveWordBonus(state, scoring.p_in_world_int);
-      const cache = updateChunkCache(
-        state1._cachedTileChunkMap, state1, wordBonus.p_in_world_int,
-        { t: 'setBit', bit: BIT_ACTIVATED }
-      );
+      const cacheUpdate: CacheUpdate = {
+        p_in_world_int: wordBonus.p_in_world_int,
+        chunkUpdate: { t: 'setBit', bit: BIT_ACTIVATED }
+      };
       return produce(state1, s => {
-        s._cachedTileChunkMap = cache;
+        s._cacheUpdateQueue.push(cacheUpdate);
         s.wordBonusState.shown = wordBonus.p_in_world_int;
         s.wordBonusState.active.push(wordBonus);
       });

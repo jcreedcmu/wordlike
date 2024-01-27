@@ -2,7 +2,7 @@ import { Draft } from "immer";
 import { Point } from "../util/types";
 import { Bonus, getBonusLayer } from "./bonus";
 import { getOverlayLayer, setOverlay } from "./layer";
-import { CoreState } from "./state";
+import { CacheUpdate, CoreState } from "./state";
 import { updateChunkCache } from "./chunk";
 import { produce } from "../util/produce";
 
@@ -16,9 +16,9 @@ export function updateBonusLayer(state: CoreState, p_in_world_int: Point, bonus:
     setOverlay(cs.bonusOverlay, p_in_world_int, bonus);
   });
 
-  const newCache = updateChunkCache(state._cachedTileChunkMap, state, p_in_world_int, { t: 'bonus', bonus });
+  const cacheUpdate: CacheUpdate = { p_in_world_int, chunkUpdate: { t: 'bonus', bonus } };
 
   return produce(newState, cs => {
-    cs._cachedTileChunkMap = newCache;
+    cs._cacheUpdateQueue.push(cacheUpdate);
   });
 }

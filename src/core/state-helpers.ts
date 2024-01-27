@@ -16,7 +16,7 @@ import { DrawForce, getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, gridKeys, mkGridOfMainTiles } from "./grid";
 import { Layer, Overlay, getOverlayLayer, mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
 import { PROGRESS_ANIMATION_POINTS, getHighWaterMark, getScore, setHighWaterMark } from "./scoring";
-import { CoreState, GameState, HAND_TILE_LIMIT, Location, MouseState, Tile, TileEntity, WordBonusState } from "./state";
+import { CacheUpdate, CoreState, GameState, HAND_TILE_LIMIT, Location, MouseState, Tile, TileEntity, WordBonusState } from "./state";
 import { addHandTile, addWorldTile, get_hand_tiles, get_main_tiles, get_tiles, putTileInWorld } from "./tile-helpers";
 import { ensureTileId } from "./tile-id-helpers";
 import { getCurrentTool } from "./tools";
@@ -196,13 +196,17 @@ export function checkValid(state: CoreState): CoreState {
     animations = [...animations, mkWinAnimation(state.game_from_clock)];
   }
 
-  let newCache = state._cachedTileChunkMap;
-  gridKeys(oldConnectedSet).forEach(p_in_world => {
-    newCache = updateChunkCache(newCache, state, p_in_world, { t: 'clearBit', bit: BIT_CONNECTED });
-  });
-  gridKeys(connectedSet).forEach(p_in_world => {
-    newCache = updateChunkCache(newCache, state, p_in_world, { t: 'setBit', bit: BIT_CONNECTED });
-  });
+  const oldCacheUpdates: CacheUpdate[] =
+    gridKeys(oldConnectedSet).map(p_in_world_int => ({
+      p_in_world_int,
+      chunkUpdate: { t: 'clearBit', bit: BIT_CONNECTED }
+    }));
+
+  const newCacheUpdates: CacheUpdate[] =
+    gridKeys(connectedSet).map(p_in_world_int => ({
+      p_in_world_int,
+      chunkUpdate: { t: 'setBit', bit: BIT_CONNECTED }
+    }));
 
   return produce(state, s => {
     s.panic = panic;
@@ -210,7 +214,8 @@ export function checkValid(state: CoreState): CoreState {
     s.connectedSet = connectedSet;
     s.winState = winState;
     s.animations = animations;
-    s._cachedTileChunkMap = newCache;
+    s._cacheUpdateQueue.push(...oldCacheUpdates);
+    s._cacheUpdateQueue.push(...newCacheUpdates);
 
     // XXX: is this the right place to do this?
     if (getCurrentTool(state) != 'dynamite')

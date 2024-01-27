@@ -6,7 +6,7 @@ import { vadd, vsub } from "../util/vutil";
 import { getCacheState } from "./cache-state";
 import { BIT_SELECTED, updateChunkCache } from "./chunk";
 import { Overlay, mkOverlay, overlayForEach, setOverlay } from "./layer";
-import { CoreState, MouseState } from "./state";
+import { CacheUpdate, CoreState, MouseState } from "./state";
 import { getTileId, get_main_tiles } from "./tile-helpers";
 
 export type SelectionOperation =
@@ -78,22 +78,22 @@ export function selectionOperationOfMods(mods: Set<string>): SelectionOperation 
 export function setSelected(state: CoreState, sel: SelectionState | undefined): CoreState {
   getCacheState(state).selection.dirty = true;
 
-  let cache = state._cachedTileChunkMap;
+  const cacheUpdates: CacheUpdate[] = [];
 
   if (state.selected) {
     overlayForEach(state.selected.overlay, p => {
-      cache = updateChunkCache(cache, state, p, { t: 'clearBit', bit: BIT_SELECTED });
+      cacheUpdates.push({ p_in_world_int: p, chunkUpdate: { t: 'clearBit', bit: BIT_SELECTED } });
     });
   }
 
   if (sel) {
     overlayForEach(sel.overlay, p => {
-      cache = updateChunkCache(cache, state, p, { t: 'setBit', bit: BIT_SELECTED });
+      cacheUpdates.push({ p_in_world_int: p, chunkUpdate: { t: 'setBit', bit: BIT_SELECTED } });
     });
   }
   return produce(state, s => {
     s.selected = sel;
-    s._cachedTileChunkMap = cache;
+    s._cacheUpdateQueue.push(...cacheUpdates);
   });
 }
 

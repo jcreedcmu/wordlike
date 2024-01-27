@@ -18,7 +18,7 @@ import { mkOverlayFrom, setOverlay } from './layer';
 import { reduceKey } from './reduceKey';
 import { incrementScore, setScore } from './scoring';
 import { deselect, resolveSelection, setSelected } from './selection';
-import { CoreState, GameState, Location, SceneState } from './state';
+import { CacheUpdate, CoreState, GameState, Location, SceneState } from './state';
 import { MoveTile, addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isCollision, isOccupied, isTilePinned, needsRefresh, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
 import { cellAtPoint, getTileId, get_hand_tiles, get_tiles, moveTiles, moveToHandLoc, putTileInHand, putTileInWorld, putTilesInHandFromNotHand, putTilesInWorld, removeAllTiles, restoreTileToWorld, tileAtPoint } from "./tile-helpers";
 import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
@@ -300,7 +300,6 @@ export function getLowAction(state: GameState, action: GameAction): LowAction {
     case 'mouseUp': return gla(resolveMouseup(state));
     case 'mouseMove': return gla({ t: 'mouseMove', p: action.p });
     case 'repaint': return gla({ t: 'repaint' });
-    case 'setCache': return gla({ t: 'setCache', cache: action.cache });
   }
 }
 
@@ -489,18 +488,18 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
       return produce(state, s => { s.coreState.panic = action.panic; });
 
     case 'restoreTiles': {
-      let cache = state.coreState._cachedTileChunkMap;
-      action.ids.forEach(id => {
-        cache = restoreTileToWorld(state.coreState, cache, getTileId(state.coreState, id));
+      const cacheUpdates: CacheUpdate[] = action.ids.flatMap(id => {
+        const tile = getTileId(state.coreState, id);
+        if (tile.loc.t != 'world')
+          return [];
+        return [{
+          p_in_world_int: tile.loc.p_in_world_int,
+          chunkUpdate: { t: 'restoreTile', tile: { letter: tile.letter } }
+        }];
       });
-      return produce(state, s => {
-        s.coreState._cachedTileChunkMap = cache;
-      });
-    }
 
-    case 'setCache': {
       return produce(state, s => {
-        s.coreState._cachedTileChunkMap = action.cache;
+        s.coreState._cacheUpdateQueue.push(...cacheUpdates);
       });
     }
   }
