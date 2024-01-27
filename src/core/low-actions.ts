@@ -1,5 +1,5 @@
 import { isActiveCanvasAnimation } from '../ui/drawAnimation';
-import { canvas_from_drag_tile, pan_canvas_from_canvas_of_mouse_state, pan_canvas_from_world_of_state } from '../ui/view-helpers';
+import { canvas_from_drag_tile, pan_canvas_from_canvas_of_mouse_state } from '../ui/view-helpers';
 import { WidgetPoint, canvas_from_hand, getWidgetPoint } from '../ui/widget-helpers';
 import { DEBUG, debugTiles } from '../util/debug';
 import { produce } from '../util/produce';
@@ -10,7 +10,6 @@ import { vequal, vm, vscale, vsub } from '../util/vutil';
 import { GameAction, GameLowAction, LowAction } from './action';
 import { mkPointDecayAnimation } from './animations';
 import { getBonusLayer } from './bonus';
-import { activeChunks, ensureChunk } from './chunk';
 import { getPanicFraction, now_in_game } from './clock';
 import { getIntentOfMouseDown, reduceIntent } from './intent';
 import { tryKillTileOfState } from './kill-helpers';
@@ -20,7 +19,7 @@ import { incrementScore, setScore } from './scoring';
 import { deselect, resolveSelection, setSelected } from './selection';
 import { CacheUpdate, CoreState, GameState, Location, SceneState } from './state';
 import { MoveTile, addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isCollision, isOccupied, isTilePinned, needsRefresh, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
-import { cellAtPoint, getTileId, get_hand_tiles, get_tiles, moveTiles, moveToHandLoc, putTileInHand, putTileInWorld, putTilesInHandFromNotHand, putTilesInWorld, removeAllTiles, restoreTileToWorld, tileAtPoint } from "./tile-helpers";
+import { cellAtPoint, getTileId, get_hand_tiles, get_tiles, moveTiles, moveToHandLoc, putTileInHand, putTilesInHandFromNotHand, putTilesInWorld, removeAllTiles, tileAtPoint } from "./tile-helpers";
 import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
 import { shouldDisplayBackButton } from './winState';
 

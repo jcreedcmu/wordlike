@@ -267,18 +267,3 @@ export function tileAtPoint(state: CoreState, p_in_world: Point): TileEntity | u
   }
   return undefined;
 }
-
-// These are some unfortunately low-level cache management operations.
-
-// XXX dead code?
-export function clearTileAtPosition(cs: CoreState, overlay: Overlay<Chunk>, p_in_world: Point): Overlay<Chunk> {
-  return updateChunkCache(overlay, cs, p_in_world, { t: 'removeTile' });
-}
-
-// XXX dead code?
-export function restoreTileToWorld(cs: CoreState, overlay: Overlay<Chunk>, tile: TileEntity): Overlay<Chunk> {
-  if (tile.loc.t != 'world') {
-    return overlay; // do nothing
-  }
-  return updateChunkCache(overlay, cs, tile.loc.p_in_world_int, { t: 'restoreTile', tile: { letter: tile.letter } });
-}
