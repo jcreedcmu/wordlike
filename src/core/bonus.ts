@@ -4,13 +4,12 @@ import { produce } from '../util/produce';
 import { Point, Rect } from '../util/types';
 import { lerp, point_hash } from '../util/util';
 import { vadd, vdiv, vint, vm, vsnorm, vsub } from '../util/vutil';
-import { BIT_ACTIVATED, updateChunkCache } from './chunk';
+import { BIT_ACTIVATED } from './chunk';
 import { deterministicLetterSample } from './distribution';
 import { Layer, mkLayer } from './layer';
 import { incrementScore } from './scoring';
 import { CacheUpdate, CoreState } from './state';
 import { MoveTile, Scoring } from './state-helpers';
-import { indexOfTool } from './tools';
 import { mkActiveWordBonus } from './word-bonus';
 
 export type ScoringBonus =

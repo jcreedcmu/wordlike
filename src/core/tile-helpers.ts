@@ -2,13 +2,11 @@ import { Draft } from "immer";
 import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { vequal, vm } from "../util/vutil";
-import { CacheUpdate, CoreState, GameState, HandTile, Location, MainTile, Tile, TileEntity, TileEntityOptionalId, TileOptionalId } from "./state";
-import { Bonus, getBonusLayer } from "./bonus";
+import { Bonus } from "./bonus";
 import { getBonusFromLayer } from "./bonus-helpers";
-import { ensureId } from "./tile-id-helpers";
-import { Chunk, ChunkValue, updateChunkCache } from "./chunk";
-import { Overlay, getOverlay } from "./layer";
+import { CacheUpdate, CoreState, GameState, HandTile, Location, MainTile, Tile, TileEntity, TileOptionalId } from "./state";
 import { GenMoveTile, MoveTile } from "./state-helpers";
+import { ensureId } from "./tile-id-helpers";
 
 export type TileId = string;
 

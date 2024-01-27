@@ -10,7 +10,7 @@ import { Animation, mkPointDecayAnimation, mkScoreAnimation, mkWinAnimation } fr
 import { getAssets } from "./assets";
 import { Bonus, ScoringBonus, adjacentScoringOfBonus, isBlocking, overlapScoringOfBonus, resolveScoring } from "./bonus";
 import { getBonusFromLayer, updateBonusLayer } from "./bonus-helpers";
-import { BIT_CONNECTED, updateChunkCache } from "./chunk";
+import { BIT_CONNECTED } from "./chunk";
 import { PANIC_INTERVAL_MS, PanicData, PauseData, WORD_BONUS_INTERVAL_MS, now_in_game } from "./clock";
 import { DrawForce, getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, gridKeys, mkGridOfMainTiles } from "./grid";

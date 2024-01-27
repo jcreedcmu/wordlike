@@ -57,17 +57,9 @@ function getWorldChunkData(cs: CoreState, p_in_chunk: Point): Chunk {
   return chunk;
 }
 
-export function cacheMiss(cache: Overlay<Chunk>, p_in_chunk: Point): boolean {
-  return !getOverlay(cache, p_in_chunk);
-}
-
-export function ensureChunk(cache: Overlay<Chunk>, cs: CoreState, p_in_chunk: Point): Overlay<Chunk> {
-  if (getOverlay(cache, p_in_chunk))
-    return cache;
-  else
-    return produce(cache, c => {
-      setOverlay(c, p_in_chunk, getWorldChunkData(cs, p_in_chunk));
-    });
+export function ensureChunk(cache: Overlay<Chunk>, cs: CoreState, p_in_chunk: Point): void {
+  if (!getOverlay(cache, p_in_chunk))
+    setOverlay(cache, p_in_chunk, getWorldChunkData(cs, p_in_chunk));
 }
 
 export function getChunk(cache: Overlay<Chunk>, p_in_chunk: Point): Chunk | undefined {
@@ -107,10 +99,9 @@ function processChunkUpdate(cu: ChunkUpdate, oldVec: number[]): number[] {
   }
 }
 
-export function updateChunkCache(cache: Overlay<Chunk>, cs: CoreState, p_in_world: Point, cu: ChunkUpdate): Overlay<Chunk> {
+export function updateChunkCache(cache: Overlay<Chunk>, cs: CoreState, p_in_world: Point, cu: ChunkUpdate): void {
   const p_in_chunk = vm2(p_in_world, WORLD_CHUNK_SIZE, (x, wcs) => Math.floor(x / wcs));
-  if (!getOverlay(cache, p_in_chunk))
-    cache = ensureChunk(cache, cs, p_in_chunk);
+  ensureChunk(cache, cs, p_in_chunk);
   const { x, y } = vsub(p_in_world, vmul(p_in_chunk, WORLD_CHUNK_SIZE));
   const chunk = getOverlay(cache, p_in_chunk)!;
   const ix = x + y * chunk.size.x;
@@ -120,13 +111,10 @@ export function updateChunkCache(cache: Overlay<Chunk>, cs: CoreState, p_in_worl
     chunk.imdat.data[4 * ix + 2],
     chunk.imdat.data[4 * ix + 3]
   ]);
-  return produce(cache, c => {
-    const chunk = getOverlay(c, p_in_chunk)!;
-    chunk.imdat.data[4 * ix + 0] = newVec[0];
-    chunk.imdat.data[4 * ix + 1] = newVec[1];
-    chunk.imdat.data[4 * ix + 2] = newVec[2];
-    chunk.imdat.data[4 * ix + 3] = newVec[3];
-  });
+  chunk.imdat.data[4 * ix + 0] = newVec[0];
+  chunk.imdat.data[4 * ix + 1] = newVec[1];
+  chunk.imdat.data[4 * ix + 2] = newVec[2];
+  chunk.imdat.data[4 * ix + 3] = newVec[3];
 }
 
 export type ActiveChunkInfo = {

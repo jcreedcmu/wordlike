@@ -1,10 +1,8 @@
-import { Draft } from "immer";
+import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { Bonus, getBonusLayer } from "./bonus";
 import { getOverlayLayer, setOverlay } from "./layer";
 import { CacheUpdate, CoreState } from "./state";
-import { updateChunkCache } from "./chunk";
-import { produce } from "../util/produce";
 
 // XXX name?
 export function getBonusFromLayer(cs: CoreState, p: Point): Bonus {

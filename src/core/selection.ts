@@ -4,7 +4,7 @@ import { apply_to_rect } from "../util/se2-extra";
 import { boundRect, pointInRect } from "../util/util";
 import { vadd, vsub } from "../util/vutil";
 import { getCacheState } from "./cache-state";
-import { BIT_SELECTED, updateChunkCache } from "./chunk";
+import { BIT_SELECTED } from "./chunk";
 import { Overlay, mkOverlay, overlayForEach, setOverlay } from "./layer";
 import { CacheUpdate, CoreState, MouseState } from "./state";
 import { getTileId, get_main_tiles } from "./tile-helpers";
