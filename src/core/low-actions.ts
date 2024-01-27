@@ -125,19 +125,19 @@ function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number, mods
   }
 }
 
-function resolveMouseup(state: GameState): GameLowAction {
+function resolveMouseup(state: GameState, p_in_canvas: Point): GameLowAction {
   // FIXME: Setting the mouse state to up *before* calling
   // resolveMouseupInner had some problems I think. I should investigate
   // why.
   return {
-    action: resolveMouseupInner(state),
+    action: resolveMouseupInner(state, p_in_canvas),
     t: 'andMouseUp',
-    p_in_canvas: state.mouseState.p_in_canvas,
+    p_in_canvas: p_in_canvas,
   };
 }
 
-function resolveMouseupInner(state: GameState): GameLowAction {
-  const ms = state.mouseState;
+function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowAction {
+  const ms = produce(state.mouseState, ms => { ms.p_in_canvas = p_in_canvas; });
 
   switch (ms.t) {
     case 'drag_selection': return { t: 'dragSelectionEnd', ms };
@@ -296,7 +296,7 @@ export function getLowAction(state: GameState, action: GameAction): LowAction {
         return { t: 'returnToMenu' };
       return gla(reduceMouseDown(state, wp, action.button, action.mods));
     }
-    case 'mouseUp': return gla(resolveMouseup(state));
+    case 'mouseUp': return gla(resolveMouseup(state, action.p));
     case 'mouseMove': return gla({ t: 'mouseMove', p: action.p });
     case 'repaint': return gla({ t: 'repaint' });
     case 'clearCacheUpdateQueue': return gla({ t: 'clearCacheUpdateQueue' });
