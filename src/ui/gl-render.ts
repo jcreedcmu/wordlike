@@ -4,6 +4,7 @@ import { getAssets } from "../core/assets";
 import { ActiveChunkInfo, Chunk, WORLD_CHUNK_SIZE, activeChunks, ensureChunk, getChunk, updateChunkCache } from "../core/chunk";
 import { now_in_game } from "../core/clock";
 import { mkOverlay } from "../core/layer";
+import { eff_mob_in_world } from "../core/mobs";
 import { CacheUpdate, CoreState, GameState, MobsState } from "../core/state";
 import { pointFall } from "../core/state-helpers";
 import { getTileId, get_hand_tiles, isSelectedForDrag } from "../core/tile-helpers";
@@ -175,7 +176,7 @@ function drawMobs(env: GlEnv, canvas_from_world: SE2, mobsState: MobsState): voi
   mobsState.mobs.forEach(mob => {
     switch (mob.t) {
       case 'snail':
-        drawOneSprite(env, spriteLocOfMob(mob), compose(canvas_from_world, translate(mob.p_in_world)));
+        drawOneSprite(env, spriteLocOfMob(mob), compose(canvas_from_world, translate(eff_mob_in_world(mob))));
         break;
     }
   });
