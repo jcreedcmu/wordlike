@@ -2,6 +2,8 @@ import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { unreachable } from "../util/util";
 import { vadd, vequal, vscale } from "../util/vutil";
+import { CoreState } from "./state";
+import { isOccupied, isOccupiedPoint } from "./state-helpers";
 
 export type Orientation = 'N' | 'W' | 'E' | 'S';
 
@@ -14,6 +16,37 @@ export function vec_of_orientation(or: Orientation): Point {
   }
 }
 
+// .. .. ..
+// .. -> .. back_right_of(E) = (-1,1)
+// rv .. ..
+
+// rv .. ..
+// .. vv .. back_right_of(S) = (-1,-1)
+// .. .. ..
+export function back_right_of(mob: MobState): Point {
+  const { x, y } = vec_of_orientation(mob.orientation);
+  return vadd(mob.p_in_world_int, { x: -(x + y), y: x - y });
+}
+
+export function forward_of(mob: MobState): Point {
+  return vadd(mob.p_in_world_int, vec_of_orientation(mob.orientation));
+}
+
+export function left_of(mob: MobState): Point {
+  const { x, y } = vec_of_orientation(mob.orientation);
+  return vadd(mob.p_in_world_int, { x: y, y: -x });
+}
+
+export function right_of(mob: MobState): Point {
+  const { x, y } = vec_of_orientation(mob.orientation);
+  return vadd(mob.p_in_world_int, { x: -y, y: x });
+}
+
+export function back_of(mob: MobState): Point {
+  const { x, y } = vec_of_orientation(mob.orientation);
+  return vadd(mob.p_in_world_int, { x: -x, y: -y });
+}
+
 export function clockwise_of(or: Orientation): Orientation {
   switch (or) {
     case 'N': return 'E';
@@ -23,10 +56,28 @@ export function clockwise_of(or: Orientation): Orientation {
   }
 }
 
+export function ccw_of(or: Orientation): Orientation {
+  switch (or) {
+    case 'N': return 'W';
+    case 'E': return 'N';
+    case 'S': return 'E';
+    case 'W': return 'S';
+  }
+}
+
+export function reverse_of(or: Orientation): Orientation {
+  switch (or) {
+    case 'N': return 'S';
+    case 'E': return 'W';
+    case 'S': return 'N';
+    case 'W': return 'E';
+  }
+}
+
 export type MobType =
   | 'snail';
 
-export const SNAIL_ADVANCE_TICKS = 360;
+export const SNAIL_ADVANCE_TICKS = 120;
 
 export type MobState = {
   t: MobType,
@@ -44,36 +95,50 @@ export function eff_mob_in_world(mob: MobState): Point {
   }
 }
 
-export function advanceMob(mob: MobState): MobState {
+export function advanceMob(state: CoreState, mob: MobState): MobState {
+  function advanceWith(or: Orientation): MobState {
+    const newTicks = (mob.ticks + 1) % SNAIL_ADVANCE_TICKS;
+    if (newTicks == 0) {
+      const new_p_in_world_int = forward_of(mob);
+      // move snail to next position
+      return produce(mob, m => {
+        m.ticks = newTicks;
+        m.p_in_world_int = new_p_in_world_int;
+        m.orientation = or;
+      });
+    }
+    else {
+      return produce(mob, m => {
+        m.ticks = newTicks;
+        m.orientation = or;
+      });
+    }
+  }
+
   switch (mob.t) {
     case 'snail':
-      const newTicks = (mob.ticks + 1) % SNAIL_ADVANCE_TICKS;
-      if (newTicks == 0) {
-        const new_p_in_world_int = nextPosition(mob);
-        return produce(mob, m => {
-          m.ticks = newTicks;
-          m.p_in_world_int = new_p_in_world_int;
-          m.orientation = clockwise_of(m.orientation);
-        });
-
+      if (mob.ticks == 0) {
+        const forward = forward_of(mob);
+        if (isOccupiedPoint(state, back_right_of(mob)) && !isOccupiedPoint(state, right_of(mob)))
+          return advanceWith(clockwise_of(mob.orientation));
+        if (!isOccupiedPoint(state, forward_of(mob)))
+          return advanceWith(mob.orientation);
+        if (!isOccupiedPoint(state, left_of(mob)))
+          return advanceWith(ccw_of(mob.orientation));
+        if (!isOccupiedPoint(state, back_of(mob)))
+          return advanceWith(reverse_of(mob.orientation));
+        return mob; // don't advance
       }
-      else {
-        return produce(mob, m => {
-          m.ticks = newTicks;
-        });
-      }
+      return advanceWith(mob.orientation);
   }
 }
 
-export function nextPosition(mob: MobState & { t: 'snail' }): Point {
-  return vadd(mob.p_in_world_int, vec_of_orientation(mob.orientation));
-}
 
 export function collidesWithMob(mob: MobState, p_in_world_int: Point): boolean {
   switch (mob.t) {
     case 'snail': {
       return (vequal(p_in_world_int, mob.p_in_world_int) || (mob.ticks > 0 &&
-        vequal(p_in_world_int, nextPosition(mob))));
+        vequal(p_in_world_int, forward_of(mob))));
     }
   }
 }

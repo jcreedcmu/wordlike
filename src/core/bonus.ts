@@ -107,6 +107,15 @@ export function isBlocking(tile: MoveTile, bonus: Bonus): boolean {
   return true;
 }
 
+export function isBlockingPoint(bonus: Bonus): boolean {
+  if (bonus.t == 'empty')
+    return false;
+  if (bonus.t == 'required') {
+    return true;
+  }
+  return true;
+}
+
 export function adjacentScoringOfBonus(bonus: Bonus, p_in_world_int: Point): Scoring[] {
   switch (bonus.t) {
     case 'bonus': return [{ bonus, p_in_world_int, destroy: true }];

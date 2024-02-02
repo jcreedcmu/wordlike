@@ -8,7 +8,7 @@ import { Point } from "../util/types";
 import { vadd, vequal, vm } from "../util/vutil";
 import { Animation, mkPointDecayAnimation, mkScoreAnimation, mkWinAnimation } from './animations';
 import { getAssets } from "./assets";
-import { ScoringBonus, adjacentScoringOfBonus, isBlocking, overlapScoringOfBonus, resolveScoring } from "./bonus";
+import { ScoringBonus, adjacentScoringOfBonus, isBlocking, isBlockingPoint, overlapScoringOfBonus, resolveScoring } from "./bonus";
 import { getBonusFromLayer, updateBonusLayer } from "./bonus-helpers";
 import { BIT_CONNECTED } from "./chunk";
 import { PANIC_INTERVAL_MS, PanicData, PauseData, WORD_BONUS_INTERVAL_MS, now_in_game } from "./clock";
@@ -49,6 +49,8 @@ export function addHandTiles(state: CoreState, tiles: Tile[]): CoreState {
 export type MoveTile = { letter: string, id: string, p_in_world_int: Point };
 export type GenMoveTile = { id: string, loc: Location };
 
+// XXX: unify isOccupiedForTiles and isOccupiedPointForTiles
+
 // Returns true if there is a collision when
 // - we are trying to land `moveTile`
 // - the current state is `state`, except
@@ -61,8 +63,23 @@ export function isOccupiedForTiles(state: CoreState, moveTile: MoveTile, tiles: 
     || state.mobsState.mobs.some(mob => collidesWithMob(mob, moveTile.p_in_world_int));
 }
 
+// Returns true if there is a collision when
+// - we are trying to put some arbitrary non-tile thing at `p_in_world_int`
+// - the current state is `state`, except
+// - we consider the set of tiles on the board to be `tiles`,
+//   overriding whatever `state` says.
+// Don't consider collisions with mobs because this is used for mob collisions.
+export function isOccupiedPointForTiles(state: CoreState, p_in_world_int: Point, tiles: TileEntity[]): boolean {
+  return collidesWithWorldPoint(tiles, p_in_world_int)
+    || isBlockingPoint(getBonusFromLayer(state, p_in_world_int));
+}
+
 export function isOccupied(state: CoreState, moveTile: MoveTile): boolean {
   return isOccupiedForTiles(state, moveTile, get_tiles(state));
+}
+
+export function isOccupiedPoint(state: CoreState, p_in_world: Point): boolean {
+  return isOccupiedPointForTiles(state, p_in_world, get_tiles(state));
 }
 
 export function collidesWithWorldPoint(tiles: TileEntity[], p: Point): boolean {

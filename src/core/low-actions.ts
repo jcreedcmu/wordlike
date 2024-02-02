@@ -311,6 +311,8 @@ export function resolveGameLowActions(state: GameState, gameLowActions: GameLowA
 }
 
 function resolveGameLowAction(state: GameState, action: GameLowAction): GameState {
+  const cs = state.coreState;
+
   if (DEBUG.lowActions) {
     if (action.t != 'tick' && action.t != 'mouseMove')
       console.log(`low action: ${JSON.stringify(action)}`);
@@ -325,7 +327,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     case 'drawTile': return withCoreState(state, cs => drawOfState(cs));
     case 'flipOrientation': {
       const ms = state.mouseState;
-      if (ms.t == 'drag_tile' && state.coreState.selected) {
+      if (ms.t == 'drag_tile' && cs.selected) {
         const flippedMs = produce(ms, mss => { mss.flipped = !mss.flipped; });
         return produce(state, s => { s.mouseState = flippedMs; });
       }
@@ -354,7 +356,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
         s.slowState.renderToGl = !s.slowState.renderToGl;
       }));
     case 'setTool':
-      if (toolPrecondition(state.coreState, action.tool))
+      if (toolPrecondition(cs, action.tool))
         return withCoreState(state, cs => produce(cs, s => {
           s.slowState.currentTool = action.tool;
         }));
@@ -371,15 +373,15 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     });
     case 'none': return state;
     case 'tick': {
-      if (state.coreState.slowState.paused)
+      if (cs.slowState.paused)
         return state;
 
-      const t_in_game = now_in_game(state.coreState.game_from_clock);
-      const activeCanvasAnimation = state.coreState.animations.some(x => isActiveCanvasAnimation(x));
-      const newAnimations = filterExpiredAnimations(t_in_game, state.coreState.animations);
-      const [newWordBonusState, destroys] = filterExpiredWordBonusState(t_in_game, state.coreState.wordBonusState);
+      const t_in_game = now_in_game(cs.game_from_clock);
+      const activeCanvasAnimation = cs.animations.some(x => isActiveCanvasAnimation(x));
+      const newAnimations = filterExpiredAnimations(t_in_game, cs.animations);
+      const [newWordBonusState, destroys] = filterExpiredWordBonusState(t_in_game, cs.wordBonusState);
       destroys.forEach(destroy_p => {
-        newAnimations.push(mkPointDecayAnimation(destroy_p, state.coreState.game_from_clock));
+        newAnimations.push(mkPointDecayAnimation(destroy_p, cs.game_from_clock));
       });
       state = produce(state, s => {
         if (activeCanvasAnimation) {
@@ -391,20 +393,20 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
           setOverlay(s.coreState.bonusOverlay, destroy_p, { t: 'empty' });
         });
       });
-      if (state.coreState.panic !== undefined) {
-        if (getPanicFraction(state.coreState.panic, state.coreState.game_from_clock) > 1) {
+      if (cs.panic !== undefined) {
+        if (getPanicFraction(cs.panic, cs.game_from_clock) > 1) {
           return produce(state, s => {
             s.coreState.winState = { t: 'lost' };
           });
         }
 
         // advance mobs
-        const newMobs: MobsState = { mobs: state.coreState.mobsState.mobs.map(advanceMob) };
+        const newMobs: MobsState = { mobs: cs.mobsState.mobs.map(mob => advanceMob(cs, mob)) };
         state = produce(state, s => {
           s.coreState.mobsState = newMobs;
         });
 
-        if (state.coreState.slowState.renderToGl)
+        if (cs.slowState.renderToGl)
           return state;
         else
           return produce(state, s => { s.coreState.panic!.currentTime_in_game = t_in_game; });
@@ -419,7 +421,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     case 'multiple': return resolveGameLowActions(state, action.actions);
     case 'deselect': return withCoreState(state, deselect);
     case 'startDragHandTile': {
-      const tiles = get_hand_tiles(state.coreState);
+      const tiles = get_hand_tiles(cs);
       return produce(withCoreState(state, deselect), s => {
         s.coreState.slowState.generation++;
         s.mouseState = {
@@ -442,7 +444,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
         s.mouseState = { t: 'up', p_in_canvas: action.p_in_canvas };
       });
     case 'dragSelectionEnd': {
-      const newCs = resolveSelection(state.coreState, action.ms);
+      const newCs = resolveSelection(cs, action.ms);
       return produce(state, s => { s.coreState = newCs; });
     }
     case 'set_canvas_from_world': {
@@ -472,8 +474,8 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
       return produce(state, s => { s.coreState.slowState.inventory[action.which]--; });
 
     case 'drawConsonant': {
-      let newState = drawOfState(state.coreState, 'consonant');
-      if (newState == state.coreState)
+      let newState = drawOfState(cs, 'consonant');
+      if (newState == cs)
         return state;
       else {
         newState = produce(newState, cs => { cs.slowState.inventory.consonants--; });
@@ -482,8 +484,8 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     }
 
     case 'drawVowel': {
-      let newState = drawOfState(state.coreState, 'vowel');
-      if (newState == state.coreState)
+      let newState = drawOfState(cs, 'vowel');
+      if (newState == cs)
         return state;
       else {
         newState = produce(newState, cs => { cs.slowState.inventory.vowels--; });
@@ -496,7 +498,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
 
     case 'restoreTiles': {
       const cacheUpdates: CacheUpdate[] = action.ids.flatMap(id => {
-        const tile = getTileId(state.coreState, id);
+        const tile = getTileId(cs, id);
         if (tile.loc.t != 'world')
           return [];
         return [{
