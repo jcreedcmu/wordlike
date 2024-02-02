@@ -8,13 +8,13 @@ import { Point } from "../util/types";
 import { vadd, vequal, vm } from "../util/vutil";
 import { Animation, mkPointDecayAnimation, mkScoreAnimation, mkWinAnimation } from './animations';
 import { getAssets } from "./assets";
-import { Bonus, ScoringBonus, adjacentScoringOfBonus, isBlocking, overlapScoringOfBonus, resolveScoring } from "./bonus";
+import { ScoringBonus, adjacentScoringOfBonus, isBlocking, overlapScoringOfBonus, resolveScoring } from "./bonus";
 import { getBonusFromLayer, updateBonusLayer } from "./bonus-helpers";
 import { BIT_CONNECTED } from "./chunk";
 import { PANIC_INTERVAL_MS, PanicData, PauseData, WORD_BONUS_INTERVAL_MS, now_in_game } from "./clock";
 import { DrawForce, getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, gridKeys, mkGridOfMainTiles } from "./grid";
-import { Layer, Overlay, getOverlayLayer, mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
+import { mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
 import { PROGRESS_ANIMATION_POINTS, getHighWaterMark, getScore, setHighWaterMark } from "./scoring";
 import { CacheUpdate, CoreState, GameState, HAND_TILE_LIMIT, Location, MouseState, Tile, TileEntity, WordBonusState } from "./state";
 import { addHandTile, addWorldTile, get_hand_tiles, get_main_tiles, get_tiles, putTileInWorld } from "./tile-helpers";
@@ -55,7 +55,7 @@ export type GenMoveTile = { id: string, loc: Location };
 //   overriding whatever `state` says.
 // This is used when we're resolving a tile drag, before we've updated the state to remove the tiles.
 export function isOccupiedForTiles(state: CoreState, moveTile: MoveTile, tiles: TileEntity[]): boolean {
-  return isOccupiedTiles(tiles, moveTile.p_in_world_int)
+  return collidesWithWorldPoint(tiles, moveTile.p_in_world_int)
     || isBlocking(moveTile, getBonusFromLayer(state, moveTile.p_in_world_int));
 }
 
@@ -63,7 +63,7 @@ export function isOccupied(state: CoreState, moveTile: MoveTile): boolean {
   return isOccupiedForTiles(state, moveTile, get_tiles(state));
 }
 
-export function isOccupiedTiles(tiles: TileEntity[], p: Point): boolean {
+export function collidesWithWorldPoint(tiles: TileEntity[], p: Point): boolean {
   return tiles.some(tile => tile.loc.t == 'world' && vequal(tile.loc.p_in_world_int, p));
 }
 
