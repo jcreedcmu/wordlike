@@ -171,7 +171,7 @@ export function Game(props: GameProps): JSX.Element {
   }
 
   function intervalHandler() {
-    dispatch({ t: 'repaint' });
+    dispatch({ t: 'tick' });
     if (DEBUG.fastAnimation) {
       if (!going) {
         console.log('abandoning requestanimationframe loop');

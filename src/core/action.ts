@@ -25,7 +25,7 @@ export type GameLowAction =
   | { t: 'mouseDownIntent', intent: Intent, wp: WidgetPoint }
   | { t: 'mouseMove', p: Point }
   | { t: 'none' }
-  | { t: 'repaint' }
+  | { t: 'tick' }
   | { t: 'vacuousDown', wp: WidgetPoint }
   | { t: 'shuffle' }
   | { t: 'pause' }
@@ -63,7 +63,7 @@ export type GameAction =
   | { t: 'mouseUp', p: Point }
   | { t: 'mouseMove', p: Point }
   | { t: 'wheel', p: Point, delta: number }
-  | { t: 'repaint' }
+  | { t: 'tick' }
   | { t: 'clearCacheUpdateQueue' }
   ;
 

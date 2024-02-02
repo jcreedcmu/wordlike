@@ -278,7 +278,7 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
 
 export function getLowAction(state: GameState, action: GameAction): LowAction {
   if (DEBUG.actions) {
-    if (action.t != 'repaint' && action.t != 'mouseMove')
+    if (action.t != 'tick' && action.t != 'mouseMove')
       console.log(`high action: ${JSON.stringify(action)}`);
   }
 
@@ -298,7 +298,7 @@ export function getLowAction(state: GameState, action: GameAction): LowAction {
     }
     case 'mouseUp': return gla(resolveMouseup(state, action.p));
     case 'mouseMove': return gla({ t: 'mouseMove', p: action.p });
-    case 'repaint': return gla({ t: 'repaint' });
+    case 'tick': return gla({ t: 'tick' });
     case 'clearCacheUpdateQueue': return gla({ t: 'clearCacheUpdateQueue' });
   }
 }
@@ -312,7 +312,7 @@ export function resolveGameLowActions(state: GameState, gameLowActions: GameLowA
 
 function resolveGameLowAction(state: GameState, action: GameLowAction): GameState {
   if (DEBUG.lowActions) {
-    if (action.t != 'repaint' && action.t != 'mouseMove')
+    if (action.t != 'tick' && action.t != 'mouseMove')
       console.log(`low action: ${JSON.stringify(action)}`);
   }
 
@@ -370,7 +370,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
       s.mouseState.p_in_canvas = action.p;
     });
     case 'none': return state;
-    case 'repaint': {
+    case 'tick': {
       if (state.coreState.slowState.paused)
         return state;
 
