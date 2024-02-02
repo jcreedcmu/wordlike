@@ -1,7 +1,7 @@
 import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { unreachable } from "../util/util";
-import { vadd, vscale } from "../util/vutil";
+import { vadd, vequal, vscale } from "../util/vutil";
 
 export type Orientation = 'N' | 'W' | 'E' | 'S';
 
@@ -49,7 +49,7 @@ export function advanceMob(mob: MobState): MobState {
     case 'snail':
       const newTicks = (mob.ticks + 1) % SNAIL_ADVANCE_TICKS;
       if (newTicks == 0) {
-        const new_p_in_world_int = vadd(mob.p_in_world_int, vec_of_orientation(mob.orientation));
+        const new_p_in_world_int = nextPosition(mob);
         return produce(mob, m => {
           m.ticks = newTicks;
           m.p_in_world_int = new_p_in_world_int;
@@ -62,5 +62,18 @@ export function advanceMob(mob: MobState): MobState {
           m.ticks = newTicks;
         });
       }
+  }
+}
+
+export function nextPosition(mob: MobState & { t: 'snail' }): Point {
+  return vadd(mob.p_in_world_int, vec_of_orientation(mob.orientation));
+}
+
+export function collidesWithMob(mob: MobState, p_in_world_int: Point): boolean {
+  switch (mob.t) {
+    case 'snail': {
+      return (vequal(p_in_world_int, mob.p_in_world_int) || (mob.ticks > 0 &&
+        vequal(p_in_world_int, nextPosition(mob))));
+    }
   }
 }

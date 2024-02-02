@@ -15,6 +15,7 @@ import { PANIC_INTERVAL_MS, PanicData, PauseData, WORD_BONUS_INTERVAL_MS, now_in
 import { DrawForce, getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, gridKeys, mkGridOfMainTiles } from "./grid";
 import { mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
+import { collidesWithMob } from "./mobs";
 import { PROGRESS_ANIMATION_POINTS, getHighWaterMark, getScore, setHighWaterMark } from "./scoring";
 import { CacheUpdate, CoreState, GameState, HAND_TILE_LIMIT, Location, MouseState, Tile, TileEntity, WordBonusState } from "./state";
 import { addHandTile, addWorldTile, get_hand_tiles, get_main_tiles, get_tiles, putTileInWorld } from "./tile-helpers";
@@ -56,7 +57,8 @@ export type GenMoveTile = { id: string, loc: Location };
 // This is used when we're resolving a tile drag, before we've updated the state to remove the tiles.
 export function isOccupiedForTiles(state: CoreState, moveTile: MoveTile, tiles: TileEntity[]): boolean {
   return collidesWithWorldPoint(tiles, moveTile.p_in_world_int)
-    || isBlocking(moveTile, getBonusFromLayer(state, moveTile.p_in_world_int));
+    || isBlocking(moveTile, getBonusFromLayer(state, moveTile.p_in_world_int))
+    || state.mobsState.mobs.some(mob => collidesWithMob(mob, moveTile.p_in_world_int));
 }
 
 export function isOccupied(state: CoreState, moveTile: MoveTile): boolean {
