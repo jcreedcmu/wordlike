@@ -44,22 +44,23 @@ export function addHandTiles(state: CoreState, tiles: Tile[]): CoreState {
   });
 }
 
-// It's actually important that isCollision takes the bonusOverlay separately, because it's called
-// while a drag of a bunch of tiles is being resolved.
 
 export type MoveTile = { letter: string, id: string, p_in_world_int: Point };
 export type GenMoveTile = { id: string, loc: Location };
 
-// Returns false if we cannot place
-export function isCollision(tiles: TileEntity[], moveTiles: MoveTile[], bonusOverlay: Overlay<Bonus>, bonusLayer: Layer<Bonus>) {
-  return moveTiles.some(moveTile => isOccupiedTiles(tiles, moveTile.p_in_world_int)
-    || isBlocking(moveTile, getOverlayLayer(bonusOverlay, bonusLayer, moveTile.p_in_world_int)));
+// Returns true if there is a collision when
+// - we are trying to land `moveTile`
+// - the current state is `state`, except
+// - we consider the set of tiles on the board to be `tiles`,
+//   overriding whatever `state` says.
+// This is used when we're resolving a tile drag, before we've updated the state to remove the tiles.
+export function isOccupiedForTiles(state: CoreState, moveTile: MoveTile, tiles: TileEntity[]): boolean {
+  return isOccupiedTiles(tiles, moveTile.p_in_world_int)
+    || isBlocking(moveTile, getBonusFromLayer(state, moveTile.p_in_world_int));
 }
 
 export function isOccupied(state: CoreState, moveTile: MoveTile): boolean {
-  if (isOccupiedTiles(get_tiles(state), moveTile.p_in_world_int))
-    return true;
-  return isBlocking(moveTile, getBonusFromLayer(state, moveTile.p_in_world_int));
+  return isOccupiedForTiles(state, moveTile, get_tiles(state));
 }
 
 export function isOccupiedTiles(tiles: TileEntity[], p: Point): boolean {

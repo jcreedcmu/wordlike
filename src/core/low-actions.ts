@@ -9,16 +9,16 @@ import { getRandomOrder } from '../util/util';
 import { vequal, vm, vscale, vsub } from '../util/vutil';
 import { GameAction, GameLowAction, LowAction } from './action';
 import { mkPointDecayAnimation } from './animations';
-import { getBonusLayer } from './bonus';
 import { getPanicFraction, now_in_game } from './clock';
 import { getIntentOfMouseDown, reduceIntent } from './intent';
 import { tryKillTileOfState } from './kill-helpers';
 import { mkOverlayFrom, setOverlay } from './layer';
+import { advanceMob } from './mobs';
 import { reduceKey } from './reduceKey';
 import { incrementScore, setScore } from './scoring';
 import { deselect, resolveSelection, setSelected } from './selection';
-import { CacheUpdate, CoreState, GameState, Location, SceneState } from './state';
-import { MoveTile, addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isCollision, isOccupied, isTilePinned, needsRefresh, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
+import { CacheUpdate, CoreState, GameState, Location, MobsState, SceneState } from './state';
+import { MoveTile, addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isOccupied, isOccupiedForTiles, isTilePinned, needsRefresh, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
 import { cellAtPoint, getTileId, get_hand_tiles, get_tiles, moveTiles, moveToHandLoc, putTileInHand, putTilesInHandFromNotHand, putTilesInWorld, removeAllTiles, tileAtPoint } from "./tile-helpers";
 import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
 import { shouldDisplayBackButton } from './winState';
@@ -188,7 +188,7 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
           });
 
           const tgts = moves.map(x => x.p_in_world_int);
-          if (isCollision(remainingTiles, moves, state.coreState.bonusOverlay, getBonusLayer(state.coreState.bonusLayerSeed))) {
+          if (moves.some(move => isOccupiedForTiles(state.coreState, move, remainingTiles))) {
             return bailout;
           }
 
@@ -397,6 +397,13 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
             s.coreState.winState = { t: 'lost' };
           });
         }
+
+        // advance mobs
+        const newMobs: MobsState = { mobs: state.coreState.mobsState.mobs.map(advanceMob) };
+        state = produce(state, s => {
+          s.coreState.mobsState = newMobs;
+        });
+
         if (state.coreState.slowState.renderToGl)
           return state;
         else
