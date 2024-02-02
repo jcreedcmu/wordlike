@@ -111,6 +111,7 @@ export type InventoryItems = {
   times: number,
 };
 
+// state such that, if it updates, should induce redraw of Canvas2d content
 export type SlowState = {
   generation: number, // an arbitrary mechanism for forcing a redraw
   inventory: InventoryItems,
@@ -126,6 +127,7 @@ export type CacheUpdate = {
   chunkUpdate: ChunkUpdate,
 };
 
+// State other than mouse state
 export type CoreState = {
   slowState: SlowState,
   animations: Animation[],
