@@ -10,6 +10,7 @@ import { PanicData, PauseData } from './clock';
 import { Energies, initialEnergies } from './distribution';
 import { Grid, LocatedWord, mkGridOf } from './grid';
 import { Overlay, mkOverlay } from './layer';
+import { MobState } from './mobs';
 import { SelectionOperation, SelectionState } from './selection';
 import { Tool } from './tools';
 import { WinState } from './winState';
@@ -127,14 +128,6 @@ export type CacheUpdate = {
   chunkUpdate: ChunkUpdate,
 };
 
-export type MobType =
-  | 'snail';
-
-export type MobState = {
-  t: MobType,
-  p_in_world: Point,
-}
-
 export type MobsState = {
   mobs: MobState[],
 }
@@ -217,7 +210,7 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
       panic: undefined,
       game_from_clock: se1.translate(-Date.now()),
       bonusLayerSeed,
-      mobsState: { mobs: [] },
+      mobsState: { mobs: [{ t: 'snail', orientation: 'W', p_in_world: { x: 3, y: 2 } }] },
       _cacheUpdateQueue: [],
     },
     mouseState: { t: 'up', p_in_canvas: { x: 0, y: 0 } },

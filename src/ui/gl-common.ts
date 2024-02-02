@@ -34,6 +34,11 @@ export type TileDrawer = {
   position: BufferAttr,
 };
 
+export type SpriteDrawer = {
+  prog: WebGLProgram,
+  position: BufferAttr,
+};
+
 export type DebugQuadDrawer = {
   prog: WebGLProgram,
   position: BufferAttr,
@@ -57,6 +62,7 @@ export type PrepassHelper = {
 export type GlEnv = {
   gl: WebGL2RenderingContext,
   tileDrawer: TileDrawer,
+  spriteDrawer: SpriteDrawer,
   worldDrawer: WorldDrawer,
   rectDrawer: RectDrawer,
   debugQuadDrawer: DebugQuadDrawer,
@@ -101,6 +107,14 @@ export function mkWorldDrawer(gl: WebGL2RenderingContext): WorldDrawer {
 
 export function mkTileDrawer(gl: WebGL2RenderingContext): TileDrawer {
   const prog = shaderProgram(gl, getAssets().tileShaders);
+  const position = attributeCreate(gl, prog, 'pos', 2);
+  if (position == null)
+    throw new Error(`couldn't allocate position buffer`);
+  return { prog, position };
+}
+
+export function mkSpriteDrawer(gl: WebGL2RenderingContext): SpriteDrawer {
+  const prog = shaderProgram(gl, getAssets().spriteShaders);
   const position = attributeCreate(gl, prog, 'pos', 2);
   if (position == null)
     throw new Error(`couldn't allocate position buffer`);
@@ -179,7 +193,9 @@ export function mkRectDrawer(gl: WebGL2RenderingContext): RectDrawer {
         uniform vec4 u_color;
         void main() {
             gl_FragColor = u_color;
-        }`});
+        }`,
+    name: 'rect'
+  });
 
   const colorUniformLocation = gl.getUniformLocation(prog, 'u_color')!;
   const position = attributeCreate(gl, prog, 'pos', 2);
@@ -224,8 +240,43 @@ export function drawOneTile(env: GlEnv, letter: string, canvas_from_tile: SE2): 
   const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
   gl.uniform2f(u_canvasSize, devicePixelRatio * canvas_bds_in_canvas.sz.x, devicePixelRatio * canvas_bds_in_canvas.sz.y);
 
+  // The uniform from common.frag is called world_from_canvas, but this is a lie for this shader.
+  // We're actually supplying tile_from_canvas.
   const u_world_from_canvas = gl.getUniformLocation(prog, "u_world_from_canvas");
   gl.uniformMatrix3fv(u_world_from_canvas, false, asMatrix(inverse(compose(scale(vdiag(devicePixelRatio)), canvas_from_tile))));
+
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+}
+
+export function drawOneSprite(env: GlEnv, spriteLoc: Point, canvas_from_sprite: SE2): void {
+  const { gl } = env;
+  const { prog, position } = env.spriteDrawer;
+  gl.useProgram(prog);
+
+  const chunk_rect_in_canvas = apply_to_rect(canvas_from_sprite, { p: vdiag(0), sz: { x: 1, y: 1 } });
+  const chunk_rect_in_gl = apply_to_rect(gl_from_canvas, chunk_rect_in_canvas);
+
+  const [p1, p2] = rectPts(chunk_rect_in_gl);
+  bufferSetFloats(gl, position, [
+    p1.x, p2.y,
+    p2.x, p2.y,
+    p1.x, p1.y,
+    p2.x, p1.y,
+  ]);
+
+  const u_spriteLoc = gl.getUniformLocation(prog, 'u_spriteLoc');
+  gl.uniform2i(u_spriteLoc, spriteLoc.x, spriteLoc.y);
+
+  const u_spriteTexture = gl.getUniformLocation(prog, 'u_spriteTexture');
+  gl.uniform1i(u_spriteTexture, SPRITE_TEXTURE_UNIT);
+
+  const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
+  gl.uniform2f(u_canvasSize, devicePixelRatio * canvas_bds_in_canvas.sz.x, devicePixelRatio * canvas_bds_in_canvas.sz.y);
+
+  // The uniform from common.frag is called world_from_canvas, but this is a lie for this shader.
+  // We're actually supplying sprite_from_canvas.
+  const u_world_from_canvas = gl.getUniformLocation(prog, "u_world_from_canvas");
+  gl.uniformMatrix3fv(u_world_from_canvas, false, asMatrix(inverse(compose(scale(vdiag(devicePixelRatio)), canvas_from_sprite))));
 
   gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 }

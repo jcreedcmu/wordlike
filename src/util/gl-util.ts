@@ -1,3 +1,5 @@
+import { ShaderProgramText } from "../core/assets";
+
 export type BufferAttr = {
   attr: number,
   buffer: WebGLBuffer,
@@ -31,8 +33,8 @@ export function bufferSetFloats(
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr), gl.DYNAMIC_DRAW);
 }
 
-export function shaderProgram(gl: WebGL2RenderingContext, shaderTexts: { vert: string, frag: string }) {
-  const { vert: vs, frag: fs } = shaderTexts;
+export function shaderProgram(gl: WebGL2RenderingContext, shader: ShaderProgramText) {
+  const { vert: vs, frag: fs, name } = shader;
   const prog = gl.createProgram();
   if (prog == null) {
     throw `Couldn't create WebGL program`;
@@ -59,8 +61,7 @@ export function shaderProgram(gl: WebGL2RenderingContext, shaderTexts: { vert: s
         }
       }
       //      console.error(source);
-      throw "Could not compile " + tp +
-      " shader:\n\n" + msg;
+      throw `Could not compile ${tp} shader for "${name}":\n\n${msg}`;
     }
     gl.attachShader(prog, s);
   };

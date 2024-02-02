@@ -1,5 +1,6 @@
 import { Bonus } from "../core/bonus";
 import { ChunkValue } from "../core/chunk";
+import { MobState } from "../core/mobs";
 import { TOOL_IMAGE_WIDTH, Tool } from "../core/tools";
 import { Buffer, buffer, fillRect } from "../util/dutil";
 import { scale } from "../util/se2";
@@ -54,6 +55,18 @@ export function spriteLocOfTool(tool: Tool): Point {
     case 'consonant': return { x: 0, y: 5 };
     case 'copy': return { x: 0, y: 6 };
     case 'time': return { x: 0, y: 10 };
+  }
+}
+
+export function spriteLocOfMob(mobState: MobState): Point {
+  switch (mobState.t) {
+    case 'snail':
+      switch (mobState.orientation) {
+        case 'E': return { x: 1, y: 2 };
+        case 'N': return { x: 1, y: 3 };
+        case 'W': return { x: 1, y: 4 };
+        case 'S': return { x: 1, y: 5 };
+      }
   }
 }
 

@@ -4,7 +4,7 @@ import { getAssets } from "../core/assets";
 import { ActiveChunkInfo, Chunk, WORLD_CHUNK_SIZE, activeChunks, ensureChunk, getChunk, updateChunkCache } from "../core/chunk";
 import { now_in_game } from "../core/clock";
 import { mkOverlay } from "../core/layer";
-import { CacheUpdate, CoreState, GameState } from "../core/state";
+import { CacheUpdate, CoreState, GameState, MobsState } from "../core/state";
 import { pointFall } from "../core/state-helpers";
 import { getTileId, get_hand_tiles, isSelectedForDrag } from "../core/tile-helpers";
 import { BOMB_RADIUS, getCurrentTool } from "../core/tools";
@@ -18,9 +18,10 @@ import { rectPts } from "../util/util";
 import { vadd, vdiag, vmul, vsub } from "../util/vutil";
 import { drawGlAnimation } from "./drawGlAnimation";
 import { renderPanicBar } from "./drawPanicBar";
-import { CANVAS_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, PREPASS_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, drawOneTile, mkBonusDrawer, mkCanvasDrawer, mkDebugQuadDrawer, mkPrepassHelper, mkRectDrawer, mkTileDrawer, mkWorldDrawer } from "./gl-common";
+import { CANVAS_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, PREPASS_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, drawOneSprite, drawOneTile, mkBonusDrawer, mkCanvasDrawer, mkDebugQuadDrawer, mkPrepassHelper, mkRectDrawer, mkSpriteDrawer, mkTileDrawer, mkWorldDrawer } from "./gl-common";
 import { gl_from_canvas } from "./gl-helpers";
 import { canvas_from_hand_tile } from "./render";
+import { spriteLocOfMob } from "./sprite-sheet";
 import { resizeView } from "./ui-helpers";
 import { CanvasGlInfo } from "./use-canvas";
 import { canvas_from_drag_tile, cell_in_canvas, pan_canvas_from_world_of_state } from "./view-helpers";
@@ -170,8 +171,14 @@ function drawAnimations(env: GlEnv, canvas_from_world: SE2, animations: Animatio
   });
 }
 
-function processCacheUpdate(env: GlEnv, cu: CacheUpdate): void {
-
+function drawMobs(env: GlEnv, canvas_from_world: SE2, mobsState: MobsState): void {
+  mobsState.mobs.forEach(mob => {
+    switch (mob.t) {
+      case 'snail':
+        drawOneSprite(env, spriteLocOfMob(mob), compose(canvas_from_world, translate(mob.p_in_world)));
+        break;
+    }
+  });
 }
 
 const shouldDebug = { v: false };
@@ -219,6 +226,9 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
         }
       }
     }
+
+    // draw mobs
+    drawMobs(env, canvas_from_world, cs.mobsState);
 
     // draw animations
     drawAnimations(env, canvas_from_world, cs.animations, now_in_game(cs.game_from_clock));
@@ -356,6 +366,7 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
   return {
     gl,
     tileDrawer: mkTileDrawer(gl),
+    spriteDrawer: mkSpriteDrawer(gl),
     worldDrawer: mkWorldDrawer(gl),
     rectDrawer: mkRectDrawer(gl),
     debugQuadDrawer: mkDebugQuadDrawer(gl),

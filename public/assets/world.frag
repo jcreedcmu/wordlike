@@ -2,6 +2,7 @@
 precision mediump float;
 
 #include "common.frag"
+#include "get_sprite_pixel.frag"
 
 const vec2 EMPTY_SPRITE = vec2(0.,7.);
 const vec2 BLOCK_SPRITE = vec2(1.,0.);
@@ -10,13 +11,7 @@ const vec3 TILE_SELECTED_COLOR = vec3(.06, .25, .68);
 
 const vec3 TILE_DISCONNECTED_COLOR = vec3(0.9, 0., 0.);
 
-const float REQUIRED_BONUS_COLUMN = 12.;
-const float TILE_COLUMN = 14.;
-
 const int PREPASS_BUFFER_SIZE = 256; // XXX should be a uniform maybe?
-
-const float NUM_SPRITES_PER_SHEET = 16.; // in both directions
-const float SPRITE_SIZE = 32.;
 
 const float CROSSHAIR_OPACITY = 0.3;
 const float CROSSHAIR_LENGTH = 2.;
@@ -26,9 +21,6 @@ out vec4 outputColor;
 // Minimum chunk identifier that occurs in prepass framebuffer
 uniform vec2 u_min_p_in_chunk;
 
-// Sprite sheet
-uniform sampler2D u_spriteTexture;
-
 // Prepass data
 uniform sampler2D u_prepassTexture;
 
@@ -37,26 +29,6 @@ float crosshair(vec2 p) {
     return 1.0;
   else
     return 0.0;
-}
-
-// p_in_world_fp is the fractional part of p_in_world. It is in [0,1]²
-// sprite_coords is actually an ivec. It is in  [0,NUM_SPRITES_PER_SHEET]²
-vec4 get_bonus_pixel(vec2 p_in_world_fp, vec2 sprite_coords) {
-
-  // required letter bonus
-  if (sprite_coords.x >= REQUIRED_BONUS_COLUMN) {
-    int letter = int((sprite_coords.x - REQUIRED_BONUS_COLUMN) * NUM_SPRITES_PER_SHEET + sprite_coords.y);
-    vec2 font_coords = vec2(letter / int( NUM_FONT_CELLS_PER_SHEET), letter % int(NUM_FONT_CELLS_PER_SHEET));
-    float sdf = texture(u_fontTexture, (p_in_world_fp + font_coords) / NUM_FONT_CELLS_PER_SHEET).r;
-    float amount = clamp(0.5 + get_sharpness() * (sdf - 0.5), 0., 1.);
-    return vec4(vec3(0.,0.,1.), mix(0.0, 0.5, amount));
-  }
-
-  // Avoid glitches due to sprites leaking into each other on the sheet with
-  // linear interpolation.
-  p_in_world_fp = clamp(p_in_world_fp, 0.5/SPRITE_SIZE, 1. - 1./SPRITE_SIZE);
-
-  return texture(u_spriteTexture, (p_in_world_fp + sprite_coords) / NUM_SPRITES_PER_SHEET);
 }
 
 int is_land(vec4 cell_data) {
@@ -87,7 +59,7 @@ vec4 get_terrain_pixel(vec2 p_in_world) {
                            (bit_1 << 0)
                            );
 
-  return get_bonus_pixel(p_in_world_hfp, bonus_coords);
+  return get_sprite_pixel(p_in_world_hfp, bonus_coords);
 }
 
 // a over b
@@ -98,10 +70,10 @@ vec4 blendOver(vec4 a, vec4 b) {
     return vec4(divideFactor * newColor, newAlpha);
 }
 
-vec4 pre_get_bonus_pixel(vec2 p_in_world, vec2 p_in_world_fp, vec2 sprite_coords) {
+vec4 pre_get_sprite_pixel(vec2 p_in_world, vec2 p_in_world_fp, vec2 sprite_coords) {
   vec4 bonus_pixel = vec4(0.,0.,0.,0.);
   if (sprite_coords != EMPTY_SPRITE && sprite_coords != BLOCK_SPRITE) {
-    bonus_pixel = get_bonus_pixel(p_in_world_fp, sprite_coords);
+    bonus_pixel = get_sprite_pixel(p_in_world_fp, sprite_coords);
   }
   return blendOver(bonus_pixel, get_terrain_pixel(p_in_world));
 }
@@ -136,7 +108,7 @@ vec4 get_cell_pixel(vec2 p_in_world, vec2 p_in_world_fp, ivec3 cell_data) {
 
   bonus_coords += float(bonus_coords == vec2(0., 8.) && activated) * vec2(0., 1.);
 
-  vec4 bonus_pixel = pre_get_bonus_pixel(p_in_world, p_in_world_fp, bonus_coords);
+  vec4 bonus_pixel = pre_get_sprite_pixel(p_in_world, p_in_world_fp, bonus_coords);
 
   vec4 tile_pixel = vec4(0.,0.,0.,0.);
 

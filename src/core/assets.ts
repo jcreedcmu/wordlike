@@ -4,6 +4,7 @@ import { Buffer, imgProm } from "../util/dutil";
 import { grab } from "../util/util";
 
 export type ShaderProgramText = {
+  name: string, // for debugging
   vert: string,
   frag: string,
 };
@@ -14,6 +15,7 @@ type Assets = {
   fontSheetBuf: Buffer,
   worldShaders: ShaderProgramText,
   tileShaders: ShaderProgramText,
+  spriteShaders: ShaderProgramText,
   debugQuadShaders: ShaderProgramText,
   canvasShaders: ShaderProgramText,
   bonusShaders: ShaderProgramText,
@@ -28,11 +30,12 @@ let assets: Assets = {
   // We assume tests don't exercise any of the below data:
   spriteSheetBuf: undefined as any,
   fontSheetBuf: undefined as any,
-  worldShaders: { frag: '', vert: '' },
-  tileShaders: { frag: '', vert: '' },
-  debugQuadShaders: { frag: '', vert: '' },
-  canvasShaders: { frag: '', vert: '' },
-  bonusShaders: { frag: '', vert: '' },
+  worldShaders: { name: '', frag: '', vert: '' },
+  tileShaders: { name: '', frag: '', vert: '' },
+  spriteShaders: { name: '', frag: '', vert: '' },
+  debugQuadShaders: { name: '', frag: '', vert: '' },
+  canvasShaders: { name: '', frag: '', vert: '' },
+  bonusShaders: { name: '', frag: '', vert: '' },
 }
 
 async function preprocess(shaderText: string): Promise<string> {
@@ -47,7 +50,7 @@ async function preprocess(shaderText: string): Promise<string> {
 async function getShaders(prefix: string): Promise<ShaderProgramText> {
   const vert = await preprocess(await grab(`assets/${prefix}.vert`));
   const frag = await preprocess(await grab(`assets/${prefix}.frag`));
-  return { vert, frag };
+  return { name: prefix, vert, frag };
 }
 
 export async function initAssets() {
@@ -62,6 +65,7 @@ export async function initAssets() {
     fontSheetBuf: prerenderFontSheet(fontSheetImg),
     worldShaders: await getShaders('world'),
     tileShaders: await getShaders('tile'),
+    spriteShaders: await getShaders('sprite'),
     debugQuadShaders: await getShaders('debug-quad'),
     canvasShaders: await getShaders('canvas'),
     bonusShaders: await getShaders('bonus'),
