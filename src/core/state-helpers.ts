@@ -169,13 +169,13 @@ function resolveHighWaterMark(state: CoreState): CoreState {
     let anim: undefined | Animation;
     if (scoreLevel > oldMarkLevel && !(score > WIN_SCORE)) {
       anim = mkScoreAnimation(state.game_from_clock, scoreLevel * PROGRESS_ANIMATION_POINTS);
+      state = addRandomMob(state);
     }
-    const withAnimation = produce(state, s => {
+    return produce(state, s => {
       if (anim !== undefined)
         s.animations.push(anim);
       setHighWaterMark(s, score);
     });
-    return addRandomMob(withAnimation);
   }
   else {
     return state;
