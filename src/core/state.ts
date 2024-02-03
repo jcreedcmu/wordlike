@@ -210,7 +210,7 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
       panic: undefined,
       game_from_clock: se1.translate(-Date.now()),
       bonusLayerSeed,
-      mobsState: { mobs: [{ t: 'snail', ticks: 30, orientation: 'W', p_in_world_int: { x: 10, y: 0 } }] },
+      mobsState: { mobs: [] },
       _cacheUpdateQueue: [],
     },
     mouseState: { t: 'up', p_in_canvas: { x: 0, y: 0 } },

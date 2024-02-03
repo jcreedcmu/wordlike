@@ -13,7 +13,7 @@ import { getPanicFraction, now_in_game } from './clock';
 import { getIntentOfMouseDown, reduceIntent } from './intent';
 import { tryKillTileOfState } from './kill-helpers';
 import { mkOverlayFrom, setOverlay } from './layer';
-import { advanceMob } from './mobs';
+import { addRandomMob, advanceMob } from './mobs';
 import { reduceKey } from './reduceKey';
 import { incrementScore, setScore } from './scoring';
 import { deselect, resolveSelection, setSelected } from './selection';
@@ -516,6 +516,10 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
       return produce(state, s => {
         s.coreState._cacheUpdateQueue = []; // XXX is this safe? Should I specify number of dequeues instead?
       });
+    }
+
+    case 'addMob': {
+      return withCoreState(state, addRandomMob);
     }
   }
 }

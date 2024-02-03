@@ -1,7 +1,7 @@
 import { produce } from "../util/produce";
 import { Point } from "../util/types";
-import { unreachable } from "../util/util";
-import { vadd, vequal, vscale } from "../util/vutil";
+import { next_rand, unreachable } from "../util/util";
+import { vadd, vequal, vint, vm, vscale } from "../util/vutil";
 import { CoreState } from "./state";
 import { isOccupied, isOccupiedPoint } from "./state-helpers";
 
@@ -141,4 +141,40 @@ export function collidesWithMob(mob: MobState, p_in_world_int: Point): boolean {
         vequal(p_in_world_int, forward_of(mob))));
     }
   }
+}
+
+function towards_origin(p: Point): Orientation {
+  const { x, y } = p;
+  const ix = (y > x ? 1 : 0) + (y > -x ? 2 : 0);
+  const orientations: Orientation[] = ['S', 'E', 'W', 'N'];
+  return orientations[ix];
+}
+
+export function addRandomMob(state: CoreState): CoreState {
+  const ATTEMPTS = 5;
+  const RANGE = 10;
+  const MAX_MOBS = 5;
+  if (state.mobsState.mobs.length >= MAX_MOBS)
+    return state;
+  let seed = state.seed;
+  for (let i = 0; i < ATTEMPTS; i++) {
+    const { seed: seed1, float: x } = next_rand(seed);
+    const { seed: seed2, float: y } = next_rand(seed1);
+    seed = seed2;
+    const p_in_world_int = vint(vm({ x, y }, p => (p * 2 - 1) * RANGE));
+
+    if (!isOccupiedPoint(state, p_in_world_int)) {
+      const orientation = towards_origin(p_in_world_int);
+      const newMob: MobState = { t: 'snail', ticks: 0, p_in_world_int, orientation };
+      return produce(state, s => {
+        s.mobsState.mobs.push(newMob);
+        s.seed = seed;
+      });
+    }
+  }
+
+  return produce(state, s => {
+    s.seed = seed;
+  });
+
 }

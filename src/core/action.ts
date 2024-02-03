@@ -48,6 +48,7 @@ export type GameLowAction =
   | { t: 'setPanic', panic: PanicData }
   | { t: 'restoreTiles', ids: string[] } // put held tiles back in cache
   | { t: 'clearCacheUpdateQueue' }
+  | { t: 'addMob' }
   ;
 
 export type LowAction =
