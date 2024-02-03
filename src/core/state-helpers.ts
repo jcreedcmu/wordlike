@@ -15,7 +15,7 @@ import { PANIC_INTERVAL_MS, PanicData, PauseData, WORD_BONUS_INTERVAL_MS, now_in
 import { DrawForce, getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, gridKeys, mkGridOfMainTiles } from "./grid";
 import { mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
-import { collidesWithMob } from "./mobs";
+import { addRandomMob, collidesWithMob } from "./mobs";
 import { PROGRESS_ANIMATION_POINTS, getHighWaterMark, getScore, setHighWaterMark } from "./scoring";
 import { CacheUpdate, CoreState, GameState, HAND_TILE_LIMIT, Location, MouseState, Tile, TileEntity, WordBonusState } from "./state";
 import { addHandTile, addWorldTile, get_hand_tiles, get_main_tiles, get_tiles, putTileInWorld } from "./tile-helpers";
@@ -170,11 +170,12 @@ function resolveHighWaterMark(state: CoreState): CoreState {
     if (scoreLevel > oldMarkLevel && !(score > WIN_SCORE)) {
       anim = mkScoreAnimation(state.game_from_clock, scoreLevel * PROGRESS_ANIMATION_POINTS);
     }
-    return produce(state, s => {
+    const withAnimation = produce(state, s => {
       if (anim !== undefined)
         s.animations.push(anim);
       setHighWaterMark(s, score);
     });
+    return addRandomMob(withAnimation);
   }
   else {
     return state;
