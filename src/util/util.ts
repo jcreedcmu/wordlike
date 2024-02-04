@@ -136,6 +136,10 @@ export function rectPts(rect: Rect): [Point, Point] {
   return [rect.p, vadd(rect.p, rect.sz)];
 }
 
+export function allRectPts(rect: Rect): Point[] {
+  return [rect.p, { x: rect.p.x + rect.sz.x, y: rect.p.y }, vadd(rect.p, rect.sz), { x: rect.p.x, y: rect.p.y + rect.sz.y }];
+}
+
 export function invertRect(rect: Rect): Rect {
   return { p: { x: rect.p.x + rect.sz.x, y: rect.p.y }, sz: { x: -rect.sz.x, y: rect.sz.y } }
 }

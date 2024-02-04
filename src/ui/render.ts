@@ -10,11 +10,11 @@ import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from '..
 import { BOMB_RADIUS, getCurrentTool, getCurrentTools, largeRectOfTool, rectOfTool } from '../core/tools';
 import { shouldDisplayBackButton } from '../core/winState';
 import { DEBUG, doOnceEvery } from '../util/debug';
-import { clearRect, drawImage, fillRect, fillRectRgb, fillText, lineTo, moveTo, pathRect, pathRectCircle, strokeRect } from '../util/dutil';
+import { clearRect, drawImage, fillRect, fillRectRgb, fillText, lineTo, moveTo, pathRect, pathRectCircle, roundedPath, strokeRect } from '../util/dutil';
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from '../util/se2-extra';
 import { Point, Rect } from '../util/types';
-import { boundRect, insetRect, invertRect, midpointOfRect, scaleRectToCenter } from '../util/util';
+import { allRectPts, boundRect, insetRect, invertRect, midpointOfRect, rectPts, scaleRectToCenter } from '../util/util';
 import { vadd, vdiv, vequal, vm, vscale, vsub, vtrans } from '../util/vutil';
 import { drawAnimation } from './drawAnimation';
 import { drawBonus } from './drawBonus';
@@ -86,27 +86,26 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
 
   clearRect(d, toolbar_bds_in_canvas);
 
-  // global border
-  d.beginPath();
-  pathRect(d, canvas_bds_in_canvas);
-  pathRect(d, invertRect(insetRect(canvas_bds_in_canvas, GLOBAL_BORDER)));
-  d.fillStyle = backgroundGray;
-  d.fill();
 
   const { p: tp, sz: ts } = effective_toolbar_bds_in_canvas(state);
   const tq = vadd(tp, ts);
   const RAD = 3 * GLOBAL_BORDER;
+
+  // global border
+
   d.beginPath();
-  moveTo(d, tp);
-  lineTo(d, { x: tq.x + RAD, y: tp.y });
-  lineTo(d, { x: tq.x + RAD, y: tp.y + GLOBAL_BORDER });
-  d.arc(tq.x + RAD, tp.y + GLOBAL_BORDER + RAD, RAD, 3 * Math.PI / 2, Math.PI, true);
-  lineTo(d, { x: tq.x, y: tq.y - RAD });
-  d.arc(tq.x - RAD, tq.y - RAD, RAD, 0, Math.PI / 2);
-  lineTo(d, { x: tp.x + GLOBAL_BORDER + RAD, y: tq.y });
-  d.arc(tp.x + GLOBAL_BORDER + RAD, tq.y + RAD, RAD, 3 * Math.PI / 2, Math.PI, true);
-  lineTo(d, { x: tp.x, y: tq.y + RAD });
-  lineTo(d, { x: tp.x, y: tp.y });
+  pathRect(d, invertRect(canvas_bds_in_canvas));
+
+  roundedPath(d, [
+    { x: tp.x + GLOBAL_BORDER, y: tq.y },
+    { x: tq.x, y: tq.y },
+    { x: tq.x, y: tp.y + GLOBAL_BORDER },
+    { x: hand_bds_in_canvas.p.x, y: tp.y + GLOBAL_BORDER },
+    { x: hand_bds_in_canvas.p.x, y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - GLOBAL_BORDER },
+    { x: pause_button_bds_in_canvas.p.x + pause_button_bds_in_canvas.sz.x, y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - GLOBAL_BORDER },
+    { x: pause_button_bds_in_canvas.p.x + pause_button_bds_in_canvas.sz.x, y: pause_button_bds_in_canvas.p.y },
+    { x: pause_button_bds_in_canvas.p.x + GLOBAL_BORDER, y: pause_button_bds_in_canvas.p.y },
+  ], RAD);
   d.fillStyle = backgroundGray;
   d.fill();
 
@@ -293,8 +292,8 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
   }
 
   function drawHand(illegalDrag: boolean) {
-    const handBackgroundColor = illegalDrag ? backgroundRed : backgroundGray;
-    fillRect(d, hand_bds_in_canvas, handBackgroundColor);
+    // const handBackgroundColor = illegalDrag ? backgroundRed : backgroundGray;
+    // fillRect(d, hand_bds_in_canvas, handBackgroundColor);
 
     // draw hand tiles
     get_hand_tiles(cs).forEach(tile => {

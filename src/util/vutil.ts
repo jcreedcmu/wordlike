@@ -74,6 +74,12 @@ export function vsnorm(v: Point): number {
   return v.x * v.x + v.y * v.y;
 }
 
+// Returns a unit vector in the direction of v
+// v must not be the zero vector.
+export function vunit(v: Point): Point {
+  return vscale(v, 1 / Math.sqrt(vsnorm(v)));
+}
+
 export function vdiag(x: number): Point {
   return { x: x, y: x };
 }

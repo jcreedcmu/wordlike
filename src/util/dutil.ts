@@ -1,5 +1,5 @@
 import { Color, Point, Rect } from './types';
-import { vint, vm, vsub } from './vutil';
+import { vadd, vint, vm, vscale, vsub, vunit } from './vutil';
 
 export type Buffer = {
   c: HTMLCanvasElement,
@@ -136,6 +136,10 @@ export function lineTo(d: CanvasRenderingContext2D, p: Point) {
   d.lineTo(p.x, p.y);
 }
 
+export function arcTo(d: CanvasRenderingContext2D, p1: Point, p2: Point, rad: number) {
+  d.arcTo(p1.x, p1.y, p2.x, p2.y, rad);
+}
+
 export function randomColor(): string {
   return `rgb(${Math.floor(Math.random() * 256)},${Math.floor(Math.random() * 256)},${Math.floor(Math.random() * 256)})`;
 }
@@ -148,4 +152,20 @@ export function imageDataOfImage(im: HTMLImageElement): ImageData {
 
 export function imageDataOfBuffer(buf: Buffer): ImageData {
   return buf.d.getImageData(0, 0, buf.c.width, buf.c.height);
+}
+
+// Returns a point that is along the line segment p1--p2, near to p1, but
+// offset `offset` units towards p2
+function offsetAlongPath(p1: Point, p2: Point, offset: number): Point {
+  return vadd(p1, vscale(vunit(vsub(p2, p1)), offset));
+}
+
+export function roundedPath(d: CanvasRenderingContext2D, points: Point[], radius: number): void {
+  const pre = points.map((p, i) => offsetAlongPath(p, points[(i - 1 + points.length) % points.length], radius));
+  const post = points.map((p, i) => offsetAlongPath(p, points[(i + 1) % points.length], radius));
+  moveTo(d, post[points.length - 1]);
+  for (let i = 0; i < points.length; i++) {
+    lineTo(d, pre[i]);
+    arcTo(d, points[i], post[i], radius);
+  }
 }
