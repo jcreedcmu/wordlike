@@ -26,8 +26,7 @@ import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, effective_
 export const GLOBAL_BORDER = 5;
 const interfaceCyanColor = 'rgb(0,255,255,0.5)';
 const shadowColor = 'rgb(128,128,100,0.4)';
-const backgroundGray = '#eeeeee';
-const toolbarBackgroundGray = '#595959';
+const backgroundGray = '#595959';
 const backgroundRed = '#ffaaaa';
 
 export type RenderableRect = { rect: Rect, color: [number, number, number] };
@@ -73,7 +72,7 @@ function drawToolbarCount(d: CanvasRenderingContext2D, rect: Rect, count: number
   d.textAlign = 'center';
   d.textBaseline = 'middle';
   const newRect: Rect = scaleRectToCenter({ p: vadd(rect.p, vdiv(rect.sz, 2)), sz: vdiv(rect.sz, 2) }, 0.8);
-  d.fillStyle = toolbarBackgroundGray;
+  d.fillStyle = backgroundGray;
   d.strokeStyle = 'black';
   d.lineWidth = 2;
   pathRectCircle(d, newRect);
@@ -91,7 +90,7 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
   d.beginPath();
   pathRect(d, canvas_bds_in_canvas);
   pathRect(d, invertRect(insetRect(canvas_bds_in_canvas, GLOBAL_BORDER)));
-  d.fillStyle = toolbarBackgroundGray;
+  d.fillStyle = backgroundGray;
   d.fill();
 
   const { p: tp, sz: ts } = effective_toolbar_bds_in_canvas(state);
@@ -108,12 +107,8 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
   d.arc(tp.x + GLOBAL_BORDER + RAD, tq.y + RAD, RAD, 3 * Math.PI / 2, Math.PI, true);
   lineTo(d, { x: tp.x, y: tq.y + RAD });
   lineTo(d, { x: tp.x, y: tp.y });
-  d.fillStyle = toolbarBackgroundGray;
+  d.fillStyle = backgroundGray;
   d.fill();
-
-
-
-
 
   const toolbar = getAssets().toolbarBuf.c;
   d.imageSmoothingEnabled = true;
@@ -130,7 +125,8 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
     const scaled_rect_in_canvas = scaleRectToCenter(rect_in_canvas, TOOL_SCALE);
     // indicate current tool
     if (tool == currentTool) {
-      fillRect(d, rect_in_canvas, 'rgba(0, 128, 0, 0.5)');
+      // This should probably be a roundrect also
+      fillRect(d, insetRect(rect_in_canvas, 4), 'rgba(0, 128, 0, 0.5)');
     }
 
     drawImage(d, toolbar, largeRectOfTool(tool), scaled_rect_in_canvas);
@@ -486,7 +482,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
 
   const illegalDrag = ms.t == 'drag_tile' && getWidgetPoint(cs, ms.p_in_canvas).t == 'hand' && proposedHandDragOverLimit(cs, ms);
   if (glEnabled) {
-    clearRect(d, hand_bds_in_canvas);
+    fillRect(d, hand_bds_in_canvas, backgroundGray);
   }
   else
     drawHand(illegalDrag);

@@ -28,7 +28,7 @@ import { CanvasGlInfo } from "./use-canvas";
 import { canvas_from_drag_tile, cell_in_canvas, pan_canvas_from_world_of_state } from "./view-helpers";
 import { canvas_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas } from "./widget-helpers";
 
-const backgroundGrayRgb: RgbColor = [238, 238, 238];
+const backgroundGrayRgb: RgbColor = [89, 89, 89];
 const shadowColorRgba: RgbaColor = [128, 128, 100, Math.floor(0.4 * 255)];
 
 // This is for an offscreen texture into which I render one pixel per
@@ -94,10 +94,6 @@ function glFillRecta(env: GlEnv, rect_in_canvas: Rect, color: RgbaColor): void {
 
 function glFillRect(env: GlEnv, rect_in_canvas: Rect, color: RgbColor): void {
   glFillRecta(env, rect_in_canvas, [...color, 255]);
-}
-
-function drawHandBackground(env: GlEnv, state: CoreState): void {
-  glFillRect(env, hand_bds_in_canvas, backgroundGrayRgb);
 }
 
 function renderPrepass(env: GlEnv, state: CoreState, canvas_from_world: SE2): ActiveChunkInfo {
@@ -233,9 +229,6 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
 
     // draw animations
     drawAnimations(env, canvas_from_world, cs.animations, now_in_game(cs.game_from_clock));
-
-    // draw background
-    drawHandBackground(env, state.coreState);
 
     // draw miscellaneous html-canvas-rendered ui
     drawCanvas(env);
