@@ -16,8 +16,8 @@ export const BAR_WIDTH = 64;
 export const TOOLBAR_WIDTH = 52;
 
 export const world_bds_in_canvas: Rect = {
-  p: { x: TOOLBAR_WIDTH, y: 0 },
-  sz: { x: canvas_bds_in_canvas.sz.x - HAND_WIDTH - TOOLBAR_WIDTH, y: canvas_bds_in_canvas.sz.y }
+  p: { x: 0, y: 0 },
+  sz: { x: canvas_bds_in_canvas.sz.x - HAND_WIDTH, y: canvas_bds_in_canvas.sz.y }
 };
 
 // This gives a bound on what could possibly be in the toolbar
