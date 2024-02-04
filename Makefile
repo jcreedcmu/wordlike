@@ -26,3 +26,6 @@ count:
 # deploy to github pages
 deploy:
 	git push origin "main:deploy"
+
+render-svgs:
+	scripts/render-svgs.sh
