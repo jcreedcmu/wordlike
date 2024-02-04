@@ -1,7 +1,7 @@
 import { Bonus } from "../core/bonus";
 import { ChunkValue } from "../core/chunk";
 import { MobState } from "../core/mobs";
-import { TOOL_IMAGE_WIDTH, Tool } from "../core/tools";
+import { LARGE_SPRITE_PIXEL_WIDTH, TOOL_IMAGE_WIDTH, Tool } from "../core/tools";
 import { Buffer, buffer, fillRect } from "../util/dutil";
 import { scale } from "../util/se2";
 import { apply_to_rect } from "../util/se2-extra";
@@ -12,8 +12,14 @@ import { drawRequiredLetterBonus } from "./drawBonus";
 // In number of sprites
 export const SPRITE_SHEET_SIZE = { x: 16, y: 16 };
 
+
 export function spriteRectOfPos(pos: Point): Rect {
   const S_in_image = TOOL_IMAGE_WIDTH;
+  return { p: vscale(pos, S_in_image), sz: vdiag(S_in_image) };
+}
+
+export function largeSpriteRectOfPos(pos: Point): Rect {
+  const S_in_image = LARGE_SPRITE_PIXEL_WIDTH;
   return { p: vscale(pos, S_in_image), sz: vdiag(S_in_image) };
 }
 
@@ -58,6 +64,19 @@ export function spriteLocOfTool(tool: Tool): Point {
   }
 }
 
+export function largeSpriteLocOfTool(tool: Tool): Point {
+  switch (tool) {
+    case 'pointer': return { y: 0, x: 0 };
+    case 'hand': return { y: 0, x: 1 };
+    case 'dynamite': return { y: 0, x: 2 };
+    case 'bomb': return { y: 0, x: 3 };
+    case 'vowel': return { y: 0, x: 4 };
+    case 'consonant': return { y: 0, x: 5 };
+    case 'copy': return { y: 0, x: 6 };
+    case 'time': return { y: 0, x: 7 };
+  }
+}
+
 export function spriteLocOfMob(mobState: MobState): Point {
   switch (mobState.t) {
     case 'snail':
@@ -87,6 +106,12 @@ export function prerenderSpriteSheet(img: HTMLImageElement): Buffer {
 }
 
 export function prerenderFontSheet(img: HTMLImageElement): Buffer {
+  const buf = buffer({ x: img.width, y: img.height });
+  buf.d.drawImage(img, 0, 0);
+  return buf;
+}
+
+export function prerenderToolbar(img: HTMLImageElement): Buffer {
   const buf = buffer({ x: img.width, y: img.height });
   buf.d.drawImage(img, 0, 0);
   return buf;

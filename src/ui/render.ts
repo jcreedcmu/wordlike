@@ -7,7 +7,7 @@ import { getScore } from '../core/scoring';
 import { CoreState, GameState, TileEntity } from '../core/state';
 import { pointFall, proposedHandDragOverLimit, tileFall } from '../core/state-helpers';
 import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from '../core/tile-helpers';
-import { BOMB_RADIUS, getCurrentTool, getCurrentTools, rectOfTool } from '../core/tools';
+import { BOMB_RADIUS, getCurrentTool, getCurrentTools, largeRectOfTool, rectOfTool } from '../core/tools';
 import { shouldDisplayBackButton } from '../core/winState';
 import { DEBUG, doOnceEvery } from '../util/debug';
 import { clearRect, drawImage, fillRect, fillRectRgb, fillText, lineTo, moveTo, pathRectCircle, strokeRect } from '../util/dutil';
@@ -26,6 +26,7 @@ import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, getWidgetP
 const interfaceCyanColor = 'rgb(0,255,255,0.5)';
 const shadowColor = 'rgb(128,128,100,0.4)';
 const backgroundGray = '#eeeeee';
+const toolbarBackgroundGray = '#595959';
 const backgroundRed = '#ffaaaa';
 
 export type RenderableRect = { rect: Rect, color: [number, number, number] };
@@ -70,33 +71,33 @@ export function drawPausedScreen(ci: CanvasInfo) {
 function drawToolbarCount(d: CanvasRenderingContext2D, rect: Rect, count: number): void {
   d.textAlign = 'center';
   d.textBaseline = 'middle';
-  const newRect: Rect = scaleRectToCenter({ p: vadd(rect.p, vdiv(rect.sz, 2)), sz: vdiv(rect.sz, 2) }, 0.7);
-  d.fillStyle = 'white';
+  const newRect: Rect = scaleRectToCenter({ p: vadd(rect.p, vdiv(rect.sz, 2)), sz: vdiv(rect.sz, 2) }, 0.8);
+  d.fillStyle = toolbarBackgroundGray;
   d.strokeStyle = 'black';
   d.lineWidth = 2;
   pathRectCircle(d, newRect);
   d.fill();
-  d.stroke();
   const countTxt = `${count}`;
   const fontSize = countTxt.length > 1 ? 12 : 16;
-  fillText(d, countTxt, vadd(midpointOfRect(newRect), { x: 0, y: 1 }), 'black', `bold ${fontSize}px sans-serif`);
+  fillText(d, countTxt, vadd(midpointOfRect(newRect), { x: 0, y: 1 }), 'white', `bold ${fontSize}px sans-serif`);
 }
 
 function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
-  fillRect(d, toolbar_bds_in_canvas, backgroundGray);
-  const spriteSheet = getAssets().spriteSheetBuf.c;
-  d.imageSmoothingEnabled = false;
+  fillRect(d, toolbar_bds_in_canvas, toolbarBackgroundGray);
+  const toolbar = getAssets().toolbarBuf.c;
+  d.imageSmoothingEnabled = true;
 
   const tools = getCurrentTools(state);
   const currentTool = getCurrentTool(state);
+  const TOOL_SCALE = 0.7;
   tools.forEach((tool, ix_in_toolbar) => {
     const S_in_canvas = toolbar_bds_in_canvas.sz.x;
     const rect_in_canvas = apply_to_rect(
       canvas_from_toolbar(),
-      { p: { x: 0, y: S_in_canvas * ix_in_toolbar }, sz: { x: S_in_canvas, y: S_in_canvas } }
+      { p: { x: 0, y: S_in_canvas * ix_in_toolbar }, sz: { x: S_in_canvas, y: S_in_canvas } },
     );
-
-    drawImage(d, spriteSheet, rectOfTool(tool), rect_in_canvas);
+    const scaled_rect_in_canvas = scaleRectToCenter(rect_in_canvas, TOOL_SCALE);
+    drawImage(d, toolbar, largeRectOfTool(tool), scaled_rect_in_canvas);
 
     if (tool == 'bomb') {
       drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.bombs);
@@ -116,7 +117,7 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
 
     // indicate current tool
     if (tool == currentTool) {
-      fillRect(d, rect_in_canvas, 'rgba(255, 255, 0, 0.5)');
+      fillRect(d, rect_in_canvas, 'rgba(0, 128, 0, 0.5)');
     }
   });
 }
@@ -247,12 +248,12 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
     if (shouldDisplayBackButton(cs.winState)) {
       d.textAlign = 'center';
       d.textBaseline = 'middle';
-      fillText(d, '⟳', midpointOfRect(pause_button_bds_in_canvas), 'black', '48px sans-serif');
+      fillText(d, '⟳', midpointOfRect(pause_button_bds_in_canvas), 'white', '48px sans-serif');
     }
     else {
       d.textAlign = 'center';
       d.textBaseline = 'middle';
-      fillText(d, '⏸', midpointOfRect(pause_button_bds_in_canvas), 'black', '48px sans-serif');
+      fillText(d, '⏸', midpointOfRect(pause_button_bds_in_canvas), 'white', '48px sans-serif');
     }
   }
 
@@ -260,7 +261,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
     d.textAlign = 'center';
     d.textBaseline = 'middle';
     if (cs.winState.t != 'lost') {
-      fillText(d, '🔀', midpointOfRect(shuffle_button_bds_in_canvas), 'black', '36px sans-serif');
+      fillText(d, '🔀', midpointOfRect(shuffle_button_bds_in_canvas), 'white', '36px sans-serif');
     }
   }
 

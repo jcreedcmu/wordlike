@@ -12,7 +12,8 @@ export const hand_bds_in_canvas: Rect = {
   sz: { x: HAND_WIDTH, y: canvas_bds_in_canvas.sz.y }
 };
 
-export const TOOLBAR_WIDTH = 64;
+export const BAR_WIDTH = 64;
+export const TOOLBAR_WIDTH = 52;
 
 export const world_bds_in_canvas: Rect = {
   p: { x: TOOLBAR_WIDTH, y: 0 },
@@ -32,9 +33,9 @@ export const pause_button_bds_in_canvas: Rect = {
 export const shuffle_button_bds_in_canvas: Rect = {
   p: {
     x: canvas_bds_in_canvas.sz.x - HAND_WIDTH,
-    y: canvas_bds_in_canvas.sz.y - 1.9 * TOOLBAR_WIDTH - 10,
+    y: canvas_bds_in_canvas.sz.y - 1.9 * BAR_WIDTH - 10,
   },
-  sz: { x: HAND_WIDTH, y: TOOLBAR_WIDTH }
+  sz: { x: HAND_WIDTH, y: BAR_WIDTH }
 };
 
 export const DEFAULT_TILE_SCALE = 48;

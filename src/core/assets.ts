@@ -1,4 +1,4 @@
-import { prerenderFontSheet, prerenderSpriteSheet } from "../ui/sprite-sheet";
+import { prerenderFontSheet, prerenderSpriteSheet, prerenderToolbar } from "../ui/sprite-sheet";
 import { asyncReplace } from "../util/async-replace";
 import { Buffer, imgProm } from "../util/dutil";
 import { grab } from "../util/util";
@@ -12,6 +12,7 @@ export type ShaderProgramText = {
 type Assets = {
   dictionary: Record<string, boolean>,
   spriteSheetBuf: Buffer,
+  toolbarBuf: Buffer,
   fontSheetBuf: Buffer,
   worldShaders: ShaderProgramText,
   tileShaders: ShaderProgramText,
@@ -29,6 +30,7 @@ let assets: Assets = {
 
   // We assume tests don't exercise any of the below data:
   spriteSheetBuf: undefined as any,
+  toolbarBuf: undefined as any,
   fontSheetBuf: undefined as any,
   worldShaders: { name: '', frag: '', vert: '' },
   tileShaders: { name: '', frag: '', vert: '' },
@@ -56,12 +58,14 @@ async function getShaders(prefix: string): Promise<ShaderProgramText> {
 export async function initAssets() {
   const spriteSheetImg = await imgProm('assets/toolbar.png');
   const fontSheetImg = await imgProm('assets/font-sheet.png');
+  const toolbarImg = await imgProm('assets/toolbar-large.png');
   const wordlist = (await (await fetch('assets/dictionary.txt')).text())
     .split('\n').filter(x => x);
   const dictionary = Object.fromEntries(wordlist.map(word => [word, true]));
   assets = {
     dictionary,
     spriteSheetBuf: prerenderSpriteSheet(spriteSheetImg),
+    toolbarBuf: prerenderToolbar(toolbarImg),
     fontSheetBuf: prerenderFontSheet(fontSheetImg),
     worldShaders: await getShaders('world'),
     tileShaders: await getShaders('tile'),

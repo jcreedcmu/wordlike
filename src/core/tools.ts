@@ -1,4 +1,4 @@
-import { spriteLocOfTool, spriteRectOfPos } from "../ui/sprite-sheet";
+import { largeSpriteLocOfTool, largeSpriteRectOfPos, spriteLocOfTool, spriteRectOfPos } from "../ui/sprite-sheet";
 import { produce } from "../util/produce";
 import { Rect } from "../util/types";
 import { GameLowAction } from "./action";
@@ -9,6 +9,8 @@ import { drawOfState, freshPanic } from "./state-helpers";
 
 // XXX rename this, this is really sprite size
 export const TOOL_IMAGE_WIDTH = 32;
+
+export const LARGE_SPRITE_PIXEL_WIDTH = 128;
 
 const tools = [
   'pointer',
@@ -71,6 +73,10 @@ export function getCurrentTools(state: CoreState): Tool[] {
 
 export function rectOfTool(tool: Tool): Rect {
   return spriteRectOfPos(spriteLocOfTool(tool));
+}
+
+export function largeRectOfTool(tool: Tool): Rect {
+  return largeSpriteRectOfPos(largeSpriteLocOfTool(tool));
 }
 
 export function reduceToolSelect(state: CoreState, tool: Tool): GameLowAction {
