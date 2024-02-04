@@ -97,6 +97,11 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
       { p: { x: 0, y: S_in_canvas * ix_in_toolbar }, sz: { x: S_in_canvas, y: S_in_canvas } },
     );
     const scaled_rect_in_canvas = scaleRectToCenter(rect_in_canvas, TOOL_SCALE);
+    // indicate current tool
+    if (tool == currentTool) {
+      fillRect(d, rect_in_canvas, 'rgba(0, 128, 0, 0.5)');
+    }
+
     drawImage(d, toolbar, largeRectOfTool(tool), scaled_rect_in_canvas);
 
     if (tool == 'bomb') {
@@ -113,11 +118,6 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
     }
     else if (tool == 'time') {
       drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.times);
-    }
-
-    // indicate current tool
-    if (tool == currentTool) {
-      fillRect(d, rect_in_canvas, 'rgba(0, 128, 0, 0.5)');
     }
   });
 }
