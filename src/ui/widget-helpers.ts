@@ -20,10 +20,19 @@ export const world_bds_in_canvas: Rect = {
   sz: { x: canvas_bds_in_canvas.sz.x - HAND_WIDTH - TOOLBAR_WIDTH, y: canvas_bds_in_canvas.sz.y }
 };
 
+// This gives a bound on what could possibly be in the toolbar
 export const toolbar_bds_in_canvas: Rect = {
   p: { x: 0, y: 0 },
   sz: { x: TOOLBAR_WIDTH, y: canvas_bds_in_canvas.sz.y }
 };
+
+export function effective_toolbar_bds_in_canvas(state: CoreState): Rect {
+  const numTools = Math.max(5, getCurrentTools(state).length);
+  return {
+    p: { x: 0, y: 0 },
+    sz: { x: TOOLBAR_WIDTH, y: Math.min(numTools * TOOLBAR_WIDTH, canvas_bds_in_canvas.sz.y) }
+  }
+}
 
 export const pause_button_bds_in_canvas: Rect = {
   p: { x: 0, y: canvas_bds_in_canvas.sz.y - TOOLBAR_WIDTH },

@@ -115,6 +115,10 @@ export function pathRectCircle(d: CanvasRenderingContext2D, rect: Rect) {
   );
 }
 
+export function pathRect(d: CanvasRenderingContext2D, rect: Rect) {
+  d.rect(rect.p.x, rect.p.y, rect.sz.x, rect.sz.y);
+}
+
 export function pathCircle(d: CanvasRenderingContext2D, center: Point, radius: number) {
   d.beginPath();
   d.arc(center.x,

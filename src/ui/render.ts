@@ -10,19 +10,20 @@ import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from '..
 import { BOMB_RADIUS, getCurrentTool, getCurrentTools, largeRectOfTool, rectOfTool } from '../core/tools';
 import { shouldDisplayBackButton } from '../core/winState';
 import { DEBUG, doOnceEvery } from '../util/debug';
-import { clearRect, drawImage, fillRect, fillRectRgb, fillText, lineTo, moveTo, pathRectCircle, strokeRect } from '../util/dutil';
+import { clearRect, drawImage, fillRect, fillRectRgb, fillText, lineTo, moveTo, pathRect, pathRectCircle, strokeRect } from '../util/dutil';
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from '../util/se2-extra';
 import { Point, Rect } from '../util/types';
-import { boundRect, midpointOfRect, scaleRectToCenter } from '../util/util';
+import { boundRect, insetRect, invertRect, midpointOfRect, scaleRectToCenter } from '../util/util';
 import { vadd, vdiv, vequal, vm, vscale, vsub, vtrans } from '../util/vutil';
 import { drawAnimation } from './drawAnimation';
 import { drawBonus } from './drawBonus';
 import { renderPanicBar } from './drawPanicBar';
 import { CanvasInfo } from './use-canvas';
 import { canvas_from_drag_tile, cell_in_canvas, drawBubble, pan_canvas_from_world_of_state } from './view-helpers';
-import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, getWidgetPoint, hand_bds_in_canvas, pause_button_bds_in_canvas, shuffle_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
+import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, effective_toolbar_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas, pause_button_bds_in_canvas, shuffle_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
 
+export const GLOBAL_BORDER = 5;
 const interfaceCyanColor = 'rgb(0,255,255,0.5)';
 const shadowColor = 'rgb(128,128,100,0.4)';
 const backgroundGray = '#eeeeee';
@@ -83,7 +84,37 @@ function drawToolbarCount(d: CanvasRenderingContext2D, rect: Rect, count: number
 }
 
 function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
-  fillRect(d, toolbar_bds_in_canvas, toolbarBackgroundGray);
+
+  clearRect(d, toolbar_bds_in_canvas);
+
+  // global border
+  d.beginPath();
+  pathRect(d, canvas_bds_in_canvas);
+  pathRect(d, invertRect(insetRect(canvas_bds_in_canvas, GLOBAL_BORDER)));
+  d.fillStyle = toolbarBackgroundGray;
+  d.fill();
+
+  const { p: tp, sz: ts } = effective_toolbar_bds_in_canvas(state);
+  const tq = vadd(tp, ts);
+  const RAD = 3 * GLOBAL_BORDER;
+  d.beginPath();
+  moveTo(d, tp);
+  lineTo(d, { x: tq.x + RAD, y: tp.y });
+  lineTo(d, { x: tq.x + RAD, y: tp.y + GLOBAL_BORDER });
+  d.arc(tq.x + RAD, tp.y + GLOBAL_BORDER + RAD, RAD, 3 * Math.PI / 2, Math.PI, true);
+  lineTo(d, { x: tq.x, y: tq.y - RAD });
+  d.arc(tq.x - RAD, tq.y - RAD, RAD, 0, Math.PI / 2);
+  lineTo(d, { x: tp.x + GLOBAL_BORDER + RAD, y: tq.y });
+  d.arc(tp.x + GLOBAL_BORDER + RAD, tq.y + RAD, RAD, 3 * Math.PI / 2, Math.PI, true);
+  lineTo(d, { x: tp.x, y: tq.y + RAD });
+  lineTo(d, { x: tp.x, y: tp.y });
+  d.fillStyle = toolbarBackgroundGray;
+  d.fill();
+
+
+
+
+
   const toolbar = getAssets().toolbarBuf.c;
   d.imageSmoothingEnabled = true;
 
@@ -427,6 +458,9 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
     }
   }
 
+
+  clearRect(d, world_bds_in_canvas);
+
   if (cs.winState.t != 'lost')
     drawToolbar(d, cs);
   else {
@@ -436,9 +470,6 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
 
   if (!glEnabled) {
     drawWorld();
-  }
-  else {
-    clearRect(d, world_bds_in_canvas);
   }
 
   drawWordBubble(ci, cs, pan_canvas_from_world);

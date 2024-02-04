@@ -1,5 +1,5 @@
 import { Point, Rect } from "./types";
-import { vadd, vm2, vscale, vsub } from "./vutil";
+import { vadd, vm, vm2, vscale, vsub } from "./vutil";
 
 export function mapval<T, U>(m: { [k: string]: T }, f: (x: T, k?: string) => U): { [k: string]: U } {
   return Object.fromEntries(Object.entries(m).map(([k, v]) => [k, f(v, k)]));
@@ -100,6 +100,13 @@ export function scaleRectToCenter(rect: Rect, s: number): Rect {
   }
 }
 
+export function insetRect(rect: Rect, i: number): Rect {
+  return {
+    p: vm(rect.p, p => p + i),
+    sz: vm(rect.sz, sz => sz - 2 * i),
+  }
+}
+
 // Returns a random permutation of [0,...,length-1].
 export function getRandomOrder(length: number): number[] {
   const rv: [number, number][] = [];
@@ -127,4 +134,8 @@ export async function grab(path: string): Promise<string> {
 
 export function rectPts(rect: Rect): [Point, Point] {
   return [rect.p, vadd(rect.p, rect.sz)];
+}
+
+export function invertRect(rect: Rect): Rect {
+  return { p: { x: rect.p.x + rect.sz.x, y: rect.p.y }, sz: { x: -rect.sz.x, y: rect.sz.y } }
 }
