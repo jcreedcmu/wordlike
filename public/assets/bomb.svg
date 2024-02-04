@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="8mm"
+   height="8mm"
+   viewBox="0 0 8 8"
+   version="1.1"
+   id="svg1999"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
+   sodipodi:docname="bomb.svg">
+  <defs
+     id="defs1993" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="11.2"
+     inkscape:cx="-6.0760006"
+     inkscape:cy="11.899913"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1910"
+     inkscape:window-height="725"
+     inkscape:window-x="0"
+     inkscape:window-y="1171"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata1996">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-289)">
+    <path
+       d="m 2.8325507,293.31425 c 0.2947987,-0.95223 0.5748073,-2.74531 1.7654323,-2.74531 0.9260416,0 0.4630208,1.4552 1.3229166,1.4552 0.5291667,0 0.7045061,-0.59293 0.79375,-0.92604"
+       id="path1006"
+       inkscape:connector-curvature="0"
+       style="fill:none;stroke:#0000ff;stroke-width:0.39687499;stroke-dasharray:0.13229167, 0.39687499999999998;stroke-opacity:1" />
+    <circle
+       cx="78.766273"
+       cy="283.62088"
+       r="2.5109565"
+       transform="rotate(15)"
+       id="circle1008"
+       style="fill:#ff0000;stroke:#0000ff;stroke-width:0.26458332;stroke-opacity:1;fill-opacity:1" />
+    <path
+       d="m 2.2030804,292.66073 c -0.1776413,0.095 -0.4073525,0.26564 -0.4770967,0.41487 -0.1741223,0.372 -0.4352925,0.372 -0.4352925,0.13917 0,-0.42677 0.5952596,-0.92604 1.001051,-0.92604 0.189574,0 0.189574,0.22357 -0.088662,0.372 z"
+       id="path1010"
+       inkscape:connector-curvature="0"
+       style="fill:#ffffff;stroke-width:0.26458332;stroke:#0000ff;stroke-opacity:1" />
+    <line
+       x1="2.8474996"
+       y1="291.61667"
+       x2="3.890487"
+       y2="291.89606"
+       id="line1016"
+       style="fill:none;stroke:#0000ff;stroke-width:0.52916664;stroke-linecap:round;stroke-opacity:1" />
+    <path
+       d="m 6.979233,291.23039 c -0.041275,0.15399 -0.1614223,0.2548 -0.3393282,0.20717 -0.1779058,-0.0479 -0.2311135,-0.18547 -0.1898385,-0.33946 0.041302,-0.15399 0.1614487,-0.26617 0.3393546,-0.21854 0.1778794,0.0476 0.2310871,0.19685 0.1898121,0.35083 z"
+       id="path1018"
+       inkscape:connector-curvature="0"
+       style="fill:#ffffff;stroke-width:0.26458332;stroke:#0000ff;stroke-opacity:1" />
+    <line
+       x1="7.2101607"
+       y1="291.67145"
+       x2="7.6596093"
+       y2="292.17441"
+       id="line1020"
+       style="fill:none;stroke:#0000ff;stroke-width:0.26458332;stroke-opacity:1" />
+    <line
+       x1="7.2741103"
+       y1="290.60782"
+       x2="7.7037158"
+       y2="290.08792"
+       id="line1022"
+       style="fill:none;stroke:#0000ff;stroke-width:0.26458332;stroke-opacity:1" />
+    <line
+       x1="6.7582269"
+       y1="290.32443"
+       x2="6.7149405"
+       y2="289.65134"
+       id="line1024"
+       style="fill:none;stroke:#0000ff;stroke-width:0.26458332;stroke-opacity:1" />
+    <line
+       x1="7.3761077"
+       y1="291.09808"
+       x2="7.9052749"
+       y2="291.09808"
+       id="line1026"
+       style="fill:none;stroke:#0000ff;stroke-width:0.26458332;stroke-opacity:1" />
+    <line
+       x1="6.2386117"
+       y1="290.69168"
+       x2="5.7071695"
+       y2="290.27628"
+       id="line1028"
+       style="fill:none;stroke:#0000ff;stroke-width:0.26458332;stroke-opacity:1" />
+    <ellipse
+       cx="78.553757"
+       cy="281.05206"
+       rx="0.22664738"
+       ry="0.14810316"
+       transform="rotate(15)"
+       id="ellipse1030"
+       style="fill:#ffffff;stroke-width:0.26458332;stroke:#0000ff;stroke-opacity:1" />
+  </g>
+</svg>
