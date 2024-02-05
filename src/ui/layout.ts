@@ -44,6 +44,10 @@ export function padRect(pad: number, tree: LayoutTree): LayoutTree {
   return padVert(pad, padHoriz(pad, tree));
 }
 
+export function centerX(tree: LayoutTree): LayoutTree {
+  return packHoriz(stretchRectX(1), tree, stretchRectX(1));
+}
+
 type LayoutTreeInt<A> =
   | { t: 'horiz', kids: LayoutTreeWith<A>[] }
   | { t: 'vert', kids: LayoutTreeWith<A>[] }
@@ -74,6 +78,10 @@ function max(xs: number[]): number {
   return xs.length == 0 ? 0 : xs.reduce((a, b) => Math.max(a, b));
 }
 
+function zero(xs: number[]): number {
+  return 0;
+}
+
 function aggregate(ps: Point[], xf: (x: number[]) => number, yf: (x: number[]) => number): Point {
   return { x: xf(ps.map(p => p.x)), y: yf(ps.map(p => p.y)) };
 }
@@ -85,8 +93,8 @@ function layoutFirst(tree: LayoutTreeWith<unknown>): LayoutTreeWith<Sizes> {
       return {
         t: 'horiz',
         base: aggregate(kids.map(x => x.base), sum, max),
-        shrink: aggregate(kids.map(x => x.shrink), sum, max),
-        stretch: aggregate(kids.map(x => x.stretch), sum, max),
+        shrink: aggregate(kids.map(x => x.shrink), sum, zero),
+        stretch: aggregate(kids.map(x => x.stretch), sum, zero),
         kids: kids,
       };
     }
@@ -95,8 +103,8 @@ function layoutFirst(tree: LayoutTreeWith<unknown>): LayoutTreeWith<Sizes> {
       return {
         t: 'vert',
         base: aggregate(kids.map(x => x.base), max, sum),
-        shrink: aggregate(kids.map(x => x.shrink), max, sum),
-        stretch: aggregate(kids.map(x => x.stretch), max, sum),
+        shrink: aggregate(kids.map(x => x.shrink), zero, sum),
+        stretch: aggregate(kids.map(x => x.stretch), zero, sum),
         kids: kids,
       };
     }
@@ -161,7 +169,7 @@ function layoutSecond(container: Rect, tree: LayoutTreeWith<Sizes>): LayoutTreeW
       return {
         t: 'rect',
         single: tree.single,
-        rect: { p: container.p, sz: tree.single.base ?? { x: 0, y: 0 } },
+        rect: { p: container.p, sz: container.sz },
       };
     }
     case 'name': {
