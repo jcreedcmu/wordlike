@@ -162,7 +162,7 @@ export function getWidgetPoint(state: CoreState, p_in_canvas: Point): WidgetPoin
       p_in_canvas,
     };
   }
-  else if (pointInRect(p_in_canvas, toolbar_bds_in_canvas)) {
+  else if (pointInRect(p_in_canvas, effective_toolbar_bds_in_canvas(state))) {
     const toolbar_from_canvas = inverse(canvas_from_toolbar());
     const p_in_local = apply(toolbar_from_canvas, p_in_canvas);
     const tool = getCurrentTools(state)[Math.floor(p_in_local.y / toolbar_bds_in_canvas.sz.x)];
