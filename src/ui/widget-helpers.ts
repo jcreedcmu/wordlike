@@ -17,8 +17,6 @@ const SPACER_WIDTH = 5;
 export const canvas_bds_in_canvas: Rect = { p: { x: 0, y: 0 }, sz: { x: 1024, y: 768 } };
 export const DEFAULT_TILE_SCALE = 48;
 
-const SHUFFLE_WIDTH = DEFAULT_TILE_SCALE + 2 * HAND_VERT_PADDING + 2 * HAND_VERT_MARGIN + PANIC_THICK + GLOBAL_BORDER;
-
 const pauseButton = packVert(
   nameRect('pause', fixedRect(vdiag(DEFAULT_TILE_SCALE + 2 * HAND_VERT_PADDING - HAND_VERT_MARGIN))),
   fixedRect({ x: 0, y: HAND_VERT_MARGIN }),
@@ -104,14 +102,6 @@ export function effective_toolbar_bds_in_canvas(state: CoreState): Rect {
 
 export const pause_button_bds_in_canvas: Rect = rects['pause'];
 
-export const shuffle_button_bds_in_canvas: Rect = {
-  p: {
-    x: canvas_bds_in_canvas.sz.x - SHUFFLE_WIDTH,
-    y: canvas_bds_in_canvas.sz.y - 1.9 * BAR_WIDTH - 10,
-  },
-  sz: { x: SHUFFLE_WIDTH, y: BAR_WIDTH }
-};
-
 export function canvas_from_hand(): SE2 {
   return {
     scale: { x: DEFAULT_TILE_SCALE, y: DEFAULT_TILE_SCALE },
@@ -150,7 +140,6 @@ export type WidgetPoint =
   | DragWidgetPoint
   | { t: 'toolbar', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2, tool: Tool }
   | { t: 'pauseButton', p_in_canvas: Point }
-  | { t: 'shuffleButton', p_in_canvas: Point }
   | { t: 'nowhere', p_in_canvas: Point } // outside canvas bounds
   ;
 
@@ -158,12 +147,6 @@ export function getWidgetPoint(state: CoreState, p_in_canvas: Point): WidgetPoin
   if (pointInRect(p_in_canvas, pause_button_bds_in_canvas)) {
     return {
       t: 'pauseButton',
-      p_in_canvas,
-    };
-  }
-  if (pointInRect(p_in_canvas, shuffle_button_bds_in_canvas) && state.slowState.winState.t != 'lost') {
-    return {
-      t: 'shuffleButton',
       p_in_canvas,
     };
   }

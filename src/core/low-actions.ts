@@ -66,6 +66,9 @@ function reduceMouseDownInHand(state: GameState, wp: WidgetPoint & { t: 'hand' }
   if (tool == 'dynamite') return { t: 'mouseDownIntent', intent: dynamiteIntent, wp };
   else if (tool == 'bomb') return { t: 'mouseDownIntent', intent: bombIntent, wp };
   else {
+    if (button == 2)
+      return { t: 'shuffle' };
+
     const hoverTile = wp.indexValid && index >= 0 && index < tiles.length;
     if (hoverTile) {
       return { t: 'startDragHandTile', index, wp };
@@ -94,7 +97,7 @@ function reducePauseButton(state: CoreState): CoreState {
   return produce(state, s => { s.slowState.paused = { pauseTime_in_clock: Date.now() }; });
 }
 
-function reduceShuffleButton(state: CoreState): CoreState {
+function reduceShuffle(state: CoreState): CoreState {
   const hs = get_hand_tiles(state);
   let randomOrder = getRandomOrder(hs.length);
   let retries = 0;
@@ -120,7 +123,6 @@ function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number, mods
     case 'hand': return reduceMouseDownInHand(state, wp, button, mods);
     case 'toolbar': return reduceMouseDownInToolbar(state, wp, button, mods);
     case 'pauseButton': return { t: 'vacuousDownAnd', wp, action: { t: 'pause' } };
-    case 'shuffleButton': return { t: 'vacuousDownAnd', wp, action: { t: 'shuffle' } };
     case 'nowhere': return { t: 'vacuousDown', wp };
   }
 }
@@ -411,7 +413,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
       }
     }
     case 'vacuousDown': return vacuous_down(state, action.wp);
-    case 'shuffle': return withCoreState(state, reduceShuffleButton);
+    case 'shuffle': return withCoreState(state, reduceShuffle);
     case 'pause': return withCoreState(state, reducePauseButton);
     case 'multiple': return resolveGameLowActions(state, action.actions);
     case 'deselect': return withCoreState(state, deselect);

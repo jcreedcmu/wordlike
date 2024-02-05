@@ -20,7 +20,7 @@ import { drawAnimation } from './drawAnimation';
 import { drawBonus } from './drawBonus';
 import { CanvasInfo } from './use-canvas';
 import { cell_in_canvas, drawBubble, pan_canvas_from_world_of_state } from './view-helpers';
-import { GLOBAL_BORDER, PANIC_THICK, canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, effective_toolbar_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas, inner_hand_bds_in_canvas, panic_bds_in_canvas, pause_button_bds_in_canvas, score_bds_in_canvas, shuffle_button_bds_in_canvas, spacer1_bds_in_canvas, spacer2_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
+import { GLOBAL_BORDER, PANIC_THICK, canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, effective_toolbar_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas, inner_hand_bds_in_canvas, panic_bds_in_canvas, pause_button_bds_in_canvas, score_bds_in_canvas, spacer1_bds_in_canvas, spacer2_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
 
 const INTERFACE_RADIUS = 2 * GLOBAL_BORDER;
 const PANIC_RADIUS = Math.min(INTERFACE_RADIUS, PANIC_THICK / 2);
@@ -339,14 +339,6 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
     }
   }
 
-  function drawShuffleButton() {
-    d.textAlign = 'center';
-    d.textBaseline = 'middle';
-    if (cs.slowState.winState.t != 'lost') {
-      fillText(d, '🔀', midpointOfRect(shuffle_button_bds_in_canvas), 'white', '36px sans-serif');
-    }
-  }
-
   function drawHand(illegalDrag: boolean) {
     // const handBackgroundColor = illegalDrag ? backgroundRed : backgroundGray;
     // fillRect(d, hand_bds_in_canvas, handBackgroundColor);
@@ -498,7 +490,6 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
     fillText(d, 'YOU LOST', mp, 'rgba(128,0,0,1)', '96px serif');
   }
   else {
-    drawShuffleButton();
     drawAnimations(now_in_game(cs.game_from_clock), glEnabled);
   }
   if (cs.slowState.winState.t == 'won') {
