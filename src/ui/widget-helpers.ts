@@ -1,4 +1,4 @@
-import { CoreState } from "../core/state";
+import { CoreState, HAND_TILE_LIMIT } from "../core/state";
 import { Tool, getCurrentTools } from "../core/tools";
 import { SE2, apply, inverse } from "../util/se2";
 import { Point, Rect } from "../util/types";
@@ -8,9 +8,19 @@ import { vint } from "../util/vutil";
 export const HAND_WIDTH = 100;
 
 export const canvas_bds_in_canvas: Rect = { p: { x: 0, y: 0 }, sz: { x: 800, y: 600 } };
+export const DEFAULT_TILE_SCALE = 48;
+
+const hand_bds_length = HAND_TILE_LIMIT * DEFAULT_TILE_SCALE;
+
 export const hand_bds_in_canvas: Rect = {
-  p: { x: canvas_bds_in_canvas.sz.x - HAND_WIDTH, y: 0 },
-  sz: { x: HAND_WIDTH, y: canvas_bds_in_canvas.sz.y }
+  p: {
+    x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x / 2 - hand_bds_length / 2,
+    y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - HAND_WIDTH
+  },
+  sz: {
+    x: hand_bds_length,
+    y: HAND_WIDTH,
+  }
 };
 
 export const BAR_WIDTH = 64;
@@ -18,7 +28,7 @@ export const TOOLBAR_WIDTH = 52;
 
 export const world_bds_in_canvas: Rect = {
   p: { x: 0, y: 0 },
-  sz: { x: canvas_bds_in_canvas.sz.x - HAND_WIDTH, y: canvas_bds_in_canvas.sz.y }
+  sz: { x: canvas_bds_in_canvas.sz.x, y: canvas_bds_in_canvas.sz.y }
 };
 
 // This gives a bound on what could possibly be in the toolbar
@@ -47,8 +57,6 @@ export const shuffle_button_bds_in_canvas: Rect = {
   },
   sz: { x: HAND_WIDTH, y: BAR_WIDTH }
 };
-
-export const DEFAULT_TILE_SCALE = 48;
 
 export function canvas_from_hand(): SE2 {
   return {

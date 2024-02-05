@@ -97,11 +97,22 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
   pathRect(d, invertRect(canvas_bds_in_canvas));
 
   roundedPath(d, [
+    // top left, just to the right of toolbar
     { x: tp.x + GLOBAL_BORDER, y: tq.y },
     { x: tq.x, y: tq.y },
     { x: tq.x, y: tp.y + GLOBAL_BORDER },
-    { x: hand_bds_in_canvas.p.x, y: tp.y + GLOBAL_BORDER },
+    // top right
+    { x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x - GLOBAL_BORDER, y: tp.y + GLOBAL_BORDER },
+    // bottom right
+    { x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x - GLOBAL_BORDER, y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - GLOBAL_BORDER },
+    // bottom right of rack etc.
+    { x: hand_bds_in_canvas.p.x + hand_bds_in_canvas.sz.x, y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - GLOBAL_BORDER },
+    { x: hand_bds_in_canvas.p.x + hand_bds_in_canvas.sz.x, y: hand_bds_in_canvas.p.y },
+    { x: hand_bds_in_canvas.p.x, y: hand_bds_in_canvas.p.y },
+    // bottom left of rack etc.
     { x: hand_bds_in_canvas.p.x, y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - GLOBAL_BORDER },
+
+    // bottom right of pause button
     { x: pause_button_bds_in_canvas.p.x + pause_button_bds_in_canvas.sz.x, y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - GLOBAL_BORDER },
     { x: pause_button_bds_in_canvas.p.x + pause_button_bds_in_canvas.sz.x, y: pause_button_bds_in_canvas.p.y },
     { x: pause_button_bds_in_canvas.p.x + GLOBAL_BORDER, y: pause_button_bds_in_canvas.p.y },
@@ -479,12 +490,10 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
     });
   }
 
-  const illegalDrag = ms.t == 'drag_tile' && getWidgetPoint(cs, ms.p_in_canvas).t == 'hand' && proposedHandDragOverLimit(cs, ms);
-  if (glEnabled) {
-    fillRect(d, hand_bds_in_canvas, backgroundGray);
-  }
-  else
+  if (!glEnabled) {
+    const illegalDrag = ms.t == 'drag_tile' && getWidgetPoint(cs, ms.p_in_canvas).t == 'hand' && proposedHandDragOverLimit(cs, ms);
     drawHand(illegalDrag);
+  }
   drawShuffleButton();
   const mp = midpointOfRect(canvas_bds_in_canvas);
   if (cs.winState.t == 'lost') {
