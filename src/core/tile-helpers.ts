@@ -17,14 +17,6 @@ export type RenderableTile = {
   // XXX status bits, like "selected", or "disconnected" should go here
 }
 
-function tileOfTileEntity(tile: TileEntity): Tile {
-  switch (tile.loc.t) {
-    case 'hand': return { letter: tile.letter, id: tile.id, p_in_world_int: { x: 0, y: tile.loc.index } };
-    case 'world': return { letter: tile.letter, id: tile.id, p_in_world_int: tile.loc.p_in_world_int };
-    case 'nowhere': throw new Error(`Trying to construct Tile out of nowhere tile`);
-  }
-}
-
 export function getTileId(state: CoreState, id: string): TileEntity {
   return state.tile_entities[id];
 }
