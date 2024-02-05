@@ -4,6 +4,7 @@ import { SE2, apply, inverse } from "../util/se2";
 import { Point, Rect } from "../util/types";
 import { lerp, pointInRect } from "../util/util";
 import { vint } from "../util/vutil";
+import { fixedRect, layout, nameRect, packHoriz, packVert, padRect, stretchRectX, stretchRectY } from "./layout";
 import { GLOBAL_BORDER } from "./render";
 
 
@@ -19,6 +20,18 @@ export const DEFAULT_TILE_SCALE = 48;
 const HAND_WIDTH = DEFAULT_TILE_SCALE + 2 * HAND_VERT_PADDING + 2 * HAND_VERT_MARGIN + PANIC_THICK + GLOBAL_BORDER;
 const HAND_LENGTH = HAND_TILE_LIMIT * DEFAULT_TILE_SCALE + 2 * HAND_HORIZ_PADDING + 2 * HAND_HORIZ_MARGIN;
 
+const widgetTree = packVert(
+  stretchRectY(1),
+  packHoriz(
+    stretchRectX(1),
+    nameRect('inner_hand',
+      padRect(10,
+        nameRect('hand_tiles', fixedRect({ x: HAND_TILE_LIMIT * DEFAULT_TILE_SCALE, y: DEFAULT_TILE_SCALE })))),
+    stretchRectX(1),
+  ),
+  fixedRect({ x: 0, y: GLOBAL_BORDER }),
+);
+const rects = layout(canvas_bds_in_canvas, widgetTree);
 
 export const hand_bds_in_canvas: Rect = {
   p: {
@@ -31,16 +44,8 @@ export const hand_bds_in_canvas: Rect = {
   }
 };
 
-export const inner_hand_bds_in_canvas: Rect = {
-  p: {
-    x: hand_bds_in_canvas.p.x + HAND_HORIZ_MARGIN,
-    y: hand_bds_in_canvas.p.y + 2 * HAND_VERT_MARGIN + PANIC_THICK,
-  },
-  sz: {
-    x: HAND_TILE_LIMIT * DEFAULT_TILE_SCALE + 2 * HAND_HORIZ_PADDING,
-    y: DEFAULT_TILE_SCALE + 2 * HAND_VERT_PADDING,
-  }
-};
+export const inner_hand_bds_in_canvas = rects['inner_hand'];
+export const hand_tile_bds_in_canvas = rects['hand_tiles'];
 
 export const panic_bds_in_canvas: Rect = {
   p: {
@@ -104,10 +109,7 @@ export const shuffle_button_bds_in_canvas: Rect = {
 export function canvas_from_hand(): SE2 {
   return {
     scale: { x: DEFAULT_TILE_SCALE, y: DEFAULT_TILE_SCALE },
-    translate: {
-      x: hand_bds_in_canvas.p.x + HAND_HORIZ_PADDING + HAND_HORIZ_MARGIN,
-      y: hand_bds_in_canvas.p.y + 2 * HAND_VERT_MARGIN + PANIC_THICK + HAND_VERT_PADDING,
-    }
+    translate: hand_tile_bds_in_canvas.p,
   };
 }
 

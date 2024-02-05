@@ -8,8 +8,40 @@ export type LayoutRect = {
 
 export type LayoutTree = LayoutTreeInt<unknown>;
 
+export function packHoriz(...trees: LayoutTree[]): LayoutTree {
+  return { t: 'horiz', kids: trees };
+}
+
+export function packVert(...trees: LayoutTree[]): LayoutTree {
+  return { t: 'vert', kids: trees };
+}
+
+export function stretchRectX(stretch: number): LayoutTree {
+  return { t: 'rect', single: { stretch: { x: stretch, y: 0 } } };
+}
+
+export function stretchRectY(stretch: number): LayoutTree {
+  return { t: 'rect', single: { stretch: { y: stretch, x: 0 } } };
+}
+
+export function fixedRect(base: Point): LayoutTree {
+  return { t: 'rect', single: { base } };
+}
+
 export function nameRect(name: string, tree: LayoutTree): LayoutTree {
   return { t: 'name', kid: tree, name };
+}
+
+export function padVert(pad: number, tree: LayoutTree): LayoutTree {
+  return packVert(fixedRect({ x: 0, y: pad }), tree, fixedRect({ x: 0, y: pad }));
+}
+
+export function padHoriz(pad: number, tree: LayoutTree): LayoutTree {
+  return packHoriz(fixedRect({ x: pad, y: 0 }), tree, fixedRect({ x: pad, y: 0 }));
+}
+
+export function padRect(pad: number, tree: LayoutTree): LayoutTree {
+  return padVert(pad, padHoriz(pad, tree));
 }
 
 type LayoutTreeInt<A> =
@@ -151,7 +183,7 @@ function layoutThird(tree: LayoutTreeWith<ResultRect>): Record<string, Rect> {
       case 'horiz': tree.kids.forEach(xverse); return;
       case 'vert': tree.kids.forEach(xverse); return;
       case 'rect': return;
-      case 'name': rv[tree.name] = tree.rect; return;
+      case 'name': rv[tree.name] = tree.rect; xverse(tree.kid); return;
     }
   }
   xverse(tree);
