@@ -126,6 +126,7 @@ export type SlowState = {
   invalidWords: LocatedWord[],
   renderToGl: boolean,
   paused: PauseData | undefined,
+  winState: WinState,
 }
 
 export type CacheUpdate = {
@@ -147,7 +148,6 @@ export type CoreState = {
   seed: number, // changes during game play, determines which letters are drawn
   bonusOverlay: Overlay<Bonus>,
   selected?: SelectionState,
-  winState: WinState,
   panic: PanicData | undefined,
   game_from_clock: SE1,
   wordBonusState: WordBonusState,
@@ -192,6 +192,7 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
         invalidWords: [],
         renderToGl: true,
         paused: undefined,
+        winState: { t: creative ? 'creative' : 'playing' },
       },
       wordBonusState: {
         shown: undefined,
@@ -211,7 +212,6 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
       connectedSet: mkGridOf([]),
       energies: initialEnergies(),
       seed,
-      winState: { t: creative ? 'creative' : 'playing' },
       panic: undefined,
       game_from_clock: se1.translate(-Date.now()),
       bonusLayerSeed,

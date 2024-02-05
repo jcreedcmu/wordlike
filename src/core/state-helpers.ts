@@ -209,14 +209,14 @@ export function checkValid(state: CoreState): CoreState {
   let panic = state.panic;
   if (allValid)
     panic = undefined;
-  else if (panic === undefined && shouldStartPanicBar(state.winState)) {
+  else if (panic === undefined && shouldStartPanicBar(state.slowState.winState)) {
     panic = freshPanic(state);
   }
 
-  let winState = state.winState;
+  let winState = state.slowState.winState;
   let animations = state.animations;
 
-  if (getScore(state) >= WIN_SCORE && canWinFromState(state.winState)) {
+  if (getScore(state) >= WIN_SCORE && canWinFromState(state.slowState.winState)) {
     winState = { t: 'won', winTime_in_game: now_in_game(state.game_from_clock) };
     animations = [...animations, mkWinAnimation(state.game_from_clock)];
   }
@@ -237,7 +237,7 @@ export function checkValid(state: CoreState): CoreState {
     s.panic = panic;
     s.slowState.invalidWords = invalidWords;
     s.connectedSet = connectedSet;
-    s.winState = winState;
+    s.slowState.winState = winState;
     s.animations = animations;
     s._cacheUpdateQueue.push(...oldCacheUpdates);
     s._cacheUpdateQueue.push(...newCacheUpdates);

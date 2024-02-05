@@ -312,7 +312,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
   }
 
   function drawPauseButton() {
-    if (shouldDisplayBackButton(cs.winState)) {
+    if (shouldDisplayBackButton(cs.slowState.winState)) {
       d.textAlign = 'center';
       d.textBaseline = 'middle';
       fillText(d, '⟳', midpointOfRect(pause_button_bds_in_canvas), 'white', '48px sans-serif');
@@ -327,7 +327,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
   function drawShuffleButton() {
     d.textAlign = 'center';
     d.textBaseline = 'middle';
-    if (cs.winState.t != 'lost') {
+    if (cs.slowState.winState.t != 'lost') {
       fillText(d, '🔀', midpointOfRect(shuffle_button_bds_in_canvas), 'white', '36px sans-serif');
     }
   }
@@ -497,7 +497,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
 
   clearRect(d, world_bds_in_canvas);
 
-  if (cs.winState.t != 'lost')
+  if (cs.slowState.winState.t != 'lost')
     drawToolbar(d, cs);
   else {
     fillRect(d, toolbar_bds_in_canvas, backgroundGray);
@@ -526,7 +526,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
   }
   drawShuffleButton();
   const mp = midpointOfRect(canvas_bds_in_canvas);
-  if (cs.winState.t == 'lost') {
+  if (cs.slowState.winState.t == 'lost') {
     d.textAlign = 'center';
     d.textBaseline = 'middle';
     fillText(d, 'You lost :(', mp, 'rgba(0,0,0,0.3)', '96px sans-serif');
@@ -535,10 +535,10 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
     drawOtherUi(glEnabled);
     drawAnimations(now_in_game(cs.game_from_clock), glEnabled);
   }
-  if (cs.winState.t == 'won') {
+  if (cs.slowState.winState.t == 'won') {
     d.textAlign = 'center';
     d.textBaseline = 'middle';
-    fillText(d, `Time: ${formatTime(cs.winState.winTime_in_game)}`, { x: mp.x, y: canvas_bds_in_canvas.sz.y - 12 }, 'black', 'bold 24px sans-serif');
+    fillText(d, `Time: ${formatTime(cs.slowState.winState.winTime_in_game)}`, { x: mp.x, y: canvas_bds_in_canvas.sz.y - 12 }, 'black', 'bold 24px sans-serif');
   }
 }
 

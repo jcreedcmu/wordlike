@@ -137,6 +137,7 @@ function exampleState(): GameState {
         invalidWords: [],
         renderToGl: true,
         paused: undefined,
+        winState: { t: 'playing' },
       },
       wordBonusState: {
         shown: undefined,
@@ -196,7 +197,6 @@ function exampleState(): GameState {
 
         }
       },
-      winState: { t: 'playing' },
       panic: { currentTime_in_game: Date.now(), lastClear_in_game: Date.now() - PANIC_INTERVAL_MS / 3 },
       mobsState: { mobs: [] },
     },

@@ -231,7 +231,7 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
 
     // draw panic bar
     if (!state.coreState.slowState.paused) {
-      if (state.coreState.winState.t != 'lost' && state.coreState.panic) {
+      if (state.coreState.slowState.winState.t != 'lost' && state.coreState.panic) {
         const rr = renderPanicBar(state.coreState.panic, state.coreState.game_from_clock);
         glFillRect(env, panic_bds_in_canvas, [0, 0, 0]);
         glFillRect(env, rr.rect, rr.color);

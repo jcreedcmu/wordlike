@@ -57,7 +57,7 @@ function reduceMouseDownInWorld(state: GameState, wp: WidgetPoint & { t: 'world'
 }
 
 function reduceMouseDownInHand(state: GameState, wp: WidgetPoint & { t: 'hand' }, button: number, mods: Set<string>): GameLowAction {
-  if (state.coreState.winState.t == 'lost')
+  if (state.coreState.slowState.winState.t == 'lost')
     return { t: 'vacuousDown', wp }
 
   const index = wp.index;
@@ -292,7 +292,7 @@ export function getLowAction(state: GameState, action: GameAction): LowAction {
       return { t: 'gameLowAction', action: { t: 'zoom', amount: action.delta, center: action.p } };
     case 'mouseDown': {
       const wp = getWidgetPoint(state.coreState, action.p);
-      if (wp.t == 'pauseButton' && shouldDisplayBackButton(state.coreState.winState))
+      if (wp.t == 'pauseButton' && shouldDisplayBackButton(state.coreState.slowState.winState))
         return { t: 'returnToMenu' };
       return gla(reduceMouseDown(state, wp, action.button, action.mods));
     }
@@ -396,7 +396,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
       if (cs.panic !== undefined) {
         if (getPanicFraction(cs.panic, cs.game_from_clock) > 1) {
           return produce(state, s => {
-            s.coreState.winState = { t: 'lost' };
+            s.coreState.slowState.winState = { t: 'lost' };
           });
         }
 
