@@ -12,6 +12,7 @@ const HAND_VERT_PADDING = 10;
 const HAND_VERT_MARGIN = 12;
 const HAND_HORIZ_MARGIN = 16;
 export const PANIC_THICK = 10;
+const SPACER_WIDTH = 5;
 
 export const canvas_bds_in_canvas: Rect = { p: { x: 0, y: 0 }, sz: { x: 1024, y: 768 } };
 export const DEFAULT_TILE_SCALE = 48;
@@ -42,7 +43,11 @@ const widgetTree = packVert(
           packHoriz(
             pauseButton,
             fixedRect({ y: 0, x: HAND_HORIZ_MARGIN }),
+            nameRect('spacer1', fixedRect({ y: 0, x: SPACER_WIDTH })),
+            fixedRect({ y: 0, x: HAND_HORIZ_MARGIN / 2 }),
             innerHand,
+            fixedRect({ y: 0, x: HAND_HORIZ_MARGIN / 2 }),
+            nameRect('spacer2', fixedRect({ y: 0, x: SPACER_WIDTH })),
             fixedRect({ y: 0, x: HAND_HORIZ_MARGIN }),
             scoreRect,
           ),
@@ -55,6 +60,8 @@ const widgetTree = packVert(
 const rects = layout(canvas_bds_in_canvas, widgetTree);
 
 export const score_bds_in_canvas = rects['score'];
+export const spacer1_bds_in_canvas = rects['spacer1'];
+export const spacer2_bds_in_canvas = rects['spacer2'];
 export const hand_bds_in_canvas = rects['hand'];
 export const inner_hand_bds_in_canvas = rects['inner_hand'];
 export const hand_tile_bds_in_canvas = rects['hand_tiles'];
