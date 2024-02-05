@@ -4,7 +4,7 @@ import { Dispatch } from '../core/action';
 import { PANIC_INTERVAL_MS } from '../core/clock';
 import { mkGridOf } from '../core/grid';
 import { GameState, Tile } from '../core/state';
-import { addHandTiles, addWorldTiles, checkValid, resolveValid, withCoreState } from '../core/state-helpers';
+import { addHandTileEntities, addWorldTiles, checkValid, resolveValid, withCoreState } from '../core/state-helpers';
 import { ensureTileId } from "../core/tile-id-helpers";
 import { DEBUG } from '../util/debug';
 import { relpos } from '../util/dutil';
@@ -256,12 +256,12 @@ function exampleState(): GameState {
     { letter: "j", p_in_world_int: { x: 6, y: 6 } },
     { letter: "o", p_in_world_int: { x: 7, y: 6 } }
   ].map(ensureTileId);
-  const handTiles: Tile[] = [
-    { letter: "e", p_in_world_int: { x: 0, y: 0 } },
-    { letter: "t", p_in_world_int: { x: 0, y: 1 } },
-    { letter: "a", p_in_world_int: { x: 0, y: 2 } },
-  ].map(ensureTileId);
-  const almost = withCoreState(state, cs => resolveValid(checkValid(addHandTiles(addWorldTiles(cs, tiles), handTiles)), new Set()));
+  const handTiles = [
+    { letter: "e", index: 0 },
+    { letter: "t", index: 1 },
+    { letter: "a", index: 2 },
+  ];
+  const almost = withCoreState(state, cs => resolveValid(checkValid(addHandTileEntities(addWorldTiles(cs, tiles), handTiles)), new Set()));
   return produce(almost, s => {
     s.coreState.animations = [];
   });

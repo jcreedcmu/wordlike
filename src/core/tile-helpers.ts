@@ -80,18 +80,10 @@ export function addWorldTile(state: Draft<CoreState>, tile: TileOptionalId): voi
   state._cacheUpdateQueue.push({ p_in_world_int: tile.p_in_world_int, chunkUpdate: { t: 'addTile', tile: { letter: tile.letter } } });
 }
 
-// Deprecated in favor of addHandTileEntity
-export function addHandTile(state: Draft<CoreState>, tile: Tile): void {
-  const newTile: TileEntity = ensureId({
-    id: tile.id,
-    letter: tile.letter, loc: { t: 'hand', index: tile.p_in_world_int.y }
-  });
+export function addHandTileEntity(state: Draft<CoreState>, letter: string, index: number, forceId?: string): TileEntity {
+  const newTile: TileEntity = addId({ letter, loc: { t: 'hand', index } }, forceId);
   state.tile_entities[newTile.id] = newTile;
-}
-
-export function addHandTileEntity(state: Draft<CoreState>, letter: string, index: number): void {
-  const newTile: TileEntity = addId({ letter, loc: { t: 'hand', index } });
-  state.tile_entities[newTile.id] = newTile;
+  return newTile;
 }
 
 export function putTileInWorld(state: CoreState, id: string, p_in_world_int: Point): CoreState {

@@ -8,8 +8,8 @@ export function ensureId(tile: TileEntityOptionalId): TileEntity {
   return { ...tile, id };
 }
 
-export function addId(tile: PreTileEntity): TileEntity {
-  const id = `tile${tileIdCounter++}`;
+export function addId(tile: PreTileEntity, forceId?: string): TileEntity {
+  const id = forceId ?? `tile${tileIdCounter++}`;
   return { ...tile, id };
 }
 

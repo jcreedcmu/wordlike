@@ -3,14 +3,14 @@
 import { WORLD_CHUNK_SIZE } from "../src/core/chunk";
 import { getOverlay } from "../src/core/layer";
 import { GameState, mkGameState } from "../src/core/state";
-import { addHandTile, addWorldTile, putTileInWorld } from "../src/core/tile-helpers";
+import { addHandTileEntity, addWorldTile, putTileInWorld } from "../src/core/tile-helpers";
 import { produce } from "../src/util/produce";
 
 const SEED = 12345678;
 
 function oneTileState(): GameState {
   let state = mkGameState(SEED, false, SEED);
-  state = produce(state, s => addHandTile(s.coreState, { letter: 'a', p_in_world_int: { x: 0, y: 0 }, id: '1' }));
+  state = produce(state, s => addHandTileEntity(s.coreState, 'a', 0, '1'));
   return state;
 }
 

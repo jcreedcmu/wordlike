@@ -18,7 +18,7 @@ import { mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
 import { addRandomMob, collidesWithMob } from "./mobs";
 import { PROGRESS_ANIMATION_POINTS, getHighWaterMark, getScore, setHighWaterMark } from "./scoring";
 import { CacheUpdate, CoreState, GameState, HAND_TILE_LIMIT, Location, MouseState, Tile, TileEntity, WordBonusState } from "./state";
-import { addHandTile, addWorldTile, get_hand_tiles, get_main_tiles, get_tiles, putTileInWorld } from "./tile-helpers";
+import { addHandTileEntity, addWorldTile, get_hand_tiles, get_main_tiles, get_tiles, putTileInWorld } from "./tile-helpers";
 import { ensureTileId } from "./tile-id-helpers";
 import { getCurrentTool } from "./tools";
 import { WIN_SCORE, canWinFromState, shouldStartPanicBar } from "./winState";
@@ -37,10 +37,10 @@ export function addWorldTiles(state: CoreState, tiles: Tile[]): CoreState {
   });
 }
 
-export function addHandTiles(state: CoreState, tiles: Tile[]): CoreState {
+export function addHandTileEntities(state: CoreState, tiles: { letter: string, index: number }[]): CoreState {
   return produce(state, s => {
     tiles.forEach(tile => {
-      addHandTile(s, tile);
+      addHandTileEntity(s, tile.letter, tile.index);
     });
   });
 }
@@ -94,7 +94,7 @@ export function drawOfState(state: CoreState, drawForce?: DrawForce): CoreState 
   return checkValid(produce(state, s => {
     s.seed = seed;
     s.energies = energies;
-    addHandTile(s, ensureTileId({ letter, p_in_world_int: { x: 0, y: handLength } }));
+    addHandTileEntity(s, letter, handLength);
   }));
 }
 
@@ -103,11 +103,15 @@ export function drawSpecific(state: CoreState, letter: string): { cs: CoreState,
   const handLength = get_hand_tiles(state).length;
   if (handLength >= HAND_TILE_LIMIT)
     return undefined;
-  const tile = ensureTileId({ letter, p_in_world_int: { x: 0, y: handLength } });
+
+  // XXX this is a gross hack, should make addHandTileEntity a pure function of cs
+  let te: TileEntity | undefined = undefined;
+  const cs = produce(state, s => {
+    te = addHandTileEntity(s, letter, handLength);
+  });
+
   return {
-    cs: produce(state, s => {
-      addHandTile(s, tile);
-    }), newId: tile.id
+    cs, newId: te!.id
   };
 }
 
