@@ -82,10 +82,10 @@ function killTileOfState(state: CoreState, wp: DragWidgetPoint, intent: KillInte
       }));
     }
     case 'hand': {
-      const p_in_hand_int = vint(wp.p_in_local);
+      const index = wp.index;
       const hand_tiles = get_hand_tiles(state);
-      if (p_in_hand_int.x == 0 && p_in_hand_int.y < hand_tiles.length) {
-        const tile = hand_tiles[p_in_hand_int.y];
+      if (index != undefined && index >= 0 && index < hand_tiles.length) {
+        const tile = hand_tiles[index];
         if (tile == undefined)
           return state;
         return checkValid(produce(removeTile(state, tile.id), s => {

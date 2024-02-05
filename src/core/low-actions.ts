@@ -60,15 +60,15 @@ function reduceMouseDownInHand(state: GameState, wp: WidgetPoint & { t: 'hand' }
   if (state.coreState.winState.t == 'lost')
     return { t: 'vacuousDown', wp }
 
-  const p_in_hand_int = vm(wp.p_in_local, Math.floor);
+  const index = wp.index;
   const tiles = get_hand_tiles(state.coreState);
   const tool = getCurrentTool(state.coreState);
   if (tool == 'dynamite') return { t: 'mouseDownIntent', intent: dynamiteIntent, wp };
   else if (tool == 'bomb') return { t: 'mouseDownIntent', intent: bombIntent, wp };
   else {
-    const hoverTile = p_in_hand_int.x == 0 && p_in_hand_int.y >= 0 && p_in_hand_int.y < tiles.length;
+    const hoverTile = index != undefined && index >= 0 && index < tiles.length;
     if (hoverTile) {
-      return { t: 'startDragHandTile', index: p_in_hand_int.y, wp };
+      return { t: 'startDragHandTile', index, wp };
     }
     else
       return { t: 'multiple', actions: [{ t: 'deselect' }, { t: 'drawTile' }] };

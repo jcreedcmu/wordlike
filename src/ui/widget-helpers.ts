@@ -3,6 +3,7 @@ import { Tool, getCurrentTools } from "../core/tools";
 import { SE2, apply, inverse } from "../util/se2";
 import { Point, Rect } from "../util/types";
 import { pointInRect } from "../util/util";
+import { vint } from "../util/vutil";
 
 export const HAND_WIDTH = 100;
 
@@ -68,7 +69,17 @@ export function canvas_from_toolbar(): SE2 {
 // target.
 export type DragWidgetPoint =
   | { t: 'world', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2 }
-  | { t: 'hand', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2 }
+
+  | {
+    t: 'hand',
+    p_in_local: Point,
+    p_in_canvas: Point,
+    local_from_canvas: SE2,
+    // index into hand tiles. When undefined, it means the point was not in the proper hand area at all
+    // The number *is* allowed to be negative or beyond the last tile currently in the hand,
+    // so callers should do their own clamping if necessary
+    index: number | undefined
+  }
 
 export type WidgetPoint =
   | DragWidgetPoint
@@ -130,11 +141,15 @@ export function getDragWidgetPoint(state: CoreState, p_in_canvas: Point): DragWi
     };
   }
   else {
+    const p_in_local = apply(inverse(canvas_from_hand()), p_in_canvas);
+    const p_in_hand_int = vint(p_in_local);
+    const index = p_in_hand_int.x == 0 ? p_in_hand_int.y : undefined;
     return {
       t: 'hand',
-      p_in_local: apply(inverse(canvas_from_hand()), p_in_canvas),
+      p_in_local,
       p_in_canvas,
       local_from_canvas: inverse(canvas_from_hand()),
+      index: index,
     };
   }
 }
