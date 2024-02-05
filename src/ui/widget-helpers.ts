@@ -4,10 +4,9 @@ import { SE2, apply, inverse } from "../util/se2";
 import { Point, Rect } from "../util/types";
 import { lerp, pointInRect } from "../util/util";
 import { vdiag, vint } from "../util/vutil";
-import { centerX, fixedRect, layout, nameRect, packHoriz, packVert, padHoriz, padRect, stretchRectX, stretchRectY } from "./layout";
-import { GLOBAL_BORDER } from "./render";
+import { centerX, fixedRect, layout, nameRect, packHoriz, packVert, padRect, stretchRectY } from "./layout";
 
-
+export const GLOBAL_BORDER = 5;
 const HAND_HORIZ_PADDING = 10;
 const HAND_VERT_PADDING = 10;
 const HAND_VERT_MARGIN = 12;

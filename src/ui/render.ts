@@ -5,25 +5,26 @@ import { LocatedWord, getGrid } from '../core/grid';
 import { getOverlay } from '../core/layer';
 import { getScore } from '../core/scoring';
 import { CoreState, GameState, TileEntity } from '../core/state';
-import { lostState, pointFall, proposedHandDragOverLimit, tileFall } from '../core/state-helpers';
+import { lostState, pointFall, tileFall } from '../core/state-helpers';
 import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from '../core/tile-helpers';
-import { BOMB_RADIUS, getCurrentTool, getCurrentTools, largeRectOfTool, rectOfTool } from '../core/tools';
+import { BOMB_RADIUS, getCurrentTool, getCurrentTools, largeRectOfTool } from '../core/tools';
 import { shouldDisplayBackButton } from '../core/winState';
 import { DEBUG, doOnceEvery } from '../util/debug';
-import { clearRect, drawImage, fillRect, fillRectRgb, fillText, lineTo, moveTo, pathRect, pathRectCircle, roundedPath, strokeRect } from '../util/dutil';
+import { clearRect, drawImage, fillRect, fillText, lineTo, moveTo, pathRect, pathRectCircle, roundedPath, strokeRect } from '../util/dutil';
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from '../util/se2-extra';
 import { Point, Rect } from '../util/types';
-import { allRectPts, boundRect, insetRect, invertRect, midpointOfRect, rectPts, scaleRectToCenter, scaleRectToCenterPoint } from '../util/util';
+import { allRectPts, boundRect, insetRect, invertRect, midpointOfRect, scaleRectToCenter, scaleRectToCenterPoint } from '../util/util';
 import { vadd, vdiv, vequal, vm, vscale, vsub, vtrans } from '../util/vutil';
 import { drawAnimation } from './drawAnimation';
 import { drawBonus } from './drawBonus';
-import { renderPanicBar } from './drawPanicBar';
 import { CanvasInfo } from './use-canvas';
-import { canvas_from_drag_tile, cell_in_canvas, drawBubble, pan_canvas_from_world_of_state } from './view-helpers';
-import { PANIC_THICK, canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, effective_toolbar_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas, inner_hand_bds_in_canvas, panic_bds_in_canvas, pause_button_bds_in_canvas, score_bds_in_canvas, shuffle_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
+import { cell_in_canvas, drawBubble, pan_canvas_from_world_of_state } from './view-helpers';
+import { GLOBAL_BORDER, PANIC_THICK, canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, effective_toolbar_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas, inner_hand_bds_in_canvas, panic_bds_in_canvas, pause_button_bds_in_canvas, score_bds_in_canvas, shuffle_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
 
-export const GLOBAL_BORDER = 5;
+const INTERFACE_RADIUS = 2 * GLOBAL_BORDER;
+const PANIC_RADIUS = Math.min(INTERFACE_RADIUS, PANIC_THICK / 2);
+
 const interfaceCyanColor = 'rgb(0,255,255,0.5)';
 const shadowColor = 'rgb(128,128,100,0.4)';
 const backgroundGray = '#595959';
@@ -87,7 +88,6 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
 
   const { p: tp, sz: ts } = effective_toolbar_bds_in_canvas(state);
   const tq = vadd(tp, ts);
-  const INTERFACE_RADIUS = 2 * GLOBAL_BORDER;
 
   // This is the main fill for the outer interface
   d.beginPath();
@@ -118,8 +118,6 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
 
   d.fillStyle = backgroundGray;
   d.fill();
-
-  const PANIC_RADIUS = Math.min(INTERFACE_RADIUS, PANIC_THICK / 2);
 
   if (!hasLost) {
     // Subtract another path for the panic bar. I'm going to want to draw a slow-changing
