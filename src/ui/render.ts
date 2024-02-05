@@ -21,7 +21,7 @@ import { drawBonus } from './drawBonus';
 import { renderPanicBar } from './drawPanicBar';
 import { CanvasInfo } from './use-canvas';
 import { canvas_from_drag_tile, cell_in_canvas, drawBubble, pan_canvas_from_world_of_state } from './view-helpers';
-import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, effective_toolbar_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas, pause_button_bds_in_canvas, shuffle_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
+import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, effective_toolbar_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas, inner_hand_bds_in_canvas, pause_button_bds_in_canvas, shuffle_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
 
 export const GLOBAL_BORDER = 5;
 const interfaceCyanColor = 'rgb(0,255,255,0.5)';
@@ -89,7 +89,7 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
 
   const { p: tp, sz: ts } = effective_toolbar_bds_in_canvas(state);
   const tq = vadd(tp, ts);
-  const RAD = 3 * GLOBAL_BORDER;
+  const RAD = 2 * GLOBAL_BORDER;
 
   // global border
 
@@ -118,6 +118,17 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
     { x: pause_button_bds_in_canvas.p.x + GLOBAL_BORDER, y: pause_button_bds_in_canvas.p.y },
   ], RAD);
   d.fillStyle = backgroundGray;
+  d.fill();
+
+  d.beginPath();
+  pathRect(d, inner_hand_bds_in_canvas);
+  // XXX Probably should hoist this gradient construction up
+  const grad = d.createLinearGradient(inner_hand_bds_in_canvas.p.x, inner_hand_bds_in_canvas.p.y,
+    inner_hand_bds_in_canvas.p.x, inner_hand_bds_in_canvas.p.y + inner_hand_bds_in_canvas.sz.y);
+  grad.addColorStop(0, 'rgba(28, 29, 33, 0.42)');
+  grad.addColorStop(0.25, 'rgba(28, 29, 33, 0.28)');
+  grad.addColorStop(1, 'rgba(28, 29, 33, 0)');
+  d.fillStyle = grad;
   d.fill();
 
   const toolbar = getAssets().toolbarBuf.c;

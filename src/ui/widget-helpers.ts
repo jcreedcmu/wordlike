@@ -4,23 +4,40 @@ import { SE2, apply, inverse } from "../util/se2";
 import { Point, Rect } from "../util/types";
 import { pointInRect } from "../util/util";
 import { vint } from "../util/vutil";
+import { GLOBAL_BORDER } from "./render";
 
-export const HAND_WIDTH = 100;
-export const HAND_MARGIN = 32;
+
+const HAND_HORIZ_PADDING = 12;
+const HAND_VERT_PADDING = 12;
+const HAND_VERT_MARGIN = 16;
+const HAND_HORIZ_MARGIN = 16;
+const PANIC_THICK = 16;
 
 export const canvas_bds_in_canvas: Rect = { p: { x: 0, y: 0 }, sz: { x: 1024, y: 768 } };
 export const DEFAULT_TILE_SCALE = 48;
 
-const hand_bds_length = HAND_TILE_LIMIT * DEFAULT_TILE_SCALE + 2 * HAND_MARGIN;
+const HAND_WIDTH = DEFAULT_TILE_SCALE + 2 * HAND_VERT_PADDING + 2 * HAND_VERT_MARGIN + PANIC_THICK + GLOBAL_BORDER;
+const HAND_LENGTH = HAND_TILE_LIMIT * DEFAULT_TILE_SCALE + 2 * HAND_HORIZ_PADDING + 2 * HAND_HORIZ_MARGIN;
 
 export const hand_bds_in_canvas: Rect = {
   p: {
-    x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x / 2 - hand_bds_length / 2,
+    x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x / 2 - HAND_LENGTH / 2,
     y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - HAND_WIDTH
   },
   sz: {
-    x: hand_bds_length,
+    x: HAND_LENGTH,
     y: HAND_WIDTH,
+  }
+};
+
+export const inner_hand_bds_in_canvas: Rect = {
+  p: {
+    x: hand_bds_in_canvas.p.x + HAND_HORIZ_MARGIN,
+    y: hand_bds_in_canvas.p.y + 2 * HAND_VERT_MARGIN + PANIC_THICK,
+  },
+  sz: {
+    x: HAND_TILE_LIMIT * DEFAULT_TILE_SCALE + 2 * HAND_HORIZ_PADDING,
+    y: DEFAULT_TILE_SCALE + 2 * HAND_VERT_PADDING,
   }
 };
 
@@ -62,7 +79,10 @@ export const shuffle_button_bds_in_canvas: Rect = {
 export function canvas_from_hand(): SE2 {
   return {
     scale: { x: DEFAULT_TILE_SCALE, y: DEFAULT_TILE_SCALE },
-    translate: { y: hand_bds_in_canvas.p.y + (HAND_WIDTH - DEFAULT_TILE_SCALE) / 2, x: hand_bds_in_canvas.p.x + HAND_MARGIN }
+    translate: {
+      x: hand_bds_in_canvas.p.x + HAND_HORIZ_PADDING + HAND_HORIZ_MARGIN,
+      y: hand_bds_in_canvas.p.y + 2 * HAND_VERT_MARGIN + PANIC_THICK + HAND_VERT_PADDING,
+    }
   };
 }
 
