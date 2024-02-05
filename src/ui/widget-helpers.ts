@@ -2,22 +2,23 @@ import { CoreState, HAND_TILE_LIMIT } from "../core/state";
 import { Tool, getCurrentTools } from "../core/tools";
 import { SE2, apply, inverse } from "../util/se2";
 import { Point, Rect } from "../util/types";
-import { pointInRect } from "../util/util";
+import { lerp, pointInRect } from "../util/util";
 import { vint } from "../util/vutil";
 import { GLOBAL_BORDER } from "./render";
 
 
-const HAND_HORIZ_PADDING = 12;
-const HAND_VERT_PADDING = 12;
-const HAND_VERT_MARGIN = 16;
+const HAND_HORIZ_PADDING = 10;
+const HAND_VERT_PADDING = 10;
+const HAND_VERT_MARGIN = 12;
 const HAND_HORIZ_MARGIN = 16;
-const PANIC_THICK = 16;
+export const PANIC_THICK = 10;
 
 export const canvas_bds_in_canvas: Rect = { p: { x: 0, y: 0 }, sz: { x: 1024, y: 768 } };
 export const DEFAULT_TILE_SCALE = 48;
 
 const HAND_WIDTH = DEFAULT_TILE_SCALE + 2 * HAND_VERT_PADDING + 2 * HAND_VERT_MARGIN + PANIC_THICK + GLOBAL_BORDER;
 const HAND_LENGTH = HAND_TILE_LIMIT * DEFAULT_TILE_SCALE + 2 * HAND_HORIZ_PADDING + 2 * HAND_HORIZ_MARGIN;
+
 
 export const hand_bds_in_canvas: Rect = {
   p: {
@@ -40,6 +41,30 @@ export const inner_hand_bds_in_canvas: Rect = {
     y: DEFAULT_TILE_SCALE + 2 * HAND_VERT_PADDING,
   }
 };
+
+export const panic_bds_in_canvas: Rect = {
+  p: {
+    x: hand_bds_in_canvas.p.x + HAND_HORIZ_MARGIN,
+    y: hand_bds_in_canvas.p.y + HAND_VERT_MARGIN,
+  },
+  sz: {
+    x: HAND_TILE_LIMIT * DEFAULT_TILE_SCALE + 2 * HAND_HORIZ_PADDING,
+    y: PANIC_THICK,
+  }
+};
+
+export function rectOfPanic_in_canvas(panic_fraction: number): Rect {
+  return {
+    p: {
+      x: panic_bds_in_canvas.p.x + lerp(0, panic_bds_in_canvas.sz.x, panic_fraction),
+      y: panic_bds_in_canvas.p.y,
+    },
+    sz: {
+      x: lerp(panic_bds_in_canvas.sz.x, 0, panic_fraction),
+      y: PANIC_THICK,
+    }
+  };
+}
 
 export const BAR_WIDTH = 64;
 export const TOOLBAR_WIDTH = 52;

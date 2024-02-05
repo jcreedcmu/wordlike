@@ -5,9 +5,8 @@ import { SE1 } from "../util/se1";
 import { Spline, lerpSpline } from "../util/spline";
 import { Rect } from "../util/types";
 import { RenderableRect } from "./render";
-import { canvas_bds_in_canvas } from "./widget-helpers";
+import { canvas_bds_in_canvas, rectOfPanic_in_canvas } from "./widget-helpers";
 
-const PANIC_THICK = 15;
 
 const flashColor: RgbColor = [255, 0, 0];
 
@@ -18,18 +17,6 @@ const panicColorSpline: Spline = [
   { t: 1, vec: [255, 0, 0] },
 ]
 
-function rectOfPanic_in_canvas(panic_fraction: number): Rect {
-  return {
-    p: {
-      x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x * panic_fraction,
-      y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - PANIC_THICK,
-    },
-    sz: {
-      x: canvas_bds_in_canvas.sz.x * (1 - panic_fraction),
-      y: PANIC_THICK,
-    }
-  };
-}
 
 export function renderPanicBar(panic: PanicData, game_from_clock: SE1): RenderableRect {
   const panic_fraction = getPanicFraction(panic, game_from_clock);

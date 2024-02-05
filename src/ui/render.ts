@@ -21,7 +21,7 @@ import { drawBonus } from './drawBonus';
 import { renderPanicBar } from './drawPanicBar';
 import { CanvasInfo } from './use-canvas';
 import { canvas_from_drag_tile, cell_in_canvas, drawBubble, pan_canvas_from_world_of_state } from './view-helpers';
-import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, effective_toolbar_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas, inner_hand_bds_in_canvas, pause_button_bds_in_canvas, shuffle_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
+import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, effective_toolbar_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas, inner_hand_bds_in_canvas, panic_bds_in_canvas, pause_button_bds_in_canvas, shuffle_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
 
 export const GLOBAL_BORDER = 5;
 const interfaceCyanColor = 'rgb(0,255,255,0.5)';
@@ -120,6 +120,7 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
   d.fillStyle = backgroundGray;
   d.fill();
 
+  // Draw "inner hand"
   d.beginPath();
   pathRect(d, inner_hand_bds_in_canvas);
   // XXX Probably should hoist this gradient construction up
@@ -130,6 +131,11 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
   grad.addColorStop(1, 'rgba(28, 29, 33, 0)');
   d.fillStyle = grad;
   d.fill();
+
+  // Draw space for panic bar
+  if (state.winState.t != 'lost' && state.panic) {
+    fillRect(d, panic_bds_in_canvas, 'black');
+  }
 
   const toolbar = getAssets().toolbarBuf.c;
   d.imageSmoothingEnabled = true;
