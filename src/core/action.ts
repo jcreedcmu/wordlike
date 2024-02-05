@@ -30,7 +30,7 @@ export type GameLowAction =
   | { t: 'shuffle' }
   | { t: 'pause' }
   | { t: 'multiple', actions: GameLowAction[] }
-  | { t: 'startDragHandTile', wp: WidgetPoint, p_in_hand_int: Point }
+  | { t: 'startDragHandTile', wp: WidgetPoint, index: number }
   | { t: 'unpause', paused: PauseData }
   | { t: 'vacuousDownAnd', wp: WidgetPoint, action: GameLowAction }
   | { t: 'andMouseUp', p_in_canvas: Point, action: GameLowAction }

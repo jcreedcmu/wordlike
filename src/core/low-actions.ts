@@ -68,7 +68,7 @@ function reduceMouseDownInHand(state: GameState, wp: WidgetPoint & { t: 'hand' }
   else {
     const hoverTile = p_in_hand_int.x == 0 && p_in_hand_int.y >= 0 && p_in_hand_int.y < tiles.length;
     if (hoverTile) {
-      return { t: 'startDragHandTile', p_in_hand_int, wp };
+      return { t: 'startDragHandTile', index: p_in_hand_int.y, wp };
     }
     else
       return { t: 'multiple', actions: [{ t: 'deselect' }, { t: 'drawTile' }] };
@@ -426,8 +426,8 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
         s.coreState.slowState.generation++;
         s.mouseState = {
           t: 'drag_tile',
-          orig_loc: { t: 'hand', index: action.p_in_hand_int.y },
-          id: tiles[action.p_in_hand_int.y].id,
+          orig_loc: { t: 'hand', index: action.index },
+          id: tiles[action.index].id,
           orig_p_in_canvas: action.wp.p_in_canvas,
           p_in_canvas: action.wp.p_in_canvas,
           flipped: false,
