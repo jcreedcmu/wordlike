@@ -21,7 +21,7 @@ import { drawBonus } from './drawBonus';
 import { renderPanicBar } from './drawPanicBar';
 import { CanvasInfo } from './use-canvas';
 import { canvas_from_drag_tile, cell_in_canvas, drawBubble, pan_canvas_from_world_of_state } from './view-helpers';
-import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, effective_toolbar_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas, inner_hand_bds_in_canvas, panic_bds_in_canvas, pause_button_bds_in_canvas, shuffle_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
+import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, effective_toolbar_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas, inner_hand_bds_in_canvas, panic_bds_in_canvas, pause_button_bds_in_canvas, score_bds_in_canvas, shuffle_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
 
 export const GLOBAL_BORDER = 5;
 const interfaceCyanColor = 'rgb(0,255,255,0.5)';
@@ -311,15 +311,16 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
   }
 
   function drawPauseButton() {
+    fillRect(d, pause_button_bds_in_canvas, 'rgba(255,255,255,0.2)');
     if (shouldDisplayBackButton(cs.slowState.winState)) {
       d.textAlign = 'center';
       d.textBaseline = 'middle';
-      fillText(d, '⟳', midpointOfRect(pause_button_bds_in_canvas), 'white', '48px sans-serif');
+      fillText(d, '⟳', midpointOfRect(pause_button_bds_in_canvas), 'white', '32px sans-serif');
     }
     else {
       d.textAlign = 'center';
       d.textBaseline = 'middle';
-      fillText(d, '⏸', midpointOfRect(pause_button_bds_in_canvas), 'white', '48px sans-serif');
+      fillText(d, '⏸', vadd({ x: 0, y: 2 }, midpointOfRect(pause_button_bds_in_canvas)), 'white', '32px sans-serif');
     }
   }
 
@@ -450,13 +451,11 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
     }
 
     // draw score
-    const scoreLoc: Point = {
-      x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x - 10,
-      y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - 52
-    };
-    d.fillStyle = '#333';
+    const scoreLoc: Point = midpointOfRect(score_bds_in_canvas);
+
+    d.fillStyle = '#fff';
     d.textBaseline = 'middle';
-    d.textAlign = 'right';
+    d.textAlign = 'center';
     const fontSize = 40;
     d.font = `bold ${fontSize}px sans-serif`;
     d.fillText(`${getScore(cs)}`, scoreLoc.x, scoreLoc.y);

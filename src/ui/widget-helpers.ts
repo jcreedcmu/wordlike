@@ -3,7 +3,7 @@ import { Tool, getCurrentTools } from "../core/tools";
 import { SE2, apply, inverse } from "../util/se2";
 import { Point, Rect } from "../util/types";
 import { lerp, pointInRect } from "../util/util";
-import { vint } from "../util/vutil";
+import { vdiag, vint } from "../util/vutil";
 import { centerX, fixedRect, layout, nameRect, packHoriz, packVert, padHoriz, padRect, stretchRectX, stretchRectY } from "./layout";
 import { GLOBAL_BORDER } from "./render";
 
@@ -20,6 +20,17 @@ export const DEFAULT_TILE_SCALE = 48;
 const HAND_WIDTH = DEFAULT_TILE_SCALE + 2 * HAND_VERT_PADDING + 2 * HAND_VERT_MARGIN + PANIC_THICK + GLOBAL_BORDER;
 const HAND_LENGTH = HAND_TILE_LIMIT * DEFAULT_TILE_SCALE + 2 * HAND_HORIZ_PADDING + 2 * HAND_HORIZ_MARGIN;
 
+const pauseButton = packVert(
+  nameRect('pause', fixedRect(vdiag(DEFAULT_TILE_SCALE + 2 * HAND_VERT_PADDING))),
+  fixedRect({ x: 0, y: HAND_VERT_MARGIN }),
+);
+const innerHand = nameRect('inner_hand',
+  padRect(10,
+    nameRect('hand_tiles', fixedRect({ x: HAND_TILE_LIMIT * DEFAULT_TILE_SCALE, y: DEFAULT_TILE_SCALE }))));
+
+const scoreRect = nameRect('score', fixedRect({ x: 100, y: 0 }));
+
+
 const widgetTree = packVert(
   stretchRectY(1),
   centerX(
@@ -31,11 +42,11 @@ const widgetTree = packVert(
           nameRect('panic', { t: 'rect', single: { base: { x: 0, y: PANIC_THICK }, stretch: { x: 1, y: 0 } } }),
           fixedRect({ x: 0, y: HAND_VERT_MARGIN }),
           packHoriz(
-            nameRect('pause', fixedRect({ x: DEFAULT_TILE_SCALE, y: DEFAULT_TILE_SCALE })),
+            pauseButton,
             fixedRect({ y: 0, x: HAND_HORIZ_MARGIN }),
-            nameRect('inner_hand',
-              padRect(10,
-                nameRect('hand_tiles', fixedRect({ x: HAND_TILE_LIMIT * DEFAULT_TILE_SCALE, y: DEFAULT_TILE_SCALE })))),
+            innerHand,
+            fixedRect({ y: 0, x: HAND_HORIZ_MARGIN }),
+            scoreRect,
           ),
         ),
         fixedRect({ y: 0, x: HAND_HORIZ_MARGIN }),
@@ -45,6 +56,7 @@ const widgetTree = packVert(
 );
 const rects = layout(canvas_bds_in_canvas, widgetTree);
 
+export const score_bds_in_canvas = rects['score'];
 export const hand_bds_in_canvas = rects['hand'];
 export const inner_hand_bds_in_canvas = rects['inner_hand'];
 export const hand_tile_bds_in_canvas = rects['hand_tiles'];
