@@ -1,4 +1,5 @@
 import { Point, Rect } from "../util/types";
+import { vint } from "../util/vutil";
 
 export type LayoutRect = {
   stretch?: Point,
@@ -169,7 +170,7 @@ function layoutSecond(container: Rect, tree: LayoutTreeWith<Sizes>): LayoutTreeW
       return {
         t: 'rect',
         single: tree.single,
-        rect: { p: container.p, sz: container.sz },
+        rect: { p: vint(container.p), sz: vint(container.sz) },
       };
     }
     case 'name': {
