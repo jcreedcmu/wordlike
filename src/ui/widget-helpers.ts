@@ -24,7 +24,10 @@ const widgetTree = packVert(
   stretchRectY(1),
   centerX(
     nameRect('hand',
-      padHoriz(HAND_HORIZ_MARGIN,
+      packHoriz(
+        fixedRect({ y: 0, x: HAND_HORIZ_MARGIN }),
+        nameRect('pause', fixedRect({ x: DEFAULT_TILE_SCALE, y: DEFAULT_TILE_SCALE })),
+        fixedRect({ y: 0, x: HAND_HORIZ_MARGIN }),
         packVert(
           fixedRect({ x: 0, y: HAND_VERT_MARGIN }),
           nameRect('panic', { t: 'rect', single: { base: { x: 0, y: PANIC_THICK }, stretch: { x: 1, y: 0 } } }),
@@ -32,7 +35,9 @@ const widgetTree = packVert(
           nameRect('inner_hand',
             padRect(10,
               nameRect('hand_tiles', fixedRect({ x: HAND_TILE_LIMIT * DEFAULT_TILE_SCALE, y: DEFAULT_TILE_SCALE })))),
-        )))
+        ),
+        fixedRect({ y: 0, x: HAND_HORIZ_MARGIN }),
+      ))
   ),
   fixedRect({ x: 0, y: GLOBAL_BORDER }),
 );
@@ -78,10 +83,7 @@ export function effective_toolbar_bds_in_canvas(state: CoreState): Rect {
   }
 }
 
-export const pause_button_bds_in_canvas: Rect = {
-  p: { x: 0, y: canvas_bds_in_canvas.sz.y - TOOLBAR_WIDTH },
-  sz: { x: TOOLBAR_WIDTH, y: TOOLBAR_WIDTH }
-};
+export const pause_button_bds_in_canvas: Rect = rects['pause'];
 
 export const shuffle_button_bds_in_canvas: Rect = {
   p: {

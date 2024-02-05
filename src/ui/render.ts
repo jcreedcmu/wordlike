@@ -98,7 +98,7 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
 
   // Subtract a rounded path
   roundedPath(d, [
-    // top left, just to the right of toolbar
+    // top left, just to the bottom left of toolbar
     { x: tp.x + GLOBAL_BORDER, y: tq.y },
     { x: tq.x, y: tq.y },
     { x: tq.x, y: tp.y + GLOBAL_BORDER },
@@ -113,10 +113,9 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
     // bottom left of rack etc.
     { x: hand_bds_in_canvas.p.x, y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - GLOBAL_BORDER },
 
-    // bottom right of pause button
-    { x: pause_button_bds_in_canvas.p.x + pause_button_bds_in_canvas.sz.x, y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - GLOBAL_BORDER },
-    { x: pause_button_bds_in_canvas.p.x + pause_button_bds_in_canvas.sz.x, y: pause_button_bds_in_canvas.p.y },
-    { x: pause_button_bds_in_canvas.p.x + GLOBAL_BORDER, y: pause_button_bds_in_canvas.p.y },
+    // bottom left
+    { x: canvas_bds_in_canvas.p.x + GLOBAL_BORDER, y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - GLOBAL_BORDER },
+
   ], RAD);
 
   // Subtract another path for the panic bar. I'm going to want to draw a slow-changing
