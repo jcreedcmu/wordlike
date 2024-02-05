@@ -83,6 +83,7 @@ function drawToolbarCount(d: CanvasRenderingContext2D, rect: Rect, count: number
 }
 
 function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
+  const doBlank = state.slowState.winState.t == 'lost';
 
   clearRect(d, toolbar_bds_in_canvas);
 
@@ -118,9 +119,11 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
 
   ], RAD);
 
-  // Subtract another path for the panic bar. I'm going to want to draw a slow-changing
-  // gradient in html canvas over this gap, and let WebGL draw underneath it
-  pathRect(d, panic_bds_in_canvas);
+  if (!doBlank) {
+    // Subtract another path for the panic bar. I'm going to want to draw a slow-changing
+    // gradient in html canvas over this gap, and let WebGL draw underneath it
+    pathRect(d, panic_bds_in_canvas);
+  }
 
   d.fillStyle = backgroundGray;
   d.fill();
@@ -138,7 +141,7 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
   d.fill();
 
   // Draw gradient for panic bar
-  {
+  if (!doBlank) {
     // XXX Probably should hoist this gradient construction up
     const grad = d.createLinearGradient(panic_bds_in_canvas.p.x, panic_bds_in_canvas.p.y,
       panic_bds_in_canvas.p.x, panic_bds_in_canvas.p.y + panic_bds_in_canvas.sz.y);
@@ -450,16 +453,6 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
       d.fillText(`${formatTime(now_in_game(cs.game_from_clock))}`, clockLoc.x, clockLoc.y);
     }
 
-    // draw score
-    const scoreLoc: Point = midpointOfRect(score_bds_in_canvas);
-
-    d.fillStyle = '#fff';
-    d.textBaseline = 'middle';
-    d.textAlign = 'center';
-    const fontSize = 40;
-    d.font = `bold ${fontSize}px sans-serif`;
-    d.fillText(`${getScore(cs)}`, scoreLoc.x, scoreLoc.y);
-
     // draw panic bar
     if (!glEnabled) {
       if (cs.panic) {
@@ -495,11 +488,9 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
 
   clearRect(d, world_bds_in_canvas);
 
-  if (cs.slowState.winState.t != 'lost')
-    drawToolbar(d, cs);
-  else {
-    fillRect(d, toolbar_bds_in_canvas, backgroundGray);
-  }
+
+  drawToolbar(d, cs);
+
   drawPauseButton();
 
   if (!glEnabled) {
@@ -524,6 +515,18 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
   }
   drawShuffleButton();
   const mp = midpointOfRect(canvas_bds_in_canvas);
+
+
+  // draw score
+  const scoreLoc: Point = midpointOfRect(score_bds_in_canvas);
+  d.fillStyle = '#fff';
+  d.textBaseline = 'middle';
+  d.textAlign = 'center';
+  const fontSize = 40;
+  d.font = `bold ${fontSize}px sans-serif`;
+  d.fillText(`${getScore(cs)}`, scoreLoc.x, scoreLoc.y);
+
+
   if (cs.slowState.winState.t == 'lost') {
     d.textAlign = 'center';
     d.textBaseline = 'middle';
