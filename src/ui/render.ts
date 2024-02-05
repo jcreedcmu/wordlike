@@ -21,7 +21,7 @@ import { drawBonus } from './drawBonus';
 import { renderPanicBar } from './drawPanicBar';
 import { CanvasInfo } from './use-canvas';
 import { canvas_from_drag_tile, cell_in_canvas, drawBubble, pan_canvas_from_world_of_state } from './view-helpers';
-import { canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, effective_toolbar_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas, inner_hand_bds_in_canvas, panic_bds_in_canvas, pause_button_bds_in_canvas, score_bds_in_canvas, shuffle_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
+import { PANIC_THICK, canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, effective_toolbar_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas, inner_hand_bds_in_canvas, panic_bds_in_canvas, pause_button_bds_in_canvas, score_bds_in_canvas, shuffle_button_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
 
 export const GLOBAL_BORDER = 5;
 const interfaceCyanColor = 'rgb(0,255,255,0.5)';
@@ -87,7 +87,7 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
 
   const { p: tp, sz: ts } = effective_toolbar_bds_in_canvas(state);
   const tq = vadd(tp, ts);
-  const RAD = 2 * GLOBAL_BORDER;
+  const INTERFACE_RADIUS = 2 * GLOBAL_BORDER;
 
   // This is the main fill for the outer interface
   d.beginPath();
@@ -114,17 +114,22 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
     // bottom left
     { x: canvas_bds_in_canvas.p.x + GLOBAL_BORDER, y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - GLOBAL_BORDER },
 
-  ], RAD);
+  ], INTERFACE_RADIUS);
 
   d.fillStyle = backgroundGray;
   d.fill();
+
+  const PANIC_RADIUS = Math.min(INTERFACE_RADIUS, PANIC_THICK / 2);
 
   if (!hasLost) {
     // Subtract another path for the panic bar. I'm going to want to draw a slow-changing
     // gradient in html canvas over this gap, and let WebGL draw underneath it
     d.save();
     d.globalCompositeOperation = 'destination-out';
-    fillRect(d, panic_bds_in_canvas, 'rgba(0,0,0,1)');
+    d.beginPath();
+    roundedPath(d, allRectPts(panic_bds_in_canvas), PANIC_RADIUS);
+    d.fillStyle = 'rgba(0,0,0,1)';
+    d.fill();
     d.restore();
   }
 
@@ -149,7 +154,10 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
     grad.addColorStop(0.75, 'rgba(28, 29, 33, 0.375)');
     grad.addColorStop(1, 'rgba(28, 29, 33, 0.7)');
 
-    fillRect(d, panic_bds_in_canvas, grad);
+    d.beginPath();
+    roundedPath(d, allRectPts(panic_bds_in_canvas), PANIC_RADIUS);
+    d.fillStyle = grad;
+    d.fill();
   }
 
   const toolbar = getAssets().toolbarBuf.c;
@@ -314,6 +322,10 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
   }
 
   function drawPauseButton() {
+    // d.beginPath();
+    // roundedPath(d, allRectPts(pause_button_bds_in_canvas), INTERFACE_RADIUS);
+    // d.fillStyle = 'rgba(255,255,255,0.2)';
+    // d.fill();
     fillRect(d, pause_button_bds_in_canvas, 'rgba(255,255,255,0.2)');
     if (shouldDisplayBackButton(cs.slowState.winState)) {
       d.textAlign = 'center';
