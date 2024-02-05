@@ -173,14 +173,14 @@ export function getWidgetPoint(state: CoreState, p_in_canvas: Point): WidgetPoin
   }
   else if (!pointInRect(p_in_canvas, canvas_bds_in_canvas)
     // The reason for the following exception is this: If we
-    // drag to the *right* towards hand but then slip out of
+    // drag *down* towards hand but then slip out of
     // the canvas, we actually want to consider that in-hand to make
     // quick drops into the hand more Fitt's-law convenient.
     //
-    // What happens when p_in_canvas.x >= hand_bds_in_canvas.p.x is
+    // What happens when the following condition is false is
     // that we fall through to getDragWidgetPoint, and its default
     // when not in world is to say the point is in hand.
-    && p_in_canvas.x < hand_bds_in_canvas.p.x
+    && p_in_canvas.y < canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y
   ) {
     return { t: 'nowhere', p_in_canvas };
   }
@@ -189,7 +189,7 @@ export function getWidgetPoint(state: CoreState, p_in_canvas: Point): WidgetPoin
 }
 
 export function getDragWidgetPoint(state: CoreState, p_in_canvas: Point): DragWidgetPoint {
-  if (pointInRect(p_in_canvas, hand_bds_in_canvas)) {
+  if (pointInRect(p_in_canvas, hand_bds_in_canvas) || !pointInRect(p_in_canvas, canvas_bds_in_canvas)) {
     const p_in_local = apply(inverse(canvas_from_hand()), p_in_canvas);
     const p_in_hand_int = vint(p_in_local);
     const index = p_in_hand_int.x;
@@ -203,7 +203,7 @@ export function getDragWidgetPoint(state: CoreState, p_in_canvas: Point): DragWi
       indexValid,
     };
   }
-  else { // we must be in "world" if nothing else
+  else {
     return {
       t: 'world',
       p_in_local: apply(inverse(state.canvas_from_world), p_in_canvas),

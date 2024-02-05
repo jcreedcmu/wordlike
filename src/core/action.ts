@@ -37,8 +37,8 @@ export type GameLowAction =
   | { t: 'dragSelectionEnd', ms: MouseState & { t: 'drag_selection' } }
   | { t: 'set_canvas_from_world', canvas_from_world: SE2 }
   | { t: 'putTilesInWorld', moves: MoveTile[] }
-  | { t: 'putTilesInHandFromNotHand', ids: string[], ix: number }
-  | { t: 'putTileInHand', id: string, ix: number }
+  | { t: 'putTilesInHandFromNotHand', ids: string[], ix: number } // ix may be < 0 or >= handsize
+  | { t: 'putTileInHand', id: string, ix: number } // ix may be < 0 or >= handsize
   | { t: 'setSelected', sel: SelectionState | undefined }
   | { t: 'checkValid' } // XXX break this up into more low-level actions
   | { t: 'swap', id0: string, id1: string, loc0: Location, loc1: Location }

@@ -148,6 +148,7 @@ export function moveTiles(state: CoreState, moves: GenMoveTile[]): CoreState {
   return cs;
 }
 
+// ix may be < 0 or >= handsize
 export function putTileInHand(state: CoreState, id: string, ix: number): CoreState {
   const nowhere = putTileNowhere(state, id);
   const handTiles = get_hand_tiles(nowhere);
@@ -189,6 +190,7 @@ export function putTileNowhere(state: CoreState, id: string): CoreState {
   }
 }
 
+// ix may be < 0 or >= handsize
 export function putTilesInHandFromNotHand(state: CoreState, ids: string[], ix: number): CoreState {
   const handTiles = get_hand_tiles(state);
 

@@ -220,11 +220,6 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
       }
       else if (wp.t == 'hand') {
         const handTiles = get_hand_tiles(state.coreState);
-        const new_tile_in_hand_int: Point = vm(compose(
-          inverse(canvas_from_hand()),
-          canvas_from_drag_tile(state.coreState, ms)).translate,
-          Math.round);
-
         if (proposedHandDragOverLimit(state.coreState, state.mouseState)) {
           return bailout;
         }
@@ -234,7 +229,7 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
           return {
             t: 'multiple', actions: [
               { t: 'deselect' },
-              { t: 'putTilesInHandFromNotHand', ids: selectedIds, ix: new_tile_in_hand_int.y },
+              { t: 'putTilesInHandFromNotHand', ids: selectedIds, ix: wp.index },
               { t: 'checkValid' },
             ]
           };
@@ -242,7 +237,7 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
         else {
           return {
             t: 'multiple', actions: [
-              { t: 'putTileInHand', id: ms.id, ix: new_tile_in_hand_int.y },
+              { t: 'putTileInHand', id: ms.id, ix: wp.index },
               { t: 'checkValid' },
             ]
           };
