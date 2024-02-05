@@ -91,11 +91,12 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
   const tq = vadd(tp, ts);
   const RAD = 2 * GLOBAL_BORDER;
 
-  // global border
-
+  // This is the main fill for the outer interface
   d.beginPath();
+  // One positive path for the outer canvas rectangle
   pathRect(d, invertRect(canvas_bds_in_canvas));
 
+  // Subtract a rounded path
   roundedPath(d, [
     // top left, just to the right of toolbar
     { x: tp.x + GLOBAL_BORDER, y: tq.y },
@@ -117,6 +118,11 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
     { x: pause_button_bds_in_canvas.p.x + pause_button_bds_in_canvas.sz.x, y: pause_button_bds_in_canvas.p.y },
     { x: pause_button_bds_in_canvas.p.x + GLOBAL_BORDER, y: pause_button_bds_in_canvas.p.y },
   ], RAD);
+
+  // Subtract another path for the panic bar. I'm going to want to draw a slow-changing
+  // gradient in html canvas over this gap, and let WebGL draw underneath it
+  pathRect(d, panic_bds_in_canvas);
+
   d.fillStyle = backgroundGray;
   d.fill();
 
@@ -132,9 +138,16 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
   d.fillStyle = grad;
   d.fill();
 
-  // Draw space for panic bar
-  if (state.winState.t != 'lost' && state.panic) {
-    fillRect(d, panic_bds_in_canvas, 'black');
+  // Draw gradient for panic bar
+  {
+    // XXX Probably should hoist this gradient construction up
+    const grad = d.createLinearGradient(panic_bds_in_canvas.p.x, panic_bds_in_canvas.p.y,
+      panic_bds_in_canvas.p.x, panic_bds_in_canvas.p.y + panic_bds_in_canvas.sz.y);
+    grad.addColorStop(0, 'rgba(28, 29, 33, 0)');
+    grad.addColorStop(0.75, 'rgba(28, 29, 33, 0.375)');
+    grad.addColorStop(1, 'rgba(28, 29, 33, 0.7)');
+
+    fillRect(d, panic_bds_in_canvas, grad);
   }
 
   const toolbar = getAssets().toolbarBuf.c;

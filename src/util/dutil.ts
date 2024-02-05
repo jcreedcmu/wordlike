@@ -59,7 +59,7 @@ export function rrelpos(e: React.MouseEvent): Point {
   return vint({ x: e.clientX - rect.left, y: e.clientY - rect.top });
 }
 
-export function fillRect(d: CanvasRenderingContext2D, rect: Rect, color: string) {
+export function fillRect(d: CanvasRenderingContext2D, rect: Rect, color: string | CanvasGradient) {
   d.fillStyle = color;
   d.fillRect(rect.p.x, rect.p.y, rect.sz.x, rect.sz.y);
 }

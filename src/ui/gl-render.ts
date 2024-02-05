@@ -26,7 +26,7 @@ import { spriteLocOfMob } from "./sprite-sheet";
 import { resizeView } from "./ui-helpers";
 import { CanvasGlInfo } from "./use-canvas";
 import { canvas_from_drag_tile, cell_in_canvas, pan_canvas_from_world_of_state } from "./view-helpers";
-import { canvas_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas } from "./widget-helpers";
+import { canvas_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas, panic_bds_in_canvas } from "./widget-helpers";
 
 const shadowColorRgba: RgbaColor = [128, 128, 100, Math.floor(0.4 * 255)];
 
@@ -229,15 +229,22 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
     // draw animations
     drawAnimations(env, canvas_from_world, cs.animations, now_in_game(cs.game_from_clock));
 
+    // draw panic bar
+    if (!state.coreState.slowState.paused) {
+      if (state.coreState.winState.t != 'lost' && state.coreState.panic) {
+        const rr = renderPanicBar(state.coreState.panic, state.coreState.game_from_clock);
+        glFillRect(env, panic_bds_in_canvas, [0, 0, 0]);
+        glFillRect(env, rr.rect, rr.color);
+      }
+      else {
+        glFillRect(env, panic_bds_in_canvas, [128, 128, 128]);
+      }
+    }
+
     // draw miscellaneous html-canvas-rendered ui
     drawCanvas(env);
 
     if (!state.coreState.slowState.paused) {
-      // draw panic bar
-      if (state.coreState.winState.t != 'lost' && state.coreState.panic) {
-        const rr = renderPanicBar(state.coreState.panic, state.coreState.game_from_clock);
-        glFillRect(env, rr.rect, rr.color);
-      }
 
       // draw hand tiles
       get_hand_tiles(cs).forEach(tile => {
