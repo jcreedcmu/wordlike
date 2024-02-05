@@ -84,7 +84,7 @@ function killTileOfState(state: CoreState, wp: DragWidgetPoint, intent: KillInte
     case 'hand': {
       const index = wp.index;
       const hand_tiles = get_hand_tiles(state);
-      if (index != undefined && index >= 0 && index < hand_tiles.length) {
+      if (wp.indexValid && index >= 0 && index < hand_tiles.length) {
         const tile = hand_tiles[index];
         if (tile == undefined)
           return state;

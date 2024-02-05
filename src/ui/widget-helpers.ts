@@ -129,10 +129,13 @@ export type DragWidgetPoint =
     p_in_local: Point,
     p_in_canvas: Point,
     local_from_canvas: SE2,
-    // index into hand tiles. When undefined, it means the point was not in the proper hand area at all
-    // The number *is* allowed to be negative or beyond the last tile currently in the hand,
-    // so callers should do their own clamping if necessary
-    index: number | undefined
+    // When indexValid is false, it means the point was not precisely over the area where tiles go.
+    // Dropping tiles may prefer to tolerate this being false
+    indexValid: boolean,
+    // Effective index into hand tiles. The number *is* allowed to be
+    // negative or beyond the last tile currently in the hand, so
+    // callers should do their own clamping if necessary
+    index: number
   }
 
 export type WidgetPoint =
@@ -189,13 +192,15 @@ export function getDragWidgetPoint(state: CoreState, p_in_canvas: Point): DragWi
   if (pointInRect(p_in_canvas, hand_bds_in_canvas)) {
     const p_in_local = apply(inverse(canvas_from_hand()), p_in_canvas);
     const p_in_hand_int = vint(p_in_local);
-    const index = p_in_hand_int.y == 0 ? p_in_hand_int.x : undefined;
+    const index = p_in_hand_int.x;
+    const indexValid = p_in_hand_int.y == 0;
     return {
       t: 'hand',
       p_in_local,
       p_in_canvas,
       local_from_canvas: inverse(canvas_from_hand()),
-      index: index,
+      index,
+      indexValid,
     };
   }
   else { // we must be in "world" if nothing else

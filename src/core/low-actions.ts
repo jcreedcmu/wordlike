@@ -66,7 +66,7 @@ function reduceMouseDownInHand(state: GameState, wp: WidgetPoint & { t: 'hand' }
   if (tool == 'dynamite') return { t: 'mouseDownIntent', intent: dynamiteIntent, wp };
   else if (tool == 'bomb') return { t: 'mouseDownIntent', intent: bombIntent, wp };
   else {
-    const hoverTile = index != undefined && index >= 0 && index < tiles.length;
+    const hoverTile = wp.indexValid && index >= 0 && index < tiles.length;
     if (hoverTile) {
       return { t: 'startDragHandTile', index, wp };
     }
