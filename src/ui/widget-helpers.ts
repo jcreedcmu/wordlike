@@ -26,15 +26,17 @@ const widgetTree = packVert(
     nameRect('hand',
       packHoriz(
         fixedRect({ y: 0, x: HAND_HORIZ_MARGIN }),
-        nameRect('pause', fixedRect({ x: DEFAULT_TILE_SCALE, y: DEFAULT_TILE_SCALE })),
-        fixedRect({ y: 0, x: HAND_HORIZ_MARGIN }),
         packVert(
           fixedRect({ x: 0, y: HAND_VERT_MARGIN }),
           nameRect('panic', { t: 'rect', single: { base: { x: 0, y: PANIC_THICK }, stretch: { x: 1, y: 0 } } }),
           fixedRect({ x: 0, y: HAND_VERT_MARGIN }),
-          nameRect('inner_hand',
-            padRect(10,
-              nameRect('hand_tiles', fixedRect({ x: HAND_TILE_LIMIT * DEFAULT_TILE_SCALE, y: DEFAULT_TILE_SCALE })))),
+          packHoriz(
+            nameRect('pause', fixedRect({ x: DEFAULT_TILE_SCALE, y: DEFAULT_TILE_SCALE })),
+            fixedRect({ y: 0, x: HAND_HORIZ_MARGIN }),
+            nameRect('inner_hand',
+              padRect(10,
+                nameRect('hand_tiles', fixedRect({ x: HAND_TILE_LIMIT * DEFAULT_TILE_SCALE, y: DEFAULT_TILE_SCALE })))),
+          ),
         ),
         fixedRect({ y: 0, x: HAND_HORIZ_MARGIN }),
       ))
