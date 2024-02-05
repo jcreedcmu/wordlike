@@ -6,11 +6,12 @@ import { pointInRect } from "../util/util";
 import { vint } from "../util/vutil";
 
 export const HAND_WIDTH = 100;
+export const HAND_MARGIN = 32;
 
-export const canvas_bds_in_canvas: Rect = { p: { x: 0, y: 0 }, sz: { x: 800, y: 600 } };
+export const canvas_bds_in_canvas: Rect = { p: { x: 0, y: 0 }, sz: { x: 1024, y: 768 } };
 export const DEFAULT_TILE_SCALE = 48;
 
-const hand_bds_length = HAND_TILE_LIMIT * DEFAULT_TILE_SCALE;
+const hand_bds_length = HAND_TILE_LIMIT * DEFAULT_TILE_SCALE + 2 * HAND_MARGIN;
 
 export const hand_bds_in_canvas: Rect = {
   p: {
@@ -61,7 +62,7 @@ export const shuffle_button_bds_in_canvas: Rect = {
 export function canvas_from_hand(): SE2 {
   return {
     scale: { x: DEFAULT_TILE_SCALE, y: DEFAULT_TILE_SCALE },
-    translate: { x: hand_bds_in_canvas.p.x + (HAND_WIDTH - DEFAULT_TILE_SCALE) / 2, y: 0 }
+    translate: { y: hand_bds_in_canvas.p.y + (HAND_WIDTH - DEFAULT_TILE_SCALE) / 2, x: hand_bds_in_canvas.p.x + HAND_MARGIN }
   };
 }
 
@@ -140,24 +141,24 @@ export function getWidgetPoint(state: CoreState, p_in_canvas: Point): WidgetPoin
 }
 
 export function getDragWidgetPoint(state: CoreState, p_in_canvas: Point): DragWidgetPoint {
-  if (pointInRect(p_in_canvas, world_bds_in_canvas)) {
-    return {
-      t: 'world',
-      p_in_local: apply(inverse(state.canvas_from_world), p_in_canvas),
-      p_in_canvas,
-      local_from_canvas: inverse(state.canvas_from_world),
-    };
-  }
-  else {
+  if (pointInRect(p_in_canvas, hand_bds_in_canvas)) {
     const p_in_local = apply(inverse(canvas_from_hand()), p_in_canvas);
     const p_in_hand_int = vint(p_in_local);
-    const index = p_in_hand_int.x == 0 ? p_in_hand_int.y : undefined;
+    const index = p_in_hand_int.y == 0 ? p_in_hand_int.x : undefined;
     return {
       t: 'hand',
       p_in_local,
       p_in_canvas,
       local_from_canvas: inverse(canvas_from_hand()),
       index: index,
+    };
+  }
+  else { // we must be in "world" if nothing else
+    return {
+      t: 'world',
+      p_in_local: apply(inverse(state.canvas_from_world), p_in_canvas),
+      p_in_canvas,
+      local_from_canvas: inverse(state.canvas_from_world),
     };
   }
 }

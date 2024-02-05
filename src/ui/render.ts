@@ -170,7 +170,7 @@ function formatTime(x: number) {
 }
 
 export function canvas_from_hand_tile(index: number): SE2 {
-  return compose(canvas_from_hand(), translate({ x: 0, y: index }));
+  return compose(canvas_from_hand(), translate({ x: index, y: 0 }));
 }
 
 function drawWordBubble(ci: CanvasInfo, cs: CoreState, pan_canvas_from_world: SE2) {
