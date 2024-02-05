@@ -10,13 +10,15 @@ import { DEBUG } from '../util/debug';
 import { relpos } from '../util/dutil';
 import * as SE1 from '../util/se1';
 import { Point } from '../util/types';
-import { rawPaint } from './render';
+import { paintWithScale, rawPaint } from './render';
 import { resizeView } from './ui-helpers';
-import { CanvasInfo, useCanvas } from './use-canvas';
+import { CanvasInfo, useCanvas, useNonreactiveCanvasGl } from './use-canvas';
 import { produce } from '../util/produce';
 import { mkOverlay } from '../core/layer';
 import { Chunk } from '../core/chunk';
 import { drawBubble } from './view-helpers';
+import { GlEnv, glCopyCanvas } from './gl-common';
+import { glInitialize, renderGlPane } from './gl-render';
 
 export const NUM_PAGES = 2;
 
@@ -50,17 +52,87 @@ export function Instructions(props: { dispatch: Dispatch, page: number }): JSX.E
   });
 
 
+  function renderBubbles(ci: CanvasInfo, props: {}) {
+    const { d } = ci;
+    d.save();
+    d.scale(devicePixelRatio, devicePixelRatio);
+
+    drawBubble(d, `This is the origin.\nAll tiles must connect here, and\nthe tile cannot be moved once placed.`,
+      { x: 250, y: 100 }, { x: 170, y: 230 });
+
+    drawBubble(d, `This is your hand.\nDrag tiles from here to\nmake intersecting words.`,
+      { x: 470, y: 467 }, { x: 389, y: 734 });
+
+    drawBubble(d, `Click in this space (or hit [spacebar])\n to get more tiles.`,
+      { x: 670, y: 547 }, { x: 562, y: 734 });
+
+    drawBubble(d, `This is the panic bar. When it\nruns out, you lose!\nYou\x27re safe when your hand is\nempty, and all tiles form words.`,
+      { x: 263, y: 553 }, { x: 307, y: 682 });
+    d.restore();
+  }
+
+  function render(ci: CanvasInfo, props: CanvasProps) {
+    const { d } = ci;
+    d.save();
+    d.scale(devicePixelRatio, devicePixelRatio);
+    rawPaint(mc.current!, props.main, true);
+    d.restore();
+
+    glCopyCanvas(glmc.current!.env, ci.c);
+  }
+
   const state = exampleState();
+  const [glcref, glmc] = useNonreactiveCanvasGl<GlEnv>(ci => glInitialize(ci, dispatch))
   const [cref, mc] = useCanvas<CanvasProps>(
-    { main: state }, render, [state], ci => {
+    { main: state }, render, [state.coreState], ci => {
       dispatch({ t: 'resize', vd: resizeView(ci.c) });
     });
 
+  const [bubcref, bubmc] = useCanvas<{}>(
+    {}, renderBubbles, [], ci => {
+      dispatch({ t: 'resize', vd: resizeView(ci.c) });
+    });
+
+  setTimeout(() => {
+    renderGlPane(glmc.current!.ci, glmc.current!.env, state);
+  }, 0);
+
   if (page == 0) {
-    return <div>
+
+    const normalStyle: React.CSSProperties = {
+      cursor: 'pointer',
+      display: 'none',
+      zIndex: 1000,
+      position: 'absolute',
+      top: 0,
+      left: 0,
+    };
+    const glStyle: React.CSSProperties = {
+      cursor: 'pointer',
+      zIndex: 0,
+      position: 'absolute',
+      top: 0,
+      left: 0,
+    };
+    const bubbleCanvasStyle: React.CSSProperties = {
+      cursor: 'pointer',
+      zIndex: 2000,
+      position: 'absolute',
+      top: 0,
+      left: 0,
+    };
+
+    return <div className="inner-container">
       <canvas
-        style={{ cursor: 'pointer' }}
+        style={normalStyle}
         ref={cref} />
+      <canvas
+        style={glStyle}
+        ref={glcref} />
+      <canvas
+        style={bubbleCanvasStyle}
+        ref={bubcref} />
+
     </div>;
   }
   else if (page == 1) {
@@ -95,26 +167,6 @@ export function Instructions(props: { dispatch: Dispatch, page: number }): JSX.E
   else {
     throw new Error(`undefined instructions page ${page}`);
   }
-}
-
-function render(ci: CanvasInfo, props: CanvasProps) {
-  const { d } = ci;
-  d.save();
-  d.scale(devicePixelRatio, devicePixelRatio);
-  rawPaint(ci, props.main, false);
-
-  drawBubble(d, `This is the origin.\nAll tiles must connect here, and\nthe tile cannot be moved once placed.`,
-    { x: 250, y: 100 }, { x: 170, y: 230 });
-
-  drawBubble(d, `This is your hand.\nDrag tiles from here to\nmake intersecting words.`,
-    { x: 670, y: 197 }, { x: 732, y: 140 });
-
-  drawBubble(d, `Click in this space (or hit [spacebar])\n to get more tiles.`,
-    { x: 670, y: 347 }, { x: 732, y: 290 });
-
-  drawBubble(d, `This is the panic bar. When it\nruns out, you lose!\nYou\x27re safe when your hand is\nempty, and all tiles form words.`,
-    { x: 163, y: 453 }, { x: 301, y: 593 });
-  d.restore();
 }
 
 function exampleState(): GameState {
