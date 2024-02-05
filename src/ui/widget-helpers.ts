@@ -155,7 +155,7 @@ export function getWidgetPoint(state: CoreState, p_in_canvas: Point): WidgetPoin
       p_in_canvas,
     };
   }
-  if (pointInRect(p_in_canvas, shuffle_button_bds_in_canvas)) {
+  if (pointInRect(p_in_canvas, shuffle_button_bds_in_canvas) && state.slowState.winState.t != 'lost') {
     return {
       t: 'shuffleButton',
       p_in_canvas,

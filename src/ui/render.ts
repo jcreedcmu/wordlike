@@ -513,7 +513,6 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
     const illegalDrag = ms.t == 'drag_tile' && getWidgetPoint(cs, ms.p_in_canvas).t == 'hand' && proposedHandDragOverLimit(cs, ms);
     drawHand(illegalDrag);
   }
-  drawShuffleButton();
   const mp = midpointOfRect(canvas_bds_in_canvas);
 
 
@@ -534,6 +533,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
   }
   else {
     drawOtherUi(glEnabled);
+    drawShuffleButton();
     drawAnimations(now_in_game(cs.game_from_clock), glEnabled);
   }
   if (cs.slowState.winState.t == 'won') {
