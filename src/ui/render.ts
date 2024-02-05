@@ -392,7 +392,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
     d.restore();
   }
 
-  function drawOtherUi(glEnabled: boolean) {
+  function drawOtherUi() {
 
     // draw exchange guide
     if (ms.t == 'exchange_tiles') {
@@ -404,43 +404,8 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
       d.stroke();
     }
 
-    // draw dragged tile
-    if (!glEnabled) {
-      if (ms.t == 'drag_tile') {
-        if (cs.selected) {
-          const tile0 = getTileId(cs, ms.id);
-          const tiles = cs.selected.selectedIds.map(id => getTileId(cs, id));
-
-          // draw dragged tiles
-          tiles.forEach(tile => {
-            if (tile.loc.t == 'world' && tile0.loc.t == 'world') {
-              let drag_tile_from_other_tile = translate(vsub(tile.loc.p_in_world_int, tile0.loc.p_in_world_int));
-              if (ms.flipped) {
-                drag_tile_from_other_tile = {
-                  scale: drag_tile_from_other_tile.scale, translate: {
-                    x: drag_tile_from_other_tile.translate.y,
-                    y: drag_tile_from_other_tile.translate.x,
-                  }
-                };
-              }
-              drawTile(d,
-                compose(canvas_from_drag_tile(cs, ms), drag_tile_from_other_tile),
-                tile);
-            }
-          });
-        }
-        else {
-          // draw single tile
-          const tile = getTileId(cs, ms.id);
-          drawTile(d,
-            canvas_from_drag_tile(cs, state.mouseState),
-            tile);
-        }
-      }
-    }
-
-    // draw clock
-    if (!glEnabled) {
+    // XXX draw clock --- disabled for now
+    if (0) {
       const clockLoc: Point = {
         x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x - 10,
         y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - 24
@@ -451,14 +416,6 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
       const clockFontSize = 20;
       d.font = `bold ${clockFontSize}px sans-serif`;
       d.fillText(`${formatTime(now_in_game(cs.game_from_clock))}`, clockLoc.x, clockLoc.y);
-    }
-
-    // draw panic bar
-    if (!glEnabled) {
-      if (cs.panic) {
-        const rr = renderPanicBar(cs.panic, cs.game_from_clock);
-        fillRectRgb(d, rr.rect, rr.color)
-      }
     }
 
     // draw selection
@@ -491,7 +448,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
   const hasLost = lostState(cs);
 
   if (!hasLost)
-    drawOtherUi(glEnabled);
+    drawOtherUi();
 
   drawToolbar(d, cs);
 
@@ -503,9 +460,6 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
 
   drawWordBubble(ci, cs, pan_canvas_from_world);
 
-  if (!glEnabled)
-    drawShadows();
-
   // draw invalid words
   if (ms.t == 'up') {
     cs.slowState.invalidWords.forEach(lw => {
@@ -513,10 +467,6 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
     });
   }
 
-  if (!glEnabled) {
-    const illegalDrag = ms.t == 'drag_tile' && getWidgetPoint(cs, ms.p_in_canvas).t == 'hand' && proposedHandDragOverLimit(cs, ms);
-    drawHand(illegalDrag);
-  }
   const mp = midpointOfRect(canvas_bds_in_canvas);
 
 
