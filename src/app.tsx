@@ -175,6 +175,7 @@ export function Game(props: GameProps): JSX.Element {
     if (DEBUG.fastAnimation) {
       if (!going) {
         console.log('abandoning requestanimationframe loop');
+        return;
       }
       if (glmc.current) {
         renderGlPane(glmc.current.ci, glmc.current.env, stateRef.current);
