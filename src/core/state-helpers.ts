@@ -324,3 +324,7 @@ export function proposedHandDragOverLimit(state: CoreState, mouseState: MouseSta
 export function needsRefresh(state: MouseState): boolean {
   return state.t == 'drag_selection' || state.t == 'exchange_tiles';
 }
+
+export function lostState(state: CoreState): boolean {
+  return state.slowState.winState.t == 'lost';
+}

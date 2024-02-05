@@ -1,5 +1,5 @@
 import { Point, Rect } from "./types";
-import { vadd, vm, vm2, vscale, vsub } from "./vutil";
+import { vadd, vm, vm2, vm3, vmul, vscale, vsub } from "./vutil";
 
 export function mapval<T, U>(m: { [k: string]: T }, f: (x: T, k?: string) => U): { [k: string]: U } {
   return Object.fromEntries(Object.entries(m).map(([k, v]) => [k, f(v, k)]));
@@ -97,6 +97,13 @@ export function scaleRectToCenter(rect: Rect, s: number): Rect {
   return {
     p: vm2(rect.p, rect.sz, (p, sz) => (s * (p - (p + sz / 2)) + (p + sz / 2))),
     sz: vscale(rect.sz, s),
+  }
+}
+
+export function scaleRectToCenterPoint(rect: Rect, sf: Point): Rect {
+  return {
+    p: vm3(rect.p, rect.sz, sf, (p, sz, s) => (s * (p - (p + sz / 2)) + (p + sz / 2))),
+    sz: vmul(rect.sz, sf),
   }
 }
 

@@ -5,7 +5,7 @@ import { LocatedWord, getGrid } from '../core/grid';
 import { getOverlay } from '../core/layer';
 import { getScore } from '../core/scoring';
 import { CoreState, GameState, TileEntity } from '../core/state';
-import { pointFall, proposedHandDragOverLimit, tileFall } from '../core/state-helpers';
+import { lostState, pointFall, proposedHandDragOverLimit, tileFall } from '../core/state-helpers';
 import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from '../core/tile-helpers';
 import { BOMB_RADIUS, getCurrentTool, getCurrentTools, largeRectOfTool, rectOfTool } from '../core/tools';
 import { shouldDisplayBackButton } from '../core/winState';
@@ -14,7 +14,7 @@ import { clearRect, drawImage, fillRect, fillRectRgb, fillText, lineTo, moveTo, 
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from '../util/se2-extra';
 import { Point, Rect } from '../util/types';
-import { allRectPts, boundRect, insetRect, invertRect, midpointOfRect, rectPts, scaleRectToCenter } from '../util/util';
+import { allRectPts, boundRect, insetRect, invertRect, midpointOfRect, rectPts, scaleRectToCenter, scaleRectToCenterPoint } from '../util/util';
 import { vadd, vdiv, vequal, vm, vscale, vsub, vtrans } from '../util/vutil';
 import { drawAnimation } from './drawAnimation';
 import { drawBonus } from './drawBonus';
@@ -83,10 +83,7 @@ function drawToolbarCount(d: CanvasRenderingContext2D, rect: Rect, count: number
 }
 
 function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
-  const doBlank = state.slowState.winState.t == 'lost';
-
-  clearRect(d, toolbar_bds_in_canvas);
-
+  const hasLost = lostState(state);
 
   const { p: tp, sz: ts } = effective_toolbar_bds_in_canvas(state);
   const tq = vadd(tp, ts);
@@ -119,14 +116,17 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
 
   ], RAD);
 
-  if (!doBlank) {
-    // Subtract another path for the panic bar. I'm going to want to draw a slow-changing
-    // gradient in html canvas over this gap, and let WebGL draw underneath it
-    pathRect(d, panic_bds_in_canvas);
-  }
-
   d.fillStyle = backgroundGray;
   d.fill();
+
+  if (!hasLost) {
+    // Subtract another path for the panic bar. I'm going to want to draw a slow-changing
+    // gradient in html canvas over this gap, and let WebGL draw underneath it
+    d.save();
+    d.globalCompositeOperation = 'destination-out';
+    fillRect(d, panic_bds_in_canvas, 'rgba(0,0,0,1)');
+    d.restore();
+  }
 
   // Draw "inner hand"
   d.beginPath();
@@ -141,7 +141,7 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
   d.fill();
 
   // Draw gradient for panic bar
-  if (!doBlank) {
+  if (!hasLost) {
     // XXX Probably should hoist this gradient construction up
     const grad = d.createLinearGradient(panic_bds_in_canvas.p.x, panic_bds_in_canvas.p.y,
       panic_bds_in_canvas.p.x, panic_bds_in_canvas.p.y + panic_bds_in_canvas.sz.y);
@@ -488,6 +488,10 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
 
   clearRect(d, world_bds_in_canvas);
 
+  const hasLost = lostState(cs);
+
+  if (!hasLost)
+    drawOtherUi(glEnabled);
 
   drawToolbar(d, cs);
 
@@ -525,14 +529,13 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
   d.font = `bold ${fontSize}px sans-serif`;
   d.fillText(`${getScore(cs)}`, scoreLoc.x, scoreLoc.y);
 
-
-  if (cs.slowState.winState.t == 'lost') {
+  if (hasLost) {
     d.textAlign = 'center';
     d.textBaseline = 'middle';
-    fillText(d, 'You lost :(', mp, 'rgba(0,0,0,0.3)', '96px sans-serif');
+    fillRect(d, scaleRectToCenterPoint(canvas_bds_in_canvas, { x: 1, y: 0.3 }), 'rgba(0,0,0,0.5)');
+    fillText(d, 'YOU LOST', mp, 'rgba(128,0,0,1)', '96px serif');
   }
   else {
-    drawOtherUi(glEnabled);
     drawShuffleButton();
     drawAnimations(now_in_game(cs.game_from_clock), glEnabled);
   }
