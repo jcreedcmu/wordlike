@@ -320,11 +320,10 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
   }
 
   function drawPauseButton() {
-    // d.beginPath();
-    // roundedPath(d, allRectPts(pause_button_bds_in_canvas), INTERFACE_RADIUS);
-    // d.fillStyle = 'rgba(255,255,255,0.2)';
-    // d.fill();
-    fillRect(d, pause_button_bds_in_canvas, 'rgba(255,255,255,0.2)');
+    d.beginPath();
+    roundedPath(d, allRectPts(pause_button_bds_in_canvas), INTERFACE_RADIUS);
+    d.fillStyle = 'rgba(255,255,255,0.2)';
+    d.fill();
     if (shouldDisplayBackButton(cs.slowState.winState)) {
       d.textAlign = 'center';
       d.textBaseline = 'middle';
