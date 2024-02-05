@@ -6,7 +6,7 @@ import { Bonus } from "./bonus";
 import { getBonusFromLayer } from "./bonus-helpers";
 import { CacheUpdate, CoreState, GameState, HandTile, Location, MainTile, Tile, TileEntity, TileOptionalId } from "./state";
 import { GenMoveTile, MoveTile } from "./state-helpers";
-import { ensureId } from "./tile-id-helpers";
+import { addId, ensureId } from "./tile-id-helpers";
 
 export type TileId = string;
 
@@ -80,11 +80,17 @@ export function addWorldTile(state: Draft<CoreState>, tile: TileOptionalId): voi
   state._cacheUpdateQueue.push({ p_in_world_int: tile.p_in_world_int, chunkUpdate: { t: 'addTile', tile: { letter: tile.letter } } });
 }
 
+// Deprecated in favor of addHandTileEntity
 export function addHandTile(state: Draft<CoreState>, tile: Tile): void {
   const newTile: TileEntity = ensureId({
     id: tile.id,
     letter: tile.letter, loc: { t: 'hand', index: tile.p_in_world_int.y }
   });
+  state.tile_entities[newTile.id] = newTile;
+}
+
+export function addHandTileEntity(state: Draft<CoreState>, letter: string, index: number): void {
+  const newTile: TileEntity = addId({ letter, loc: { t: 'hand', index } });
   state.tile_entities[newTile.id] = newTile;
 }
 

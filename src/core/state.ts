@@ -78,6 +78,11 @@ export type TileEntity = {
   letter: string,
 };
 
+export type PreTileEntity = {
+  loc: Location,
+  letter: string,
+};
+
 export type MainTile = TileEntity & { loc: MainLoc };
 export type HandTile = TileEntity & { loc: HandLoc };
 

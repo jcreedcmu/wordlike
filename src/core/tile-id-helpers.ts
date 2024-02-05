@@ -1,10 +1,15 @@
-import { Tile, TileEntity, TileEntityOptionalId, TileOptionalId } from "./state";
+import { PreTileEntity, Tile, TileEntity, TileEntityOptionalId, TileOptionalId } from "./state";
 
 // FIXME: global counter
 let tileIdCounter = 1000;
 
 export function ensureId(tile: TileEntityOptionalId): TileEntity {
   const id = tile.id ?? `tile${tileIdCounter++}`;
+  return { ...tile, id };
+}
+
+export function addId(tile: PreTileEntity): TileEntity {
+  const id = `tile${tileIdCounter++}`;
   return { ...tile, id };
 }
 
