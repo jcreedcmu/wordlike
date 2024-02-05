@@ -17,11 +17,10 @@ export const PANIC_THICK = 10;
 export const canvas_bds_in_canvas: Rect = { p: { x: 0, y: 0 }, sz: { x: 1024, y: 768 } };
 export const DEFAULT_TILE_SCALE = 48;
 
-const HAND_WIDTH = DEFAULT_TILE_SCALE + 2 * HAND_VERT_PADDING + 2 * HAND_VERT_MARGIN + PANIC_THICK + GLOBAL_BORDER;
-const HAND_LENGTH = HAND_TILE_LIMIT * DEFAULT_TILE_SCALE + 2 * HAND_HORIZ_PADDING + 2 * HAND_HORIZ_MARGIN;
+const SHUFFLE_WIDTH = DEFAULT_TILE_SCALE + 2 * HAND_VERT_PADDING + 2 * HAND_VERT_MARGIN + PANIC_THICK + GLOBAL_BORDER;
 
 const pauseButton = packVert(
-  nameRect('pause', fixedRect(vdiag(DEFAULT_TILE_SCALE + 2 * HAND_VERT_PADDING))),
+  nameRect('pause', fixedRect(vdiag(DEFAULT_TILE_SCALE + 2 * HAND_VERT_PADDING - HAND_VERT_MARGIN))),
   fixedRect({ x: 0, y: HAND_VERT_MARGIN }),
 );
 const innerHand = nameRect('inner_hand',
@@ -52,7 +51,7 @@ const widgetTree = packVert(
         fixedRect({ y: 0, x: HAND_HORIZ_MARGIN }),
       ))
   ),
-  fixedRect({ x: 0, y: GLOBAL_BORDER }),
+  fixedRect({ x: 0, y: GLOBAL_BORDER / 2 }),
 );
 const rects = layout(canvas_bds_in_canvas, widgetTree);
 
@@ -101,10 +100,10 @@ export const pause_button_bds_in_canvas: Rect = rects['pause'];
 
 export const shuffle_button_bds_in_canvas: Rect = {
   p: {
-    x: canvas_bds_in_canvas.sz.x - HAND_WIDTH,
+    x: canvas_bds_in_canvas.sz.x - SHUFFLE_WIDTH,
     y: canvas_bds_in_canvas.sz.y - 1.9 * BAR_WIDTH - 10,
   },
-  sz: { x: HAND_WIDTH, y: BAR_WIDTH }
+  sz: { x: SHUFFLE_WIDTH, y: BAR_WIDTH }
 };
 
 export function canvas_from_hand(): SE2 {
