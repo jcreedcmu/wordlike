@@ -167,7 +167,7 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
           s.coreState = checkValid(newCs);
           s.mouseState = {
             t: 'drag_tile',
-            orig_loc: { t: 'hand', p_in_hand_int: { x: 0, y: 0 } }, // XXX: Seems like this orig_loc being wrong is harmless?
+            orig_loc: { t: 'hand', index: 0 }, // XXX: Seems like this orig_loc being wrong is harmless?
             id: res.newId,
             orig_p_in_canvas: wp.p_in_canvas,
             p_in_canvas: wp.p_in_canvas,

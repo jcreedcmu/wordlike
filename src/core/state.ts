@@ -63,7 +63,7 @@ export type TileOptionalId = {
 
 export const HAND_TILE_LIMIT = 10;
 
-export type HandLoc = { t: 'hand', p_in_hand_int: Point };
+export type HandLoc = { t: 'hand', index: number };
 export type MainLoc = { t: 'world', p_in_world_int: Point };
 export type NowhereLoc = { t: 'nowhere' };
 export type Location =

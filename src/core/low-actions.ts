@@ -103,7 +103,7 @@ function reduceShuffleButton(state: CoreState): CoreState {
     retries++;
   }
   const newLocs: { id: string, loc: Location & { t: 'hand' } }[] = hs.map((h, ix) => {
-    return { id: h.id, loc: { t: 'hand', p_in_hand_int: { x: 0, y: randomOrder[ix] } } };
+    return { id: h.id, loc: { t: 'hand', index: randomOrder[ix] } };
   });
   return produce(state, s => {
     newLocs.forEach(({ id, loc }) => { moveToHandLoc(s, id, loc); });
@@ -426,7 +426,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
         s.coreState.slowState.generation++;
         s.mouseState = {
           t: 'drag_tile',
-          orig_loc: { t: 'hand', p_in_hand_int: action.p_in_hand_int },
+          orig_loc: { t: 'hand', index: action.p_in_hand_int.y },
           id: tiles[action.p_in_hand_int.y].id,
           orig_p_in_canvas: action.wp.p_in_canvas,
           p_in_canvas: action.wp.p_in_canvas,

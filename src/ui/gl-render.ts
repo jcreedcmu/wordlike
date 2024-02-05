@@ -244,7 +244,7 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
       get_hand_tiles(cs).forEach(tile => {
         if (isSelectedForDrag(state, tile))
           return;
-        drawOneTile(env, tile.letter, canvas_from_hand_tile(tile.loc.p_in_hand_int.y));
+        drawOneTile(env, tile.letter, canvas_from_hand_tile(tile.loc.index));
       });
 
       // Here's where we draw dragged tiles in general

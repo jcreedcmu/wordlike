@@ -194,7 +194,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
   function canvas_from_tile(tile: TileEntity): SE2 {
     switch (tile.loc.t) {
       case 'hand':
-        return canvas_from_hand_tile(tile.loc.p_in_hand_int.y);
+        return canvas_from_hand_tile(tile.loc.index);
       case 'world':
         return compose(pan_canvas_from_world, translate(tile.loc.p_in_world_int));
       case 'nowhere':

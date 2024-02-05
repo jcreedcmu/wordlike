@@ -19,7 +19,7 @@ export type RenderableTile = {
 
 function tileOfTileEntity(tile: TileEntity): Tile {
   switch (tile.loc.t) {
-    case 'hand': return { letter: tile.letter, id: tile.id, p_in_world_int: tile.loc.p_in_hand_int };
+    case 'hand': return { letter: tile.letter, id: tile.id, p_in_world_int: { x: 0, y: tile.loc.index } };
     case 'world': return { letter: tile.letter, id: tile.id, p_in_world_int: tile.loc.p_in_world_int };
     case 'nowhere': throw new Error(`Trying to construct Tile out of nowhere tile`);
   }
@@ -68,7 +68,7 @@ export function get_hand_tiles(state: CoreState): HandTile[] {
       return [{ ...tile, loc }];
     else
       return [];
-  }).sort((a, b) => a.loc.p_in_hand_int.y - b.loc.p_in_hand_int.y);
+  }).sort((a, b) => a.loc.index - b.loc.index);
 }
 
 export function removeTile(state: CoreState, id: string): CoreState {
@@ -91,7 +91,7 @@ export function addWorldTile(state: Draft<CoreState>, tile: TileOptionalId): voi
 export function addHandTile(state: Draft<CoreState>, tile: Tile): void {
   const newTile: TileEntity = ensureId({
     id: tile.id,
-    letter: tile.letter, loc: { t: 'hand', p_in_hand_int: tile.p_in_world_int }
+    letter: tile.letter, loc: { t: 'hand', index: tile.p_in_world_int.y }
   });
   state.tile_entities[newTile.id] = newTile;
 }
@@ -169,9 +169,9 @@ export function putTileInHand(state: CoreState, id: string, ix: number): CoreSta
 
   return produce(nowhere, s => {
     for (let i = ix; i < handTiles.length; i++) {
-      setTileLoc(s, handTiles[i].id, { t: 'hand', p_in_hand_int: { x: 0, y: i + 1 } });
+      setTileLoc(s, handTiles[i].id, { t: 'hand', index: i + 1 });
     }
-    setTileLoc(s, id, { t: 'hand', p_in_hand_int: { x: 0, y: ix } });
+    setTileLoc(s, id, { t: 'hand', index: ix });
   });
 }
 
@@ -189,8 +189,8 @@ export function putTileNowhere(state: CoreState, id: string): CoreState {
       });
     case 'hand':
       return produce(state, s => {
-        for (let i = loc.p_in_hand_int.y; i < handTiles.length; i++) {
-          setTileLoc(s, handTiles[i].id, { t: 'hand', p_in_hand_int: { x: 0, y: i - 1 } });
+        for (let i = loc.index; i < handTiles.length; i++) {
+          setTileLoc(s, handTiles[i].id, { t: 'hand', index: i - 1 });
         }
         setTileLoc(s, id, { t: 'nowhere' });
       });
@@ -220,10 +220,10 @@ export function putTilesInHandFromNotHand(state: CoreState, ids: string[], ix: n
   return produce(state, s => {
     s._cacheUpdateQueue.push(...cacheUpdates);
     for (let i = ix; i < handTiles.length; i++) {
-      setTileLoc(s, handTiles[i].id, { t: 'hand', p_in_hand_int: { x: 0, y: i + ids.length } });
+      setTileLoc(s, handTiles[i].id, { t: 'hand', index: i + ids.length });
     }
     ids.forEach((id, moved_ix) => {
-      setTileLoc(s, id, { t: 'hand', p_in_hand_int: { x: 0, y: ix + moved_ix } });
+      setTileLoc(s, id, { t: 'hand', index: ix + moved_ix });
     });
   });
 }
