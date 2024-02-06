@@ -178,8 +178,9 @@ export function Game(props: GameProps): JSX.Element {
         return;
       }
       if (glmc.current) {
-        renderGlPane(glmc.current.ci, glmc.current.env, stateRef.current);
-        dispatch({ t: 'clearCacheUpdateQueue' });
+        const state = stateRef.current;
+        renderGlPane(glmc.current.ci, glmc.current.env, state);
+        dispatch({ t: 'popCacheUpdateQueue', n: state.coreState._cacheUpdateQueue.length });
       }
       window.requestAnimationFrame(intervalHandler);
     }

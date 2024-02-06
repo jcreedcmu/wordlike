@@ -296,7 +296,7 @@ export function getLowAction(state: GameState, action: GameAction): LowAction {
     case 'mouseUp': return gla(resolveMouseup(state, action.p));
     case 'mouseMove': return gla({ t: 'mouseMove', p: action.p });
     case 'tick': return gla({ t: 'tick' });
-    case 'clearCacheUpdateQueue': return gla({ t: 'clearCacheUpdateQueue' });
+    case 'popCacheUpdateQueue': return gla({ t: 'popCacheUpdateQueue', n: action.n });
   }
 }
 
@@ -377,13 +377,16 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
       const activeCanvasAnimation = cs.animations.some(x => isActiveCanvasAnimation(x));
       const newAnimations = filterExpiredAnimations(t_in_game, cs.animations);
       const [newWordBonusState, destroys] = filterExpiredWordBonusState(t_in_game, cs.wordBonusState);
+      const cacheUpdates: CacheUpdate[] = [];
       destroys.forEach(destroy_p => {
         newAnimations.push(mkPointDecayAnimation(destroy_p, cs.game_from_clock));
+        cacheUpdates.push({ p_in_world_int: destroy_p, chunkUpdate: { t: 'bonus', bonus: { t: 'empty' } } });
       });
       state = produce(state, s => {
-        if (activeCanvasAnimation) {
+        if (activeCanvasAnimation || cacheUpdates.length > 0) {
           s.coreState.slowState.generation++;
         }
+        s.coreState._cacheUpdateQueue.push(...cacheUpdates);
         s.coreState.animations = newAnimations;
         s.coreState.wordBonusState = newWordBonusState;
         destroys.forEach(destroy_p => {
@@ -509,9 +512,9 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
       });
     }
 
-    case 'clearCacheUpdateQueue': {
+    case 'popCacheUpdateQueue': {
       return produce(state, s => {
-        s.coreState._cacheUpdateQueue = []; // XXX is this safe? Should I specify number of dequeues instead?
+        s.coreState._cacheUpdateQueue.splice(0, action.n);
       });
     }
 

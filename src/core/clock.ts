@@ -16,7 +16,7 @@ export type PauseData = {
 }
 
 export const PANIC_INTERVAL_MS = DEBUG.acceleratePanic ? 10000 : 90000;
-export const WORD_BONUS_INTERVAL_MS = DEBUG.acceleratePanic ? 10000 : 300_000;
+export const WORD_BONUS_INTERVAL_MS = DEBUG.accelerateWordBonus ? 10000 : 300_000;
 
 export function getPanicFraction(panic: PanicData, game_from_clock: SE1) {
   return (now_in_game(game_from_clock) - panic.lastClear_in_game) / PANIC_INTERVAL_MS;
