@@ -60,6 +60,8 @@ export function cell_in_canvas(p: Point, canvas_from_world: SE2): Rect {
   return apply_to_rect(canvas_from_world, { p, sz: { x: 1, y: 1 } });
 }
 
+const fontSize = 12;
+
 export function drawBubble(
   d: CanvasRenderingContext2D,
   text: string,
@@ -69,13 +71,31 @@ export function drawBubble(
 ): void {
   if (progress !== undefined && progress > 1)
     return;
-  const fontSize = 12;
   const lines = text.split('\n');
   if (progress !== undefined) {
     lines.push('');
   }
   d.font = `${fontSize}px sans-serif`;
   const maxWidth = Math.max(...lines.map(line => d.measureText(line).width));
+  drawBubbleAux(d, lines, textCenter, coneApex, maxWidth, progress);
+
+  if (progress !== undefined) {
+    const maxp = { x: textCenter.x + maxWidth / 2, y: textCenter.y - fontSize / 2 + fontSize * lines.length };
+    const minp = { x: textCenter.x - maxWidth / 2, y: maxp.y - fontSize };
+    minp.x = progress * maxp.x + (1 - progress) * minp.x;
+    drawWordBonusPanicBar(d, { p: minp, sz: vsub(maxp, minp) }, progress);
+  }
+}
+
+export function drawBubbleAux(
+  d: CanvasRenderingContext2D,
+  lines: string[],
+  textCenter: Point,
+  coneApex: Point,
+  maxWidth: number,
+  progress: number | undefined = undefined,
+): void {
+  d.font = `${fontSize}px sans-serif`;
   const MARGIN = 8;
   const RADIUS = 5;
 
@@ -107,11 +127,5 @@ export function drawBubble(
 
   for (let i = 0; i < lines.length; i++) {
     d.fillText(lines[i], textCenter.x, textCenter.y + i * fontSize);
-  }
-  if (progress !== undefined) {
-    const maxp = { x: textCenter.x + maxWidth / 2, y: textCenter.y - fontSize / 2 + fontSize * lines.length };
-    const minp = { x: textCenter.x - maxWidth / 2, y: maxp.y - fontSize };
-    minp.x = progress * maxp.x + (1 - progress) * minp.x;
-    drawWordBonusPanicBar(d, { p: minp, sz: vsub(maxp, minp) }, progress);
   }
 }

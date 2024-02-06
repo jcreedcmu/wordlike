@@ -19,11 +19,12 @@ import { vadd, vdiv, vequal, vm, vscale, vsub, vtrans } from '../util/vutil';
 import { drawAnimation } from './drawAnimation';
 import { drawBonus } from './drawBonus';
 import { CanvasInfo } from './use-canvas';
-import { cell_in_canvas, drawBubble, pan_canvas_from_world_of_state } from './view-helpers';
+import { cell_in_canvas, drawBubble, drawBubbleAux, pan_canvas_from_world_of_state } from './view-helpers';
 import { GLOBAL_BORDER, PANIC_THICK, canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, effective_toolbar_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas, inner_hand_bds_in_canvas, panic_bds_in_canvas, pause_button_bds_in_canvas, score_bds_in_canvas, spacer1_bds_in_canvas, spacer2_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
 
 const INTERFACE_RADIUS = 2 * GLOBAL_BORDER;
 const PANIC_RADIUS = Math.min(INTERFACE_RADIUS, PANIC_THICK / 2);
+const FIXED_WORD_BUBBLE_SIZE = 100;
 
 const interfaceCyanColor = 'rgb(0,255,255,0.5)';
 const shadowColor = 'rgb(128,128,100,0.4)';
@@ -219,7 +220,7 @@ function drawWordBubble(ci: CanvasInfo, cs: CoreState, pan_canvas_from_world: SE
     if (cs.wordBonusState.shown !== undefined && vequal(cs.wordBonusState.shown, wordBonus.p_in_world_int)) {
       const apex_in_canvas = apply(pan_canvas_from_world, vadd(wordBonus.p_in_world_int, { x: 0.4, y: 0.4 }));
       const text_in_canvas = vadd({ x: -24, y: -24 }, apply(pan_canvas_from_world, vadd(wordBonus.p_in_world_int, { x: 0.4, y: 0 })));
-      drawBubble(ci.d, wordBonus.word.toUpperCase(), text_in_canvas, apex_in_canvas, 1);
+      drawBubbleAux(ci.d, [wordBonus.word.toUpperCase(), ''], text_in_canvas, apex_in_canvas, FIXED_WORD_BUBBLE_SIZE, 1);
     }
   }
 }
