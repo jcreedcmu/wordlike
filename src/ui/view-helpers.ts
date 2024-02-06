@@ -65,7 +65,7 @@ export function drawBubble(
   text: string,
   textCenter: Point,
   coneApex: Point,
-  progress: number | undefined = undefined
+  progress: number | undefined = undefined,
 ): void {
   if (progress !== undefined && progress > 1)
     return;
