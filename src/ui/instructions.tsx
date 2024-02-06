@@ -79,6 +79,7 @@ export function Instructions(props: { dispatch: Dispatch, page: number }): JSX.E
     d.restore();
 
     glCopyCanvas(glmc.current!.env, ci.c);
+    renderGlPane(glmc.current!.ci, glmc.current!.env, state);
   }
 
   const state = exampleState();
@@ -93,9 +94,6 @@ export function Instructions(props: { dispatch: Dispatch, page: number }): JSX.E
       dispatch({ t: 'resize', vd: resizeView(ci.c) });
     });
 
-  setTimeout(() => {
-    renderGlPane(glmc.current!.ci, glmc.current!.env, state);
-  }, 0);
 
   if (page == 0) {
 
