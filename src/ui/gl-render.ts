@@ -25,7 +25,7 @@ import { FIXED_WORD_BUBBLE_SIZE, canvas_from_hand_tile } from "./render";
 import { spriteLocOfMob } from "./sprite-sheet";
 import { resizeView } from "./ui-helpers";
 import { CanvasGlInfo } from "./use-canvas";
-import { BUBBLE_FONT_SIZE, canvas_from_drag_tile, cell_in_canvas, drawBubbleAux, pan_canvas_from_world_of_state } from "./view-helpers";
+import { BUBBLE_FONT_SIZE, canvas_from_drag_tile, cell_in_canvas, drawBubbleAux, pan_canvas_from_world_of_state, textCenterOfBubble } from "./view-helpers";
 import { canvas_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas, panic_bds_in_canvas } from "./widget-helpers";
 
 const shadowColorRgba: RgbaColor = [128, 128, 100, Math.floor(0.4 * 255)];
@@ -248,7 +248,7 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
       // draw word bubble progress bars
       for (const wordBonus of cs.wordBonusState.active) {
         if (cs.wordBonusState.shown !== undefined && vequal(cs.wordBonusState.shown, wordBonus.p_in_world_int)) {
-          const text_in_canvas = vadd({ x: -24, y: -24 }, apply(canvas_from_world, vadd(wordBonus.p_in_world_int, { x: 0.4, y: 0 })));
+          const text_in_canvas = textCenterOfBubble(canvas_from_world, wordBonus.p_in_world_int);
           const rr = wordBubblePanicRect(text_in_canvas, BUBBLE_FONT_SIZE, 2, FIXED_WORD_BUBBLE_SIZE, getWordBonusFraction(wordBonus, cs.game_from_clock));
           glFillRect(env, rr.rect, rr.color);
         }

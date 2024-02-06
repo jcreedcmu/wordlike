@@ -26,7 +26,6 @@ export function wordBubblePanicRect(textCenter: Point, lineHeight: number, lines
   return { rect: { p: minp, sz: vsub(maxp, minp) }, color: lerpSpline(panicColorSpline, progress) as RgbColor };
 }
 
-
 export function renderPanicBar(panic: PanicData, game_from_clock: SE1): RenderableRect {
   const panic_fraction = getPanicFraction(panic, game_from_clock);
 

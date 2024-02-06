@@ -14,7 +14,7 @@ export const DEBUG = {
   instructions: false,
   skipAheadPanic: false,
   acceleratePanic: false,
-  accelerateWordBonus: false,
+  accelerateWordBonus: true,
   interval: false,
   glProfiling: false,
   canvasProfiling: false,

@@ -1,5 +1,5 @@
 import { apply, compose, ident, inverse, SE2, translate } from '../util/se2';
-import { vm, vsub } from '../util/vutil';
+import { vadd, vm, vsub } from '../util/vutil';
 import { CoreState, GameState, MouseState } from '../core/state';
 import { Point, Rect } from '../util/types';
 import { getDragWidgetPoint, getWidgetPoint } from './widget-helpers';
@@ -126,4 +126,12 @@ export function drawBubbleAux(
   for (let i = 0; i < lines.length; i++) {
     d.fillText(lines[i], textCenter.x, textCenter.y + i * BUBBLE_FONT_SIZE);
   }
+}
+
+export function textCenterOfBubble(canvas_from_world: SE2, p_in_world_int: Point): Point {
+  return vadd({ x: -24, y: -24 }, apply(canvas_from_world, vadd(p_in_world_int, { x: 0.4, y: 0 })));
+}
+
+export function apexOfBubble(canvas_from_world: SE2, p_in_world_int: Point): Point {
+  return apply(canvas_from_world, vadd(p_in_world_int, { x: 0.4, y: 0.4 }));
 }
