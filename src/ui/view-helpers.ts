@@ -4,7 +4,7 @@ import { CoreState, GameState, MouseState } from '../core/state';
 import { Point, Rect } from '../util/types';
 import { getDragWidgetPoint, getWidgetPoint } from './widget-helpers';
 import { apply_to_rect, matchScale } from '../util/se2-extra';
-import { drawWordBonusPanicBar } from './drawPanicBar';
+import { drawRenderableRect, drawWordBonusPanicBar, wordBubblePanicRect } from './drawPanicBar';
 
 export function pan_canvas_from_canvas_of_mouse_state(state: MouseState): SE2 {
   if (state.t == 'drag_world') {
@@ -60,7 +60,8 @@ export function cell_in_canvas(p: Point, canvas_from_world: SE2): Rect {
   return apply_to_rect(canvas_from_world, { p, sz: { x: 1, y: 1 } });
 }
 
-const fontSize = 12;
+export const BUBBLE_FONT_SIZE = 12;
+
 
 export function drawBubble(
   d: CanvasRenderingContext2D,
@@ -75,15 +76,12 @@ export function drawBubble(
   if (progress !== undefined) {
     lines.push('');
   }
-  d.font = `${fontSize}px sans-serif`;
+  d.font = `${BUBBLE_FONT_SIZE}px sans-serif`;
   const maxWidth = Math.max(...lines.map(line => d.measureText(line).width));
   drawBubbleAux(d, lines, textCenter, coneApex, maxWidth, progress);
 
   if (progress !== undefined) {
-    const maxp = { x: textCenter.x + maxWidth / 2, y: textCenter.y - fontSize / 2 + fontSize * lines.length };
-    const minp = { x: textCenter.x - maxWidth / 2, y: maxp.y - fontSize };
-    minp.x = progress * maxp.x + (1 - progress) * minp.x;
-    drawWordBonusPanicBar(d, { p: minp, sz: vsub(maxp, minp) }, progress);
+    drawRenderableRect(d, wordBubblePanicRect(textCenter, BUBBLE_FONT_SIZE, lines.length, maxWidth, progress));
   }
 }
 
@@ -95,7 +93,7 @@ export function drawBubbleAux(
   maxWidth: number,
   progress: number | undefined = undefined,
 ): void {
-  d.font = `${fontSize}px sans-serif`;
+  d.font = `${BUBBLE_FONT_SIZE}px sans-serif`;
   const MARGIN = 8;
   const RADIUS = 5;
 
@@ -105,8 +103,8 @@ export function drawBubbleAux(
     d.lineWidth = thick;
     d.beginPath();
 
-    d.roundRect(textCenter.x - maxWidth / 2 - MARGIN, textCenter.y - fontSize / 2 - MARGIN,
-      maxWidth + MARGIN * 2, fontSize * lines.length + MARGIN * 2, RADIUS);
+    d.roundRect(textCenter.x - maxWidth / 2 - MARGIN, textCenter.y - BUBBLE_FONT_SIZE / 2 - MARGIN,
+      maxWidth + MARGIN * 2, BUBBLE_FONT_SIZE * lines.length + MARGIN * 2, RADIUS);
 
     const OFFSET = textCenter.y < coneApex.y ? 10 : -10;
     d.moveTo(textCenter.x - OFFSET, textCenter.y);
@@ -126,6 +124,6 @@ export function drawBubbleAux(
   d.textBaseline = 'middle';
 
   for (let i = 0; i < lines.length; i++) {
-    d.fillText(lines[i], textCenter.x, textCenter.y + i * fontSize);
+    d.fillText(lines[i], textCenter.x, textCenter.y + i * BUBBLE_FONT_SIZE);
   }
 }

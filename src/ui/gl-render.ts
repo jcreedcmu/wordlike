@@ -2,7 +2,7 @@ import { Dispatch } from "../core/action";
 import { Animation } from "../core/animations";
 import { getAssets } from "../core/assets";
 import { ActiveChunkInfo, Chunk, WORLD_CHUNK_SIZE, activeChunks, ensureChunk, getChunk, updateChunkCache } from "../core/chunk";
-import { now_in_game } from "../core/clock";
+import { getWordBonusFraction, now_in_game } from "../core/clock";
 import { mkOverlay } from "../core/layer";
 import { eff_mob_in_world } from "../core/mobs";
 import { CacheUpdate, CoreState, GameState, MobsState } from "../core/state";
@@ -12,20 +12,20 @@ import { BOMB_RADIUS, getCurrentTool } from "../core/tools";
 import { DEBUG, doOnce, doOnceEvery, logger } from "../util/debug";
 import { RgbColor, RgbaColor, imageDataOfBuffer } from "../util/dutil";
 import { bufferSetFloats } from "../util/gl-util";
-import { SE2, compose, inverse, mkSE2, scale, translate } from "../util/se2";
+import { SE2, apply, compose, inverse, mkSE2, scale, translate } from "../util/se2";
 import { apply_to_rect, asMatrix } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
 import { rectPts } from "../util/util";
-import { vadd, vdiag, vmul, vsub } from "../util/vutil";
+import { vadd, vdiag, vequal, vmul, vsub } from "../util/vutil";
 import { drawGlAnimation } from "./drawGlAnimation";
-import { renderPanicBar } from "./drawPanicBar";
+import { renderPanicBar, wordBubblePanicRect } from "./drawPanicBar";
 import { CANVAS_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, PREPASS_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, drawOneSprite, drawOneTile, mkBonusDrawer, mkCanvasDrawer, mkDebugQuadDrawer, mkPrepassHelper, mkRectDrawer, mkSpriteDrawer, mkTileDrawer, mkWorldDrawer } from "./gl-common";
 import { gl_from_canvas } from "./gl-helpers";
-import { canvas_from_hand_tile } from "./render";
+import { FIXED_WORD_BUBBLE_SIZE, canvas_from_hand_tile } from "./render";
 import { spriteLocOfMob } from "./sprite-sheet";
 import { resizeView } from "./ui-helpers";
 import { CanvasGlInfo } from "./use-canvas";
-import { canvas_from_drag_tile, cell_in_canvas, pan_canvas_from_world_of_state } from "./view-helpers";
+import { BUBBLE_FONT_SIZE, canvas_from_drag_tile, cell_in_canvas, drawBubbleAux, pan_canvas_from_world_of_state } from "./view-helpers";
 import { canvas_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas, panic_bds_in_canvas } from "./widget-helpers";
 
 const shadowColorRgba: RgbaColor = [128, 128, 100, Math.floor(0.4 * 255)];
@@ -245,6 +245,15 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
     drawCanvas(env);
 
     if (!state.coreState.slowState.paused) {
+      // draw word bubble progress bars
+      for (const wordBonus of cs.wordBonusState.active) {
+        if (cs.wordBonusState.shown !== undefined && vequal(cs.wordBonusState.shown, wordBonus.p_in_world_int)) {
+          const text_in_canvas = vadd({ x: -24, y: -24 }, apply(canvas_from_world, vadd(wordBonus.p_in_world_int, { x: 0.4, y: 0 })));
+          const rr = wordBubblePanicRect(text_in_canvas, BUBBLE_FONT_SIZE, 2, FIXED_WORD_BUBBLE_SIZE, getWordBonusFraction(wordBonus, cs.game_from_clock));
+          glFillRect(env, rr.rect, rr.color);
+        }
+
+      }
 
       // draw hand tiles
       get_hand_tiles(cs).forEach(tile => {

@@ -3,8 +3,8 @@ import { ActiveWordBonus } from "../core/state";
 import { RgbColor, fillRect } from "../util/dutil";
 import { SE1 } from "../util/se1";
 import { Spline, lerpSpline } from "../util/spline";
-import { Rect } from "../util/types";
-import { RenderableRect } from "./render";
+import { Point, Rect } from "../util/types";
+import { vsub } from "../util/vutil";
 import { canvas_bds_in_canvas, rectOfPanic_in_canvas } from "./widget-helpers";
 
 
@@ -16,6 +16,15 @@ const panicColorSpline: Spline = [
   { t: 0.75, vec: [255, 128, 0] },
   { t: 1, vec: [255, 0, 0] },
 ]
+
+export type RenderableRect = { rect: Rect, color: [number, number, number] };
+
+export function wordBubblePanicRect(textCenter: Point, lineHeight: number, lines: number, maxWidth: number, progress: number): RenderableRect {
+  const maxp = { x: textCenter.x + maxWidth / 2, y: textCenter.y - lineHeight / 2 + lineHeight * lines };
+  const minp = { x: textCenter.x - maxWidth / 2, y: maxp.y - lineHeight };
+  minp.x = progress * maxp.x + (1 - progress) * minp.x;
+  return { rect: { p: minp, sz: vsub(maxp, minp) }, color: lerpSpline(panicColorSpline, progress) as RgbColor };
+}
 
 
 export function renderPanicBar(panic: PanicData, game_from_clock: SE1): RenderableRect {
@@ -34,4 +43,10 @@ export function drawWordBonusPanicBar(d: CanvasRenderingContext2D, rect: Rect, f
   const c = lerpSpline(panicColorSpline, fraction);
   const color = `rgb(${c[0]},${c[1]},${c[2]})`;
   fillRect(d, rect, color);
+}
+
+export function drawRenderableRect(d: CanvasRenderingContext2D, rr: RenderableRect) {
+  const c = rr.color;
+  const color = `rgb(${c[0]},${c[1]},${c[2]})`;
+  fillRect(d, rr.rect, color);
 }

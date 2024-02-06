@@ -24,14 +24,13 @@ import { GLOBAL_BORDER, PANIC_THICK, canvas_bds_in_canvas, canvas_from_hand, can
 
 const INTERFACE_RADIUS = 2 * GLOBAL_BORDER;
 const PANIC_RADIUS = Math.min(INTERFACE_RADIUS, PANIC_THICK / 2);
-const FIXED_WORD_BUBBLE_SIZE = 100;
+export const FIXED_WORD_BUBBLE_SIZE = 100;
 
 const interfaceCyanColor = 'rgb(0,255,255,0.5)';
 const shadowColor = 'rgb(128,128,100,0.4)';
 const backgroundGray = '#595959';
 const backgroundRed = '#ffaaaa';
 
-export type RenderableRect = { rect: Rect, color: [number, number, number] };
 
 
 const DRAW_TILE_SHADOWS = false;
