@@ -83,7 +83,7 @@ function drawToolbarCount(d: CanvasRenderingContext2D, rect: Rect, count: number
   fillText(d, countTxt, vadd(midpointOfRect(newRect), { x: 0, y: 1 }), 'white', `bold ${fontSize}px sans-serif`);
 }
 
-function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
+function drawUiFrame(d: CanvasRenderingContext2D, state: CoreState): void {
   const hasLost = lostState(state);
 
   const { p: tp, sz: ts } = effective_toolbar_bds_in_canvas(state);
@@ -161,6 +161,7 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState): void {
     d.fill();
   }
 
+  // Draw toolbar
   const toolbar = getAssets().toolbarBuf.c;
   d.imageSmoothingEnabled = true;
 
@@ -254,6 +255,8 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
     }
   }
 
+  // this is sort of deprecated, but I'm leaving it here for now,
+  // because it's useful for GL-cache debugging purposes
   function drawWorld() {
     fillRect(d, world_bds_in_canvas, 'white');
 
@@ -454,7 +457,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
   if (!hasLost)
     drawOtherUi();
 
-  drawToolbar(d, cs);
+  drawUiFrame(d, cs);
 
   drawPauseButton();
 
@@ -462,6 +465,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
     drawWorld();
   }
 
+  // XXX deprecated
   drawWordBubble(ci, cs, pan_canvas_from_world);
 
   // draw invalid words
