@@ -1,4 +1,5 @@
 import { Color, Point, Rect } from './types';
+import { allRectPts } from './util';
 import { vadd, vint, vm, vscale, vsub, vunit } from './vutil';
 
 export type Buffer = {
@@ -168,4 +169,11 @@ export function roundedPath(d: CanvasRenderingContext2D, points: Point[], radius
     lineTo(d, pre[i]);
     arcTo(d, points[i], post[i], radius);
   }
+}
+
+export function fillRoundRect(d: CanvasRenderingContext2D, rect: Rect, radius: number, color: string | CanvasGradient) {
+  d.beginPath();
+  roundedPath(d, allRectPts(rect), radius);
+  d.fillStyle = color;
+  d.fill();
 }

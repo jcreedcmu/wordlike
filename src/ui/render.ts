@@ -10,7 +10,7 @@ import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from '..
 import { BOMB_RADIUS, getCurrentTool, getCurrentTools, largeRectOfTool } from '../core/tools';
 import { shouldDisplayBackButton } from '../core/winState';
 import { DEBUG, doOnceEvery } from '../util/debug';
-import { clearRect, drawImage, fillRect, fillText, lineTo, moveTo, pathRect, pathRectCircle, roundedPath, strokeRect } from '../util/dutil';
+import { clearRect, drawImage, fillRect, fillRoundRect, fillText, lineTo, moveTo, pathRect, pathRectCircle, roundedPath, strokeRect } from '../util/dutil';
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from '../util/se2-extra';
 import { Point, Rect } from '../util/types';
@@ -18,6 +18,7 @@ import { allRectPts, boundRect, insetRect, invertRect, midpointOfRect, scaleRect
 import { vadd, vdiv, vequal, vm, vscale, vsub, vtrans } from '../util/vutil';
 import { drawAnimation } from './drawAnimation';
 import { drawBonus } from './drawBonus';
+import { wordBubbleRect } from './drawPanicBar';
 import { CanvasInfo } from './use-canvas';
 import { apexOfBubble, cell_in_canvas, drawBubble, drawBubbleAux, pan_canvas_from_world_of_state, textCenterOfBubble } from './view-helpers';
 import { GLOBAL_BORDER, PANIC_THICK, canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, effective_toolbar_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas, inner_hand_bds_in_canvas, panic_bds_in_canvas, pause_button_bds_in_canvas, score_bds_in_canvas, spacer1_bds_in_canvas, spacer2_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
@@ -215,14 +216,19 @@ export function canvas_from_hand_tile(index: number): SE2 {
   return compose(canvas_from_hand(), translate({ x: index, y: 0 }));
 }
 
-function drawWordBubble(ci: CanvasInfo, cs: CoreState, pan_canvas_from_world: SE2) {
-  for (const wordBonus of cs.wordBonusState.active) {
-    if (cs.wordBonusState.shown !== undefined && vequal(cs.wordBonusState.shown, wordBonus.p_in_world_int)) {
-      const apex_in_canvas = apexOfBubble(pan_canvas_from_world, wordBonus.p_in_world_int);
-      const text_in_canvas = textCenterOfBubble(pan_canvas_from_world, wordBonus.p_in_world_int);
-      drawBubbleAux(ci.d, [wordBonus.word.toUpperCase(), ''], text_in_canvas, apex_in_canvas, FIXED_WORD_BUBBLE_SIZE, 1);
-    }
-  }
+
+function drawWordBubbles(ci: CanvasInfo, cs: CoreState, pan_canvas_from_world: SE2) {
+  const { d } = ci;
+
+  cs.wordBonusState.active.forEach((wordBonus, i) => {
+    const rect = wordBubbleRect(i);
+    fillRoundRect(d, rect, INTERFACE_RADIUS, backgroundGray);
+    const font = ` bold 14px sans-serif`;
+    d.textBaseline = 'middle';
+    d.textAlign = 'left';
+    (d as any).letterSpacing = '2px';
+    fillText(d, wordBonus.word.toUpperCase(), vadd(rect.p, { y: rect.sz.y / 2, x: 10 }), 'white', font);
+  });
 }
 
 export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
@@ -326,10 +332,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
   }
 
   function drawPauseButton() {
-    d.beginPath();
-    roundedPath(d, allRectPts(pause_button_bds_in_canvas), INTERFACE_RADIUS);
-    d.fillStyle = 'rgba(255,255,255,0.2)';
-    d.fill();
+    fillRoundRect(d, pause_button_bds_in_canvas, INTERFACE_RADIUS, 'rgba(255,255,255,0.2)');
     if (shouldDisplayBackButton(cs.slowState.winState)) {
       d.textAlign = 'center';
       d.textBaseline = 'middle';
@@ -465,8 +468,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
     drawWorld();
   }
 
-  // XXX deprecated
-  drawWordBubble(ci, cs, pan_canvas_from_world);
+  drawWordBubbles(ci, cs, pan_canvas_from_world);
 
   // draw invalid words
   if (ms.t == 'up') {

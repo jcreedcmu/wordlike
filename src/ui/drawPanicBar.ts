@@ -4,8 +4,8 @@ import { RgbColor, fillRect } from "../util/dutil";
 import { SE1 } from "../util/se1";
 import { Spline, lerpSpline } from "../util/spline";
 import { Point, Rect } from "../util/types";
-import { vsub } from "../util/vutil";
-import { canvas_bds_in_canvas, rectOfPanic_in_canvas } from "./widget-helpers";
+import { vadd, vscale, vsub } from "../util/vutil";
+import { canvas_bds_in_canvas, hand_bds_in_canvas, rectOfPanic_in_canvas } from "./widget-helpers";
 
 
 const flashColor: RgbColor = [255, 0, 0];
@@ -18,6 +18,16 @@ const panicColorSpline: Spline = [
 ]
 
 export type RenderableRect = { rect: Rect, color: [number, number, number] };
+
+const WORD_BONUS_MARGIN = 8;
+const WORD_BONUS_SIZE = { x: 200, y: 32 };
+
+export function wordBubbleRect(index: number): Rect {
+  return {
+    p: vadd(hand_bds_in_canvas.p, vscale({ x: 0, y: WORD_BONUS_MARGIN + WORD_BONUS_SIZE.y }, -(index + 1))),
+    sz: WORD_BONUS_SIZE
+  };
+}
 
 export function wordBubblePanicRect(textCenter: Point, lineHeight: number, lines: number, maxWidth: number, progress: number): RenderableRect {
   const maxp = { x: textCenter.x + maxWidth / 2, y: textCenter.y - lineHeight / 2 + lineHeight * lines };
