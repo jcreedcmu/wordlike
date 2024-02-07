@@ -6,6 +6,7 @@ import { Animation, mkExplosionAnimation } from './animations';
 import { getBonusFromLayer, updateBonusLayer } from "./bonus-helpers";
 import { KillIntent } from './intent';
 import { getScore, incrementScore } from "./scoring";
+import { deselect } from "./selection";
 import { CoreState, MainTile } from "./state";
 import { checkValid } from './state-helpers';
 import { get_hand_tiles, get_main_tiles, removeTile } from "./tile-helpers";
@@ -49,7 +50,7 @@ function killTileOfState(state: CoreState, wp: DragWidgetPoint, intent: KillInte
 
   // Definitely want to clear the selection, because invariants get
   // violated if a tileId gets deleted but remains in the selection
-  state = produce(state, s => { s.selected = undefined; });
+  state = deselect(state);
 
   switch (wp.t) {
     case 'world': {
