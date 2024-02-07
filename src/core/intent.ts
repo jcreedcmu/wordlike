@@ -21,7 +21,6 @@ export type Intent =
   | { t: 'exchangeTiles', id: string }
   | { t: 'startSelection', opn: SelectionOperation }
   | { t: 'copy' }
-  | { t: 'setShownWordBonus', p_in_world_int: Point }
   | KillIntent
   ;
 
@@ -46,11 +45,6 @@ export function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number
           return { t: 'dragTile', id: hoverTile.id };
         }
       }
-      else {
-        if (hoverCell.t == 'bonus' && hoverCell.bonus.t == 'word' && wp.t == 'world') {
-          return { t: 'setShownWordBonus', p_in_world_int: vint(wp.p_in_local) };
-        }
-      }
       return { t: 'startSelection', opn: selectionOperationOfMods(mods) };
     case 'hand': return { t: 'panWorld' };
     case 'dynamite':
@@ -70,11 +64,6 @@ export function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number
 }
 
 export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint): GameState {
-
-  // Eagerly clear shown state
-  if (intent.t !== 'setShownWordBonus') {
-    state = produce(state, s => { s.coreState.wordBonusState.shown = undefined; });
-  }
 
   switch (intent.t) {
     case 'dragTile': {
@@ -180,11 +169,5 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
         return state;
       }
     }
-
-    case 'setShownWordBonus':
-      return produce(state, s => {
-        s.coreState.slowState.generation++;
-        s.coreState.wordBonusState.shown = intent.p_in_world_int;
-      });
   }
 }

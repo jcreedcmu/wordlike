@@ -153,7 +153,6 @@ export function resolveScoring(state: CoreState, scoring: Scoring): CoreState {
       };
       return produce(state1, s => {
         s._cacheUpdateQueue.push(cacheUpdate);
-        s.wordBonusState.shown = wordBonus.p_in_world_int;
         s.wordBonusState.active.push(wordBonus);
       });
     }

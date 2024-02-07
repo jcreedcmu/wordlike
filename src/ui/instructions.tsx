@@ -192,7 +192,6 @@ function exampleState(): GameState {
         winState: { t: 'playing' },
       },
       wordBonusState: {
-        shown: undefined,
         active: [],
         numAllocated: 0,
       },

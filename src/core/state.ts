@@ -105,7 +105,6 @@ export type ActiveWordBonus = {
 
 export type WordBonusState = {
   numAllocated: number,
-  shown: Point | undefined,
   active: ActiveWordBonus[],
 }
 
@@ -195,7 +194,6 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
         winState: { t: creative ? 'creative' : 'playing' },
       },
       wordBonusState: {
-        shown: undefined,
         active: [],
         numAllocated: 0,
       },
