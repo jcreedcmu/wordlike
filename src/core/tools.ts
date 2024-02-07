@@ -1,4 +1,4 @@
-import { largeSpriteLocOfTool, largeSpriteRectOfPos, spriteLocOfTool, spriteRectOfPos } from "../ui/sprite-sheet";
+import { largeSpriteLoc, largeSpriteRectOfPos, spriteLocOfTool, spriteRectOfPos } from "../ui/sprite-sheet";
 import { produce } from "../util/produce";
 import { Rect } from "../util/types";
 import { GameLowAction } from "./action";
@@ -24,6 +24,12 @@ const tools = [
 ] as const;
 
 export type Tool = (typeof tools)[number];
+
+const resources = [
+  'wood'
+] as const;
+
+export type Resource = (typeof resources)[number];
 
 export function toolOfIndex(index: number): Tool | undefined {
   return tools[index];
@@ -71,12 +77,23 @@ export function getCurrentTools(state: CoreState): Tool[] {
   return tools;
 }
 
+export function getCurrentResources(state: CoreState): Resource[] {
+  if (state.slowState.winState.t == 'lost') {
+    return [];
+  }
+  const resources: Resource[] = [];
+  if (state.slowState.resource.wood > 0) {
+    resources.push('wood');
+  }
+  return resources;
+}
+
 export function rectOfTool(tool: Tool): Rect {
   return spriteRectOfPos(spriteLocOfTool(tool));
 }
 
 export function largeRectOfTool(tool: Tool): Rect {
-  return largeSpriteRectOfPos(largeSpriteLocOfTool(tool));
+  return largeSpriteRectOfPos(largeSpriteLoc(tool));
 }
 
 export function reduceToolSelect(state: CoreState, tool: Tool): GameLowAction {

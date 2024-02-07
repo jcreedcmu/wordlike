@@ -117,10 +117,15 @@ export type InventoryItems = {
   times: number,
 };
 
+export type ResourceItems = {
+  wood: number,
+};
+
 // state such that, if it updates, should induce redraw of Canvas2d content
 export type SlowState = {
   generation: number, // an arbitrary mechanism for forcing a redraw
   inventory: InventoryItems,
+  resource: ResourceItems,
   scoring: ScoreState,
   currentTool: Tool,
   invalidWords: LocatedWord[],
@@ -187,6 +192,9 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
           consonants: 0,
           copies: 0,
           times: 0,
+        },
+        resource: {
+          wood: 0,
         },
         scoring: { score: 0, highWaterMark: 0 },
         currentTool: 'pointer',

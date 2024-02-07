@@ -182,6 +182,9 @@ function exampleState(): GameState {
           copies: 0,
           times: 0,
         },
+        resource: {
+          wood: 0,
+        },
         scoring: {
           score: 7,
           highWaterMark: 7,

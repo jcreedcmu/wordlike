@@ -21,7 +21,7 @@ import { drawBonus } from './drawBonus';
 import { wordBubblePanicBounds, wordBubblePanicRect, wordBubbleRect } from './drawPanicBar';
 import { CanvasInfo } from './use-canvas';
 import { apexOfBubble, cell_in_canvas, drawBubble, drawBubbleAux, pan_canvas_from_world_of_state, textCenterOfBubble } from './view-helpers';
-import { GLOBAL_BORDER, PANIC_THICK, canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, effective_toolbar_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas, inner_hand_bds_in_canvas, panic_bds_in_canvas, pause_button_bds_in_canvas, score_bds_in_canvas, spacer1_bds_in_canvas, spacer2_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
+import { GLOBAL_BORDER, PANIC_THICK, canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, effective_resbar_bds_in_canvas, effective_toolbar_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas, inner_hand_bds_in_canvas, panic_bds_in_canvas, pause_button_bds_in_canvas, score_bds_in_canvas, spacer1_bds_in_canvas, spacer2_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
 
 const INTERFACE_RADIUS = 2 * GLOBAL_BORDER;
 const PANIC_RADIUS = Math.min(INTERFACE_RADIUS, PANIC_THICK / 2);
@@ -88,12 +88,23 @@ function drawUiFrame(d: CanvasRenderingContext2D, state: CoreState): void {
   const hasLost = lostState(state);
 
   const { p: tp, sz: ts } = effective_toolbar_bds_in_canvas(state);
+  const { p: rp, sz: rs } = effective_resbar_bds_in_canvas(state);
   const tq = vadd(tp, ts);
+  const rq = vadd(rp, rs);
 
   // This is the main fill for the outer interface
   d.beginPath();
   // One positive path for the outer canvas rectangle
   pathRect(d, invertRect(canvas_bds_in_canvas));
+
+  const resbarPts: Point[] = rs.y > 0
+    ? [
+      // top right, just to top left of resbar
+      { x: rp.x, y: rp.y + GLOBAL_BORDER },
+      { x: rp.x, y: rq.y },
+      { x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x - GLOBAL_BORDER, y: rq.y }
+    ]
+    : [{ x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x - GLOBAL_BORDER, y: tp.y + GLOBAL_BORDER }];
 
   // Subtract a rounded path
   roundedPath(d, [
@@ -101,8 +112,7 @@ function drawUiFrame(d: CanvasRenderingContext2D, state: CoreState): void {
     { x: tp.x + GLOBAL_BORDER, y: tq.y },
     { x: tq.x, y: tq.y },
     { x: tq.x, y: tp.y + GLOBAL_BORDER },
-    // top right
-    { x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x - GLOBAL_BORDER, y: tp.y + GLOBAL_BORDER },
+    ...resbarPts,
     // bottom right
     { x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x - GLOBAL_BORDER, y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - GLOBAL_BORDER },
     // bottom right of rack etc.

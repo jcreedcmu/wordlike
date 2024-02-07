@@ -1,5 +1,5 @@
 import { CoreState, HAND_TILE_LIMIT } from "../core/state";
-import { Tool, getCurrentTools } from "../core/tools";
+import { Tool, getCurrentResources, getCurrentTools } from "../core/tools";
 import { SE2, apply, inverse } from "../util/se2";
 import { Point, Rect } from "../util/types";
 import { lerp, mapval, pixelSnapRect, pointInRect } from "../util/util";
@@ -98,6 +98,14 @@ export function effective_toolbar_bds_in_canvas(state: CoreState): Rect {
   return {
     p: { x: 0, y: 0 },
     sz: { x: TOOLBAR_WIDTH, y: Math.min(numTools * TOOLBAR_WIDTH, canvas_bds_in_canvas.sz.y) }
+  }
+}
+
+export function effective_resbar_bds_in_canvas(state: CoreState): Rect {
+  const numRes = getCurrentResources(state).length;
+  return {
+    p: { x: canvas_bds_in_canvas.sz.x - TOOLBAR_WIDTH, y: 0 },
+    sz: { x: TOOLBAR_WIDTH, y: Math.min(numRes * TOOLBAR_WIDTH, canvas_bds_in_canvas.sz.y) }
   }
 }
 
