@@ -4,7 +4,7 @@ import { Point } from "../util/types";
 import { vequal, vint } from "../util/vutil";
 import { Animation, mkExplosionAnimation } from './animations';
 import { getBonusFromLayer, updateBonusLayer } from "./bonus-helpers";
-import { KillIntent } from './intent';
+import { KillIntent, killableBonus } from './intent';
 import { getScore, incrementScore } from "./scoring";
 import { deselect } from "./selection";
 import { CoreState, MainTile } from "./state";
@@ -62,10 +62,6 @@ function killTileOfState(state: CoreState, wp: DragWidgetPoint, intent: KillInte
       function tileAt(p: Point): MainTile | undefined {
         return get_main_tiles(state).find(tile => vequal(tile.loc.p_in_world_int, p));
       }
-      function killableBonusAt(p: Point) {
-        // FIXME: any unbombable ones? Maybe 'water', in the future?
-        return getBonusFromLayer(state, p).t != 'empty';
-      }
 
       const tilesToDestroy: Point[] = splashDamage(p_in_world_int, radius);
       // remove all tiles in radius
@@ -76,7 +72,7 @@ function killTileOfState(state: CoreState, wp: DragWidgetPoint, intent: KillInte
       });
       // remove all killable bonuses in radius
       tilesToDestroy.forEach(p => {
-        if (killableBonusAt(p)) {
+        if (killableBonus(intent, getBonusFromLayer(state, p))) {
           state = updateBonusLayer(state, p, { t: 'empty' });
         }
       });

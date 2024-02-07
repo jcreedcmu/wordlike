@@ -2,6 +2,7 @@ import { WidgetPoint } from '../ui/widget-helpers';
 import { produce } from '../util/produce';
 import { Point } from '../util/types';
 import { vint, vm } from '../util/vutil';
+import { Bonus } from './bonus';
 import { tryKillTileOfState } from './kill-helpers';
 import { vacuous_down } from './low-actions';
 import { SelectionOperation, deselect, selectionOperationOfMods } from './selection';
@@ -27,7 +28,18 @@ export type Intent =
   ;
 
 function dynamiteableCell(cell: CellContents): boolean {
-  return cell.t == 'tile' || (cell.t == 'bonus' && (cell.bonus.t != 'empty'));
+  return cell.t == 'tile' || (cell.t == 'bonus' && killableBonus(dynamiteIntent, cell.bonus));
+}
+
+export function killableBonus(intent: KillIntent, bonus: Bonus): boolean {
+  switch (intent.t) {
+    case 'fillWater':
+      return !(bonus.t == 'required' || bonus.t == 'empty');
+    case 'kill':
+    case 'bomb':
+      return !(bonus.t == 'block' || bonus.t == 'required' || bonus.t == 'empty');
+  }
+
 }
 
 export function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number, mods: Set<string>, hoverCell: CellContents, pinned: boolean): Intent {
