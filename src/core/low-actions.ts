@@ -96,12 +96,10 @@ function reduceMouseDownInToolbar(state: GameState, wp: WidgetPoint & { t: 'tool
 function reduceMouseDownInResbar(state: GameState, wp: WidgetPoint & { t: 'resbar' }, button: number, mods: Set<string>): GameLowAction {
   const res = wp.res;
   if (res !== undefined) {
-    const p_in_res = { x: wp.p_in_local.x, y: fpart(wp.p_in_local.y / TOOLBAR_WIDTH) * TOOLBAR_WIDTH };
-
     return {
       t: 'multiple', actions: [
         { t: 'vacuousDown', wp },
-        { t: 'startDragResource', wp, res, p_in_res, res_ix: Math.floor(wp.p_in_local.y / TOOLBAR_WIDTH) },
+        { t: 'startDragResource', wp, res, res_ix: Math.floor(wp.p_in_local.y / TOOLBAR_WIDTH) },
       ]
     };
   }
@@ -544,7 +542,6 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
           t: 'drag_resource',
           orig_p_in_canvas: action.wp.p_in_canvas,
           p_in_canvas: action.wp.p_in_canvas,
-          p_in_res: action.p_in_res,
           res: action.res,
           res_ix: action.res_ix,
         };

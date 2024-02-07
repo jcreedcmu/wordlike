@@ -33,7 +33,6 @@ export type MouseState =
     t: 'drag_resource',
     p_in_canvas: Point,
     orig_p_in_canvas: Point,
-    p_in_res: Point,
     res: Resource,
     res_ix: number,
   }

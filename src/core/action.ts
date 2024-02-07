@@ -49,7 +49,7 @@ export type GameLowAction =
   | { t: 'restoreTiles', ids: string[] } // put held tiles back in cache
   | { t: 'popCacheUpdateQueue', n: number }
   | { t: 'addMob' }
-  | { t: 'startDragResource', wp: WidgetPoint, res: Resource, p_in_res: Point, res_ix: number }
+  | { t: 'startDragResource', wp: WidgetPoint, res: Resource, res_ix: number }
   ;
 
 export type LowAction =
