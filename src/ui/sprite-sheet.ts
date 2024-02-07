@@ -1,7 +1,7 @@
 import { Bonus } from "../core/bonus";
 import { ChunkValue } from "../core/chunk";
 import { MobState } from "../core/mobs";
-import { LARGE_SPRITE_PIXEL_WIDTH, Resource, TOOL_IMAGE_WIDTH, Tool } from "../core/tools";
+import { LARGE_SPRITE_PIXEL_WIDTH, Resource, SPRITE_PIXEL_WIDTH, Tool } from "../core/tools";
 import { Buffer, buffer, fillRect } from "../util/dutil";
 import { scale } from "../util/se2";
 import { apply_to_rect } from "../util/se2-extra";
@@ -14,7 +14,7 @@ export const SPRITE_SHEET_SIZE = { x: 16, y: 16 };
 
 
 export function spriteRectOfPos(pos: Point): Rect {
-  const S_in_image = TOOL_IMAGE_WIDTH;
+  const S_in_image = SPRITE_PIXEL_WIDTH;
   return { p: vscale(pos, S_in_image), sz: vdiag(S_in_image) };
 }
 
@@ -64,6 +64,12 @@ export function spriteLocOfTool(tool: Tool): Point {
   }
 }
 
+export function resourceSpriteLoc(res: Resource): Point {
+  switch (res) {
+    case 'wood': return { y: 6, x: 1 };
+  }
+}
+
 export function largeSpriteLoc(tool: Tool | Resource): Point {
   switch (tool) {
     case 'pointer': return { y: 0, x: 0 };
@@ -99,7 +105,7 @@ export function prerenderSpriteSheet(img: HTMLImageElement): Buffer {
   buf.d.drawImage(img, 0, 0);
 
   for (let i = 0; i < 26; i++) {
-    const rect_in_canvas = apply_to_rect(scale(vdiag(TOOL_IMAGE_WIDTH)), { p: spriteLocOfRequiredBonus(i), sz: { x: 1, y: 1 } });
+    const rect_in_canvas = apply_to_rect(scale(vdiag(SPRITE_PIXEL_WIDTH)), { p: spriteLocOfRequiredBonus(i), sz: { x: 1, y: 1 } });
     fillRect(buf.d, rect_in_canvas, 'white');
     drawRequiredLetterBonus(buf.d, String.fromCharCode(65 + i), rect_in_canvas);
   }

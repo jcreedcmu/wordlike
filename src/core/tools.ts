@@ -7,9 +7,7 @@ import { getScore } from "./scoring";
 import { CoreState } from "./state";
 import { drawOfState, freshPanic } from "./state-helpers";
 
-// XXX rename this, this is really sprite size
-export const TOOL_IMAGE_WIDTH = 32;
-
+export const SPRITE_PIXEL_WIDTH = 32;
 export const LARGE_SPRITE_PIXEL_WIDTH = 128;
 
 const tools = [
