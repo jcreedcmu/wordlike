@@ -37,11 +37,14 @@ export function wordBubblePanicBounds(index: number): Rect {
 }
 
 export function wordBubblePanicRect(index: number, progress: number): RenderableRect {
-  const rect = wordBubbleRect(index);
-  const maxp = { x: rect.p.x + rect.sz.x - 10, y: rect.p.y + rect.sz.y - 10 };
-  const minp = { x: rect.p.x + rect.sz.x - 90, y: rect.p.y + 10 };
-  minp.x = progress * maxp.x + (1 - progress) * minp.x;
-  return { rect: { p: minp, sz: vsub(maxp, minp) }, color: lerpSpline(panicColorSpline, progress) as RgbColor };
+  const bounds = wordBubblePanicBounds(index);
+  const rect = {
+    p: { x: bounds.p.x + progress * bounds.sz.x, y: bounds.p.y },
+    sz: { x: bounds.sz.x * (1 - progress), y: bounds.sz.y },
+  };
+  return {
+    rect, color: lerpSpline(panicColorSpline, progress) as RgbColor
+  };
 }
 
 export function renderPanicBar(panic: PanicData, game_from_clock: SE1): RenderableRect {
@@ -57,9 +60,7 @@ export function renderPanicBar(panic: PanicData, game_from_clock: SE1): Renderab
 
 
 export function drawWordBonusPanicBar(d: CanvasRenderingContext2D, rect: Rect, fraction: number) {
-  const c = lerpSpline(panicColorSpline, fraction);
-  const color = `rgb(${c[0]},${c[1]},${c[2]})`;
-  fillRect(d, rect, color);
+  drawRenderableRect(d, { color: lerpSpline(panicColorSpline, fraction) as RgbColor, rect });
 }
 
 export function drawRenderableRect(d: CanvasRenderingContext2D, rr: RenderableRect) {
