@@ -5,7 +5,7 @@ import { ActiveChunkInfo, Chunk, WORLD_CHUNK_SIZE, activeChunks, ensureChunk, ge
 import { getWordBonusFraction, now_in_game } from "../core/clock";
 import { mkOverlay } from "../core/layer";
 import { eff_mob_in_world } from "../core/mobs";
-import { CacheUpdate, CoreState, GameState, MobsState } from "../core/state";
+import { CacheUpdate, CoreState, GameState, MobsState, MouseState } from "../core/state";
 import { pointFall } from "../core/state-helpers";
 import { getTileId, get_hand_tiles, isSelectedForDrag } from "../core/tile-helpers";
 import { BOMB_RADIUS, getCurrentTool } from "../core/tools";
@@ -15,10 +15,10 @@ import { bufferSetFloats } from "../util/gl-util";
 import { SE2, apply, compose, inverse, mkSE2, scale, translate } from "../util/se2";
 import { apply_to_rect, asMatrix } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
-import { rectPts } from "../util/util";
+import { rectPts, unreachable } from "../util/util";
 import { vadd, vdiag, vequal, vmul, vsub } from "../util/vutil";
 import { drawGlAnimation } from "./drawGlAnimation";
-import { renderPanicBar, wordBubblePanicBounds, wordBubblePanicRect } from "./drawPanicBar";
+import { drawRenderableRect, renderPanicBar, wordBubblePanicBounds, wordBubblePanicRect } from "./drawPanicBar";
 import { CANVAS_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, PREPASS_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, drawOneSprite, drawOneTile, mkBonusDrawer, mkCanvasDrawer, mkDebugQuadDrawer, mkPrepassHelper, mkRectDrawer, mkSpriteDrawer, mkTileDrawer, mkWorldDrawer } from "./gl-common";
 import { gl_from_canvas } from "./gl-helpers";
 import { FIXED_WORD_BUBBLE_SIZE, canvas_from_hand_tile } from "./render";
@@ -177,6 +177,52 @@ function drawMobs(env: GlEnv, canvas_from_world: SE2, mobsState: MobsState): voi
   });
 }
 
+
+function drawMouseStateTransients(env: GlEnv, canvas_from_world: SE2, cs: CoreState, ms: MouseState) {
+  // Here's where we draw dragged tiles in general
+  // draw dragged tiles from selection
+  switch (ms.t) {
+    case 'drag_tile': {
+      const tile0 = getTileId(cs, ms.id);
+
+      if (cs.selected) {
+        const tiles = cs.selected.selectedIds.map(id => getTileId(cs, id));
+        // draw dragged tiles
+        tiles.forEach(tile => {
+          if (tile.loc.t == 'world' && tile0.loc.t == 'world') {
+            let drag_tile_from_other_tile = translate(vsub(tile.loc.p_in_world_int, tile0.loc.p_in_world_int));
+            if (ms.flipped) {
+              drag_tile_from_other_tile = {
+                scale: drag_tile_from_other_tile.scale, translate: {
+                  x: drag_tile_from_other_tile.translate.y,
+                  y: drag_tile_from_other_tile.translate.x,
+                }
+              };
+            }
+
+            const canvas_from_other_tile = compose(canvas_from_drag_tile(cs, ms), drag_tile_from_other_tile);
+            drawOneTile(env, tile.letter, canvas_from_other_tile);
+          }
+        });
+      }
+      else {
+        const tile = getTileId(cs, ms.id);
+        drawOneTile(env, tile.letter, canvas_from_drag_tile(cs, ms));
+      }
+    } return;
+    case 'drag_resource': {
+      const canvas_from_sprite = mkSE2({ x: 48, y: 48 }, vsub(ms.p_in_canvas, ms.p_in_res));
+      drawOneSprite(env, { x: 1, y: 1 }, canvas_from_sprite);
+    } return;
+    case 'up': return;
+    case 'down': return;
+    case 'drag_world': return;
+    case 'drag_selection': return;
+    case 'exchange_tiles': return;
+  }
+  unreachable(ms);
+}
+
 const shouldDebug = { v: false };
 let oldState: GameState | null = null;
 export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): void {
@@ -261,37 +307,7 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
         drawOneTile(env, tile.letter, canvas_from_hand_tile(tile.loc.index));
       });
 
-      // Here's where we draw dragged tiles in general
-      // draw dragged tiles from selection
-      if (ms.t == 'drag_tile') {
-
-        const tile0 = getTileId(cs, ms.id);
-
-        if (cs.selected) {
-          const tiles = cs.selected.selectedIds.map(id => getTileId(cs, id));
-          // draw dragged tiles
-          tiles.forEach(tile => {
-            if (tile.loc.t == 'world' && tile0.loc.t == 'world') {
-              let drag_tile_from_other_tile = translate(vsub(tile.loc.p_in_world_int, tile0.loc.p_in_world_int));
-              if (ms.flipped) {
-                drag_tile_from_other_tile = {
-                  scale: drag_tile_from_other_tile.scale, translate: {
-                    x: drag_tile_from_other_tile.translate.y,
-                    y: drag_tile_from_other_tile.translate.x,
-                  }
-                };
-              }
-
-              const canvas_from_other_tile = compose(canvas_from_drag_tile(cs, ms), drag_tile_from_other_tile);
-              drawOneTile(env, tile.letter, canvas_from_other_tile);
-            }
-          });
-        }
-        else {
-          const tile = getTileId(cs, ms.id);
-          drawOneTile(env, tile.letter, canvas_from_drag_tile(cs, ms));
-        }
-      }
+      drawMouseStateTransients(env, canvas_from_world, cs, ms);
     }
 
     //// show the prepass for debugging reasons

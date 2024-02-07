@@ -9,7 +9,7 @@ import { Overlay } from './layer';
 import { SelectionState } from './selection';
 import { CoreState, GameState, InventoryItems, Location, MouseState, SceneState } from './state';
 import { MoveTile } from './state-helpers';
-import { Tool } from './tools';
+import { Resource, Tool } from './tools';
 
 export type GameLowAction =
   | { t: 'zoom', center: Point, amount: number }
@@ -49,6 +49,7 @@ export type GameLowAction =
   | { t: 'restoreTiles', ids: string[] } // put held tiles back in cache
   | { t: 'popCacheUpdateQueue', n: number }
   | { t: 'addMob' }
+  | { t: 'startDragResource', wp: WidgetPoint, res: Resource, p_in_res: Point }
   ;
 
 export type LowAction =

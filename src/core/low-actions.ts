@@ -1,11 +1,11 @@
 import { isActiveCanvasAnimation } from '../ui/drawAnimation';
 import { canvas_from_drag_tile, pan_canvas_from_canvas_of_mouse_state } from '../ui/view-helpers';
-import { WidgetPoint, canvas_from_hand, getWidgetPoint } from '../ui/widget-helpers';
+import { TOOLBAR_WIDTH, WidgetPoint, canvas_from_hand, getWidgetPoint } from '../ui/widget-helpers';
 import { DEBUG, debugTiles } from '../util/debug';
 import { produce } from '../util/produce';
 import { SE2, apply, compose, composen, inverse, scale, translate } from '../util/se2';
 import { Point } from '../util/types';
-import { getRandomOrder } from '../util/util';
+import { fpart, getRandomOrder } from '../util/util';
 import { vequal, vm, vscale, vsub } from '../util/vutil';
 import { GameAction, GameLowAction, LowAction } from './action';
 import { mkPointDecayAnimation } from './animations';
@@ -93,6 +93,23 @@ function reduceMouseDownInToolbar(state: GameState, wp: WidgetPoint & { t: 'tool
   }
 }
 
+function reduceMouseDownInResbar(state: GameState, wp: WidgetPoint & { t: 'resbar' }, button: number, mods: Set<string>): GameLowAction {
+  const res = wp.res;
+  if (res !== undefined) {
+    const p_in_res = { x: wp.p_in_local.x, y: fpart(wp.p_in_local.y / TOOLBAR_WIDTH) * TOOLBAR_WIDTH };
+
+    return {
+      t: 'multiple', actions: [
+        { t: 'vacuousDown', wp },
+        { t: 'startDragResource', wp, res, p_in_res },
+      ]
+    };
+  }
+  else {
+    return { t: 'vacuousDown', wp };
+  }
+}
+
 function reducePauseButton(state: CoreState): CoreState {
   return produce(state, s => { s.slowState.paused = { pauseTime_in_clock: Date.now() }; });
 }
@@ -122,7 +139,7 @@ function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number, mods
     case 'world': return reduceMouseDownInWorld(state, wp, button, mods);
     case 'hand': return reduceMouseDownInHand(state, wp, button, mods);
     case 'toolbar': return reduceMouseDownInToolbar(state, wp, button, mods);
-    case 'resbar': return { t: 'vacuousDown', wp };
+    case 'resbar': return reduceMouseDownInResbar(state, wp, button, mods);
     case 'pauseButton': return { t: 'vacuousDownAnd', wp, action: { t: 'pause' } };
     case 'nowhere': return { t: 'vacuousDown', wp };
   }
@@ -269,6 +286,7 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
         ]
       };
     }
+    case 'drag_resource': return { t: 'none' };
     case 'up': return { t: 'none' }; // no drag to resolve
     case 'down': return { t: 'none' };
   }
@@ -518,6 +536,18 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
 
     case 'addMob': {
       return withCoreState(state, addRandomMob);
+    }
+
+    case 'startDragResource': {
+      return produce(state, s => {
+        s.mouseState = {
+          t: 'drag_resource',
+          orig_p_in_canvas: action.wp.p_in_canvas,
+          p_in_canvas: action.wp.p_in_canvas,
+          p_in_res: action.p_in_res,
+          res: action.res,
+        };
+      });
     }
   }
 }

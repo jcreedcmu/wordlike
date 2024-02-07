@@ -161,7 +161,7 @@ export type DragWidgetPoint =
 export type WidgetPoint =
   | DragWidgetPoint
   | { t: 'toolbar', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2, tool: Tool }
-  | { t: 'resbar', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2, resource: Resource }
+  | { t: 'resbar', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2, res: Resource }
   | { t: 'pauseButton', p_in_canvas: Point }
   | { t: 'nowhere', p_in_canvas: Point } // outside canvas bounds
   ;
@@ -190,13 +190,13 @@ export function getWidgetPoint(state: CoreState, p_in_canvas: Point): WidgetPoin
   else if (pointInRect(p_in_canvas, resbar_bds)) {
     const resbar_from_canvas = inverse(canvas_from_resbar());
     const p_in_local = apply(resbar_from_canvas, p_in_canvas);
-    const resource = getCurrentResources(state)[Math.floor(p_in_local.y / resbar_bds.sz.x)];
+    const res = getCurrentResources(state)[Math.floor(p_in_local.y / resbar_bds.sz.x)];
     return {
       t: 'resbar',
       p_in_local,
       p_in_canvas,
       local_from_canvas: resbar_from_canvas,
-      resource: resource,
+      res,
     }
   }
   else if (!pointInRect(p_in_canvas, canvas_bds_in_canvas)

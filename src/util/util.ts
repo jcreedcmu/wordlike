@@ -160,3 +160,7 @@ export function pixelSnap(p: Point): Point {
 export function pixelSnapRect(r: Rect): Rect {
   return { p: pixelSnap(r.p), sz: pixelSnap(r.sz) };
 }
+
+export function fpart(x: number): number {
+  return x - Math.floor(x);
+}

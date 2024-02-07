@@ -12,7 +12,7 @@ import { Grid, LocatedWord, mkGridOf } from './grid';
 import { Overlay, mkOverlay } from './layer';
 import { MobState } from './mobs';
 import { SelectionOperation, SelectionState } from './selection';
-import { Tool } from './tools';
+import { Resource, Tool } from './tools';
 import { WinState } from './winState';
 
 export type MouseState =
@@ -28,6 +28,13 @@ export type MouseState =
     p_in_canvas: Point,
     id: string,
     flipped: boolean,
+  }
+  | {
+    t: 'drag_resource',
+    p_in_canvas: Point,
+    orig_p_in_canvas: Point,
+    p_in_res: Point,
+    res: Resource,
   }
   ;
 
