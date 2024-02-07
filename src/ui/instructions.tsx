@@ -175,6 +175,7 @@ function exampleState(): GameState {
       slowState: {
         generation: 0,
         inventory: {
+          dynamites: 5,
           bombs: 3,
           vowels: 0,
           consonants: 0,

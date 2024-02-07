@@ -14,13 +14,13 @@ import { BOMB_RADIUS } from './tools';
 
 function eligibleKillIntent(state: CoreState, intent: KillIntent): boolean {
   switch (intent.t) {
-    case 'kill': return getScore(state) >= intent.cost;
+    case 'kill': return state.slowState.inventory.dynamites >= 1;
     case 'bomb': return state.slowState.inventory.bombs >= 1;
   }
 }
 function spendKillIntent(state: CoreState, intent: KillIntent): CoreState {
   switch (intent.t) {
-    case 'kill': return produce(state, s => { incrementScore(s, -intent.cost); });
+    case 'kill': return produce(state, s => { s.slowState.inventory.dynamites--; });
     case 'bomb': return produce(state, s => { s.slowState.inventory.bombs--; });
   }
 }
@@ -89,9 +89,7 @@ function killTileOfState(state: CoreState, wp: DragWidgetPoint, intent: KillInte
         const tile = hand_tiles[index];
         if (tile == undefined)
           return state;
-        return checkValid(produce(removeTile(state, tile.id), s => {
-          incrementScore(s, -1);
-        }));
+        return checkValid(spendKillIntent(removeTile(state, tile.id), intent));
       }
       else {
         return state;

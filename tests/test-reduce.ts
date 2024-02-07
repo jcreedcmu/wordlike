@@ -19,7 +19,7 @@ function threeTileState(): GameState {
 describe('kill', () => {
   test('should generate appropriate cache changes', () => {
     let state = threeTileState();
-    state = produce(state, s => { s.coreState.slowState.scoring.score = 100; });
+    state = produce(state, s => { s.coreState.slowState.inventory.dynamites = 100; });
 
     state = resolveGameLowActions(state, [{
       t: 'setSelected', sel: {
@@ -29,7 +29,7 @@ describe('kill', () => {
     }]);
     state = resolveGameLowActions(state, [{ t: 'popCacheUpdateQueue', n: state.coreState._cacheUpdateQueue.length }]);
     const action: GameLowAction = {
-      t: 'mouseDownIntent', intent: { t: 'kill', radius: 0, cost: 1 }, wp: {
+      t: 'mouseDownIntent', intent: { t: 'kill', radius: 0 }, wp: {
         t: 'world',
         p_in_local: { x: 2.4166246536530487, y: 0.7916585071144366 },
         p_in_canvas: { x: 604, y: 398 },

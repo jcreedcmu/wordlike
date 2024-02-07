@@ -11,7 +11,7 @@ import { CellContents, getTileLoc, tileAtPoint } from './tile-helpers';
 import { Tool, bombIntent, copyIntent, dynamiteIntent } from './tools';
 
 export type KillIntent =
-  | { t: 'kill', radius: number, cost: number }
+  | { t: 'kill', radius: number }
   | { t: 'bomb' };
 
 export type Intent =

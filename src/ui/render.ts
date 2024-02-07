@@ -181,6 +181,9 @@ function drawUiFrame(d: CanvasRenderingContext2D, state: CoreState): void {
 
     drawImage(d, toolbar, largeRectOfTool(tool), scaled_rect_in_canvas);
 
+    if (tool == 'dynamite') {
+      drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.dynamites);
+    }
     if (tool == 'bomb') {
       drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.bombs);
     }

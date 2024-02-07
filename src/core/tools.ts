@@ -40,7 +40,7 @@ export function getCurrentTool(state: CoreState): Tool {
   return state.slowState.currentTool;
 }
 
-export const dynamiteIntent: Intent & { t: 'kill' } = { t: 'kill', radius: 0, cost: 1 };
+export const dynamiteIntent: Intent & { t: 'kill' } = { t: 'kill', radius: 0 };
 export const BOMB_RADIUS = 2;
 export const bombIntent: Intent & { t: 'bomb' } = { t: 'bomb' };
 export const copyIntent: Intent & { t: 'copy' } = { t: 'copy' };
@@ -50,7 +50,7 @@ export function getCurrentTools(state: CoreState): Tool[] {
     return [];
   }
   const tools: Tool[] = ['pointer', 'hand'];
-  if (getScore(state) >= dynamiteIntent.cost) {
+  if (state.slowState.inventory.dynamites > 0) {
     tools.push('dynamite');
   }
   if (state.slowState.inventory.bombs > 0) {
@@ -104,7 +104,7 @@ export function toolPrecondition(state: CoreState, tool: Tool): boolean {
     case 'bomb': return state.slowState.inventory.bombs >= 1;
     case 'pointer': return true;
     case 'hand': return true;
-    case 'dynamite': return getScore(state) >= 1;
+    case 'dynamite': return state.slowState.inventory.dynamites >= 1;
     case 'vowel': return state.slowState.inventory.vowels >= 1;
     case 'consonant': return state.slowState.inventory.consonants >= 1;
     case 'copy': return state.slowState.inventory.copies >= 1;

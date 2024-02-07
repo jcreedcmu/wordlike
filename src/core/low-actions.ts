@@ -336,6 +336,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     case 'debug': {
       return withCoreState(state, cs => checkValid(produce(addWorldTiles(removeAllTiles(cs), debugTiles()), s => {
         setScore(s, 900);
+        s.slowState.inventory.dynamites = 15;
         s.slowState.inventory.bombs = 15;
         s.slowState.inventory.vowels = 15;
         s.slowState.inventory.consonants = 15;

@@ -109,6 +109,7 @@ export type WordBonusState = {
 }
 
 export type InventoryItems = {
+  dynamites: number,
   bombs: number,
   vowels: number,
   consonants: number,
@@ -180,6 +181,7 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
       slowState: {
         generation: 0,
         inventory: {
+          dynamites: 5,
           bombs: 0,
           vowels: 0,
           consonants: 0,
