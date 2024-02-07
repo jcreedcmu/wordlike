@@ -180,7 +180,9 @@ export function Game(props: GameProps): JSX.Element {
       if (glmc.current) {
         const state = stateRef.current;
         renderGlPane(glmc.current.ci, glmc.current.env, state);
-        dispatch({ t: 'popCacheUpdateQueue', n: state.coreState._cacheUpdateQueue.length });
+        const n = state.coreState._cacheUpdateQueue.length;
+        if (n > 0)
+          dispatch({ t: 'popCacheUpdateQueue', n });
       }
       window.requestAnimationFrame(intervalHandler);
     }

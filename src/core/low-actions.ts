@@ -513,6 +513,9 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     }
 
     case 'popCacheUpdateQueue': {
+      if (DEBUG.cacheUpdate) {
+        console.log(state.coreState._cacheUpdateQueue.slice(0, action.n));
+      }
       return produce(state, s => {
         s.coreState._cacheUpdateQueue.splice(0, action.n);
       });
