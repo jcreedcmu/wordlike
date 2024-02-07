@@ -9,6 +9,7 @@ import { fpart, getRandomOrder } from '../util/util';
 import { vequal, vm, vscale, vsub } from '../util/vutil';
 import { GameAction, GameLowAction, LowAction } from './action';
 import { mkPointDecayAnimation } from './animations';
+import { getBonusFromLayer } from './bonus-helpers';
 import { getPanicFraction, now_in_game } from './clock';
 import { getIntentOfMouseDown, reduceIntent } from './intent';
 import { tryKillTileOfState } from './kill-helpers';
@@ -18,9 +19,9 @@ import { reduceKey } from './reduceKey';
 import { incrementScore, setScore } from './scoring';
 import { deselect, resolveSelection, setSelected } from './selection';
 import { CacheUpdate, CoreState, GameState, Location, MobsState, SceneState } from './state';
-import { MoveTile, addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isOccupied, isOccupiedForTiles, isTilePinned, needsRefresh, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
+import { MoveTile, addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isOccupied, isOccupiedForTiles, isTilePinned, needsRefresh, pointFall, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
 import { cellAtPoint, getTileId, get_hand_tiles, get_tiles, moveTiles, moveToHandLoc, putTileInHand, putTilesInHandFromNotHand, putTilesInWorld, removeAllTiles, tileAtPoint } from "./tile-helpers";
-import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
+import { bombIntent, dynamiteIntent, fillWaterIntent, getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
 import { shouldDisplayBackButton } from './winState';
 
 export function reduceZoom(state: GameState, p_in_canvas: Point, delta: number): GameState {
@@ -284,7 +285,21 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
         ]
       };
     }
-    case 'drag_resource': return { t: 'none' };
+    case 'drag_resource': {
+      const wp = getWidgetPoint(state.coreState, ms.p_in_canvas);
+      if (wp.t != 'world')
+        return { t: 'none' };
+      switch (ms.res) {
+        case 'wood':
+          const p_in_world_int: Point = pointFall(state.coreState, wp.p_in_canvas);
+          if (getBonusFromLayer(state.coreState, p_in_world_int).t == 'block') {
+            return { t: 'fillWater', wp };
+          }
+          else {
+            return { t: 'none' };
+          }
+      }
+    }
     case 'up': return { t: 'none' }; // no drag to resolve
     case 'down': return { t: 'none' };
   }
@@ -349,6 +364,8 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     }
     case 'dynamiteTile':
       return withCoreState(state, cs => tryKillTileOfState(cs, action.wp, dynamiteIntent));
+    case 'fillWater':
+      return withCoreState(state, cs => tryKillTileOfState(cs, action.wp, fillWaterIntent));
     case 'dropTopHandTile': return dropTopHandTile(state);
     case 'debug': {
       return withCoreState(state, cs => checkValid(produce(addWorldTiles(removeAllTiles(cs), debugTiles()), s => {

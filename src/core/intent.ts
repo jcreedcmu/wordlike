@@ -12,7 +12,9 @@ import { Tool, bombIntent, copyIntent, dynamiteIntent } from './tools';
 
 export type KillIntent =
   | { t: 'kill', radius: number }
-  | { t: 'bomb' };
+  | { t: 'bomb' }
+  | { t: 'fillWater' }
+  ;
 
 export type Intent =
   | { t: 'dragTile', id: string }
@@ -131,6 +133,7 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
       });
     case 'kill': return withCoreState(vacuous_down(state, wp), cs => tryKillTileOfState(cs, wp, intent));
     case 'bomb': return withCoreState(vacuous_down(state, wp), cs => tryKillTileOfState(cs, wp, intent));
+    case 'fillWater': return withCoreState(vacuous_down(state, wp), cs => tryKillTileOfState(cs, wp, intent));
     case 'startSelection':
       if (wp.t != 'world') return vacuous_down(state, wp);
       return produce(state, s => {

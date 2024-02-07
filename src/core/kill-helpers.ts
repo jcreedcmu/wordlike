@@ -16,12 +16,14 @@ function eligibleKillIntent(state: CoreState, intent: KillIntent): boolean {
   switch (intent.t) {
     case 'kill': return state.slowState.inventory.dynamites >= 1;
     case 'bomb': return state.slowState.inventory.bombs >= 1;
+    case 'fillWater': return state.slowState.resource.wood >= 1;
   }
 }
 function spendKillIntent(state: CoreState, intent: KillIntent): CoreState {
   switch (intent.t) {
     case 'kill': return produce(state, s => { s.slowState.inventory.dynamites--; });
     case 'bomb': return produce(state, s => { s.slowState.inventory.bombs--; });
+    case 'fillWater': return produce(state, s => { s.slowState.resource.wood--; });
   }
 }
 
@@ -46,7 +48,7 @@ function splashDamage(center: Point, radius: number): Point[] {
   return pts;
 }
 function killTileOfState(state: CoreState, wp: DragWidgetPoint, intent: KillIntent): CoreState {
-  const radius = intent.t == 'kill' ? intent.radius : BOMB_RADIUS;
+  const radius = intent.t == 'bomb' ? BOMB_RADIUS : intent.t == 'fillWater' ? 0 : intent.radius;
 
   // Definitely want to clear the selection, because invariants get
   // violated if a tileId gets deleted but remains in the selection
