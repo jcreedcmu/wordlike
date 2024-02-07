@@ -138,7 +138,7 @@ export function overlapScoringOfBonus(bonus: Bonus, p_in_world_int: Point): Scor
 export function resolveScoring(state: CoreState, scoring: Scoring): CoreState {
   const bonus = scoring.bonus;
   switch (bonus.t) {
-    case 'bonus': return produce(state, s => { incrementScore(s); });
+    case 'bonus': return produce(state, s => { s.slowState.resource.wood++; });
     case 'bomb': return produce(state, s => { s.slowState.inventory.bombs++; });
     case 'required': return produce(state, s => { incrementScore(s, 10); });
     case 'vowel': return produce(state, s => { s.slowState.inventory.vowels += 5; });

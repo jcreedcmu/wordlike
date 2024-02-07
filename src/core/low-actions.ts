@@ -122,6 +122,7 @@ function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number, mods
     case 'world': return reduceMouseDownInWorld(state, wp, button, mods);
     case 'hand': return reduceMouseDownInHand(state, wp, button, mods);
     case 'toolbar': return reduceMouseDownInToolbar(state, wp, button, mods);
+    case 'resbar': return { t: 'vacuousDown', wp };
     case 'pauseButton': return { t: 'vacuousDownAnd', wp, action: { t: 'pause' } };
     case 'nowhere': return { t: 'vacuousDown', wp };
   }

@@ -92,7 +92,7 @@ export function rectOfTool(tool: Tool): Rect {
   return spriteRectOfPos(spriteLocOfTool(tool));
 }
 
-export function largeRectOfTool(tool: Tool): Rect {
+export function largeRectOf(tool: Tool | Resource): Rect {
   return largeSpriteRectOfPos(largeSpriteLoc(tool));
 }
 

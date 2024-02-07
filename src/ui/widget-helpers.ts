@@ -1,5 +1,5 @@
 import { CoreState, HAND_TILE_LIMIT } from "../core/state";
-import { Tool, getCurrentResources, getCurrentTools } from "../core/tools";
+import { Resource, Tool, getCurrentResources, getCurrentTools } from "../core/tools";
 import { SE2, apply, inverse } from "../util/se2";
 import { Point, Rect } from "../util/types";
 import { lerp, mapval, pixelSnapRect, pointInRect } from "../util/util";
@@ -93,6 +93,12 @@ export const toolbar_bds_in_canvas: Rect = {
   sz: { x: TOOLBAR_WIDTH, y: canvas_bds_in_canvas.sz.y }
 };
 
+// This gives a bound on what could possibly be in the resbar
+export const resbar_bds_in_canvas: Rect = {
+  p: { x: canvas_bds_in_canvas.sz.x - TOOLBAR_WIDTH, y: 0 },
+  sz: { x: TOOLBAR_WIDTH, y: canvas_bds_in_canvas.sz.y }
+};
+
 export function effective_toolbar_bds_in_canvas(state: CoreState): Rect {
   const numTools = Math.max(5, getCurrentTools(state).length);
   return {
@@ -125,6 +131,13 @@ export function canvas_from_toolbar(): SE2 {
   };
 }
 
+export function canvas_from_resbar(): SE2 {
+  return {
+    scale: { x: 1, y: 1 },
+    translate: resbar_bds_in_canvas.p,
+  };
+}
+
 // The crucial thing about DragWidgetPoint is that it must define the
 // field p_in_local. Semantically it is a potentially valid drag
 // target.
@@ -148,18 +161,21 @@ export type DragWidgetPoint =
 export type WidgetPoint =
   | DragWidgetPoint
   | { t: 'toolbar', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2, tool: Tool }
+  | { t: 'resbar', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2, resource: Resource }
   | { t: 'pauseButton', p_in_canvas: Point }
   | { t: 'nowhere', p_in_canvas: Point } // outside canvas bounds
   ;
 
 export function getWidgetPoint(state: CoreState, p_in_canvas: Point): WidgetPoint {
+  const toolbar_bds = effective_toolbar_bds_in_canvas(state);
+  const resbar_bds = effective_resbar_bds_in_canvas(state);
   if (pointInRect(p_in_canvas, pause_button_bds_in_canvas)) {
     return {
       t: 'pauseButton',
       p_in_canvas,
     };
   }
-  else if (pointInRect(p_in_canvas, effective_toolbar_bds_in_canvas(state))) {
+  else if (pointInRect(p_in_canvas, toolbar_bds)) {
     const toolbar_from_canvas = inverse(canvas_from_toolbar());
     const p_in_local = apply(toolbar_from_canvas, p_in_canvas);
     const tool = getCurrentTools(state)[Math.floor(p_in_local.y / toolbar_bds_in_canvas.sz.x)];
@@ -169,6 +185,18 @@ export function getWidgetPoint(state: CoreState, p_in_canvas: Point): WidgetPoin
       p_in_canvas,
       local_from_canvas: toolbar_from_canvas,
       tool: tool,
+    }
+  }
+  else if (pointInRect(p_in_canvas, resbar_bds)) {
+    const resbar_from_canvas = inverse(canvas_from_resbar());
+    const p_in_local = apply(resbar_from_canvas, p_in_canvas);
+    const resource = getCurrentResources(state)[Math.floor(p_in_local.y / resbar_bds.sz.x)];
+    return {
+      t: 'resbar',
+      p_in_local,
+      p_in_canvas,
+      local_from_canvas: resbar_from_canvas,
+      resource: resource,
     }
   }
   else if (!pointInRect(p_in_canvas, canvas_bds_in_canvas)

@@ -7,7 +7,7 @@ import { getScore } from '../core/scoring';
 import { CoreState, GameState, TileEntity } from '../core/state';
 import { lostState, pointFall, tileFall } from '../core/state-helpers';
 import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from '../core/tile-helpers';
-import { BOMB_RADIUS, getCurrentTool, getCurrentTools, largeRectOfTool } from '../core/tools';
+import { BOMB_RADIUS, getCurrentResources, getCurrentTool, getCurrentTools, largeRectOf } from '../core/tools';
 import { shouldDisplayBackButton } from '../core/winState';
 import { DEBUG, doOnceEvery } from '../util/debug';
 import { clearRect, drawImage, fillRect, fillRoundRect, fillText, lineTo, moveTo, pathRect, pathRectCircle, roundedPath, strokeRect } from '../util/dutil';
@@ -21,7 +21,7 @@ import { drawBonus } from './drawBonus';
 import { wordBubblePanicBounds, wordBubblePanicRect, wordBubbleRect } from './drawPanicBar';
 import { CanvasInfo } from './use-canvas';
 import { apexOfBubble, cell_in_canvas, drawBubble, drawBubbleAux, pan_canvas_from_world_of_state, textCenterOfBubble } from './view-helpers';
-import { GLOBAL_BORDER, PANIC_THICK, canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, effective_resbar_bds_in_canvas, effective_toolbar_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas, inner_hand_bds_in_canvas, panic_bds_in_canvas, pause_button_bds_in_canvas, score_bds_in_canvas, spacer1_bds_in_canvas, spacer2_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
+import { GLOBAL_BORDER, PANIC_THICK, canvas_bds_in_canvas, canvas_from_hand, canvas_from_resbar, canvas_from_toolbar, effective_resbar_bds_in_canvas, effective_toolbar_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas, inner_hand_bds_in_canvas, panic_bds_in_canvas, pause_button_bds_in_canvas, resbar_bds_in_canvas, score_bds_in_canvas, spacer1_bds_in_canvas, spacer2_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
 
 const INTERFACE_RADIUS = 2 * GLOBAL_BORDER;
 const PANIC_RADIUS = Math.min(INTERFACE_RADIUS, PANIC_THICK / 2);
@@ -82,6 +82,73 @@ function drawToolbarCount(d: CanvasRenderingContext2D, rect: Rect, count: number
   const countTxt = `${count}`;
   const fontSize = countTxt.length > 1 ? 12 : 16;
   fillText(d, countTxt, vadd(midpointOfRect(newRect), { x: 0, y: 1 }), 'white', `bold ${fontSize}px sans-serif`);
+}
+
+function drawResbar(d: CanvasRenderingContext2D, state: CoreState) {
+  const toolbar = getAssets().toolbarBuf.c;
+  d.imageSmoothingEnabled = true;
+
+  const ress = getCurrentResources(state);
+  ress.forEach((res, ix_in_resbar) => {
+
+    const ICON_SCALE = 0.7;
+    const S_in_canvas = resbar_bds_in_canvas.sz.x;
+    const rect_in_canvas = apply_to_rect(
+      canvas_from_resbar(),
+      { p: { x: 0, y: S_in_canvas * ix_in_resbar }, sz: { x: S_in_canvas, y: S_in_canvas } },
+    );
+    const scaled_rect_in_canvas = scaleRectToCenter(rect_in_canvas, ICON_SCALE);
+
+    drawImage(d, toolbar, largeRectOf(res), scaled_rect_in_canvas);
+
+    if (res == 'wood') {
+      drawToolbarCount(d, rect_in_canvas, state.slowState.resource.wood);
+    }
+  });
+
+}
+
+function drawToolbar(d: CanvasRenderingContext2D, state: CoreState) {
+  const toolbar = getAssets().toolbarBuf.c;
+  d.imageSmoothingEnabled = true;
+
+  const tools = getCurrentTools(state);
+  const currentTool = getCurrentTool(state);
+  const ICON_SCALE = 0.7;
+  tools.forEach((tool, ix_in_toolbar) => {
+    const S_in_canvas = toolbar_bds_in_canvas.sz.x;
+    const rect_in_canvas = apply_to_rect(
+      canvas_from_toolbar(),
+      { p: { x: 0, y: S_in_canvas * ix_in_toolbar }, sz: { x: S_in_canvas, y: S_in_canvas } },
+    );
+    const scaled_rect_in_canvas = scaleRectToCenter(rect_in_canvas, ICON_SCALE);
+    // indicate current tool
+    if (tool == currentTool) {
+      // This should probably be a roundrect also
+      fillRect(d, insetRect(rect_in_canvas, 4), 'rgba(0, 128, 0, 0.5)');
+    }
+
+    drawImage(d, toolbar, largeRectOf(tool), scaled_rect_in_canvas);
+
+    if (tool == 'dynamite') {
+      drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.dynamites);
+    }
+    if (tool == 'bomb') {
+      drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.bombs);
+    }
+    else if (tool == 'vowel') {
+      drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.vowels);
+    }
+    else if (tool == 'consonant') {
+      drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.consonants);
+    }
+    else if (tool == 'copy') {
+      drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.copies);
+    }
+    else if (tool == 'time') {
+      drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.times);
+    }
+  });
 }
 
 function drawUiFrame(d: CanvasRenderingContext2D, state: CoreState): void {
@@ -170,46 +237,10 @@ function drawUiFrame(d: CanvasRenderingContext2D, state: CoreState): void {
   }
 
   // Draw toolbar
-  const toolbar = getAssets().toolbarBuf.c;
-  d.imageSmoothingEnabled = true;
+  drawToolbar(d, state);
 
-  const tools = getCurrentTools(state);
-  const currentTool = getCurrentTool(state);
-  const TOOL_SCALE = 0.7;
-  tools.forEach((tool, ix_in_toolbar) => {
-    const S_in_canvas = toolbar_bds_in_canvas.sz.x;
-    const rect_in_canvas = apply_to_rect(
-      canvas_from_toolbar(),
-      { p: { x: 0, y: S_in_canvas * ix_in_toolbar }, sz: { x: S_in_canvas, y: S_in_canvas } },
-    );
-    const scaled_rect_in_canvas = scaleRectToCenter(rect_in_canvas, TOOL_SCALE);
-    // indicate current tool
-    if (tool == currentTool) {
-      // This should probably be a roundrect also
-      fillRect(d, insetRect(rect_in_canvas, 4), 'rgba(0, 128, 0, 0.5)');
-    }
-
-    drawImage(d, toolbar, largeRectOfTool(tool), scaled_rect_in_canvas);
-
-    if (tool == 'dynamite') {
-      drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.dynamites);
-    }
-    if (tool == 'bomb') {
-      drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.bombs);
-    }
-    else if (tool == 'vowel') {
-      drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.vowels);
-    }
-    else if (tool == 'consonant') {
-      drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.consonants);
-    }
-    else if (tool == 'copy') {
-      drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.copies);
-    }
-    else if (tool == 'time') {
-      drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.times);
-    }
-  });
+  // Draw resbar
+  drawResbar(d, state);
 }
 
 function formatTime(x: number) {
