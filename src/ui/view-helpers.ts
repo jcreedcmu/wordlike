@@ -79,10 +79,6 @@ export function drawBubble(
   d.font = `${BUBBLE_FONT_SIZE}px sans-serif`;
   const maxWidth = Math.max(...lines.map(line => d.measureText(line).width));
   drawBubbleAux(d, lines, textCenter, coneApex, maxWidth, progress);
-
-  if (progress !== undefined) {
-    drawRenderableRect(d, wordBubblePanicRect(textCenter, BUBBLE_FONT_SIZE, lines.length, maxWidth, progress));
-  }
 }
 
 export function drawBubbleAux(

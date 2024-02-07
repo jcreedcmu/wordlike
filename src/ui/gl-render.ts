@@ -18,7 +18,7 @@ import { Point, Rect } from "../util/types";
 import { rectPts } from "../util/util";
 import { vadd, vdiag, vequal, vmul, vsub } from "../util/vutil";
 import { drawGlAnimation } from "./drawGlAnimation";
-import { renderPanicBar, wordBubblePanicRect } from "./drawPanicBar";
+import { renderPanicBar, wordBubblePanicBounds, wordBubblePanicRect } from "./drawPanicBar";
 import { CANVAS_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, PREPASS_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, drawOneSprite, drawOneTile, mkBonusDrawer, mkCanvasDrawer, mkDebugQuadDrawer, mkPrepassHelper, mkRectDrawer, mkSpriteDrawer, mkTileDrawer, mkWorldDrawer } from "./gl-common";
 import { gl_from_canvas } from "./gl-helpers";
 import { FIXED_WORD_BUBBLE_SIZE, canvas_from_hand_tile } from "./render";
@@ -239,21 +239,20 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
       else {
         glFillRect(env, panic_bds_in_canvas, [128, 128, 128]);
       }
+
+      // draw word bonus panic bars
+      cs.wordBonusState.active.forEach((wordBonus, i) => {
+        const boundsr = wordBubblePanicBounds(i);
+        const panicr = wordBubblePanicRect(i, getWordBonusFraction(wordBonus, cs.game_from_clock));
+        glFillRect(env, boundsr, [0, 0, 0]);
+        glFillRect(env, panicr.rect, panicr.color);
+      });
     }
 
     // draw miscellaneous html-canvas-rendered ui
     drawCanvas(env);
 
     if (!state.coreState.slowState.paused) {
-      // draw word bubble progress bars
-      for (const wordBonus of cs.wordBonusState.active) {
-        if (cs.wordBonusState.shown !== undefined && vequal(cs.wordBonusState.shown, wordBonus.p_in_world_int)) {
-          const text_in_canvas = textCenterOfBubble(canvas_from_world, wordBonus.p_in_world_int);
-          const rr = wordBubblePanicRect(text_in_canvas, BUBBLE_FONT_SIZE, 2, FIXED_WORD_BUBBLE_SIZE, getWordBonusFraction(wordBonus, cs.game_from_clock));
-          glFillRect(env, rr.rect, rr.color);
-        }
-
-      }
 
       // draw hand tiles
       get_hand_tiles(cs).forEach(tile => {

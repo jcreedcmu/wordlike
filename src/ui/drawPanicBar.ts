@@ -4,7 +4,7 @@ import { RgbColor, fillRect } from "../util/dutil";
 import { SE1 } from "../util/se1";
 import { Spline, lerpSpline } from "../util/spline";
 import { Point, Rect } from "../util/types";
-import { vadd, vscale, vsub } from "../util/vutil";
+import { vadd, vint, vscale, vsub } from "../util/vutil";
 import { canvas_bds_in_canvas, hand_bds_in_canvas, rectOfPanic_in_canvas } from "./widget-helpers";
 
 
@@ -24,14 +24,22 @@ const WORD_BONUS_SIZE = { x: 200, y: 32 };
 
 export function wordBubbleRect(index: number): Rect {
   return {
-    p: vadd(hand_bds_in_canvas.p, vscale({ x: 0, y: WORD_BONUS_MARGIN + WORD_BONUS_SIZE.y }, -(index + 1))),
+    p: vint(vadd(hand_bds_in_canvas.p, vscale({ x: 0, y: WORD_BONUS_MARGIN + WORD_BONUS_SIZE.y }, -(index + 1)))),
     sz: WORD_BONUS_SIZE
   };
 }
 
-export function wordBubblePanicRect(textCenter: Point, lineHeight: number, lines: number, maxWidth: number, progress: number): RenderableRect {
-  const maxp = { x: textCenter.x + maxWidth / 2, y: textCenter.y - lineHeight / 2 + lineHeight * lines };
-  const minp = { x: textCenter.x - maxWidth / 2, y: maxp.y - lineHeight };
+export function wordBubblePanicBounds(index: number): Rect {
+  const rect = wordBubbleRect(index);
+  const maxp = { x: rect.p.x + rect.sz.x - 10, y: rect.p.y + rect.sz.y - 10 };
+  const minp = { x: rect.p.x + rect.sz.x - 90, y: rect.p.y + 10 };
+  return { p: minp, sz: vsub(maxp, minp) };
+}
+
+export function wordBubblePanicRect(index: number, progress: number): RenderableRect {
+  const rect = wordBubbleRect(index);
+  const maxp = { x: rect.p.x + rect.sz.x - 10, y: rect.p.y + rect.sz.y - 10 };
+  const minp = { x: rect.p.x + rect.sz.x - 90, y: rect.p.y + 10 };
   minp.x = progress * maxp.x + (1 - progress) * minp.x;
   return { rect: { p: minp, sz: vsub(maxp, minp) }, color: lerpSpline(panicColorSpline, progress) as RgbColor };
 }

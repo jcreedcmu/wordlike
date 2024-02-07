@@ -18,7 +18,7 @@ import { allRectPts, boundRect, insetRect, invertRect, midpointOfRect, scaleRect
 import { vadd, vdiv, vequal, vm, vscale, vsub, vtrans } from '../util/vutil';
 import { drawAnimation } from './drawAnimation';
 import { drawBonus } from './drawBonus';
-import { wordBubbleRect } from './drawPanicBar';
+import { wordBubblePanicBounds, wordBubblePanicRect, wordBubbleRect } from './drawPanicBar';
 import { CanvasInfo } from './use-canvas';
 import { apexOfBubble, cell_in_canvas, drawBubble, drawBubbleAux, pan_canvas_from_world_of_state, textCenterOfBubble } from './view-helpers';
 import { GLOBAL_BORDER, PANIC_THICK, canvas_bds_in_canvas, canvas_from_hand, canvas_from_toolbar, effective_toolbar_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas, inner_hand_bds_in_canvas, panic_bds_in_canvas, pause_button_bds_in_canvas, score_bds_in_canvas, spacer1_bds_in_canvas, spacer2_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
@@ -217,12 +217,33 @@ export function canvas_from_hand_tile(index: number): SE2 {
 }
 
 
-function drawWordBubbles(ci: CanvasInfo, cs: CoreState, pan_canvas_from_world: SE2) {
+function drawWordBonuses(ci: CanvasInfo, cs: CoreState, pan_canvas_from_world: SE2) {
   const { d } = ci;
 
   cs.wordBonusState.active.forEach((wordBonus, i) => {
     const rect = wordBubbleRect(i);
+    const bounds = wordBubblePanicBounds(i);
     fillRoundRect(d, rect, INTERFACE_RADIUS, backgroundGray);
+
+    d.save();
+    d.globalCompositeOperation = 'destination-out';
+    d.beginPath();
+    roundedPath(d, allRectPts(bounds), PANIC_RADIUS);
+    d.fillStyle = 'rgba(0,0,0,1)';
+    d.fill();
+    d.restore();
+
+    const grad = d.createLinearGradient(bounds.p.x, bounds.p.y,
+      bounds.p.x, bounds.p.y + bounds.sz.y);
+    grad.addColorStop(0, 'rgba(28, 29, 33, 0)');
+    grad.addColorStop(0.75, 'rgba(28, 29, 33, 0.375)');
+    grad.addColorStop(1, 'rgba(28, 29, 33, 0.7)');
+
+    d.beginPath();
+    roundedPath(d, allRectPts(bounds), PANIC_RADIUS);
+    d.fillStyle = grad;
+    d.fill();
+
     const font = ` bold 14px sans-serif`;
     d.textBaseline = 'middle';
     d.textAlign = 'left';
@@ -468,7 +489,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
     drawWorld();
   }
 
-  drawWordBubbles(ci, cs, pan_canvas_from_world);
+  drawWordBonuses(ci, cs, pan_canvas_from_world);
 
   // draw invalid words
   if (ms.t == 'up') {
