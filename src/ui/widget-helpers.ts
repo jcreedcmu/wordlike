@@ -2,8 +2,8 @@ import { CoreState, HAND_TILE_LIMIT } from "../core/state";
 import { Tool, getCurrentTools } from "../core/tools";
 import { SE2, apply, inverse } from "../util/se2";
 import { Point, Rect } from "../util/types";
-import { lerp, pointInRect } from "../util/util";
-import { vdiag, vint } from "../util/vutil";
+import { lerp, mapval, pixelSnapRect, pointInRect } from "../util/util";
+import { vdiag, vint, vm } from "../util/vutil";
 import { centerX, fixedRect, layout, nameRect, packHoriz, packVert, padRect, stretchRectY } from "./layout";
 
 export const GLOBAL_BORDER = 5;
@@ -55,7 +55,8 @@ const widgetTree = packVert(
   ),
   fixedRect({ x: 0, y: GLOBAL_BORDER / 2 }),
 );
-const rects = layout(canvas_bds_in_canvas, widgetTree);
+
+const rects = mapval(layout(canvas_bds_in_canvas, widgetTree), pixelSnapRect);
 
 export const score_bds_in_canvas = rects['score'];
 export const spacer1_bds_in_canvas = rects['spacer1'];

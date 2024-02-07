@@ -170,7 +170,7 @@ function layoutSecond(container: Rect, tree: LayoutTreeWith<Sizes>): LayoutTreeW
       return {
         t: 'rect',
         single: tree.single,
-        rect: { p: vint(container.p), sz: vint(container.sz) },
+        rect: { p: container.p, sz: container.sz },
       };
     }
     case 'name': {

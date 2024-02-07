@@ -125,10 +125,7 @@ function drawUiFrame(d: CanvasRenderingContext2D, state: CoreState): void {
     // gradient in html canvas over this gap, and let WebGL draw underneath it
     d.save();
     d.globalCompositeOperation = 'destination-out';
-    d.beginPath();
-    roundedPath(d, allRectPts(panic_bds_in_canvas), PANIC_RADIUS);
-    d.fillStyle = 'rgba(0,0,0,1)';
-    d.fill();
+    fillRoundRect(d, panic_bds_in_canvas, PANIC_RADIUS, 'rgba(0,0,0,1)');
     d.restore();
   }
 

@@ -1,14 +1,13 @@
 import { getAssets } from "../core/assets";
 import { Chunk, WORLD_CHUNK_SIZE } from "../core/chunk";
 import { Overlay } from "../core/layer";
-import { GameState } from "../core/state";
 import { BufferAttr, attributeCreate, bufferSetFloats, shaderProgram } from "../util/gl-util";
 import { SE2, compose, inverse, scale } from "../util/se2";
 import { apply_to_rect, asMatrix } from "../util/se2-extra";
 import { Point } from "../util/types";
-import { rectPts } from "../util/util";
+import { pixelSnapRect, rectPts } from "../util/util";
 import { vdiag } from "../util/vutil";
-import { canvas_from_gl, gl_from_canvas } from "./gl-helpers";
+import { gl_from_canvas } from "./gl-helpers";
 import { canvas_bds_in_canvas } from "./widget-helpers";
 
 export const SPRITE_TEXTURE_UNIT = 0;
@@ -220,7 +219,7 @@ export function drawOneTile(env: GlEnv, letter: string, canvas_from_tile: SE2): 
   const { prog, position } = env.tileDrawer;
   gl.useProgram(prog);
 
-  const chunk_rect_in_canvas = apply_to_rect(canvas_from_tile, { p: vdiag(0), sz: { x: 1, y: 1 } });
+  const chunk_rect_in_canvas = pixelSnapRect(apply_to_rect(canvas_from_tile, { p: vdiag(0), sz: { x: 1, y: 1 } }));
   const chunk_rect_in_gl = apply_to_rect(gl_from_canvas, chunk_rect_in_canvas);
 
   const [p1, p2] = rectPts(chunk_rect_in_gl);

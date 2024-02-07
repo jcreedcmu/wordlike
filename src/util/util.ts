@@ -147,6 +147,16 @@ export function allRectPts(rect: Rect): Point[] {
   return [rect.p, { x: rect.p.x + rect.sz.x, y: rect.p.y }, vadd(rect.p, rect.sz), { x: rect.p.x, y: rect.p.y + rect.sz.y }];
 }
 
+// Gives a rect covering the same area but "negatively", so that
+// allRectPts(invertRect(r)) = allRectPts(r).reverse()
 export function invertRect(rect: Rect): Rect {
   return { p: { x: rect.p.x + rect.sz.x, y: rect.p.y }, sz: { x: -rect.sz.x, y: rect.sz.y } }
+}
+
+export function pixelSnap(p: Point): Point {
+  return vm(p, x => Math.floor(x * devicePixelRatio) / devicePixelRatio);
+}
+
+export function pixelSnapRect(r: Rect): Rect {
+  return { p: pixelSnap(r.p), sz: pixelSnap(r.sz) };
 }
