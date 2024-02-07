@@ -4,7 +4,6 @@ import { produce } from '../util/produce';
 import { Point, Rect } from '../util/types';
 import { lerp, point_hash } from '../util/util';
 import { vadd, vdiv, vint, vm, vsnorm, vsub } from '../util/vutil';
-import { BIT_ACTIVATED } from './chunk';
 import { deterministicLetterSample } from './distribution';
 import { Layer, mkLayer } from './layer';
 import { incrementScore } from './scoring';
@@ -123,7 +122,7 @@ export function adjacentScoringOfBonus(bonus: Bonus, p_in_world_int: Point): Sco
     case 'vowel': return [{ bonus, p_in_world_int, destroy: true }];
     case 'consonant': return [{ bonus, p_in_world_int, destroy: true }];
     case 'copy': return [{ bonus, p_in_world_int, destroy: true }];
-    case 'word': return [{ bonus, p_in_world_int, destroy: false }];
+    case 'word': return [{ bonus, p_in_world_int, destroy: true }];
     case 'time': return [{ bonus, p_in_world_int, destroy: true }];
     default: return [];
   }
@@ -147,12 +146,7 @@ export function resolveScoring(state: CoreState, scoring: Scoring): CoreState {
     case 'copy': return produce(state, s => { s.slowState.inventory.copies += 3; });
     case 'word': {
       const { state: state1, wordBonus } = mkActiveWordBonus(state, scoring.p_in_world_int);
-      const cacheUpdate: CacheUpdate = {
-        p_in_world_int: wordBonus.p_in_world_int,
-        chunkUpdate: { t: 'setBit', bit: BIT_ACTIVATED }
-      };
       return produce(state1, s => {
-        s._cacheUpdateQueue.push(cacheUpdate);
         s.wordBonusState.active.push(wordBonus);
       });
     }

@@ -136,7 +136,7 @@ export function resolveValid(state: CoreState, validWords: Set<string>): CoreSta
 
   const wordAchievedScorings: Scoring[] = state.wordBonusState.active.filter(x => validWords.has(x.word)).map(x => ({
     bonus: { t: 'wordAchieved', word: x.word },
-    destroy: true,
+    destroy: false,
     p_in_world_int: x.p_in_world_int,
   }));
 
@@ -263,12 +263,9 @@ export function filterExpiredAnimations(now_ms: number, anims: Animation[]): Ani
 }
 
 // List of Points is where to destroy word bonuses without points
-export function filterExpiredWordBonusState(now_ms: number, wordBonusState: WordBonusState): [WordBonusState, Point[]] {
+export function filterExpiredWordBonusState(now_ms: number, wordBonusState: WordBonusState): WordBonusState {
   const newActive = wordBonusState.active.filter(wb => now_ms <= wb.activation_time_in_game + WORD_BONUS_INTERVAL_MS);
-  return [
-    produce(wordBonusState, s => { s.active = newActive; }),
-    wordBonusState.active.filter(wb => now_ms > wb.activation_time_in_game + WORD_BONUS_INTERVAL_MS).map(wb => wb.p_in_world_int)
-  ];
+  return produce(wordBonusState, s => { s.active = newActive; });
 }
 
 export function unpauseState(state: CoreState, pause: PauseData): CoreState {

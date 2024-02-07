@@ -17,7 +17,6 @@ export type ChunkValue = { t: 'bonus', bonus: Bonus } | { t: 'tile', tile: Rende
 
 export const BIT_SELECTED = 0;
 export const BIT_CONNECTED = 1;
-export const BIT_ACTIVATED = 2;
 
 export type ChunkUpdate =
   | { t: 'bonus', bonus: Bonus }
