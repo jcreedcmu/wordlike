@@ -99,6 +99,7 @@ function reduceMouseDownInResbar(state: GameState, wp: WidgetPoint & { t: 'resba
   if (res !== undefined) {
     return {
       t: 'multiple', actions: [
+        { t: 'setTool', tool: 'pointer' },
         { t: 'vacuousDown', wp },
         { t: 'startDragResource', wp, res, res_ix: Math.floor(wp.p_in_local.y / TOOLBAR_WIDTH) },
       ]
