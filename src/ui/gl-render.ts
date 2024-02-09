@@ -6,7 +6,7 @@ import { getWordBonusFraction, now_in_game } from "../core/clock";
 import { mkOverlay } from "../core/layer";
 import { eff_mob_in_world } from "../core/mobs";
 import { CacheUpdate, CoreState, GameState, MobsState, MouseState } from "../core/state";
-import { pointFall } from "../core/state-helpers";
+import { pointFall, pointFallForPan } from "../core/state-helpers";
 import { getTileId, get_hand_tiles, isSelectedForDrag } from "../core/tile-helpers";
 import { BOMB_RADIUS, SPRITE_PIXEL_WIDTH, getCurrentTool } from "../core/tools";
 import { DEBUG, doOnce, doOnceEvery, logger } from "../util/debug";
@@ -266,7 +266,7 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
       const radius = BOMB_RADIUS;
       for (let x = -radius; x <= radius; x++) {
         for (let y = -radius; y <= radius; y++) {
-          glFillRecta(env, cell_in_canvas(vadd({ x, y }, pointFall(cs, ms.p_in_canvas)), canvas_from_world), shadowColorRgba);
+          glFillRecta(env, cell_in_canvas(vadd({ x, y }, pointFallForPan(canvas_from_world, ms.p_in_canvas)), canvas_from_world), shadowColorRgba);
         }
       }
     }

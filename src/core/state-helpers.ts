@@ -3,7 +3,7 @@ import { getWidgetPoint } from "../ui/widget-helpers";
 import { DEBUG, logger } from "../util/debug";
 import { produce } from "../util/produce";
 import * as se1 from '../util/se1';
-import { apply, compose, inverse } from '../util/se2';
+import { SE2, apply, compose, inverse } from '../util/se2';
 import { Point } from "../util/types";
 import { vadd, vequal, vm } from "../util/vutil";
 import { Animation, mkPointDecayAnimation, mkScoreAnimation, mkWinAnimation } from './animations';
@@ -286,7 +286,11 @@ export function tileFall(state: CoreState, ms: MouseState): Point {
 }
 
 export function pointFall(state: CoreState, p_in_canvas: Point): Point {
-  return vm(apply(inverse(state.canvas_from_world), p_in_canvas),
+  return pointFallForPan(state.canvas_from_world, p_in_canvas);
+}
+
+export function pointFallForPan(canvas_from_world: SE2, p_in_canvas: Point): Point {
+  return vm(apply(inverse(canvas_from_world), p_in_canvas),
     Math.floor);
 }
 
