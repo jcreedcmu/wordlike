@@ -20,6 +20,7 @@ export type ScoringBonus =
   | { t: 'copy' }
   | { t: 'word' }
   | { t: 'time' }
+  | { t: 'dynamite' }
   ;
 
 export type Bonus =
@@ -65,6 +66,9 @@ export function bonusGenerator(p: Point, seed: number): Bonus {
     }
     else if (ph < 0.2) {
       return { t: 'vowel' };
+    }
+    else if (ph < 0.4) {
+      return { t: 'dynamite' };
     }
     else
       return { t: 'tree' };
@@ -124,7 +128,10 @@ export function adjacentScoringOfBonus(bonus: Bonus, p_in_world_int: Point): Sco
     case 'copy': return [{ bonus, p_in_world_int, destroy: true }];
     case 'word': return [{ bonus, p_in_world_int, destroy: true }];
     case 'time': return [{ bonus, p_in_world_int, destroy: true }];
-    default: return [];
+    case 'dynamite': return [{ bonus, p_in_world_int, destroy: true }];
+    case 'required': return [];
+    case 'empty': return [];
+    case 'block': return [];
   }
 }
 
@@ -152,6 +159,7 @@ export function resolveScoring(state: CoreState, scoring: Scoring): CoreState {
     }
     case 'wordAchieved': return produce(state, s => { incrementScore(s, bonus.word.length * 10 + 10); });
     case 'time': return produce(state, s => { s.slowState.inventory.times++; });
+    case 'dynamite': return produce(state, s => { s.slowState.inventory.dynamites++; });
   }
 }
 

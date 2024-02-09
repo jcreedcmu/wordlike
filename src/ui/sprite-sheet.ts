@@ -48,6 +48,7 @@ export function spriteLocOfBonus(bonus: Bonus): Point {
     case 'block': return { x: 1, y: 0 };
     case 'word': return { x: 0, y: 8 };
     case 'time': return spriteLocOfTool('time');
+    case 'dynamite': return { x: 0, y: 2 };
   }
 }
 
