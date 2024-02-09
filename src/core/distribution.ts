@@ -103,7 +103,7 @@ export function getSample(seed0: number, probs: Probs): { sample: number, seed: 
     let dsum = 0;
     for (let i = 0; i < probs.length; i++) {
       dsum += probs[i];
-      s += `\n${String.fromCharCode(97 + i)}: ${dsum}`;
+      s += `\n${String.fromCharCode(97 + i)}: ${Math.round(dsum * 1e5) / 1e5} (+${Math.round(probs[i] * 1000) / 10}%)`;
     }
     console.log(s);
   }
