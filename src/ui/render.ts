@@ -522,6 +522,13 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
   if (!hasLost)
     drawOtherUi();
 
+  // draw invalid words
+  if (ms.t == 'up') {
+    cs.slowState.invalidWords.forEach(lw => {
+      drawInvalidWord(d, pan_canvas_from_world, lw);
+    });
+  }
+
   drawUiFrame(d, cs);
 
   drawPauseButton();
@@ -531,13 +538,6 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
   }
 
   drawWordBonuses(ci, cs, pan_canvas_from_world);
-
-  // draw invalid words
-  if (ms.t == 'up') {
-    cs.slowState.invalidWords.forEach(lw => {
-      drawInvalidWord(d, pan_canvas_from_world, lw);
-    });
-  }
 
   const mp = midpointOfRect(canvas_bds_in_canvas);
 
