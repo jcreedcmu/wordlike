@@ -37,7 +37,7 @@ export function killableBonus(intent: KillIntent, bonus: Bonus): boolean {
       return !(bonus.t == 'required' || bonus.t == 'empty');
     case 'kill':
     case 'bomb':
-      return !(bonus.t == 'block' || bonus.t == 'required' || bonus.t == 'empty');
+      return !(bonus.t == 'water' || bonus.t == 'required' || bonus.t == 'empty');
   }
 
 }

@@ -293,7 +293,7 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
       switch (ms.res) {
         case 'wood':
           const p_in_world_int: Point = pointFall(state.coreState, wp.p_in_canvas);
-          if (getBonusFromLayer(state.coreState, p_in_world_int).t == 'block') {
+          if (getBonusFromLayer(state.coreState, p_in_world_int).t == 'water') {
             return { t: 'fillWater', wp };
           }
           else {

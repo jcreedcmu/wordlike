@@ -26,7 +26,7 @@ export type ScoringBonus =
 export type Bonus =
   | ScoringBonus
   | { t: 'empty' }
-  | { t: 'block' }
+  | { t: 'water' }
   ;
 
 const BLOCK_SIZE = 5;
@@ -91,7 +91,7 @@ export function bonusGenerator(p: Point, seed: number): Bonus {
     else if (ph < 0.62) {
       return { t: 'time' };
     } else {
-      return { t: 'block' };
+      return { t: 'water' };
     }
   }
   return { t: 'empty' };
@@ -131,7 +131,7 @@ export function adjacentScoringOfBonus(bonus: Bonus, p_in_world_int: Point): Sco
     case 'dynamite': return [{ bonus, p_in_world_int, destroy: true }];
     case 'required': return [];
     case 'empty': return [];
-    case 'block': return [];
+    case 'water': return [];
   }
 }
 

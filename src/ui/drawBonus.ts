@@ -45,7 +45,7 @@ export function drawBonus(d: CanvasRenderingContext2D, bonus: Bonus, canvas_from
       return;
     case 'empty':
       return;
-    case 'block': {
+    case 'water': {
       fillRect(d, rect_in_canvas, 'gray');
       return;
     }

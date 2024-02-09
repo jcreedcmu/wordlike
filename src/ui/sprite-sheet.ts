@@ -45,7 +45,11 @@ export function spriteLocOfBonus(bonus: Bonus): Point {
     case 'vowel': return spriteLocOfTool('vowel');
     case 'copy': return spriteLocOfTool('copy');
     case 'empty': return { x: 0, y: 7 };
-    case 'block': return { x: 1, y: 0 };
+
+    // this value is not used in the canvas renderer
+    // the gl renderer notices this as a special sentinel value
+    case 'water': return { x: 1, y: 0 };
+
     case 'word': return { x: 0, y: 8 };
     case 'time': return spriteLocOfTool('time');
     case 'dynamite': return { x: 0, y: 2 };

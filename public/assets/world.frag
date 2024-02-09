@@ -5,7 +5,8 @@ precision mediump float;
 #include "get_sprite_pixel.frag"
 
 const vec2 EMPTY_SPRITE = vec2(0.,7.);
-const vec2 BLOCK_SPRITE = vec2(1.,0.);
+const ivec2 WATER_SPRITE = ivec2(1,0);
+const int WATER_SPRITE_BYTE = (WATER_SPRITE.x << 4) + WATER_SPRITE.y;
 
 const vec3 TILE_SELECTED_COLOR = vec3(.06, .25, .68);
 
@@ -33,11 +34,11 @@ float crosshair(vec2 p) {
 
 int is_land(vec4 cell_data) {
   int ci = int(round(cell_data.x));
-  return int(!(ci == 16 || (ci >> 4) >= 12));
+  return int(!(ci == WATER_SPRITE_BYTE || (ci >> 4) >= 12));
 }
 
 vec4 get_terrain_pixel(vec2 p_in_world) {
-  // Experimental "land and water" drawing
+  // "land and water" drawing
 
   // All these h-suffixed values are minus 0.5 in world coordinates from the "real" p.
   vec2 p_in_world_h = p_in_world - vec2(0.5);
@@ -72,7 +73,7 @@ vec4 blendOver(vec4 a, vec4 b) {
 
 vec4 pre_get_sprite_pixel(vec2 p_in_world, vec2 p_in_world_fp, vec2 sprite_coords) {
   vec4 bonus_pixel = vec4(0.,0.,0.,0.);
-  if (sprite_coords != EMPTY_SPRITE && sprite_coords != BLOCK_SPRITE) {
+  if (sprite_coords != EMPTY_SPRITE && sprite_coords != vec2(WATER_SPRITE)) {
     bonus_pixel = get_sprite_pixel(p_in_world_fp, sprite_coords);
   }
   return blendOver(bonus_pixel, get_terrain_pixel(p_in_world));
