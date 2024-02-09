@@ -17,7 +17,7 @@ import { checkConnected, checkGridWords, gridKeys, mkGridOfMainTiles } from "./g
 import { mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
 import { addRandomMob, collidesWithMob } from "./mobs";
 import { PROGRESS_ANIMATION_POINTS, getHighWaterMark, getScore, setHighWaterMark } from "./scoring";
-import { CacheUpdate, CoreState, GameState, HAND_TILE_LIMIT, Location, MouseState, Tile, TileEntity, WordBonusState } from "./state";
+import { CacheUpdate, CoreState, GameState, HAND_TILE_LIMIT, Location, MainLoc, MouseState, Tile, TileEntity, WordBonusState } from "./state";
 import { addHandTileEntity, addWorldTile, get_hand_tiles, get_main_tiles, get_tiles, putTileInWorld } from "./tile-helpers";
 import { ensureTileId } from "./tile-id-helpers";
 import { getCurrentTool } from "./tools";
@@ -249,7 +249,7 @@ export function checkValid(state: CoreState): CoreState {
 }
 
 
-export function isTilePinned(state: CoreState, tileId: string, loc: Location & { t: 'world' }): boolean {
+export function isTilePinned(state: CoreState, tileId: string, loc: MainLoc): boolean {
   if (state.selected && state.selected.selectedIds.includes(tileId)) {
     return overlayAny(state.selected.overlay, p => vequal(p, { x: 0, y: 0 }));
   }
@@ -263,9 +263,10 @@ export function filterExpiredAnimations(now_ms: number, anims: Animation[]): Ani
 }
 
 // List of Points is where to destroy word bonuses without points
-export function filterExpiredWordBonusState(now_ms: number, wordBonusState: WordBonusState): WordBonusState {
+// number returned is number expired
+export function filterExpiredWordBonusState(now_ms: number, wordBonusState: WordBonusState): [WordBonusState, number] {
   const newActive = wordBonusState.active.filter(wb => now_ms <= wb.activation_time_in_game + WORD_BONUS_INTERVAL_MS);
-  return produce(wordBonusState, s => { s.active = newActive; });
+  return [produce(wordBonusState, s => { s.active = newActive; }), wordBonusState.active.length - newActive.length];
 }
 
 export function unpauseState(state: CoreState, pause: PauseData): CoreState {

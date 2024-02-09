@@ -412,10 +412,10 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
       const t_in_game = now_in_game(cs.game_from_clock);
       const activeCanvasAnimation = cs.animations.some(x => isActiveCanvasAnimation(x));
       const newAnimations = filterExpiredAnimations(t_in_game, cs.animations);
-      const newWordBonusState = filterExpiredWordBonusState(t_in_game, cs.wordBonusState);
+      const [newWordBonusState, numExpired] = filterExpiredWordBonusState(t_in_game, cs.wordBonusState);
       const cacheUpdates: CacheUpdate[] = [];
       state = produce(state, s => {
-        if (activeCanvasAnimation || cacheUpdates.length > 0) {
+        if (activeCanvasAnimation || cacheUpdates.length > 0 || numExpired > 0) {
           s.coreState.slowState.generation++;
         }
         s.coreState._cacheUpdateQueue.push(...cacheUpdates);
