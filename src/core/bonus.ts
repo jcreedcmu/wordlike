@@ -12,7 +12,7 @@ import { MoveTile, Scoring } from './state-helpers';
 import { mkActiveWordBonus } from './word-bonus';
 
 export type ScoringBonus =
-  | { t: 'bonus' }
+  | { t: 'tree' }
   | { t: 'bomb' }
   | { t: 'required', letter: string }
   | { t: 'consonant' }
@@ -67,7 +67,7 @@ export function bonusGenerator(p: Point, seed: number): Bonus {
       return { t: 'vowel' };
     }
     else
-      return { t: 'bonus' };
+      return { t: 'tree' };
   }
   function gradual(x: number): number {
     // graph in desmos: 1-\frac{1}{\log\left(1+x^{2}\right)+1}
@@ -117,7 +117,7 @@ export function isBlockingPoint(bonus: Bonus): boolean {
 
 export function adjacentScoringOfBonus(bonus: Bonus, p_in_world_int: Point): Scoring[] {
   switch (bonus.t) {
-    case 'bonus': return [{ bonus, p_in_world_int, destroy: true }];
+    case 'tree': return [{ bonus, p_in_world_int, destroy: true }];
     case 'bomb': return [{ bonus, p_in_world_int, destroy: true }];
     case 'vowel': return [{ bonus, p_in_world_int, destroy: true }];
     case 'consonant': return [{ bonus, p_in_world_int, destroy: true }];
@@ -138,7 +138,7 @@ export function overlapScoringOfBonus(bonus: Bonus, p_in_world_int: Point): Scor
 export function resolveScoring(state: CoreState, scoring: Scoring): CoreState {
   const bonus = scoring.bonus;
   switch (bonus.t) {
-    case 'bonus': return produce(state, s => { s.slowState.resource.wood++; });
+    case 'tree': return produce(state, s => { s.slowState.resource.wood++; });
     case 'bomb': return produce(state, s => { s.slowState.inventory.bombs++; });
     case 'required': return produce(state, s => { incrementScore(s, 10); });
     case 'vowel': return produce(state, s => { s.slowState.inventory.vowels += 5; });

@@ -38,7 +38,7 @@ export function spriteLocOfChunkValue(cval: ChunkValue) {
 
 export function spriteLocOfBonus(bonus: Bonus): Point {
   switch (bonus.t) {
-    case 'bonus': return { x: 1, y: 1 };
+    case 'tree': return { x: 1, y: 1 };
     case 'bomb': return spriteLocOfTool('bomb');
     case 'required': return spriteLocOfRequiredBonus(bonus.letter.charCodeAt(0) - 97);
     case 'consonant': return spriteLocOfTool('consonant');

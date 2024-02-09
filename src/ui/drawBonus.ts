@@ -40,7 +40,7 @@ export function drawBonus(d: CanvasRenderingContext2D, bonus: Bonus, canvas_from
   const rect_in_canvas = apply_to_rect(canvas_from_world, { p: p_in_world, sz: { x: 1, y: 1 } });
 
   switch (bonus.t) {
-    case 'bonus':
+    case 'tree':
       drawBonusPoint(d, canvas_from_world, p_in_world);
       return;
     case 'empty':
