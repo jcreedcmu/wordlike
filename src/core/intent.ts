@@ -1,14 +1,14 @@
 import { WidgetPoint } from '../ui/widget-helpers';
 import { produce } from '../util/produce';
 import { Point } from '../util/types';
-import { vint, vm } from '../util/vutil';
+import { vm } from '../util/vutil';
 import { Bonus } from './bonus';
 import { tryKillTileOfState } from './kill-helpers';
 import { vacuous_down } from './low-actions';
 import { SelectionOperation, deselect, selectionOperationOfMods } from './selection';
 import { CacheUpdate, GameState } from './state';
 import { checkValid, drawSpecific, withCoreState } from './state-helpers';
-import { CellContents, getMobileLoc, tileAtPoint } from './tile-helpers';
+import { CellContents, getMobileLoc, mobileAtPoint } from './tile-helpers';
 import { Tool, bombIntent, copyIntent, dynamiteIntent } from './tools';
 
 export type KillIntent =
@@ -28,7 +28,7 @@ export type Intent =
   ;
 
 function dynamiteableCell(cell: CellContents): boolean {
-  return cell.t == 'tile' || (cell.t == 'bonus' && killableBonus(dynamiteIntent, cell.bonus));
+  return cell.t == 'mobile' || (cell.t == 'bonus' && killableBonus(dynamiteIntent, cell.bonus));
 }
 
 export function killableBonus(intent: KillIntent, bonus: Bonus): boolean {
@@ -48,15 +48,15 @@ export function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number
 
   switch (tool) {
     case 'pointer':
-      if (hoverCell.t == 'tile') {
-        const hoverTile = hoverCell.tile;
+      if (hoverCell.t == 'mobile') {
+        const hoverMobile = hoverCell.mobile;
         if (pinned)
           return { t: 'panWorld' };
         if (mods.has('meta')) {
-          return { t: 'exchangeTiles', id: hoverTile.id };
+          return { t: 'exchangeTiles', id: hoverMobile.id };
         }
         else {
-          return { t: 'dragTile', id: hoverTile.id };
+          return { t: 'dragTile', id: hoverMobile.id };
         }
       }
       return { t: 'startSelection', opn: selectionOperationOfMods(mods) };
@@ -158,10 +158,12 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
       });
     case 'copy': {
       if (wp.t == 'world') {
-        const hoverTile = tileAtPoint(state.coreState, wp.p_in_local);
-        if (hoverTile == undefined)
+        const hoverMobile = mobileAtPoint(state.coreState, wp.p_in_local);
+        if (hoverMobile == undefined)
           return state;
-        const res = drawSpecific(state.coreState, hoverTile.letter);
+        if (hoverMobile.t != 'tile')
+          return state;
+        const res = drawSpecific(state.coreState, hoverMobile.letter);
         if (res == undefined)
           return state;
         let newCs = produce(deselect(res.cs), s => {

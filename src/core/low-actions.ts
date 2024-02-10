@@ -18,8 +18,8 @@ import { reduceKey } from './reduceKey';
 import { incrementScore, setScore } from './scoring';
 import { deselect, resolveSelection, setSelected } from './selection';
 import { CacheUpdate, CoreState, GameState, Location, MobsState, SceneState } from './state';
-import { MoveMobile, addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isOccupied, isOccupiedForMobiles, isTilePinned, needsRefresh, pointFall, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
-import { addResourceMobile, cellAtPoint, getMobileId, getMobileLoc, getRenderableMobile, get_hand_tiles, get_mobiles, moveTiles, moveToHandLoc, putMobilesInWorld, putTileInHand, putTilesInHandFromNotHand, removeAllMobiles, tileAtPoint } from "./tile-helpers";
+import { MoveMobile, addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isMobilePinned, isOccupied, isOccupiedForMobiles, needsRefresh, pointFall, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
+import { addResourceMobile, cellAtPoint, getMobileId, getMobileLoc, getRenderableMobile, get_hand_tiles, get_mobiles, mobileAtPoint, moveTiles, moveToHandLoc, putMobilesInWorld, putTileInHand, putTilesInHandFromNotHand, removeAllMobiles } from "./tile-helpers";
 import { bombIntent, dynamiteIntent, fillWaterIntent, getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
 import { shouldDisplayBackButton } from './winState';
 
@@ -51,7 +51,7 @@ function reduceMouseDownInWorld(state: GameState, wp: WidgetPoint & { t: 'world'
   const p_in_world_int = vm(wp.p_in_local, Math.floor);
   const hoverCell = cellAtPoint(state.coreState, p_in_world_int);
   let pinned =
-    (hoverCell.t == 'tile' && hoverCell.tile.loc.t == 'world') ? isTilePinned(state.coreState, hoverCell.tile.id, hoverCell.tile.loc) : false;
+    (hoverCell.t == 'mobile' && hoverCell.mobile.loc.t == 'world') ? isMobilePinned(state.coreState, hoverCell.mobile.id, hoverCell.mobile.loc) : false;
   const intent = getIntentOfMouseDown(getCurrentTool(state.coreState), wp, button, mods, hoverCell, pinned);
   return { t: 'mouseDownIntent', intent, wp };
 }
@@ -280,10 +280,10 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
         return { t: 'none' };
       const id0 = ms.id;
       const loc0 = getMobileLoc(state.coreState, id0);
-      const tile = tileAtPoint(state.coreState, wp.p_in_local);
-      if (tile == undefined)
+      const mobile = mobileAtPoint(state.coreState, wp.p_in_local);
+      if (mobile == undefined)
         return { t: 'none' };
-      const id1 = tile.id;
+      const id1 = mobile.id;
       const loc1 = getMobileLoc(state.coreState, id1);
       return {
         t: 'multiple', actions: [

@@ -255,23 +255,23 @@ export function isSelectedForDrag(state: GameState, tile: TileEntity): boolean {
 }
 
 export type CellContents =
-  | { t: 'tile', tile: TileEntity }
+  | { t: 'mobile', mobile: MobileEntity }
   | { t: 'bonus', bonus: Bonus }
   ;
 
 export function cellAtPoint(state: CoreState, p_in_world: Point): CellContents {
-  const tile = tileAtPoint(state, p_in_world);
-  if (tile !== undefined)
-    return { t: 'tile', tile };
+  const mobile = mobileAtPoint(state, p_in_world);
+  if (mobile !== undefined)
+    return { t: 'mobile', mobile };
   return { t: 'bonus', bonus: getBonusFromLayer(state, p_in_world) };
 }
 
-export function tileAtPoint(state: CoreState, p_in_world: Point): TileEntity | undefined {
-  let hoverTile: TileEntity | undefined = undefined;
+export function mobileAtPoint(state: CoreState, p_in_world: Point): MobileEntity | undefined {
+  let hoverMobile: MobileEntity | undefined = undefined;
   const p_in_world_int = vm(p_in_world, Math.floor);
-  for (const tile of get_main_tiles(state)) {
-    if (vequal(p_in_world_int, tile.loc.p_in_world_int)) {
-      return tile;
+  for (const mobile of get_mobiles(state)) {
+    if (mobile.loc.t == 'world' && vequal(p_in_world_int, mobile.loc.p_in_world_int)) {
+      return mobile;
     }
   }
   return undefined;

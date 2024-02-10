@@ -9,6 +9,7 @@ import { Point } from "../util/types";
 import { pixelSnapRect, rectPts } from "../util/util";
 import { vdiag } from "../util/vutil";
 import { gl_from_canvas } from "./gl-helpers";
+import { spriteLocOfRes } from "./sprite-sheet";
 import { canvas_bds_in_canvas } from "./widget-helpers";
 
 export const SPRITE_TEXTURE_UNIT = 0;
@@ -242,14 +243,45 @@ export function drawOneMobile(env: GlEnv, m: RenderableMobile, canvas_from_tile:
     gl.uniform2f(u_canvasSize, devicePixelRatio * canvas_bds_in_canvas.sz.x, devicePixelRatio * canvas_bds_in_canvas.sz.y);
 
     // The uniform from common.frag is called world_from_canvas, but this is a lie for this shader.
-    // We're actually supplying tile_from_canvas.
+    // We're actually supplying cell_from_canvas.
     const u_world_from_canvas = gl.getUniformLocation(prog, "u_world_from_canvas");
     gl.uniformMatrix3fv(u_world_from_canvas, false, asMatrix(inverse(compose(scale(vdiag(devicePixelRatio)), canvas_from_tile))));
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
   else {
-    throw new Error('Unimplemented'); // RESOURCE TODO
+    const { gl } = env;
+    const { prog, position } = env.spriteDrawer;
+    gl.useProgram(prog);
+
+    const chunk_rect_in_canvas = pixelSnapRect(apply_to_rect(canvas_from_tile, { p: vdiag(0), sz: { x: 1, y: 1 } }));
+    const chunk_rect_in_gl = apply_to_rect(gl_from_canvas, chunk_rect_in_canvas);
+
+    const [p1, p2] = rectPts(chunk_rect_in_gl);
+    bufferSetFloats(gl, position, [
+      p1.x, p2.y,
+      p2.x, p2.y,
+      p1.x, p1.y,
+      p2.x, p1.y,
+    ]);
+
+    const spriteLoc = spriteLocOfRes(m.res);
+
+    const u_spriteLoc = gl.getUniformLocation(prog, 'u_spriteLoc');
+    gl.uniform2i(u_spriteLoc, spriteLoc.x, spriteLoc.y);
+
+    const u_spriteTexture = gl.getUniformLocation(prog, 'u_spriteTexture');
+    gl.uniform1i(u_spriteTexture, SPRITE_TEXTURE_UNIT);
+
+    const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
+    gl.uniform2f(u_canvasSize, devicePixelRatio * canvas_bds_in_canvas.sz.x, devicePixelRatio * canvas_bds_in_canvas.sz.y);
+
+    // The uniform from common.frag is called world_from_canvas, but this is a lie for this shader.
+    // We're actually supplying cell_from_canvas.
+    const u_world_from_canvas = gl.getUniformLocation(prog, "u_world_from_canvas");
+    gl.uniformMatrix3fv(u_world_from_canvas, false, asMatrix(inverse(compose(scale(vdiag(devicePixelRatio)), canvas_from_tile))));
+
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
 }
 

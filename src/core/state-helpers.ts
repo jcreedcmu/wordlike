@@ -250,8 +250,8 @@ export function checkValid(state: CoreState): CoreState {
 }
 
 
-export function isTilePinned(state: CoreState, tileId: string, loc: MainLoc): boolean {
-  if (state.selected && state.selected.selectedIds.includes(tileId)) {
+export function isMobilePinned(state: CoreState, id: string, loc: MainLoc): boolean {
+  if (state.selected && state.selected.selectedIds.includes(id)) {
     return overlayAny(state.selected.overlay, p => vequal(p, { x: 0, y: 0 }));
   }
   else {
