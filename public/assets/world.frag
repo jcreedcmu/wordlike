@@ -125,7 +125,7 @@ vec4 get_cell_pixel(vec2 p_in_world, vec2 p_in_world_fp, ivec3 cell_data) {
   }
   // if high bit is clear, that means we're doing mobile resources
   else {
-    mobile_pixel = vec4(1., 0., 0., 1.); // XXX RESOURCE TODO
+    mobile_pixel = get_sprite_pixel(p_in_world_fp, vec2(channel_g >> 4, channel_g & 0xf));
   }
 
   return blendOver(mobile_pixel, bonus_pixel);
