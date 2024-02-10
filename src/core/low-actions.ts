@@ -580,8 +580,11 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     }
 
     case 'addResource': {
-      // TODO: pay cost
-      return withCoreState(state, cs => addResourceMobile(cs, action.p_in_world_int, action.res));
+      const cs1 = produce(state.coreState, cs => { cs.slowState.resource.wood--; });
+      const cs2 = addResourceMobile(cs1, action.p_in_world_int, action.res);
+      return produce(state, s => {
+        s.coreState = cs2;
+      });
     }
   }
 }
