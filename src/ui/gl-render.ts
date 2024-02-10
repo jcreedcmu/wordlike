@@ -25,7 +25,7 @@ import { FIXED_WORD_BUBBLE_SIZE, canvas_from_hand_tile } from "./render";
 import { spriteLocOfRes, spriteLocOfMob } from "./sprite-sheet";
 import { resizeView } from "./ui-helpers";
 import { CanvasGlInfo } from "./use-canvas";
-import { BUBBLE_FONT_SIZE, canvas_from_drag_tile, cell_in_canvas, drawBubbleAux, pan_canvas_from_world_of_state, textCenterOfBubble } from "./view-helpers";
+import { BUBBLE_FONT_SIZE, canvas_from_drag_mobile, cell_in_canvas, drawBubbleAux, pan_canvas_from_world_of_state, textCenterOfBubble } from "./view-helpers";
 import { TOOLBAR_WIDTH, canvas_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas, panic_bds_in_canvas, resbar_bds_in_canvas } from "./widget-helpers";
 
 const shadowColorRgba: RgbaColor = [128, 128, 100, Math.floor(0.4 * 255)];
@@ -182,7 +182,7 @@ function drawMouseStateTransients(env: GlEnv, canvas_from_world: SE2, cs: CoreSt
   // Here's where we draw dragged mobiles in general
   // draw dragged mobiles from selection
   switch (ms.t) {
-    case 'drag_tile': {
+    case 'drag_mobile': {
       const mobile0 = getMobileId(cs, ms.id);
 
       if (cs.selected) {
@@ -200,14 +200,14 @@ function drawMouseStateTransients(env: GlEnv, canvas_from_world: SE2, cs: CoreSt
               };
             }
 
-            const canvas_from_other_mobile = compose(canvas_from_drag_tile(cs, ms), drag_mobile_from_other_mobile);
+            const canvas_from_other_mobile = compose(canvas_from_drag_mobile(cs, ms), drag_mobile_from_other_mobile);
             drawOneMobile(env, getRenderableMobile(mobile), canvas_from_other_mobile);
           }
         });
       }
       else {
         const mobile = getMobileId(cs, ms.id);
-        drawOneMobile(env, getRenderableMobile(mobile), canvas_from_drag_tile(cs, ms));
+        drawOneMobile(env, getRenderableMobile(mobile), canvas_from_drag_mobile(cs, ms));
       }
     } return;
     case 'drag_resource': {

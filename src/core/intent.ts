@@ -110,7 +110,7 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
       return produce(state2, s => {
         s.coreState._cacheUpdateQueue.push(...cacheUpdates);
         s.mouseState = {
-          t: 'drag_tile',
+          t: 'drag_mobile',
           orig_loc: { t: 'world', p_in_world_int },
           id: intent.id,
           orig_p_in_canvas: wp.p_in_canvas,
@@ -170,7 +170,7 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
         return produce(state, s => {
           s.coreState = checkValid(newCs);
           s.mouseState = {
-            t: 'drag_tile',
+            t: 'drag_mobile',
             orig_loc: { t: 'hand', index: 0 }, // XXX: Seems like this orig_loc being wrong is harmless?
             id: res.newId,
             orig_p_in_canvas: wp.p_in_canvas,

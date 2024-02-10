@@ -1,4 +1,4 @@
-import { canvas_from_drag_tile } from "../ui/view-helpers";
+import { canvas_from_drag_mobile } from "../ui/view-helpers";
 import { getWidgetPoint } from "../ui/widget-helpers";
 import { DEBUG, logger } from "../util/debug";
 import { produce } from "../util/produce";
@@ -282,7 +282,7 @@ export function unpauseState(state: CoreState, pause: PauseData): CoreState {
 export function tileFall(state: CoreState, ms: MouseState): Point {
   return vm(compose(
     inverse(state.canvas_from_world),
-    canvas_from_drag_tile(state, ms)).translate,
+    canvas_from_drag_mobile(state, ms)).translate,
     Math.round);
 }
 
@@ -311,7 +311,7 @@ export function dropTopHandTile(state: GameState): GameState {
   const tile = handTiles[0];
   if (state.mouseState.t == 'up' && getWidgetPoint(cs, state.mouseState.p_in_canvas).t == 'world') {
     const p_in_world_int = pointFall(cs, state.mouseState.p_in_canvas);
-    if (!isOccupied(cs, { id: tile.id, mobile: { t: 'tile', letter: tile.letter }, p_in_world_int })) {
+    if (!isOccupied(cs, { mobile: { t: 'tile', letter: tile.letter }, p_in_world_int })) {
       return withCoreState(state, cs => checkValid(putMobileInWorld(cs, tile.id, p_in_world_int)));
     }
   }
@@ -319,7 +319,7 @@ export function dropTopHandTile(state: GameState): GameState {
 }
 
 export function proposedHandDragOverLimit(state: CoreState, mouseState: MouseState): boolean {
-  const numHandTiles = get_hand_tiles(state).length - (mouseState.t == 'drag_tile' && mouseState.orig_loc.t == 'hand' ? 1 : 0);
+  const numHandTiles = get_hand_tiles(state).length - (mouseState.t == 'drag_mobile' && mouseState.orig_loc.t == 'hand' ? 1 : 0);
   const numDragTiles = (state.selected == undefined ? 1 : state.selected.selectedIds.length);
   return numHandTiles + numDragTiles > HAND_TILE_LIMIT;
 }

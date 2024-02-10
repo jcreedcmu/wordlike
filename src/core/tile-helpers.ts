@@ -244,7 +244,7 @@ export function removeAllMobiles(state: CoreState): CoreState {
 }
 
 export function isSelectedForDrag(state: GameState, tile: TileEntity): boolean {
-  if (state.mouseState.t != 'drag_tile')
+  if (state.mouseState.t != 'drag_mobile')
     return false;
   if (state.coreState.selected === undefined) {
     return state.mouseState.id == tile.id;

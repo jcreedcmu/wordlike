@@ -1,5 +1,5 @@
 import { isActiveCanvasAnimation } from '../ui/drawAnimation';
-import { canvas_from_drag_tile, pan_canvas_from_canvas_of_mouse_state } from '../ui/view-helpers';
+import { canvas_from_drag_mobile, pan_canvas_from_canvas_of_mouse_state } from '../ui/view-helpers';
 import { TOOLBAR_WIDTH, WidgetPoint, getWidgetPoint } from '../ui/widget-helpers';
 import { DEBUG, debugTiles } from '../util/debug';
 import { produce } from '../util/produce';
@@ -166,7 +166,7 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
       return { t: 'set_canvas_from_world', canvas_from_world };
     }
 
-    case 'drag_tile': {
+    case 'drag_mobile': {
       const selected = state.coreState.selected;
 
       // This is what we want to return if the mouseup is "bad", in order to put the tiles back in the cache
@@ -230,7 +230,7 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
           const rm = getRenderableMobile(mobile);
           const dest_in_world_int = vm(compose(
             inverse(state.coreState.canvas_from_world),
-            canvas_from_drag_tile(state.coreState, ms)).translate,
+            canvas_from_drag_mobile(state.coreState, ms)).translate,
             Math.round);
           const moveTile: MoveMobile = {
             p_in_world_int: dest_in_world_int,
@@ -369,7 +369,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     case 'drawTile': return withCoreState(state, cs => drawOfState(cs));
     case 'flipOrientation': {
       const ms = state.mouseState;
-      if (ms.t == 'drag_tile' && cs.selected) {
+      if (ms.t == 'drag_mobile' && cs.selected) {
         const flippedMs = produce(ms, mss => { mss.flipped = !mss.flipped; });
         return produce(state, s => { s.mouseState = flippedMs; });
       }
@@ -466,7 +466,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
       return produce(withCoreState(state, deselect), s => {
         s.coreState.slowState.generation++;
         s.mouseState = {
-          t: 'drag_tile',
+          t: 'drag_mobile',
           orig_loc: { t: 'hand', index: action.index },
           id: tiles[action.index].id,
           orig_p_in_canvas: action.wp.p_in_canvas,

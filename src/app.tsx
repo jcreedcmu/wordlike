@@ -234,7 +234,7 @@ export function Game(props: GameProps): JSX.Element {
     switch (state.mouseState.t) {
       case 'up': return undefined;
       case 'drag_world': return 'grab';
-      case 'drag_tile': return 'pointer';
+      case 'drag_mobile': return 'pointer';
     }
   }
 

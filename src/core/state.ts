@@ -18,17 +18,22 @@ import { WinState } from './winState';
 export type MouseState =
   | { t: 'up', p_in_canvas: Point }
   | { t: 'down', p_in_canvas: Point }
+  // drag_world means we're panning
   | { t: 'drag_world', orig_p: Point, p_in_canvas: Point }
+  // drag_selection means we're actually dragging out the selection rectangle
   | { t: 'drag_selection', orig_p: Point, p_in_canvas: Point, opn: SelectionOperation }
   | { t: 'exchange_tiles', orig_loc: Location, orig_p_in_canvas: Point, p_in_canvas: Point, id: string }
+  // drag_mobile means we're dragging one or more mobiles starting from a position in-world, or in-hand
   | {
-    t: 'drag_tile',
+    t: 'drag_mobile',
     orig_loc: Location,
     orig_p_in_canvas: Point,
     p_in_canvas: Point,
     id: string,
     flipped: boolean,
   }
+  // drag_resource means we're dragging a resource starting from a position in the resbar.
+  // XXX: consider how this could perhaps be merged with drag_mobile
   | {
     t: 'drag_resource',
     p_in_canvas: Point,
