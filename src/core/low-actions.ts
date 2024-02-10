@@ -1,27 +1,25 @@
 import { isActiveCanvasAnimation } from '../ui/drawAnimation';
 import { canvas_from_drag_tile, pan_canvas_from_canvas_of_mouse_state } from '../ui/view-helpers';
-import { TOOLBAR_WIDTH, WidgetPoint, canvas_from_hand, getWidgetPoint } from '../ui/widget-helpers';
+import { TOOLBAR_WIDTH, WidgetPoint, getWidgetPoint } from '../ui/widget-helpers';
 import { DEBUG, debugTiles } from '../util/debug';
 import { produce } from '../util/produce';
 import { SE2, apply, compose, composen, inverse, scale, translate } from '../util/se2';
 import { Point } from '../util/types';
-import { fpart, getRandomOrder } from '../util/util';
+import { getRandomOrder } from '../util/util';
 import { vequal, vm, vscale, vsub } from '../util/vutil';
 import { GameAction, GameLowAction, LowAction } from './action';
-import { mkPointDecayAnimation } from './animations';
 import { getBonusFromLayer } from './bonus-helpers';
-import { ChunkUpdate } from './chunk';
 import { getPanicFraction, now_in_game } from './clock';
 import { getIntentOfMouseDown, reduceIntent } from './intent';
 import { tryKillTileOfState } from './kill-helpers';
-import { mkOverlayFrom, setOverlay } from './layer';
+import { mkOverlayFrom } from './layer';
 import { addRandomMob, advanceMob } from './mobs';
 import { reduceKey } from './reduceKey';
 import { incrementScore, setScore } from './scoring';
 import { deselect, resolveSelection, setSelected } from './selection';
 import { CacheUpdate, CoreState, GameState, Location, MobsState, SceneState } from './state';
-import { MoveMobile, addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isOccupied, isOccupiedForTiles, isTilePinned, needsRefresh, pointFall, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
-import { cellAtPoint, getMobileId, getMobileLoc, getRenderableMobile, get_hand_tiles, get_tiles, moveTiles, moveToHandLoc, putTileInHand, putTilesInHandFromNotHand, putMobilesInWorld, removeAllMobiles, tileAtPoint, addResourceMobile } from "./tile-helpers";
+import { MoveMobile, addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isOccupied, isOccupiedForMobiles, isTilePinned, needsRefresh, pointFall, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
+import { addResourceMobile, cellAtPoint, getMobileId, getMobileLoc, getRenderableMobile, get_hand_tiles, get_mobiles, moveTiles, moveToHandLoc, putMobilesInWorld, putTileInHand, putTilesInHandFromNotHand, removeAllMobiles, tileAtPoint } from "./tile-helpers";
 import { bombIntent, dynamiteIntent, fillWaterIntent, getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
 import { shouldDisplayBackButton } from './winState';
 
@@ -179,7 +177,7 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
         if (selected) {
 
           // FIXME: ensure the dragged tile is in the selection
-          const remainingTiles = get_tiles(state.coreState).filter(tile => !selected.selectedIds.includes(tile.id));
+          const remainingMobiles = get_mobiles(state.coreState).filter(mobile => !selected.selectedIds.includes(mobile.id));
 
           const new_tile_in_world_int: Point = tileFall(state.coreState, ms);
           const old_tile_loc: Location = ms.orig_loc;
@@ -215,7 +213,7 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
           });
 
           const tgts = moves.map(x => x.p_in_world_int);
-          if (moves.some(move => isOccupiedForTiles(state.coreState, move, remainingTiles))) {
+          if (moves.some(move => isOccupiedForMobiles(state.coreState, move, remainingMobiles))) {
             return bailout;
           }
 
@@ -306,6 +304,8 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
             return { t: 'fillWater', wp };
           }
           else if (bonus.t == 'empty') {
+            if (isOccupied(state.coreState, { p_in_world_int, mobile: { t: 'resource', res: ms.res } }))
+              return { t: 'none' };
             return { t: 'addResource', p_in_world_int, res: ms.res };
           }
           else {

@@ -39,6 +39,10 @@ export function get_tiles(state: CoreState): TileEntity[] {
   return Object.values(state.mobile_entities).flatMap(x => x.t == 'tile' ? [x] : []);
 }
 
+export function get_mobiles(state: CoreState): MobileEntity[] {
+  return Object.values(state.mobile_entities);
+}
+
 export function get_main_tiles(state: CoreState): MainTile[] {
   const keys: string[] = Object.keys(state.mobile_entities);
   function mainTilesOfString(k: string): MainTile[] {
