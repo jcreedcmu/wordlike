@@ -22,7 +22,7 @@ import { drawRenderableRect, renderPanicBar, wordBubblePanicBounds, wordBubblePa
 import { CANVAS_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, PREPASS_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, drawOneSprite, drawOneMobile, mkBonusDrawer, mkCanvasDrawer, mkDebugQuadDrawer, mkPrepassHelper, mkRectDrawer, mkSpriteDrawer, mkTileDrawer, mkWorldDrawer } from "./gl-common";
 import { gl_from_canvas } from "./gl-helpers";
 import { FIXED_WORD_BUBBLE_SIZE, canvas_from_hand_tile } from "./render";
-import { resourceSpriteLoc, spriteLocOfMob } from "./sprite-sheet";
+import { spriteLocOfRes, spriteLocOfMob } from "./sprite-sheet";
 import { resizeView } from "./ui-helpers";
 import { CanvasGlInfo } from "./use-canvas";
 import { BUBBLE_FONT_SIZE, canvas_from_drag_tile, cell_in_canvas, drawBubbleAux, pan_canvas_from_world_of_state, textCenterOfBubble } from "./view-helpers";
@@ -214,7 +214,7 @@ function drawMouseStateTransients(env: GlEnv, canvas_from_world: SE2, cs: CoreSt
       const offset = vdiag((TOOLBAR_WIDTH - SPRITE_PIXEL_WIDTH) / 2);
       const initial_pos = vadd(vadd(resbar_bds_in_canvas.p, { x: 0, y: ms.res_ix * TOOLBAR_WIDTH }), offset);
       const canvas_from_sprite = mkSE2(vdiag(SPRITE_PIXEL_WIDTH), vadd(initial_pos, vsub(ms.p_in_canvas, ms.orig_p_in_canvas)));
-      drawOneSprite(env, resourceSpriteLoc(ms.res), canvas_from_sprite);
+      drawOneSprite(env, spriteLocOfRes(ms.res), canvas_from_sprite);
     } return;
     case 'up': return;
     case 'down': return;

@@ -35,7 +35,7 @@ export function spriteLocOfChunkValue(cval: ChunkValue) {
             y: letterIndex % SPRITE_SHEET_SIZE.y,
           };
         case 'resource':
-          return resourceSpriteLoc(mobile.res);
+          return spriteLocOfRes(mobile.res);
       }
     case 'bonus':
       return spriteLocOfBonus(cval.bonus);
@@ -75,7 +75,7 @@ export function spriteLocOfTool(tool: Tool): Point {
   }
 }
 
-export function resourceSpriteLoc(res: Resource): Point {
+export function spriteLocOfRes(res: Resource): Point {
   switch (res) {
     case 'wood': return { y: 6, x: 1 };
   }

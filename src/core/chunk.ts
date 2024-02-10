@@ -1,4 +1,4 @@
-import { spriteLocOfChunkValue } from "../ui/sprite-sheet";
+import { spriteLocOfChunkValue, spriteLocOfRes } from "../ui/sprite-sheet";
 import { world_bds_in_canvas } from "../ui/widget-helpers";
 import { ImageData } from "../util/image-data";
 import { produce } from "../util/produce";
@@ -39,7 +39,7 @@ export function setChunkData(chunk: Chunk, kont: (p: Point) => ChunkValue): void
       const ix = x + y * chunk.size.x;
       const fix = 4 * ix;
       imdat.data[fix + 0] = (spritePos.x << 4) + spritePos.y;
-      imdat.data[fix + 1] = 32;
+      imdat.data[fix + 1] = byteOfEmpty();
       imdat.data[fix + 2] = 0;
       imdat.data[fix + 3] = 0;
     }
@@ -64,22 +64,30 @@ export function getChunk(cache: Overlay<Chunk>, p_in_chunk: Point): Chunk | unde
   return getOverlay(cache, p_in_chunk);
 }
 
+// This packs a Point in 16x16 into a single byte
+function byteOfSpriteLoc(p: Point): number {
+  return (p.x << 4) + p.y
+}
+
 // This computes the byte that goes in channel 1 of the four-channel
 // pixel for each tile, and is read by the fragment shader in
 // world.frag
 function byteOfMobile(m: RenderableMobile): number {
   switch (m.t) {
-    case 'tile': return m.letter.charCodeAt(0) - 97;
-    case 'resource': return 0; // RESOURCE TODO
+    case 'tile': return 128 + m.letter.charCodeAt(0) - 97;
+    case 'resource': return byteOfSpriteLoc(spriteLocOfRes(m.res));
   }
+}
+
+function byteOfEmpty(): number {
+  return 128 + 32;
 }
 
 function processChunkUpdate(cu: ChunkUpdate, oldVec: number[]): number[] {
   const rv = [...oldVec];
   switch (cu.t) {
     case 'bonus': {
-      const spritePos = spriteLocOfChunkValue({ t: 'bonus', bonus: cu.bonus });
-      rv[0] = (spritePos.x << 4) + spritePos.y;
+      rv[0] = byteOfSpriteLoc(spriteLocOfChunkValue({ t: 'bonus', bonus: cu.bonus }));
       return rv;
     }
     case 'addMobile': {
@@ -88,7 +96,7 @@ function processChunkUpdate(cu: ChunkUpdate, oldVec: number[]): number[] {
       return rv;
     }
     case 'removeMobile': {
-      rv[1] = 32;
+      rv[1] = byteOfEmpty();
       return rv;
     }
     case 'setBit': {

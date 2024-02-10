@@ -98,7 +98,7 @@ vec4 get_origin_pixel(vec2 p_in_world_int, vec2 p_in_world_fp) {
 //       bit 0: tile is selected
 //       bit 1: tile is connected to origin
 vec4 get_cell_pixel(vec2 p_in_world, vec2 p_in_world_fp, ivec3 cell_data) {
-  int letter = cell_data.g;
+  int channel_g = cell_data.g;
   int flags = cell_data.b;
   bool selected = (flags & 1) != 0;
   bool connected = (flags & 2) != 0;
@@ -107,19 +107,28 @@ vec4 get_cell_pixel(vec2 p_in_world, vec2 p_in_world_fp, ivec3 cell_data) {
 
   vec4 bonus_pixel = pre_get_sprite_pixel(p_in_world, p_in_world_fp, bonus_coords);
 
-  vec4 tile_pixel = vec4(0.,0.,0.,0.);
+  vec4 mobile_pixel = vec4(0.,0.,0.,0.);
 
-  if (letter != 32) {
-    tile_pixel = get_tile_pixel(p_in_world_fp, letter);
+  // if high bit is set, that means we're doing letter tiles
+  if ((channel_g & 128) != 0) {
+    int letter = channel_g & 0x7f;
 
+    // 32 is space
+    if (letter != 32) {
+      mobile_pixel = get_tile_pixel(p_in_world_fp, letter);
 
-    vec3 pixel = tile_pixel.rgb;
-    pixel = mix(pixel, TILE_SELECTED_COLOR, float(selected) * 0.5);
-    pixel = mix(pixel, TILE_DISCONNECTED_COLOR, float(!connected && !selected) * 0.4);
-    tile_pixel = vec4(pixel, tile_pixel.a);
+      vec3 pixel = mobile_pixel.rgb;
+      pixel = mix(pixel, TILE_SELECTED_COLOR, float(selected) * 0.5);
+      pixel = mix(pixel, TILE_DISCONNECTED_COLOR, float(!connected && !selected) * 0.4);
+      mobile_pixel = vec4(pixel, mobile_pixel.a);
+    }
+  }
+  // if high bit is clear, that means we're doing mobile resources
+  else {
+    mobile_pixel = vec4(1., 0., 0., 1.); // XXX RESOURCE TODO
   }
 
-  return blendOver(tile_pixel, bonus_pixel);
+  return blendOver(mobile_pixel, bonus_pixel);
 }
 
 vec4 getColor() {
