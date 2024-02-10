@@ -6,7 +6,7 @@ import { getOverlay } from '../core/layer';
 import { getScore } from '../core/scoring';
 import { CoreState, GameState, TileEntity } from '../core/state';
 import { lostState, pointFall, tileFall } from '../core/state-helpers';
-import { getTileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from '../core/tile-helpers';
+import { getMobileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from '../core/tile-helpers';
 import { BOMB_RADIUS, getCurrentResources, getCurrentTool, getCurrentTools, largeRectOf } from '../core/tools';
 import { shouldDisplayBackButton } from '../core/winState';
 import { DEBUG, doOnceEvery } from '../util/debug';
@@ -34,7 +34,7 @@ const backgroundRed = '#ffaaaa';
 
 
 
-const DRAW_TILE_SHADOWS = false;
+
 
 export function paintWithScale(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
   const { d } = ci;
@@ -423,32 +423,6 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
 
     d.save();
     d.clip(worldClip);
-
-    if (DRAW_TILE_SHADOWS) {
-      if (ms.t == 'drag_tile') {
-        if (cs.selected) {
-          const tile0 = getTileId(cs, ms.id);
-
-          const fall = tileFall(cs, ms);
-          const tiles = cs.selected.selectedIds.map(id => getTileId(cs, id));
-
-          // draw shadows
-          tiles.forEach(tile => {
-            if (tile.loc.t == 'world' && tile0.loc.t == 'world') {
-              const thisFall = apply(
-                translate(vsub(tile.loc.p_in_world_int, tile0.loc.p_in_world_int)),
-                fall
-              );
-              fillRect(d, cell_in_canvas(thisFall, pan_canvas_from_world), shadowColor);
-            }
-          });
-        }
-        else {
-          // draw shadow
-          fillRect(d, cell_in_canvas(tileFall(cs, ms), pan_canvas_from_world), shadowColor);
-        }
-      }
-    }
 
     const currentTool = getCurrentTool(cs);
     if (currentTool == 'bomb' && getWidgetPoint(cs, ms.p_in_canvas).t == 'world') {

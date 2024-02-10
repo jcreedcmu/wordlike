@@ -8,23 +8,22 @@ import { vadd, vinv, vm, vm2, vm3, vmul, vsub } from "../util/vutil";
 import { Bonus } from "./bonus";
 import { getBonusFromLayer } from "./bonus-helpers";
 import { Overlay, getOverlay, setOverlay } from "./layer";
-import { CoreState } from "./state";
-import { RenderableTile } from "./tile-helpers";
+import { CoreState, RenderableMobile } from "./state";
 
 export const WORLD_CHUNK_SIZE = { x: 16, y: 16 };
 
-export type ChunkValue = { t: 'bonus', bonus: Bonus } | { t: 'tile', tile: RenderableTile };
+export type ChunkValue = { t: 'bonus', bonus: Bonus } | { t: 'mobile', mobile: RenderableMobile };
 
 export const BIT_SELECTED = 0;
 export const BIT_CONNECTED = 1;
 
 export type ChunkUpdate =
   | { t: 'bonus', bonus: Bonus }
-  | { t: 'addTile', tile: RenderableTile }
-  | { t: 'removeTile' }
+  | { t: 'addMobile', mobile: RenderableMobile }
+  | { t: 'removeMobile' }
   | { t: 'setBit', bit: number }
   | { t: 'clearBit', bit: number }
-  | { t: 'restoreTile', tile: RenderableTile }
+  | { t: 'restoreMobile', mobile: RenderableMobile }
 
 export type Chunk = {
   size: Point,
@@ -65,6 +64,16 @@ export function getChunk(cache: Overlay<Chunk>, p_in_chunk: Point): Chunk | unde
   return getOverlay(cache, p_in_chunk);
 }
 
+// This computes the byte that goes in channel 1 of the four-channel
+// pixel for each tile, and is read by the fragment shader in
+// world.frag
+function byteOfMobile(m: RenderableMobile): number {
+  switch (m.t) {
+    case 'tile': return m.letter.charCodeAt(0) - 97;
+    case 'resource': return 0; // RESOURCE TODO
+  }
+}
+
 function processChunkUpdate(cu: ChunkUpdate, oldVec: number[]): number[] {
   const rv = [...oldVec];
   switch (cu.t) {
@@ -73,12 +82,12 @@ function processChunkUpdate(cu: ChunkUpdate, oldVec: number[]): number[] {
       rv[0] = (spritePos.x << 4) + spritePos.y;
       return rv;
     }
-    case 'addTile': {
-      rv[1] = cu.tile.letter.charCodeAt(0) - 97;
+    case 'addMobile': {
+      rv[1] = byteOfMobile(cu.mobile);
       rv[2] = 0;
       return rv;
     }
-    case 'removeTile': {
+    case 'removeMobile': {
       rv[1] = 32;
       return rv;
     }
@@ -90,9 +99,9 @@ function processChunkUpdate(cu: ChunkUpdate, oldVec: number[]): number[] {
       rv[2] &= (~(1 << cu.bit));
       return rv;
     }
-    case 'restoreTile': {
-      const spritePos = spriteLocOfChunkValue({ t: 'tile', tile: cu.tile });
-      rv[1] = cu.tile.letter.charCodeAt(0) - 97;
+    case 'restoreMobile': {
+      const spritePos = spriteLocOfChunkValue({ t: 'mobile', mobile: cu.mobile });
+      rv[1] = byteOfMobile(cu.mobile);
       return rv;
     }
   }

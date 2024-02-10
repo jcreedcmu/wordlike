@@ -8,7 +8,7 @@ import { vacuous_down } from './low-actions';
 import { SelectionOperation, deselect, selectionOperationOfMods } from './selection';
 import { CacheUpdate, GameState } from './state';
 import { checkValid, drawSpecific, withCoreState } from './state-helpers';
-import { CellContents, getTileLoc, tileAtPoint } from './tile-helpers';
+import { CellContents, getMobileLoc, tileAtPoint } from './tile-helpers';
 import { Tool, bombIntent, copyIntent, dynamiteIntent } from './tools';
 
 export type KillIntent =
@@ -93,13 +93,13 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
       // then we're dragging all the selected tiles. Otherwise we're dragging the clicked tile.
       const toErase: Point[] = sel && sel.selectedIds.includes(intent.id)
         ? sel.selectedIds.map(id => {
-          const loc = getTileLoc(cs, id);
+          const loc = getMobileLoc(cs, id);
           if (loc.t !== 'world')
             throw new Error('selected nonworld tile');
           return loc.p_in_world_int;
         })
         : [p_in_world_int];
-      const cacheUpdates: CacheUpdate[] = toErase.map(p_in_world_int => ({ p_in_world_int, chunkUpdate: { t: 'removeTile' } }));
+      const cacheUpdates: CacheUpdate[] = toErase.map(p_in_world_int => ({ p_in_world_int, chunkUpdate: { t: 'removeMobile' } }));
 
       if (sel) {
         // If we start dragging a tile not in the selection, we should deselect it first

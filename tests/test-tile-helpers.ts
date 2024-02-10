@@ -1,5 +1,5 @@
 import { GameState, mkGameState } from "../src/core/state";
-import { addHandTileEntity, addWorldTile, getTileLoc, putTileInWorld } from "../src/core/tile-helpers";
+import { addHandTileEntity, addWorldTile, getMobileLoc, putMobileInWorld } from "../src/core/tile-helpers";
 import { produce } from "../src/util/produce";
 import { Location } from '../src/core/state';
 
@@ -18,9 +18,9 @@ function testState(): GameState {
 describe('tile operations', () => {
   test('should do putInWorld correctly', () => {
     const state0 = testState().coreState;
-    const state1 = putTileInWorld(state0, '4', { x: 2, y: 0 });
-    expect(getTileLoc(state1, '3')).toEqual({ t: 'hand', index: 0 });
-    expect(getTileLoc(state1, '5')).toEqual({ t: 'hand', index: 1 });
+    const state1 = putMobileInWorld(state0, '4', { x: 2, y: 0 });
+    expect(getMobileLoc(state1, '3')).toEqual({ t: 'hand', index: 0 });
+    expect(getMobileLoc(state1, '5')).toEqual({ t: 'hand', index: 1 });
   });
 
 });

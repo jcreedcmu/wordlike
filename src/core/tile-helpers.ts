@@ -4,47 +4,48 @@ import { Point } from "../util/types";
 import { vequal, vm } from "../util/vutil";
 import { Bonus } from "./bonus";
 import { getBonusFromLayer } from "./bonus-helpers";
-import { CacheUpdate, CoreState, GameState, HandTile, Location, MainTile, Tile, TileEntity, TileOptionalId } from "./state";
-import { GenMoveTile, MoveTile } from "./state-helpers";
+import { CacheUpdate, CoreState, GameState, HandTile, Location, MainTile, MobileEntity, RenderableMobile, TileEntity, TileOptionalId } from "./state";
+import { GenMoveTile, MoveMobile } from "./state-helpers";
 import { addId, ensureId } from "./tile-id-helpers";
+import { Resource } from "./tools";
 
 export type TileId = string;
 
-// This should contain enough information to render a tile assuming we
-// already know its location.
-export type RenderableTile = {
-  letter: string,
-  // XXX status bits, like "selected", or "disconnected" should go here
+export function getRenderableMobile(m: MobileEntity): RenderableMobile {
+  switch (m.t) {
+    case 'tile': return { t: 'tile', letter: m.letter };
+    case 'resource': return { t: 'resource', res: m.res };
+  }
 }
 
-export function getTileId(state: CoreState, id: string): TileEntity {
-  return state.tile_entities[id];
+export function getMobileId(state: CoreState, id: string): MobileEntity {
+  return state.mobile_entities[id];
 }
 
-export function getTileLoc(state: CoreState, id: string): Location {
-  return state.tile_entities[id].loc;
+export function getMobileLoc(state: CoreState, id: string): Location {
+  return state.mobile_entities[id].loc;
 }
 
-function setTileLoc(state: Draft<CoreState>, id: string, loc: Location): void {
-  state.tile_entities[id].loc = loc;
+function setMobileLoc(state: Draft<CoreState>, id: string, loc: Location): void {
+  state.mobile_entities[id].loc = loc;
 }
 
 export function moveToHandLoc(state: Draft<CoreState>, id: string, loc: Location & { t: 'hand' }) {
-  state.tile_entities[id].loc = loc;
+  state.mobile_entities[id].loc = loc;
   // XXX update any hand cache?
 }
 
 export function get_tiles(state: CoreState): TileEntity[] {
-  return Object.values(state.tile_entities);
+  return Object.values(state.mobile_entities).flatMap(x => x.t == 'tile' ? [x] : []);
 }
 
 export function get_main_tiles(state: CoreState): MainTile[] {
-  const keys: string[] = Object.keys(state.tile_entities);
+  const keys: string[] = Object.keys(state.mobile_entities);
   function mainTilesOfString(k: string): MainTile[] {
-    const tile = getTileId(state, k);
-    const loc = tile.loc;
-    if (loc.t == 'world') {
-      return [{ ...tile, loc }];
+    const mobile = getMobileId(state, k);
+    const loc = mobile.loc;
+    if (loc.t == 'world' && mobile.t == 'tile') {
+      return [{ ...mobile, loc }];
     }
     else
       return [];
@@ -53,21 +54,21 @@ export function get_main_tiles(state: CoreState): MainTile[] {
 }
 
 export function get_hand_tiles(state: CoreState): HandTile[] {
-  return Object.keys(state.tile_entities).flatMap(k => {
-    const tile = getTileId(state, k);
-    const loc = tile.loc;
-    if (loc.t == 'hand')
-      return [{ ...tile, loc }];
+  return Object.keys(state.mobile_entities).flatMap(k => {
+    const mobile = getMobileId(state, k);
+    const loc = mobile.loc;
+    if (loc.t == 'hand' && mobile.t == 'tile')
+      return [{ ...mobile, loc }];
     else
       return [];
   }).sort((a, b) => a.loc.index - b.loc.index);
 }
 
-export function removeTile(state: CoreState, id: string): CoreState {
-  const loc = getTileLoc(state, id);
-  const nowhere = putTileNowhere(state, id);
+export function removeMobile(state: CoreState, id: string): CoreState {
+  const loc = getMobileLoc(state, id);
+  const nowhere = putMobileNowhere(state, id);
   return produce(nowhere, s => {
-    delete s.tile_entities[id];
+    delete s.mobile_entities[id];
   });
 }
 
@@ -76,42 +77,42 @@ export function addWorldTile(state: Draft<CoreState>, tile: TileOptionalId): voi
     id: tile.id,
     letter: tile.letter, loc: { t: 'world', p_in_world_int: tile.p_in_world_int }
   });
-  state.tile_entities[newTile.id] = newTile;
-  state._cacheUpdateQueue.push({ p_in_world_int: tile.p_in_world_int, chunkUpdate: { t: 'addTile', tile: { letter: tile.letter } } });
+  state.mobile_entities[newTile.id] = newTile;
+  state._cacheUpdateQueue.push({ p_in_world_int: tile.p_in_world_int, chunkUpdate: { t: 'addMobile', mobile: { t: 'tile', letter: tile.letter } } });
 }
 
 export function addHandTileEntity(state: Draft<CoreState>, letter: string, index: number, forceId?: string): TileEntity {
   const newTile: TileEntity = addId({ letter, loc: { t: 'hand', index } }, forceId);
-  state.tile_entities[newTile.id] = newTile;
+  state.mobile_entities[newTile.id] = newTile;
   return newTile;
 }
 
-export function putTileInWorld(state: CoreState, id: string, p_in_world_int: Point): CoreState {
-  const nowhere = putTileNowhere(state, id);
-  const tile = getTileId(state, id);
+export function putMobileInWorld(state: CoreState, id: string, p_in_world_int: Point): CoreState {
+  const nowhere = putMobileNowhere(state, id);
+  const mobile = getMobileId(state, id);
   const cacheUpdate: CacheUpdate = {
     p_in_world_int,
-    chunkUpdate: { t: 'addTile', tile: { letter: tile.letter } }
+    chunkUpdate: { t: 'addMobile', mobile: getRenderableMobile(mobile) }
   };
   return produce(nowhere, s => {
-    setTileLoc(s, id, { t: 'world', p_in_world_int });
+    setMobileLoc(s, id, { t: 'world', p_in_world_int });
     s._cacheUpdateQueue.push(cacheUpdate);
   });
 }
 
-export function putTilesInWorld(state: CoreState, moves: MoveTile[]): CoreState {
+export function putTilesInWorld(state: CoreState, moves: MoveMobile[]): CoreState {
   let cs = state;
   for (const move of moves) {
-    cs = putTileNowhere(cs, move.id);
+    cs = putMobileNowhere(cs, move.id);
   }
   for (const move of moves) {
     const cacheUpdate: CacheUpdate = {
       p_in_world_int: move.p_in_world_int,
-      chunkUpdate: { t: 'addTile', tile: { letter: move.letter } }
+      chunkUpdate: { t: 'addMobile', mobile: move.mobile }
     };
 
     cs = produce(cs, s => {
-      setTileLoc(s, move.id, { t: 'world', p_in_world_int: move.p_in_world_int });
+      setMobileLoc(s, move.id, { t: 'world', p_in_world_int: move.p_in_world_int });
       s._cacheUpdateQueue.push(cacheUpdate);
     });
   }
@@ -122,16 +123,16 @@ export function moveTiles(state: CoreState, moves: GenMoveTile[]): CoreState {
   let cs = state;
   // First remove all the tiles from the universe, emptying out cache
   for (const move of moves) {
-    cs = putTileNowhere(cs, move.id);
+    cs = putMobileNowhere(cs, move.id);
   }
   // Now tiles at their destinations
   for (const move of moves) {
     let cacheUpdate: CacheUpdate | undefined = undefined;
-    const tile = getTileId(state, move.id);
+    const mobile = getMobileId(state, move.id);
     const loc = move.loc;
     switch (loc.t) {
       case 'world':
-        cacheUpdate = { p_in_world_int: loc.p_in_world_int, chunkUpdate: { t: 'addTile', tile: { letter: tile.letter } } };
+        cacheUpdate = { p_in_world_int: loc.p_in_world_int, chunkUpdate: { t: 'addMobile', mobile: getRenderableMobile(mobile) } };
         break;
       case 'nowhere':
         break;
@@ -139,7 +140,7 @@ export function moveTiles(state: CoreState, moves: GenMoveTile[]): CoreState {
         break;
     }
     cs = produce(cs, s => {
-      setTileLoc(s, move.id, loc);
+      setMobileLoc(s, move.id, loc);
       if (cacheUpdate)
         s._cacheUpdateQueue.push(cacheUpdate);
     });
@@ -150,7 +151,7 @@ export function moveTiles(state: CoreState, moves: GenMoveTile[]): CoreState {
 
 // ix may be < 0 or >= handsize
 export function putTileInHand(state: CoreState, id: string, ix: number): CoreState {
-  const nowhere = putTileNowhere(state, id);
+  const nowhere = putMobileNowhere(state, id);
   const handTiles = get_hand_tiles(nowhere);
 
   if (ix > handTiles.length)
@@ -160,30 +161,30 @@ export function putTileInHand(state: CoreState, id: string, ix: number): CoreSta
 
   return produce(nowhere, s => {
     for (let i = ix; i < handTiles.length; i++) {
-      setTileLoc(s, handTiles[i].id, { t: 'hand', index: i + 1 });
+      setMobileLoc(s, handTiles[i].id, { t: 'hand', index: i + 1 });
     }
-    setTileLoc(s, id, { t: 'hand', index: ix });
+    setMobileLoc(s, id, { t: 'hand', index: ix });
   });
 }
 
-export function putTileNowhere(state: CoreState, id: string): CoreState {
-  const loc = getTileLoc(state, id);
+export function putMobileNowhere(state: CoreState, id: string): CoreState {
+  const loc = getMobileLoc(state, id);
   const handTiles = get_hand_tiles(state);
 
 
   switch (loc.t) {
     case 'world':
-      const cacheUpdate: CacheUpdate = { p_in_world_int: loc.p_in_world_int, chunkUpdate: { t: 'removeTile' } };
+      const cacheUpdate: CacheUpdate = { p_in_world_int: loc.p_in_world_int, chunkUpdate: { t: 'removeMobile' } };
       return produce(state, s => {
-        setTileLoc(s, id, { t: 'nowhere' });
+        setMobileLoc(s, id, { t: 'nowhere' });
         s._cacheUpdateQueue.push(cacheUpdate);
       });
     case 'hand':
       return produce(state, s => {
         for (let i = loc.index; i < handTiles.length; i++) {
-          setTileLoc(s, handTiles[i].id, { t: 'hand', index: i - 1 });
+          setMobileLoc(s, handTiles[i].id, { t: 'hand', index: i - 1 });
         }
-        setTileLoc(s, id, { t: 'nowhere' });
+        setMobileLoc(s, id, { t: 'nowhere' });
       });
     case 'nowhere':
       return state;
@@ -202,26 +203,27 @@ export function putTilesInHandFromNotHand(state: CoreState, ids: string[], ix: n
   const cacheUpdates: CacheUpdate[] = [];
 
   for (const id of ids) {
-    const tile = getTileId(state, id);
-    if (tile.loc.t == 'world') {
-      const p = tile.loc.p_in_world_int;
-      cacheUpdates.push({ p_in_world_int: p, chunkUpdate: { t: 'removeTile' } });
+    const mobile = getMobileId(state, id);
+    // XXX: should be checking that this is really a tile
+    if (mobile.loc.t == 'world') {
+      const p = mobile.loc.p_in_world_int;
+      cacheUpdates.push({ p_in_world_int: p, chunkUpdate: { t: 'removeMobile' } });
     }
   }
 
   return produce(state, s => {
     s._cacheUpdateQueue.push(...cacheUpdates);
     for (let i = ix; i < handTiles.length; i++) {
-      setTileLoc(s, handTiles[i].id, { t: 'hand', index: i + ids.length });
+      setMobileLoc(s, handTiles[i].id, { t: 'hand', index: i + ids.length });
     }
     ids.forEach((id, moved_ix) => {
-      setTileLoc(s, id, { t: 'hand', index: ix + moved_ix });
+      setMobileLoc(s, id, { t: 'hand', index: ix + moved_ix });
     });
   });
 }
 
-export function removeAllTiles(state: CoreState): CoreState {
-  return produce(state, s => { s.tile_entities = {}; });
+export function removeAllMobiles(state: CoreState): CoreState {
+  return produce(state, s => { s.mobile_entities = {}; });
 }
 
 export function isSelectedForDrag(state: GameState, tile: TileEntity): boolean {

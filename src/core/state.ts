@@ -80,10 +80,30 @@ export type Location =
   ;
 
 export type TileEntity = {
+  t: 'tile',
   id: string,
   loc: Location,
   letter: string,
 };
+
+export type ResourceEntity = {
+  t: 'resource',
+  id: string,
+  loc: Location,
+  res: Resource,
+};
+
+export type MobileEntity =
+  | TileEntity
+  | ResourceEntity
+  ;
+
+// This should contain enough information to render a mobile assuming we
+// already know its location.
+export type RenderableMobile =
+  | { t: 'tile', letter: string }
+  | { t: 'resource', res: Resource }
+  ;
 
 export type PreTileEntity = {
   loc: Location,
@@ -153,7 +173,7 @@ export type MobsState = {
 export type CoreState = {
   slowState: SlowState,
   animations: Animation[],
-  tile_entities: Record<string, TileEntity>,
+  mobile_entities: Record<string, MobileEntity>,
   connectedSet: Grid<boolean>,
   energies: Energies,
   canvas_from_world: SE2,
@@ -215,7 +235,7 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
         numAllocated: 0,
       },
       animations: [],
-      tile_entities: {},
+      mobile_entities: {},
       bonusOverlay: mkOverlay<Bonus>(),
       canvas_from_world: {
         scale: { x: DEFAULT_SCALE, y: DEFAULT_SCALE },

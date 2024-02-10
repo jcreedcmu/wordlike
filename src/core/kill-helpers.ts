@@ -9,7 +9,7 @@ import { getScore, incrementScore } from "./scoring";
 import { deselect } from "./selection";
 import { CoreState, MainTile } from "./state";
 import { checkValid } from './state-helpers';
-import { get_hand_tiles, get_main_tiles, removeTile } from "./tile-helpers";
+import { get_hand_tiles, get_main_tiles, removeMobile } from "./tile-helpers";
 import { BOMB_RADIUS } from './tools';
 
 function eligibleKillIntent(state: CoreState, intent: KillIntent): boolean {
@@ -68,7 +68,7 @@ function killTileOfState(state: CoreState, wp: DragWidgetPoint, intent: KillInte
       tilesToDestroy.forEach(p => {
         const tileAtP = tileAt(p);
         if (tileAtP !== undefined)
-          state = removeTile(state, tileAtP.id);
+          state = removeMobile(state, tileAtP.id);
       });
       // remove all killable bonuses in radius
       tilesToDestroy.forEach(p => {
@@ -87,7 +87,7 @@ function killTileOfState(state: CoreState, wp: DragWidgetPoint, intent: KillInte
         const tile = hand_tiles[index];
         if (tile == undefined)
           return state;
-        return checkValid(spendKillIntent(removeTile(state, tile.id), intent));
+        return checkValid(spendKillIntent(removeMobile(state, tile.id), intent));
       }
       else {
         return state;

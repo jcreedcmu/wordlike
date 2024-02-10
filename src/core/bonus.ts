@@ -8,7 +8,7 @@ import { deterministicLetterSample } from './distribution';
 import { Layer, mkLayer } from './layer';
 import { incrementScore } from './scoring';
 import { CacheUpdate, CoreState } from './state';
-import { MoveTile, Scoring } from './state-helpers';
+import { MoveMobile, Scoring } from './state-helpers';
 import { mkActiveWordBonus } from './word-bonus';
 
 export type ScoringBonus =
@@ -101,11 +101,11 @@ export function mkBonusLayer(seed: number): Layer<Bonus> {
   return mkLayer('bonus', p => bonusGenerator(p, seed));
 }
 
-export function isBlocking(tile: MoveTile, bonus: Bonus): boolean {
+export function isBlocking(move: MoveMobile, bonus: Bonus): boolean {
   if (bonus.t == 'empty')
     return false;
   if (bonus.t == 'required') {
-    return !(bonus.letter == tile.letter || DEBUG.allWords);
+    return !((move.mobile.t == 'tile' && move.mobile.letter == bonus.letter) || DEBUG.allWords);
   }
   return true;
 }

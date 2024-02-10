@@ -201,7 +201,7 @@ function exampleState(): GameState {
       },
       _cacheUpdateQueue: [],
       animations: [],
-      tile_entities: {},
+      mobile_entities: {},
       connectedSet: mkGridOf([]),
       energies: {
         byLetter: [

@@ -17,8 +17,8 @@ import { checkConnected, checkGridWords, gridKeys, mkGridOfMainTiles } from "./g
 import { mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
 import { addRandomMob, collidesWithMob } from "./mobs";
 import { PROGRESS_ANIMATION_POINTS, getHighWaterMark, getScore, setHighWaterMark } from "./scoring";
-import { CacheUpdate, CoreState, GameState, HAND_TILE_LIMIT, Location, MainLoc, MouseState, Tile, TileEntity, WordBonusState } from "./state";
-import { addHandTileEntity, addWorldTile, get_hand_tiles, get_main_tiles, get_tiles, putTileInWorld } from "./tile-helpers";
+import { CacheUpdate, CoreState, GameState, HAND_TILE_LIMIT, Location, MainLoc, MouseState, RenderableMobile, Tile, TileEntity, WordBonusState } from "./state";
+import { addHandTileEntity, addWorldTile, get_hand_tiles, get_main_tiles, get_tiles, putMobileInWorld } from "./tile-helpers";
 import { ensureTileId } from "./tile-id-helpers";
 import { getCurrentTool } from "./tools";
 import { WIN_SCORE, canWinFromState, shouldStartPanicBar } from "./winState";
@@ -46,7 +46,7 @@ export function addHandTileEntities(state: CoreState, tiles: { letter: string, i
 }
 
 
-export type MoveTile = { letter: string, id: string, p_in_world_int: Point };
+export type MoveMobile = { mobile: RenderableMobile, id: string, p_in_world_int: Point };
 export type GenMoveTile = { id: string, loc: Location };
 
 // XXX: unify isOccupiedForTiles and isOccupiedPointForTiles
@@ -57,7 +57,7 @@ export type GenMoveTile = { id: string, loc: Location };
 // - we consider the set of tiles on the board to be `tiles`,
 //   overriding whatever `state` says.
 // This is used when we're resolving a tile drag, before we've updated the state to remove the tiles.
-export function isOccupiedForTiles(state: CoreState, moveTile: MoveTile, tiles: TileEntity[]): boolean {
+export function isOccupiedForTiles(state: CoreState, moveTile: MoveMobile, tiles: TileEntity[]): boolean {
   return collidesWithWorldPoint(tiles, moveTile.p_in_world_int)
     || isBlocking(moveTile, getBonusFromLayer(state, moveTile.p_in_world_int))
     || state.mobsState.mobs.some(mob => collidesWithMob(mob, moveTile.p_in_world_int));
@@ -74,7 +74,7 @@ export function isOccupiedPointForTiles(state: CoreState, p_in_world_int: Point,
     || isBlockingPoint(getBonusFromLayer(state, p_in_world_int));
 }
 
-export function isOccupied(state: CoreState, moveTile: MoveTile): boolean {
+export function isOccupied(state: CoreState, moveTile: MoveMobile): boolean {
   return isOccupiedForTiles(state, moveTile, get_tiles(state));
 }
 
@@ -310,8 +310,8 @@ export function dropTopHandTile(state: GameState): GameState {
   const tile = handTiles[0];
   if (state.mouseState.t == 'up' && getWidgetPoint(cs, state.mouseState.p_in_canvas).t == 'world') {
     const p_in_world_int = pointFall(cs, state.mouseState.p_in_canvas);
-    if (!isOccupied(cs, { id: tile.id, letter: tile.letter, p_in_world_int })) {
-      return withCoreState(state, cs => checkValid(putTileInWorld(cs, tile.id, p_in_world_int)));
+    if (!isOccupied(cs, { id: tile.id, mobile: { t: 'tile', letter: tile.letter }, p_in_world_int })) {
+      return withCoreState(state, cs => checkValid(putMobileInWorld(cs, tile.id, p_in_world_int)));
     }
   }
   return state;

@@ -1,6 +1,7 @@
 import { getAssets } from "../core/assets";
 import { Chunk, WORLD_CHUNK_SIZE } from "../core/chunk";
 import { Overlay } from "../core/layer";
+import { RenderableMobile } from "../core/state";
 import { BufferAttr, attributeCreate, bufferSetFloats, shaderProgram } from "../util/gl-util";
 import { SE2, compose, inverse, scale } from "../util/se2";
 import { apply_to_rect, asMatrix } from "../util/se2-extra";
@@ -214,37 +215,42 @@ export function glCopyCanvas(env: GlEnv, c: HTMLCanvasElement): void {
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, c.width, c.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, c);
 }
 
-export function drawOneTile(env: GlEnv, letter: string, canvas_from_tile: SE2): void {
-  const { gl } = env;
-  const { prog, position } = env.tileDrawer;
-  gl.useProgram(prog);
+export function drawOneMobile(env: GlEnv, m: RenderableMobile, canvas_from_tile: SE2): void {
+  if (m.t == 'tile') {
+    const { gl } = env;
+    const { prog, position } = env.tileDrawer;
+    gl.useProgram(prog);
 
-  const chunk_rect_in_canvas = pixelSnapRect(apply_to_rect(canvas_from_tile, { p: vdiag(0), sz: { x: 1, y: 1 } }));
-  const chunk_rect_in_gl = apply_to_rect(gl_from_canvas, chunk_rect_in_canvas);
+    const chunk_rect_in_canvas = pixelSnapRect(apply_to_rect(canvas_from_tile, { p: vdiag(0), sz: { x: 1, y: 1 } }));
+    const chunk_rect_in_gl = apply_to_rect(gl_from_canvas, chunk_rect_in_canvas);
 
-  const [p1, p2] = rectPts(chunk_rect_in_gl);
-  bufferSetFloats(gl, position, [
-    p1.x, p2.y,
-    p2.x, p2.y,
-    p1.x, p1.y,
-    p2.x, p1.y,
-  ]);
+    const [p1, p2] = rectPts(chunk_rect_in_gl);
+    bufferSetFloats(gl, position, [
+      p1.x, p2.y,
+      p2.x, p2.y,
+      p1.x, p1.y,
+      p2.x, p1.y,
+    ]);
 
-  const u_tileLetter = gl.getUniformLocation(prog, 'u_tileLetter');
-  gl.uniform1i(u_tileLetter, letter.charCodeAt(0) - 97);
+    const u_tileLetter = gl.getUniformLocation(prog, 'u_tileLetter');
+    gl.uniform1i(u_tileLetter, m.letter.charCodeAt(0) - 97);
 
-  const u_fontTexture = gl.getUniformLocation(prog, 'u_fontTexture');
-  gl.uniform1i(u_fontTexture, FONT_TEXTURE_UNIT);
+    const u_fontTexture = gl.getUniformLocation(prog, 'u_fontTexture');
+    gl.uniform1i(u_fontTexture, FONT_TEXTURE_UNIT);
 
-  const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
-  gl.uniform2f(u_canvasSize, devicePixelRatio * canvas_bds_in_canvas.sz.x, devicePixelRatio * canvas_bds_in_canvas.sz.y);
+    const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
+    gl.uniform2f(u_canvasSize, devicePixelRatio * canvas_bds_in_canvas.sz.x, devicePixelRatio * canvas_bds_in_canvas.sz.y);
 
-  // The uniform from common.frag is called world_from_canvas, but this is a lie for this shader.
-  // We're actually supplying tile_from_canvas.
-  const u_world_from_canvas = gl.getUniformLocation(prog, "u_world_from_canvas");
-  gl.uniformMatrix3fv(u_world_from_canvas, false, asMatrix(inverse(compose(scale(vdiag(devicePixelRatio)), canvas_from_tile))));
+    // The uniform from common.frag is called world_from_canvas, but this is a lie for this shader.
+    // We're actually supplying tile_from_canvas.
+    const u_world_from_canvas = gl.getUniformLocation(prog, "u_world_from_canvas");
+    gl.uniformMatrix3fv(u_world_from_canvas, false, asMatrix(inverse(compose(scale(vdiag(devicePixelRatio)), canvas_from_tile))));
 
-  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
+  else {
+    throw new Error('Unimplemented'); // RESOURCE TODO
+  }
 }
 
 export function drawOneSprite(env: GlEnv, spriteLoc: Point, canvas_from_sprite: SE2): void {

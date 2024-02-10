@@ -7,7 +7,7 @@ import { getCacheState } from "./cache-state";
 import { BIT_SELECTED } from "./chunk";
 import { Overlay, mkOverlay, overlayForEach, setOverlay } from "./layer";
 import { CacheUpdate, CoreState, MouseState } from "./state";
-import { getTileId, get_main_tiles } from "./tile-helpers";
+import { getMobileId, get_main_tiles } from "./tile-helpers";
 
 export type SelectionOperation =
   | 'set'
@@ -42,9 +42,9 @@ export function resolveSelection(state: CoreState, ms: MouseState & { t: 'drag_s
   };
 
   computedIds.forEach(id => {
-    const tile = getTileId(state, id);
-    if (tile.loc.t == 'world') {
-      setOverlay(selected.overlay, tile.loc.p_in_world_int, true);
+    const mobile = getMobileId(state, id);
+    if (mobile.loc.t == 'world') {
+      setOverlay(selected.overlay, mobile.loc.p_in_world_int, true);
     }
   });
 

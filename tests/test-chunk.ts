@@ -3,7 +3,7 @@
 import { WORLD_CHUNK_SIZE } from "../src/core/chunk";
 import { getOverlay } from "../src/core/layer";
 import { GameState, mkGameState } from "../src/core/state";
-import { addHandTileEntity, addWorldTile, putTileInWorld } from "../src/core/tile-helpers";
+import { addHandTileEntity, addWorldTile, putMobileInWorld } from "../src/core/tile-helpers";
 import { produce } from "../src/util/produce";
 
 const SEED = 12345678;
@@ -18,7 +18,7 @@ describe('putTileInWorld', () => {
   test('should update cache correctly', () => {
     let state = oneTileState().coreState;
     const p_in_world_int = { x: 1, y: 0 };
-    state = produce(state, s => { putTileInWorld(s, '1', p_in_world_int); });
+    state = produce(state, s => { putMobileInWorld(s, '1', p_in_world_int); });
     // const chunk = getOverlay(state._cachedTileChunkMap, { x: 0, y: 0 })!;
     // const ix = 4 * (p_in_world_int.y * WORLD_CHUNK_SIZE.x + p_in_world_int.x);
     // expect(chunk.imdat.data[ix + 1]).toEqual(0); // a

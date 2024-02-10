@@ -25,12 +25,18 @@ export function largeSpriteRectOfPos(pos: Point): Rect {
 
 export function spriteLocOfChunkValue(cval: ChunkValue) {
   switch (cval.t) {
-    case 'tile':
-      const letterIndex = cval.tile.letter.charCodeAt(0) - 97;
-      return {
-        x: 14 + Math.floor(letterIndex / SPRITE_SHEET_SIZE.y),
-        y: letterIndex % SPRITE_SHEET_SIZE.y,
-      };
+    case 'mobile':
+      const mobile = cval.mobile;
+      switch (mobile.t) {
+        case 'tile':
+          const letterIndex = mobile.letter.charCodeAt(0) - 97;
+          return {
+            x: 14 + Math.floor(letterIndex / SPRITE_SHEET_SIZE.y),
+            y: letterIndex % SPRITE_SHEET_SIZE.y,
+          };
+        case 'resource':
+          return resourceSpriteLoc(mobile.res);
+      }
     case 'bonus':
       return spriteLocOfBonus(cval.bonus);
   }

@@ -10,6 +10,7 @@ import { vequal, vm, vscale, vsub } from '../util/vutil';
 import { GameAction, GameLowAction, LowAction } from './action';
 import { mkPointDecayAnimation } from './animations';
 import { getBonusFromLayer } from './bonus-helpers';
+import { ChunkUpdate } from './chunk';
 import { getPanicFraction, now_in_game } from './clock';
 import { getIntentOfMouseDown, reduceIntent } from './intent';
 import { tryKillTileOfState } from './kill-helpers';
@@ -19,8 +20,8 @@ import { reduceKey } from './reduceKey';
 import { incrementScore, setScore } from './scoring';
 import { deselect, resolveSelection, setSelected } from './selection';
 import { CacheUpdate, CoreState, GameState, Location, MobsState, SceneState } from './state';
-import { MoveTile, addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isOccupied, isOccupiedForTiles, isTilePinned, needsRefresh, pointFall, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
-import { cellAtPoint, getTileId, get_hand_tiles, get_tiles, moveTiles, moveToHandLoc, putTileInHand, putTilesInHandFromNotHand, putTilesInWorld, removeAllTiles, tileAtPoint } from "./tile-helpers";
+import { MoveMobile, addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isOccupied, isOccupiedForTiles, isTilePinned, needsRefresh, pointFall, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
+import { cellAtPoint, getMobileId, getMobileLoc, getRenderableMobile, get_hand_tiles, get_tiles, moveTiles, moveToHandLoc, putTileInHand, putTilesInHandFromNotHand, putTilesInWorld, removeAllMobiles, tileAtPoint } from "./tile-helpers";
 import { bombIntent, dynamiteIntent, fillWaterIntent, getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
 import { shouldDisplayBackButton } from './winState';
 
@@ -189,10 +190,11 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
           const old_tile_in_world_int = old_tile_loc.p_in_world_int;
           const new_tile_from_old_tile: SE2 = translate(vsub(new_tile_in_world_int, old_tile_in_world_int));
 
-          const moves: MoveTile[] = selected.selectedIds.flatMap(id => {
-            const tile = getTileId(state.coreState, id);
-            const loc = tile.loc;
+          const moves: MoveMobile[] = selected.selectedIds.flatMap(id => {
+            const mobile = getMobileId(state.coreState, id);
+            const loc = mobile.loc;
             if (loc.t == 'world') {
+              // XXX rename to mobile
               let drag_tile_from_other_tile = translate(vsub(loc.p_in_world_int, old_tile_in_world_int));
               if (ms.flipped) {
                 drag_tile_from_other_tile = {
@@ -202,7 +204,12 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
                   }
                 };
               }
-              return [{ id, letter: tile.letter, p_in_world_int: apply(drag_tile_from_other_tile, new_tile_in_world_int) }];
+              const move: MoveMobile = {
+                id,
+                mobile: getRenderableMobile(mobile),
+                p_in_world_int: apply(drag_tile_from_other_tile, new_tile_in_world_int)
+              };
+              return [move];
             }
             else return [];
           });
@@ -221,19 +228,20 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
           };
         }
         else {
-          const letter = getTileId(state.coreState, ms.id).letter;
+          const mobile = getMobileId(state.coreState, ms.id);
+          const rm = getRenderableMobile(mobile);
           const dest_in_world_int = vm(compose(
             inverse(state.coreState.canvas_from_world),
             canvas_from_drag_tile(state.coreState, ms)).translate,
             Math.round);
-          const moveTile: MoveTile = {
+          const moveTile: MoveMobile = {
             p_in_world_int: dest_in_world_int,
             id: ms.id,
-            letter: letter,
+            mobile: rm,
           }
           const is_noop = ms.orig_loc.t == 'world' && vequal(dest_in_world_int, ms.orig_loc.p_in_world_int);
           const afterDrop: GameLowAction = !isOccupied(state.coreState, moveTile) || is_noop
-            ? { t: 'putTilesInWorld', moves: [{ id: ms.id, p_in_world_int: moveTile.p_in_world_int, letter: letter }] }
+            ? { t: 'putTilesInWorld', moves: [{ id: ms.id, p_in_world_int: moveTile.p_in_world_int, mobile: rm }] }
             : bailout;
           return { t: 'multiple', actions: [afterDrop, { t: 'checkValid' }] };
         }
@@ -273,12 +281,12 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
       if (wp.t != 'world')
         return { t: 'none' };
       const id0 = ms.id;
-      const loc0 = getTileId(state.coreState, id0).loc;
+      const loc0 = getMobileLoc(state.coreState, id0);
       const tile = tileAtPoint(state.coreState, wp.p_in_local);
       if (tile == undefined)
         return { t: 'none' };
       const id1 = tile.id;
-      const loc1 = getTileId(state.coreState, id1).loc;
+      const loc1 = getMobileLoc(state.coreState, id1);
       return {
         t: 'multiple', actions: [
           { t: 'swap', id0, id1, loc0, loc1 },
@@ -369,7 +377,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
       return withCoreState(state, cs => tryKillTileOfState(cs, action.wp, fillWaterIntent));
     case 'dropTopHandTile': return dropTopHandTile(state);
     case 'debug': {
-      return withCoreState(state, cs => checkValid(produce(addWorldTiles(removeAllTiles(cs), debugTiles()), s => {
+      return withCoreState(state, cs => checkValid(produce(addWorldTiles(removeAllMobiles(cs), debugTiles()), s => {
         setScore(s, 900);
         s.slowState.inventory.dynamites = 15;
         s.slowState.inventory.bombs = 15;
@@ -527,13 +535,14 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
 
     case 'restoreTiles': {
       const cacheUpdates: CacheUpdate[] = action.ids.flatMap(id => {
-        const tile = getTileId(cs, id);
-        if (tile.loc.t != 'world')
+        const mobile = getMobileId(cs, id);
+        if (mobile.loc.t != 'world')
           return [];
-        return [{
-          p_in_world_int: tile.loc.p_in_world_int,
-          chunkUpdate: { t: 'restoreTile', tile: { letter: tile.letter } }
-        }];
+        const cu: CacheUpdate = {
+          p_in_world_int: mobile.loc.p_in_world_int,
+          chunkUpdate: { t: 'restoreMobile', mobile: getRenderableMobile(mobile) }
+        };
+        return [cu];
       });
 
       return produce(state, s => {

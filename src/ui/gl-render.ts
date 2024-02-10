@@ -7,7 +7,7 @@ import { mkOverlay } from "../core/layer";
 import { eff_mob_in_world } from "../core/mobs";
 import { CacheUpdate, CoreState, GameState, MobsState, MouseState } from "../core/state";
 import { pointFall, pointFallForPan } from "../core/state-helpers";
-import { getTileId, get_hand_tiles, isSelectedForDrag } from "../core/tile-helpers";
+import { getMobileId, getRenderableMobile, get_hand_tiles, isSelectedForDrag } from "../core/tile-helpers";
 import { BOMB_RADIUS, SPRITE_PIXEL_WIDTH, getCurrentTool } from "../core/tools";
 import { DEBUG, doOnce, doOnceEvery, logger } from "../util/debug";
 import { RgbColor, RgbaColor, imageDataOfBuffer } from "../util/dutil";
@@ -19,7 +19,7 @@ import { rectPts, unreachable } from "../util/util";
 import { vadd, vdiag, vequal, vmul, vsub } from "../util/vutil";
 import { drawGlAnimation } from "./drawGlAnimation";
 import { drawRenderableRect, renderPanicBar, wordBubblePanicBounds, wordBubblePanicRect } from "./drawPanicBar";
-import { CANVAS_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, PREPASS_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, drawOneSprite, drawOneTile, mkBonusDrawer, mkCanvasDrawer, mkDebugQuadDrawer, mkPrepassHelper, mkRectDrawer, mkSpriteDrawer, mkTileDrawer, mkWorldDrawer } from "./gl-common";
+import { CANVAS_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, PREPASS_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, drawOneSprite, drawOneMobile, mkBonusDrawer, mkCanvasDrawer, mkDebugQuadDrawer, mkPrepassHelper, mkRectDrawer, mkSpriteDrawer, mkTileDrawer, mkWorldDrawer } from "./gl-common";
 import { gl_from_canvas } from "./gl-helpers";
 import { FIXED_WORD_BUBBLE_SIZE, canvas_from_hand_tile } from "./render";
 import { resourceSpriteLoc, spriteLocOfMob } from "./sprite-sheet";
@@ -179,35 +179,35 @@ function drawMobs(env: GlEnv, canvas_from_world: SE2, mobsState: MobsState): voi
 
 
 function drawMouseStateTransients(env: GlEnv, canvas_from_world: SE2, cs: CoreState, ms: MouseState) {
-  // Here's where we draw dragged tiles in general
-  // draw dragged tiles from selection
+  // Here's where we draw dragged mobiles in general
+  // draw dragged mobiles from selection
   switch (ms.t) {
     case 'drag_tile': {
-      const tile0 = getTileId(cs, ms.id);
+      const mobile0 = getMobileId(cs, ms.id);
 
       if (cs.selected) {
-        const tiles = cs.selected.selectedIds.map(id => getTileId(cs, id));
-        // draw dragged tiles
-        tiles.forEach(tile => {
-          if (tile.loc.t == 'world' && tile0.loc.t == 'world') {
-            let drag_tile_from_other_tile = translate(vsub(tile.loc.p_in_world_int, tile0.loc.p_in_world_int));
+        const mobiles = cs.selected.selectedIds.map(id => getMobileId(cs, id));
+        // draw dragged mobiles
+        mobiles.forEach(mobile => {
+          if (mobile.loc.t == 'world' && mobile0.loc.t == 'world') {
+            let drag_mobile_from_other_mobile = translate(vsub(mobile.loc.p_in_world_int, mobile0.loc.p_in_world_int));
             if (ms.flipped) {
-              drag_tile_from_other_tile = {
-                scale: drag_tile_from_other_tile.scale, translate: {
-                  x: drag_tile_from_other_tile.translate.y,
-                  y: drag_tile_from_other_tile.translate.x,
+              drag_mobile_from_other_mobile = {
+                scale: drag_mobile_from_other_mobile.scale, translate: {
+                  x: drag_mobile_from_other_mobile.translate.y,
+                  y: drag_mobile_from_other_mobile.translate.x,
                 }
               };
             }
 
-            const canvas_from_other_tile = compose(canvas_from_drag_tile(cs, ms), drag_tile_from_other_tile);
-            drawOneTile(env, tile.letter, canvas_from_other_tile);
+            const canvas_from_other_mobile = compose(canvas_from_drag_tile(cs, ms), drag_mobile_from_other_mobile);
+            drawOneMobile(env, getRenderableMobile(mobile), canvas_from_other_mobile);
           }
         });
       }
       else {
-        const tile = getTileId(cs, ms.id);
-        drawOneTile(env, tile.letter, canvas_from_drag_tile(cs, ms));
+        const mobile = getMobileId(cs, ms.id);
+        drawOneMobile(env, getRenderableMobile(mobile), canvas_from_drag_tile(cs, ms));
       }
     } return;
     case 'drag_resource': {
@@ -306,7 +306,7 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
       get_hand_tiles(cs).forEach(tile => {
         if (isSelectedForDrag(state, tile))
           return;
-        drawOneTile(env, tile.letter, canvas_from_hand_tile(tile.loc.index));
+        drawOneMobile(env, tile, canvas_from_hand_tile(tile.loc.index));
       });
 
       drawMouseStateTransients(env, canvas_from_world, cs, ms);
