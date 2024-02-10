@@ -100,7 +100,7 @@ export function putMobileInWorld(state: CoreState, id: string, p_in_world_int: P
   });
 }
 
-export function putTilesInWorld(state: CoreState, moves: MoveMobile[]): CoreState {
+export function putMobilesInWorld(state: CoreState, moves: MoveMobile[]): CoreState {
   let cs = state;
   for (const move of moves) {
     cs = putMobileNowhere(cs, move.id);

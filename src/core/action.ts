@@ -37,7 +37,7 @@ export type GameLowAction =
   | { t: 'andMouseUp', p_in_canvas: Point, action: GameLowAction }
   | { t: 'dragSelectionEnd', ms: MouseState & { t: 'drag_selection' } }
   | { t: 'set_canvas_from_world', canvas_from_world: SE2 }
-  | { t: 'putTilesInWorld', moves: MoveMobile[] }
+  | { t: 'putMobilesInWorld', moves: MoveMobile[] }
   | { t: 'putTilesInHandFromNotHand', ids: string[], ix: number } // ix may be < 0 or >= handsize
   | { t: 'putTileInHand', id: string, ix: number } // ix may be < 0 or >= handsize
   | { t: 'setSelected', sel: SelectionState | undefined }

@@ -21,7 +21,7 @@ import { incrementScore, setScore } from './scoring';
 import { deselect, resolveSelection, setSelected } from './selection';
 import { CacheUpdate, CoreState, GameState, Location, MobsState, SceneState } from './state';
 import { MoveMobile, addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isOccupied, isOccupiedForTiles, isTilePinned, needsRefresh, pointFall, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
-import { cellAtPoint, getMobileId, getMobileLoc, getRenderableMobile, get_hand_tiles, get_tiles, moveTiles, moveToHandLoc, putTileInHand, putTilesInHandFromNotHand, putTilesInWorld, removeAllMobiles, tileAtPoint } from "./tile-helpers";
+import { cellAtPoint, getMobileId, getMobileLoc, getRenderableMobile, get_hand_tiles, get_tiles, moveTiles, moveToHandLoc, putTileInHand, putTilesInHandFromNotHand, putMobilesInWorld, removeAllMobiles, tileAtPoint } from "./tile-helpers";
 import { bombIntent, dynamiteIntent, fillWaterIntent, getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
 import { shouldDisplayBackButton } from './winState';
 
@@ -221,7 +221,7 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
 
           return {
             t: 'multiple', actions: [
-              { t: 'putTilesInWorld', moves },
+              { t: 'putMobilesInWorld', moves },
               { t: 'setSelected', sel: { overlay: mkOverlayFrom(tgts), selectedIds: selected.selectedIds } },
               { t: 'checkValid' },
             ]
@@ -241,7 +241,7 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
           }
           const is_noop = ms.orig_loc.t == 'world' && vequal(dest_in_world_int, ms.orig_loc.p_in_world_int);
           const afterDrop: GameLowAction = !isOccupied(state.coreState, moveTile) || is_noop
-            ? { t: 'putTilesInWorld', moves: [{ id: ms.id, p_in_world_int: moveTile.p_in_world_int, mobile: rm }] }
+            ? { t: 'putMobilesInWorld', moves: [{ id: ms.id, p_in_world_int: moveTile.p_in_world_int, mobile: rm }] }
             : bailout;
           return { t: 'multiple', actions: [afterDrop, { t: 'checkValid' }] };
         }
@@ -489,8 +489,8 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
         s.coreState.canvas_from_world = action.canvas_from_world;
       });
     }
-    case 'putTilesInWorld':
-      return withCoreState(state, cs => putTilesInWorld(cs, action.moves));
+    case 'putMobilesInWorld':
+      return withCoreState(state, cs => putMobilesInWorld(cs, action.moves));
     case 'setSelected':
       return withCoreState(state, cs => setSelected(cs, action.sel));
     case 'checkValid':
