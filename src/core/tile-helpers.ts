@@ -6,7 +6,7 @@ import { Bonus } from "./bonus";
 import { getBonusFromLayer } from "./bonus-helpers";
 import { CacheUpdate, CoreState, GameState, HandTile, Location, MainTile, MobileEntity, RenderableMobile, TileEntity, TileOptionalId } from "./state";
 import { GenMoveTile, MoveMobile } from "./state-helpers";
-import { addId, ensureId } from "./tile-id-helpers";
+import { addId, ensureId, freshId } from "./tile-id-helpers";
 import { Resource } from "./tools";
 
 export type TileId = string;
@@ -79,6 +79,19 @@ export function addWorldTile(state: Draft<CoreState>, tile: TileOptionalId): voi
   });
   state.mobile_entities[newTile.id] = newTile;
   state._cacheUpdateQueue.push({ p_in_world_int: tile.p_in_world_int, chunkUpdate: { t: 'addMobile', mobile: { t: 'tile', letter: tile.letter } } });
+}
+
+export function addResourceMobile(state: CoreState, p_in_world_int: Point, res: Resource): CoreState {
+  const mobile: MobileEntity = ({
+    t: 'resource',
+    id: freshId(),
+    loc: { t: 'world', p_in_world_int },
+    res,
+  });
+  return produce(state, s => {
+    s.mobile_entities[mobile.id] = mobile;
+    s._cacheUpdateQueue.push({ p_in_world_int, chunkUpdate: { t: 'addMobile', mobile: { t: 'resource', res } } });
+  });
 }
 
 export function addHandTileEntity(state: Draft<CoreState>, letter: string, index: number, forceId?: string): TileEntity {

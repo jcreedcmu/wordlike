@@ -21,7 +21,7 @@ import { incrementScore, setScore } from './scoring';
 import { deselect, resolveSelection, setSelected } from './selection';
 import { CacheUpdate, CoreState, GameState, Location, MobsState, SceneState } from './state';
 import { MoveMobile, addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isOccupied, isOccupiedForTiles, isTilePinned, needsRefresh, pointFall, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
-import { cellAtPoint, getMobileId, getMobileLoc, getRenderableMobile, get_hand_tiles, get_tiles, moveTiles, moveToHandLoc, putTileInHand, putTilesInHandFromNotHand, putMobilesInWorld, removeAllMobiles, tileAtPoint } from "./tile-helpers";
+import { cellAtPoint, getMobileId, getMobileLoc, getRenderableMobile, get_hand_tiles, get_tiles, moveTiles, moveToHandLoc, putTileInHand, putTilesInHandFromNotHand, putMobilesInWorld, removeAllMobiles, tileAtPoint, addResourceMobile } from "./tile-helpers";
 import { bombIntent, dynamiteIntent, fillWaterIntent, getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
 import { shouldDisplayBackButton } from './winState';
 
@@ -301,8 +301,12 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
       switch (ms.res) {
         case 'wood':
           const p_in_world_int: Point = pointFall(state.coreState, wp.p_in_canvas);
-          if (getBonusFromLayer(state.coreState, p_in_world_int).t == 'water') {
+          const bonus = getBonusFromLayer(state.coreState, p_in_world_int);
+          if (bonus.t == 'water') {
             return { t: 'fillWater', wp };
+          }
+          else if (bonus.t == 'empty') {
+            return { t: 'addResource', p_in_world_int, res: ms.res };
           }
           else {
             return { t: 'none' };
@@ -573,6 +577,11 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
           res_ix: action.res_ix,
         };
       });
+    }
+
+    case 'addResource': {
+      // TODO: pay cost
+      return withCoreState(state, cs => addResourceMobile(cs, action.p_in_world_int, action.res));
     }
   }
 }
