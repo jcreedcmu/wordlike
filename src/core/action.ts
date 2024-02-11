@@ -5,7 +5,7 @@ import { Point } from '../util/types';
 import { PanicData, PauseData } from './clock';
 import { Intent } from './intent';
 import { LandingMoveId } from './landing-resolve';
-import { LandingResult } from './landing-result';
+import { LandingResult, ProperLandingResult } from './landing-result';
 import { SelectionState } from './selection';
 import { InventoryItems, Location, MouseState, MoveMobile, SceneState } from './state';
 import { Resource, Tool } from './tools';
@@ -50,7 +50,7 @@ export type GameLowAction =
   | { t: 'popCacheUpdateQueue', n: number }
   | { t: 'addMob' }
   | { t: 'startDragResource', wp: WidgetPoint, res: Resource, res_ix: number } // XXX: rename to startDragResbar or something
-  | { t: 'resolveLandResult', lr: LandingResult, move: LandingMoveId }
+  | { t: 'landResults', lrms: { lr: ProperLandingResult, move: LandingMoveId }[] }
   ;
 
 export type LowAction =

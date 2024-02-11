@@ -12,7 +12,7 @@ import { getBonusFromLayer } from './bonus-helpers';
 import { getPanicFraction, now_in_game } from './clock';
 import { getIntentOfMouseDown, reduceIntent } from './intent';
 import { tryKillTileOfState, tryKillTileOfStateLoc } from './kill-helpers';
-import { resolveLandResult } from './landing-resolve';
+import { requireNoCollision, resolveLandResult } from './landing-resolve';
 import { landMoveOnState, landMoveOnStateForMobiles, landingMoveOfMoveMobile } from './landing-result';
 import { mkOverlayFrom } from './layer';
 import { addRandomMob, advanceMob } from './mobs';
@@ -215,8 +215,8 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
           });
 
           const tgts = moves.map(x => x.p_in_world_int);
-          const lrs = moves.map(move => landMoveOnStateForMobiles(landingMoveOfMoveMobile(move), state.coreState, remainingMobiles));
-          if (lrs.some(lr => lr.t == 'collision')) {
+          const lrs = requireNoCollision(moves.map(move => landMoveOnStateForMobiles(landingMoveOfMoveMobile(move), state.coreState, remainingMobiles)));
+          if (lrs == undefined) {
             return bailout;
           }
 
@@ -323,7 +323,11 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
       const p_in_world_int: Point = vint(wp.p_in_local);
       const lr = landMoveOnState({ p_in_world_int, src: { t: 'resource', res: ms.res } }, state.coreState)
       if (lr.t == 'collision') return { t: 'none' };
-      return { t: 'resolveLandResult', lr, move: { p_in_world_int, src: { t: 'freshResource', res: ms.res } } };
+      return {
+        t: 'landResults', lrms: [
+          { lr, move: { p_in_world_int, src: { t: 'freshResource', res: ms.res } } }
+        ]
+      };
 
     }
     case 'up': return { t: 'none' }; // no drag to resolve
@@ -592,8 +596,12 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
       });
     }
 
-    case 'resolveLandResult': {
-      return withCoreState(state, cs => resolveLandResult(cs, action.lr, action.move));
+    case 'landResults': {
+      let cs = state.coreState;
+      action.lrms.forEach(step => {
+        cs = resolveLandResult(cs, step.lr, step.move);
+      });
+      return produce(state, s => { s.coreState = cs; });
     }
   }
 }

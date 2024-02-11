@@ -1,6 +1,6 @@
 import { produce } from "../util/produce";
 import { Point } from "../util/types";
-import { LandingMove, LandingResult, MoveSource } from "./landing-result";
+import { LandingMove, LandingResult, MoveSource, ProperLandingResult } from "./landing-result";
 import { MobType } from "./mobs";
 import { CoreState } from "./state";
 import { checkValid } from "./state-helpers";
@@ -15,9 +15,7 @@ export type MoveSourceId =
 
 export type LandingMoveId = { src: MoveSourceId, p_in_world_int: Point };
 
-export function resolveLandResult(state: CoreState, lr: LandingResult, move: LandingMoveId): CoreState {
-  if (lr.t == 'collision')
-    return state;
+export function resolveLandResult(state: CoreState, lr: ProperLandingResult, move: LandingMoveId): CoreState {
   const src = move.src;
   switch (src.t) {
     case 'mobile':
@@ -26,5 +24,23 @@ export function resolveLandResult(state: CoreState, lr: LandingResult, move: Lan
       const cs1 = produce(state, cs => { cs.slowState.resource[src.res]--; });
       return addResourceMobile(cs1, move.p_in_world_int, src.res);
     }
+  }
+}
+
+class CollisionException extends Error { }
+
+export function requireNoCollision(lrs: LandingResult[]): ProperLandingResult[] | undefined {
+  try {
+    return lrs.map(lr => {
+      if (lr.t == 'collision')
+        throw new CollisionException();
+      return lr;
+    });
+  }
+  catch (e) {
+    if (e instanceof CollisionException)
+      return undefined;
+    else
+      throw e;
   }
 }

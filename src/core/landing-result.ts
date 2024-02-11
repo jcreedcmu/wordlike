@@ -26,11 +26,16 @@ export type LandingMove = { src: MoveSource, p_in_world_int: Point };
 // situation in which there are in fact many A's, it should produce
 // *multiple* LandingResults, once for each A. Therefore we let the caller
 // deal with the iteration over the A's.
-export type LandingResult =
-  | { t: 'collision' } // the attempt to place A on B "fails"
+
+export type ProperLandingResult =
   | { t: 'place' } // the attempt to place A on B "succeeds" in the most trivial way
   /* other things that I expect to go here include: success which transforms the B somehow */
   /* e.g.: wood fills water */
+  ;
+
+export type LandingResult =
+  | ProperLandingResult
+  | { t: 'collision' } // the attempt to place A on B "fails"
   ;
 
 // this is some kind of algebraic operation on landing results.
