@@ -259,16 +259,23 @@ export type CellContents =
   ;
 
 export function cellAtPoint(state: CoreState, p_in_world: Point): CellContents {
-  const mobile = mobileAtPoint(state, p_in_world);
+  return cellAtPointForMobiles(state, p_in_world, get_mobiles(state));
+}
+
+export function mobileAtPoint(state: CoreState, p_in_world: Point): MobileEntity | undefined {
+  return mobileAtPointForMobiles(state, p_in_world, get_mobiles(state));
+}
+
+export function cellAtPointForMobiles(state: CoreState, p_in_world: Point, mobiles: MobileEntity[]): CellContents {
+  const mobile = mobileAtPointForMobiles(state, p_in_world, mobiles);
   if (mobile !== undefined)
     return { t: 'mobile', mobile };
   return { t: 'bonus', bonus: getBonusFromLayer(state, p_in_world) };
 }
 
-export function mobileAtPoint(state: CoreState, p_in_world: Point): MobileEntity | undefined {
-  let hoverMobile: MobileEntity | undefined = undefined;
+export function mobileAtPointForMobiles(state: CoreState, p_in_world: Point, mobiles: MobileEntity[]): MobileEntity | undefined {
   const p_in_world_int = vm(p_in_world, Math.floor);
-  for (const mobile of get_mobiles(state)) {
+  for (const mobile of mobiles) {
     if (mobile.loc.t == 'world' && vequal(p_in_world_int, mobile.loc.p_in_world_int)) {
       return mobile;
     }
