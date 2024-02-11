@@ -47,7 +47,7 @@ export type GameLowAction =
   | { t: 'drawConsonant' }
   | { t: 'drawVowel' }
   | { t: 'setPanic', panic: PanicData }
-  | { t: 'restoreTiles', ids: string[] } // put held tiles back in cache
+  | { t: 'restoreMobiles', ids: string[] } // put held mobiles back in cache
   | { t: 'popCacheUpdateQueue', n: number }
   | { t: 'addMob' }
   | { t: 'startDragResource', wp: WidgetPoint, res: Resource, res_ix: number } // XXX: rename to startDragResbar or something

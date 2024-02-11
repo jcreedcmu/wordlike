@@ -188,7 +188,7 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
       const selected = state.coreState.selected;
 
       // This is what we want to return if the mouseup is "bad", in order to put the tiles back in the cache
-      const bailout: GameLowAction = { t: 'restoreTiles', ids: selected ? selected.selectedIds : [ms.id] };
+      const bailout: GameLowAction = { t: 'restoreMobiles', ids: selected ? selected.selectedIds : [ms.id] };
 
       const wp = getWidgetPoint(state.coreState, ms.p_in_canvas);
       if (wp.t == 'world') {
@@ -263,7 +263,6 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
         }
       }
       else if (wp.t == 'hand') {
-        // what if resource to hand?
         const handTiles = get_hand_tiles(state.coreState);
         if (proposedHandDragOverLimit(state.coreState, state.mouseState)) {
           return bailout;
@@ -543,7 +542,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     case 'setPanic':
       return produce(state, s => { s.coreState.panic = action.panic; });
 
-    case 'restoreTiles': {
+    case 'restoreMobiles': {
       const cacheUpdates: CacheUpdate[] = action.ids.flatMap(id => {
         const mobile = getMobileId(cs, id);
         if (mobile.loc.t != 'world')
