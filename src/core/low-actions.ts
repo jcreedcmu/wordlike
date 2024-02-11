@@ -263,6 +263,12 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
         }
       }
       else if (wp.t == 'hand') {
+        const mobile = getMobileId(state.coreState, ms.id);
+        if (mobile.t != 'tile') {
+          console.log('bailout');
+          return bailout;
+        }
+
         const handTiles = get_hand_tiles(state.coreState);
         if (proposedHandDragOverLimit(state.coreState, state.mouseState)) {
           return bailout;
