@@ -116,26 +116,6 @@ export function putMobileInWorld(state: CoreState, id: string, p_in_world_int: P
   });
 }
 
-// XXX deprecated?
-export function putMobilesInWorld(state: CoreState, moves: MoveMobile[]): CoreState {
-  let cs = state;
-  for (const move of moves) {
-    cs = putMobileNowhere(cs, move.id);
-  }
-  for (const move of moves) {
-    const cacheUpdate: CacheUpdate = {
-      p_in_world_int: move.p_in_world_int,
-      chunkUpdate: { t: 'addMobile', mobile: move.mobile }
-    };
-
-    cs = produce(cs, s => {
-      setMobileLoc(s, move.id, { t: 'world', p_in_world_int: move.p_in_world_int });
-      s._cacheUpdateQueue.push(cacheUpdate);
-    });
-  }
-  return cs;
-}
-
 export function moveTiles(state: CoreState, moves: GenMoveTile[]): CoreState {
   let cs = state;
   // First remove all the tiles from the universe, emptying out cache

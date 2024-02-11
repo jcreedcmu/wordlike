@@ -21,7 +21,7 @@ import { incrementScore, setScore } from './scoring';
 import { deselect, resolveSelection, setSelected } from './selection';
 import { CacheUpdate, CoreState, GameState, Location, MobsState, MoveMobile, SceneState } from './state';
 import { addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isMobilePinned, needsRefresh, pointFall, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
-import { addResourceMobile, cellAtPoint, getMobileId, getMobileLoc, getRenderableMobile, get_hand_tiles, get_mobiles, mobileAtPoint, moveTiles, moveToHandLoc, putMobilesInWorld, putTileInHand, putTilesInHandFromNotHand, removeAllMobiles } from "./tile-helpers";
+import { addResourceMobile, cellAtPoint, getMobileId, getMobileLoc, getRenderableMobile, get_hand_tiles, get_mobiles, mobileAtPoint, moveTiles, moveToHandLoc, putTileInHand, putTilesInHandFromNotHand, removeAllMobiles } from "./tile-helpers";
 import { Resource, bombIntent, dynamiteIntent, fillWaterIntent, getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
 import { shouldDisplayBackButton } from './winState';
 
@@ -519,8 +519,6 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
         s.coreState.canvas_from_world = action.canvas_from_world;
       });
     }
-    case 'putMobilesInWorld':
-      return withCoreState(state, cs => putMobilesInWorld(cs, action.moves));
     case 'setSelected':
       return withCoreState(state, cs => setSelected(cs, action.sel));
     case 'checkValid':
