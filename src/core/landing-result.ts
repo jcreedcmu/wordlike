@@ -30,7 +30,7 @@ export type LandingMove = { src: MoveSource, p_in_world_int: Point };
 export type ProperLandingResult =
   | { t: 'place' } // the attempt to place A on B "succeeds" in the most trivial way
   /* other things that I expect to go here include: success which transforms the B somehow */
-  /* e.g.: wood fills water */
+  | { t: 'fillWater' }
   ;
 
 export type LandingResult =
@@ -47,6 +47,7 @@ export type LandingResult =
 export function disjunction(lr1: LandingResult, lr2: LandingResult): LandingResult {
   switch (lr1.t) {
     case 'collision': return { t: 'collision' };
+    case 'fillWater': return { t: 'fillWater' };
     case 'place': return lr2;
   }
 }
@@ -62,12 +63,19 @@ export function landMobileOnCell(m: MoveSource, c: CellContents): LandingResult 
     case 'mobile': return { t: 'collision' };
     case 'bonus': {
       const bonus = c.bonus;
-      if (bonus.t == 'empty')
-        return { t: 'place' };
-      if (bonus.t == 'required') {
-        return (m.t == 'tile' && (m.letter == bonus.letter || DEBUG.allWords)) ? { t: 'place' } : { t: 'collision' };
+      switch (bonus.t) {
+        case 'empty': return { t: 'place' };
+        case 'tree': return { t: 'collision' };
+        case 'bomb': return { t: 'collision' };
+        case 'required': return (m.t == 'tile' && (m.letter == bonus.letter || DEBUG.allWords)) ? { t: 'place' } : { t: 'collision' };
+        case 'consonant': return { t: 'collision' };
+        case 'vowel': return { t: 'collision' };
+        case 'copy': return { t: 'collision' };
+        case 'word': return { t: 'collision' };
+        case 'time': return { t: 'collision' };
+        case 'dynamite': return { t: 'collision' };
+        case 'water': return (m.t == 'resource' && m.res == 'wood') ? { t: 'fillWater' } : { t: 'collision' };
       }
-      return { t: 'collision' };
     }
   }
 }
@@ -83,15 +91,15 @@ export function landMoveOnMob(m: LandingMove, mob: MobState): LandingResult {
 
 export function landingMoveOfMoveMobile(m: MoveMobile): LandingMove {
   return {
-    src: m.mobile,   // NOTE: RenderableMobile is a sutbtype of MoveSource for now...
+    src: m.mobile, // NOTE: RenderableMobile is a sutbtype of MoveSource for now...
     p_in_world_int: m.p_in_world_int
   };
 }
 
 export function landMoveOnStateForMobiles(m: LandingMove, state: CoreState, mobiles: MobileEntity[]): LandingResult {
   return disjuncts(
+    ...state.mobsState.mobs.map(mob => landMoveOnMob(m, mob)),
     landMobileOnCell(m.src, cellAtPointForMobiles(state, m.p_in_world_int, mobiles)),
-    ...state.mobsState.mobs.map(mob => landMoveOnMob(m, mob))
   );
 }
 

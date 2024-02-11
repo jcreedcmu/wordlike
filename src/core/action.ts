@@ -16,7 +16,6 @@ export type GameLowAction =
   | { t: 'deselect' }
   | { t: 'flipOrientation' }
   | { t: 'dynamiteTile', wp: WidgetPoint }
-  | { t: 'fillWater', p_in_world_int: Point }
   | { t: 'dropTopHandTile' }
   | { t: 'debug' }
   | { t: 'incrementScore', amount: number }

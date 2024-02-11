@@ -16,14 +16,14 @@ function eligibleKillIntent(state: CoreState, intent: KillIntent): boolean {
   switch (intent.t) {
     case 'kill': return state.slowState.inventory.dynamites >= 1;
     case 'bomb': return state.slowState.inventory.bombs >= 1;
-    case 'fillWater': return state.slowState.resource.wood >= 1;
+    case 'fillWater': return true;
   }
 }
 function spendKillIntent(state: CoreState, intent: KillIntent): CoreState {
   switch (intent.t) {
     case 'kill': return produce(state, s => { s.slowState.inventory.dynamites--; });
     case 'bomb': return produce(state, s => { s.slowState.inventory.bombs--; });
-    case 'fillWater': return produce(state, s => { s.slowState.resource.wood--; });
+    case 'fillWater': return state;
   }
 }
 

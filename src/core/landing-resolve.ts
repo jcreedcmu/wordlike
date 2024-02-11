@@ -1,11 +1,10 @@
 import { produce } from "../util/produce";
 import { Point } from "../util/types";
-import { LandingMove, LandingResult, MoveSource, ProperLandingResult } from "./landing-result";
-import { MobType } from "./mobs";
+import { tryKillTileOfStateLoc } from "./kill-helpers";
+import { LandingResult, ProperLandingResult } from "./landing-result";
 import { CoreState, MoveMobile } from "./state";
-import { checkValid } from "./state-helpers";
-import { addResourceMobile, putMobileInWorld } from "./tile-helpers";
-import { Resource } from "./tools";
+import { addResourceMobile, putMobileInWorld, putMobileNowhere } from "./tile-helpers";
+import { Resource, fillWaterIntent } from "./tools";
 
 // A thing that can be moved onto something else
 export type MoveSourceId =
@@ -15,19 +14,29 @@ export type MoveSourceId =
 
 export type LandingMoveId = { src: MoveSourceId, p_in_world_int: Point };
 
-export function resolveLandResult(state: CoreState, lr: ProperLandingResult, move: LandingMoveId): CoreState {
-  const src = move.src;
+export function removeSource(state: CoreState, src: MoveSourceId): CoreState {
   switch (src.t) {
-    case 'mobile':
-      return putMobileInWorld(state, src.id, move.p_in_world_int, 'noclear');
-    case 'freshResource': {
-      const cs1 = produce(state, cs => { cs.slowState.resource[src.res]--; });
-      return addResourceMobile(cs1, move.p_in_world_int, src.res);
-    }
+    case 'mobile': return putMobileNowhere(state, src.id, 'noclear');
+    case 'freshResource': return produce(state, cs => { cs.slowState.resource[src.res]--; });
   }
 }
 
-class CollisionException extends Error { }
+export function resolveLandResult(_state: CoreState, lr: ProperLandingResult, move: LandingMoveId): CoreState {
+  const src = move.src;
+  const state = removeSource(_state, move.src);
+
+  switch (lr.t) {
+    case 'place':
+      switch (src.t) {
+        case 'mobile': return putMobileInWorld(state, src.id, move.p_in_world_int, 'noclear');
+        case 'freshResource': return addResourceMobile(state, move.p_in_world_int, src.res);
+
+      }
+    case 'fillWater': {
+      return tryKillTileOfStateLoc(state, { t: 'world', p_in_world_int: move.p_in_world_int }, fillWaterIntent);
+    }
+  }
+}
 
 export function requireNoCollision(lr: LandingResult): ProperLandingResult | undefined {
   if (lr.t == 'collision')

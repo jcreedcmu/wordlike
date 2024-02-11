@@ -8,21 +8,20 @@ import { Point } from '../util/types';
 import { flatUndef, getRandomOrder } from '../util/util';
 import { vequal, vint, vm, vscale, vsub } from '../util/vutil';
 import { GameAction, GameLowAction, LowAction } from './action';
-import { getBonusFromLayer } from './bonus-helpers';
 import { getPanicFraction, now_in_game } from './clock';
 import { getIntentOfMouseDown, reduceIntent } from './intent';
-import { tryKillTileOfState, tryKillTileOfStateLoc } from './kill-helpers';
-import { LandingMoveId, landingMoveIdOfMoveMobile, requireNoCollision, resolveLandResult } from './landing-resolve';
-import { ProperLandingResult, landMoveOnState, landMoveOnStateForMobiles, landingMoveOfMoveMobile } from './landing-result';
+import { tryKillTileOfState } from './kill-helpers';
+import { landingMoveIdOfMoveMobile, requireNoCollision, resolveLandResult } from './landing-resolve';
+import { landMoveOnState, landMoveOnStateForMobiles, landingMoveOfMoveMobile } from './landing-result';
 import { mkOverlayFrom } from './layer';
 import { addRandomMob, advanceMob } from './mobs';
 import { reduceKey } from './reduceKey';
 import { incrementScore, setScore } from './scoring';
 import { deselect, resolveSelection, setSelected } from './selection';
 import { CacheUpdate, CoreState, GameState, Location, MobsState, MoveMobile, SceneState } from './state';
-import { addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isMobilePinned, needsRefresh, pointFall, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
-import { addResourceMobile, cellAtPoint, getMobileId, getMobileLoc, getRenderableMobile, get_hand_tiles, get_mobiles, mobileAtPoint, moveTiles, moveToHandLoc, putTileInHand, putTilesInHandFromNotHand, removeAllMobiles } from "./tile-helpers";
-import { Resource, bombIntent, dynamiteIntent, fillWaterIntent, getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
+import { addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isMobilePinned, needsRefresh, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
+import { cellAtPoint, getMobileId, getMobileLoc, getRenderableMobile, get_hand_tiles, get_mobiles, mobileAtPoint, moveTiles, moveToHandLoc, putTileInHand, putTilesInHandFromNotHand, removeAllMobiles } from "./tile-helpers";
+import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
 import { shouldDisplayBackButton } from './winState';
 
 export function reduceZoom(state: GameState, p_in_canvas: Point, delta: number): GameState {
@@ -403,8 +402,6 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     }
     case 'dynamiteTile':
       return withCoreState(state, cs => tryKillTileOfState(cs, action.wp, dynamiteIntent));
-    case 'fillWater':
-      return withCoreState(state, cs => tryKillTileOfStateLoc(cs, { t: 'world', p_in_world_int: action.p_in_world_int }, fillWaterIntent));
     case 'dropTopHandTile': return dropTopHandTile(state);
     case 'debug': {
       return withCoreState(state, cs => checkValid(produce(addWorldTiles(removeAllMobiles(cs), debugTiles()), s => {
