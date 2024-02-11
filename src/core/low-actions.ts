@@ -20,7 +20,7 @@ import { deselect, resolveSelection, setSelected } from './selection';
 import { CacheUpdate, CoreState, GameState, Location, MobsState, SceneState } from './state';
 import { MoveMobile, addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isMobilePinned, isOccupied, isOccupiedForMobiles, needsRefresh, pointFall, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
 import { addResourceMobile, cellAtPoint, getMobileId, getMobileLoc, getRenderableMobile, get_hand_tiles, get_mobiles, mobileAtPoint, moveTiles, moveToHandLoc, putMobilesInWorld, putTileInHand, putTilesInHandFromNotHand, removeAllMobiles } from "./tile-helpers";
-import { bombIntent, dynamiteIntent, fillWaterIntent, getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
+import { Resource, bombIntent, dynamiteIntent, fillWaterIntent, getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
 import { shouldDisplayBackButton } from './winState';
 
 export function reduceZoom(state: GameState, p_in_canvas: Point, delta: number): GameState {
@@ -153,6 +153,24 @@ function resolveMouseup(state: GameState, p_in_canvas: Point): GameLowAction {
     t: 'andMouseUp',
     p_in_canvas: p_in_canvas,
   };
+}
+
+function lowActionOfResourceDrop(state: CoreState, res: Resource, wp: WidgetPoint, p_in_world_int: Point): GameLowAction {
+  switch (res) {
+    case 'wood':
+      const bonus = getBonusFromLayer(state, p_in_world_int);
+      if (bonus.t == 'water') {
+        return { t: 'fillWater', wp };
+      }
+      else if (bonus.t == 'empty') {
+        if (isOccupied(state, { p_in_world_int, mobile: { t: 'resource', res: res } }))
+          return { t: 'none' };
+        return { t: 'addResource', p_in_world_int, res: res };
+      }
+      else {
+        return { t: 'none' };
+      }
+  }
 }
 
 function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowAction {
@@ -296,22 +314,9 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
       const wp = getWidgetPoint(state.coreState, ms.p_in_canvas);
       if (wp.t != 'world')
         return { t: 'none' };
-      switch (ms.res) {
-        case 'wood':
-          const p_in_world_int: Point = pointFall(state.coreState, wp.p_in_canvas);
-          const bonus = getBonusFromLayer(state.coreState, p_in_world_int);
-          if (bonus.t == 'water') {
-            return { t: 'fillWater', wp };
-          }
-          else if (bonus.t == 'empty') {
-            if (isOccupied(state.coreState, { p_in_world_int, mobile: { t: 'resource', res: ms.res } }))
-              return { t: 'none' };
-            return { t: 'addResource', p_in_world_int, res: ms.res };
-          }
-          else {
-            return { t: 'none' };
-          }
-      }
+      const p_in_world_int: Point = pointFall(state.coreState, wp.p_in_canvas);
+      return lowActionOfResourceDrop(state.coreState, ms.res, wp, p_in_world_int);
+
     }
     case 'up': return { t: 'none' }; // no drag to resolve
     case 'down': return { t: 'none' };
