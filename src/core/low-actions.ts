@@ -163,6 +163,7 @@ function lowActionOfResourceDrop(state: CoreState, res: Resource, p_in_world_int
         return { t: 'fillWater', p_in_world_int };
       }
       else if (bonus.t == 'empty') {
+        // XXX why are we checking this isOccupied redundantly?
         if (isOccupied(state, { p_in_world_int, mobile: { t: 'resource', res: res } }))
           return { t: 'none' };
         return { t: 'addResource', p_in_world_int, res: res };
