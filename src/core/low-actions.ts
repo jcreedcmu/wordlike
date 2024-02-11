@@ -251,12 +251,10 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
           if (lr.t == 'collision')
             return bailout;
 
-          // TODO(landing) use lr to generate LowAction instead of putMobilesInWorld
-
           return {
             t: 'multiple',
             actions: [
-              { t: 'putMobilesInWorld', moves: [{ id: ms.id, p_in_world_int: moveTile.p_in_world_int, mobile: rm }] },
+              { t: 'landResults', lrms: [{ lr, move: { p_in_world_int: moveTile.p_in_world_int, src: { t: 'mobile', id: ms.id } } }] },
               { t: 'checkValid' }]
           };
         }
