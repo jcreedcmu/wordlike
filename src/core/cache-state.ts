@@ -1,7 +1,7 @@
 import { SE2, translate } from "../util/se2";
 import { boundRect } from "../util/util";
 import { vadd, vdiag, vscale } from "../util/vutil";
-import { Chunk, mkChunk, setChunkData } from "./chunk";
+import { Chunk, mkChunk } from "./chunk";
 import { overlayForEach, overlayPoints } from "./layer";
 import { CoreState, GameState } from "./state";
 

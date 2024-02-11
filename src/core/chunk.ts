@@ -1,16 +1,14 @@
-import { spriteLocOfChunkValue, spriteLocOfRes } from "../ui/sprite-sheet";
+import { spriteLocOfBonus, spriteLocOfChunkValue, spriteLocOfRes } from "../ui/sprite-sheet";
 import { world_bds_in_canvas } from "../ui/widget-helpers";
 import { ImageData } from "../util/image-data";
-import { produce } from "../util/produce";
 import { SE2, apply, compose, inverse, scale } from "../util/se2";
 import { Point } from "../util/types";
 import { vadd, vinv, vm, vm2, vm3, vmul, vsub } from "../util/vutil";
-import { Bonus } from "./bonus";
-import { getBonusFromLayer } from "./bonus-helpers";
+import { Bonus, bonusGenerator } from "./bonus";
 import { Overlay, getOverlay, setOverlay } from "./layer";
 import { CoreState, RenderableMobile } from "./state";
 
-export const WORLD_CHUNK_SIZE = { x: 16, y: 16 };
+export const WORLD_CHUNK_SIZE = { x: 8, y: 8 };
 
 export type ChunkValue = { t: 'bonus', bonus: Bonus } | { t: 'mobile', mobile: RenderableMobile };
 
@@ -30,12 +28,17 @@ export type Chunk = {
   imdat: ImageData,
 }
 
-export function setChunkData(chunk: Chunk, kont: (p: Point) => ChunkValue): void {
+function getWorldChunkData(cs: CoreState, p_in_chunk: Point): Chunk {
+  const chunk: Chunk = mkChunk(WORLD_CHUNK_SIZE);
+
+  const bonuses: Bonus[] = [];
   const { imdat, size } = chunk;
   for (let x = 0; x < size.x; x++) {
     for (let y = 0; y < size.y; y++) {
-      const cval = kont({ x, y });
-      const spritePos = spriteLocOfChunkValue(cval);
+      const p_in_local_chunk = { x, y };
+      const pp = vm3(p_in_chunk, p_in_local_chunk, chunk.size, (c, p, s) => c * s + p);
+      const bonus = bonusGenerator(pp, cs.bonusLayerSeed);
+      const spritePos = spriteLocOfBonus(bonus);
       const ix = x + y * chunk.size.x;
       const fix = 4 * ix;
       imdat.data[fix + 0] = (spritePos.x << 4) + spritePos.y;
@@ -44,14 +47,7 @@ export function setChunkData(chunk: Chunk, kont: (p: Point) => ChunkValue): void
       imdat.data[fix + 3] = 0;
     }
   }
-}
 
-function getWorldChunkData(cs: CoreState, p_in_chunk: Point): Chunk {
-  const chunk: Chunk = mkChunk(WORLD_CHUNK_SIZE);
-  setChunkData(chunk, (p_in_local_chunk) => ({
-    t: 'bonus',
-    bonus: getBonusFromLayer(cs, vm3(p_in_chunk, p_in_local_chunk, chunk.size, (c, p, s) => c * s + p))
-  }));
   return chunk;
 }
 

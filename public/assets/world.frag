@@ -4,6 +4,8 @@ precision mediump float;
 #include "common.frag"
 #include "get_sprite_pixel.frag"
 
+const float CHUNK_SIZE = 8.;
+
 const vec2 EMPTY_SPRITE = vec2(0.,7.);
 const ivec2 WATER_SPRITE = ivec2(1,0);
 const int WATER_SPRITE_BYTE = (WATER_SPRITE.x << 4) + WATER_SPRITE.y;
@@ -45,7 +47,7 @@ vec4 get_terrain_pixel(vec2 p_in_world) {
   vec2 p_in_world_hint = floor(p_in_world_h);
   vec2 p_in_world_hfp = p_in_world_h - p_in_world_hint;
 
-  vec2 ul_in_prepass = p_in_world_hint - u_min_p_in_chunk * 16.;
+  vec2 ul_in_prepass = p_in_world_hint - u_min_p_in_chunk * CHUNK_SIZE;
 
   int bit_1 = is_land(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(0.5,0.5)) / float(PREPASS_BUFFER_SIZE) )));
   int bit_2 = is_land(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(1.5,0.5)) / float(PREPASS_BUFFER_SIZE) )));
@@ -138,7 +140,7 @@ vec4 getColor() {
 
   vec2 p_in_world_int = floor(p_in_world);
 
-  vec2 p_in_prepass = p_in_world_int - u_min_p_in_chunk * 16.;
+  vec2 p_in_prepass = p_in_world_int - u_min_p_in_chunk * CHUNK_SIZE;
   vec2 p_in_world_r = round(p_in_world);
   vec2 p_in_world_fp = p_in_world - floor(p_in_world); // fractional part
 

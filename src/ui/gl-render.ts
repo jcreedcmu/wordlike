@@ -121,7 +121,7 @@ function renderPrepass(env: GlEnv, state: CoreState, canvas_from_world: SE2): Ac
       return;
     }
     const offset = vmul(WORLD_CHUNK_SIZE, vsub(p, aci.min_p_in_chunk));
-    gl.texSubImage2D(gl.TEXTURE_2D, 0, offset.x, offset.y, 16, 16, gl.RGBA, gl.UNSIGNED_BYTE, chunk.imdat);
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, offset.x, offset.y, WORLD_CHUNK_SIZE.x, WORLD_CHUNK_SIZE.y, gl.RGBA, gl.UNSIGNED_BYTE, chunk.imdat);
   });
 
   return aci;

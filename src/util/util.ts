@@ -79,14 +79,11 @@ export function pointInRect(p: Point, r: Rect): boolean {
 export function point_hash(p: Point, seed: number): number {
   let c = seed + 1000 * p.x + 3758 * p.y;
 
-  const z: () => number = () => {
+  for (let i = 0; i < 20; i++) {
     const { seed, float } = next_rand(c);
     c = seed;
-    return float;
   };
-  for (let i = 0; i < 20; i++)
-    z();
-  return z();
+  return next_rand(c).float;
 }
 
 export function midpointOfRect(rect: Rect): Point {
