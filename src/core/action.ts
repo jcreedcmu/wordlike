@@ -4,6 +4,8 @@ import { SE2 } from '../util/se2';
 import { Point } from '../util/types';
 import { PanicData, PauseData } from './clock';
 import { Intent } from './intent';
+import { LandingMoveId } from './landing-resolve';
+import { LandingResult } from './landing-result';
 import { SelectionState } from './selection';
 import { InventoryItems, Location, MouseState, MoveMobile, SceneState } from './state';
 import { Resource, Tool } from './tools';
@@ -48,8 +50,7 @@ export type GameLowAction =
   | { t: 'popCacheUpdateQueue', n: number }
   | { t: 'addMob' }
   | { t: 'startDragResource', wp: WidgetPoint, res: Resource, res_ix: number } // XXX: rename to startDragResbar or something
-  // XXX addResource is deprecated, should add "resolveLandResult" instead
-  | { t: 'addResource', p_in_world_int: Point, res: Resource }
+  | { t: 'resolveLandResult', lr: LandingResult, move: LandingMoveId }
   ;
 
 export type LowAction =

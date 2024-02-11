@@ -12,6 +12,7 @@ import { getBonusFromLayer } from './bonus-helpers';
 import { getPanicFraction, now_in_game } from './clock';
 import { getIntentOfMouseDown, reduceIntent } from './intent';
 import { tryKillTileOfState, tryKillTileOfStateLoc } from './kill-helpers';
+import { resolveLandResult } from './landing-resolve';
 import { landMoveOnState, landMoveOnStateForMobiles, landingMoveOfMoveMobile } from './landing-result';
 import { mkOverlayFrom } from './layer';
 import { addRandomMob, advanceMob } from './mobs';
@@ -165,7 +166,7 @@ function lowActionOfResourceDrop(state: CoreState, res: Resource, p_in_world_int
         return { t: 'fillWater', p_in_world_int };
       }
       else if (bonus.t == 'empty') {
-        return { t: 'addResource', p_in_world_int, res: res };
+        return { t: 'resolveLandResult', lr: { t: 'place' }, move: { p_in_world_int, src: { t: 'freshResource', res } } };
       }
       else {
         return { t: 'none' };
@@ -605,13 +606,8 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
       });
     }
 
-    // XXX addResource is deprecated
-    case 'addResource': {
-      const cs1 = produce(state.coreState, cs => { cs.slowState.resource.wood--; });
-      const cs2 = addResourceMobile(cs1, action.p_in_world_int, action.res);
-      return produce(state, s => {
-        s.coreState = cs2;
-      });
+    case 'resolveLandResult': {
+      return withCoreState(state, cs => resolveLandResult(cs, action.lr, action.move));
     }
   }
 }
