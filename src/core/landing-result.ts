@@ -1,7 +1,7 @@
 import { DEBUG } from "../util/debug";
 import { Point } from "../util/types";
 import { MobState, MobType, collidesWithMob } from "./mobs";
-import { CoreState, MobileEntity } from "./state";
+import { CoreState, MobileEntity, MoveMobile } from "./state";
 import { checkValid, withCoreState } from "./state-helpers";
 import { CellContents, cellAtPointForMobiles, get_mobiles, putMobileInWorld } from "./tile-helpers";
 import { Resource } from "./tools";
@@ -67,12 +67,19 @@ export function landMobileOnCell(m: MoveSource, c: CellContents): LandingResult 
 }
 
 export function landMoveOnMob(m: LandingMove, mob: MobState): LandingResult {
-  // POSSIBLE: Peek into m.mobile to see if it interacts more
+  // TODO(landing): Peek into m.mobile to see if it interacts more
   // interestingly with mob. This would require reorganizing mob state
   // to be keyed by-id.
   if (collidesWithMob(mob, m.p_in_world_int))
     return { t: 'collision' };
   return { t: 'place' };
+}
+
+export function landingMoveOfMoveMobile(m: MoveMobile): LandingMove {
+  return {
+    src: m.mobile,   // NOTE: RenderableMobile is a sutbtype of MoveSource for now...
+    p_in_world_int: m.p_in_world_int
+  };
 }
 
 export function landMoveOnStateForMobiles(m: LandingMove, state: CoreState, mobiles: MobileEntity[]): LandingResult {

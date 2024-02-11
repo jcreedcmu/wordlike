@@ -12,13 +12,14 @@ import { getBonusFromLayer } from './bonus-helpers';
 import { getPanicFraction, now_in_game } from './clock';
 import { getIntentOfMouseDown, reduceIntent } from './intent';
 import { tryKillTileOfState, tryKillTileOfStateLoc } from './kill-helpers';
+import { landMoveOnState, landMoveOnStateForMobiles, landingMoveOfMoveMobile } from './landing-result';
 import { mkOverlayFrom } from './layer';
 import { addRandomMob, advanceMob } from './mobs';
 import { reduceKey } from './reduceKey';
 import { incrementScore, setScore } from './scoring';
 import { deselect, resolveSelection, setSelected } from './selection';
 import { CacheUpdate, CoreState, GameState, Location, MobsState, MoveMobile, SceneState } from './state';
-import { addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isMobilePinned, isOccupied, isOccupiedForMobiles, needsRefresh, pointFall, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
+import { addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isMobilePinned, needsRefresh, pointFall, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
 import { addResourceMobile, cellAtPoint, getMobileId, getMobileLoc, getRenderableMobile, get_hand_tiles, get_mobiles, mobileAtPoint, moveTiles, moveToHandLoc, putMobilesInWorld, putTileInHand, putTilesInHandFromNotHand, removeAllMobiles } from "./tile-helpers";
 import { Resource, bombIntent, dynamiteIntent, fillWaterIntent, getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
 import { shouldDisplayBackButton } from './winState';
@@ -155,6 +156,7 @@ function resolveMouseup(state: GameState, p_in_canvas: Point): GameLowAction {
   };
 }
 
+// TODO(landing): isn't this whole function due for replacement?
 function lowActionOfResourceDrop(state: CoreState, res: Resource, p_in_world_int: Point): GameLowAction {
   switch (res) {
     case 'wood':
@@ -163,9 +165,6 @@ function lowActionOfResourceDrop(state: CoreState, res: Resource, p_in_world_int
         return { t: 'fillWater', p_in_world_int };
       }
       else if (bonus.t == 'empty') {
-        // XXX why are we checking this isOccupied redundantly?
-        if (isOccupied(state, { p_in_world_int, mobile: { t: 'resource', res: res } }))
-          return { t: 'none' };
         return { t: 'addResource', p_in_world_int, res: res };
       }
       else {
@@ -232,9 +231,12 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
           });
 
           const tgts = moves.map(x => x.p_in_world_int);
-          if (moves.some(move => isOccupiedForMobiles(state.coreState, move, remainingMobiles))) {
+          const lrs = moves.map(move => landMoveOnStateForMobiles(landingMoveOfMoveMobile(move), state.coreState, remainingMobiles));
+          if (lrs.some(lr => lr.t == 'collision')) {
             return bailout;
           }
+
+          // TODO(landing) use lrs to generate LowAction instead of putMobilesInWorld
 
           return {
             t: 'multiple', actions: [
@@ -256,11 +258,23 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
             id: ms.id,
             mobile: rm,
           }
+
           const is_noop = ms.orig_loc.t == 'world' && vequal(dest_in_world_int, ms.orig_loc.p_in_world_int);
-          const afterDrop: GameLowAction = !isOccupied(state.coreState, moveTile) || is_noop
-            ? { t: 'putMobilesInWorld', moves: [{ id: ms.id, p_in_world_int: moveTile.p_in_world_int, mobile: rm }] }
-            : bailout;
-          return { t: 'multiple', actions: [afterDrop, { t: 'checkValid' }] };
+          if (is_noop)
+            return bailout;
+
+          const lr = landMoveOnState(landingMoveOfMoveMobile(moveTile), state.coreState);
+          if (lr.t == 'collision')
+            return bailout;
+
+          // TODO(landing) use lr to generate LowAction instead of putMobilesInWorld
+
+          return {
+            t: 'multiple',
+            actions: [
+              { t: 'putMobilesInWorld', moves: [{ id: ms.id, p_in_world_int: moveTile.p_in_world_int, mobile: rm }] },
+              { t: 'checkValid' }]
+          };
         }
       }
       else if (wp.t == 'hand') {

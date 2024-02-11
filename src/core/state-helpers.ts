@@ -41,43 +41,6 @@ export function addHandTileEntities(state: CoreState, tiles: { letter: string, i
   });
 }
 
-// XXX: unify isOccupiedForMobiles and isOccupiedPointForMobiles
-
-// Returns true if there is a collision when
-// - we are trying to land `moveMobile`
-// - the current state is `state`, except
-// - we consider the set of mobiles on the board to be `mobiles`,
-//   overriding whatever `state` says.
-// This is used when we're resolving a mobile drag, before we've updated the state to remove the mobiles.
-export function isOccupiedForMobiles(state: CoreState, moveMobile: MoveMobileNoId, mobiles: MobileEntity[]): boolean {
-  return collidesWithWorldPoint(mobiles, moveMobile.p_in_world_int)
-    || isBlocking(moveMobile, getBonusFromLayer(state, moveMobile.p_in_world_int))
-    || state.mobsState.mobs.some(mob => collidesWithMob(mob, moveMobile.p_in_world_int));
-}
-
-// Returns true if there is a collision when
-// - we are trying to put some arbitrary non-mobile thing at `p_in_world_int`
-// - the current state is `state`, except
-// - we consider the set of mobiles on the board to be `mobiles`,
-//   overriding whatever `state` says.
-// Don't consider collisions with mobs because this is used for mob collisions.
-export function isOccupiedPointForMobiles(state: CoreState, p_in_world_int: Point, mobiles: MobileEntity[]): boolean {
-  return collidesWithWorldPoint(mobiles, p_in_world_int)
-    || isBlockingPoint(getBonusFromLayer(state, p_in_world_int));
-}
-
-export function isOccupied(state: CoreState, moveMobile: MoveMobileNoId): boolean {
-  return isOccupiedForMobiles(state, moveMobile, get_mobiles(state));
-}
-
-export function isOccupiedPoint(state: CoreState, p_in_world: Point): boolean {
-  return isOccupiedPointForMobiles(state, p_in_world, get_mobiles(state));
-}
-
-export function collidesWithWorldPoint(mobiles: MobileEntity[], p: Point): boolean {
-  return mobiles.some(mobile => mobile.loc.t == 'world' && vequal(mobile.loc.p_in_world_int, p));
-}
-
 export function drawOfState(state: CoreState, drawForce?: DrawForce): CoreState {
   const handLength = get_hand_tiles(state).length;
   if (handLength >= HAND_TILE_LIMIT)
