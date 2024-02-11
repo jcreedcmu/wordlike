@@ -2,8 +2,8 @@ import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { next_rand, unreachable } from "../util/util";
 import { vadd, vequal, vint, vm, vscale } from "../util/vutil";
+import { MoveSource, landMoveOnState } from "./landing-result";
 import { CoreState } from "./state";
-import { isOccupied, isOccupiedPoint } from "./state-helpers";
 
 export type Orientation = 'N' | 'W' | 'E' | 'S';
 
@@ -115,17 +115,23 @@ export function advanceMob(state: CoreState, mob: MobState): MobState {
     }
   }
 
+  const src: MoveSource = { t: 'mob', mobType: mob.t };
+  function isOccupied(p: Point): boolean {
+    const lr = landMoveOnState({ src, p_in_world_int: p }, state);
+    return lr.t != 'place';
+  }
+
   switch (mob.t) {
     case 'snail':
       if (mob.ticks == 0) {
         const forward = forward_of(mob);
-        if (isOccupiedPoint(state, back_right_of(mob)) && !isOccupiedPoint(state, right_of(mob)))
+        if (isOccupied(back_right_of(mob)) && !isOccupied(right_of(mob)))
           return advanceWith(clockwise_of(mob.orientation));
-        if (!isOccupiedPoint(state, forward_of(mob)))
+        if (!isOccupied(forward_of(mob)))
           return advanceWith(mob.orientation);
-        if (!isOccupiedPoint(state, left_of(mob)))
+        if (!isOccupied(left_of(mob)))
           return advanceWith(ccw_of(mob.orientation));
-        if (!isOccupiedPoint(state, back_of(mob)))
+        if (!isOccupied(back_of(mob)))
           return advanceWith(reverse_of(mob.orientation));
         return mob; // don't advance
       }
@@ -163,7 +169,8 @@ export function addRandomMob(state: CoreState): CoreState {
     seed = seed2;
     const p_in_world_int = vint(vm({ x, y }, p => (p * 2 - 1) * RANGE));
 
-    if (!isOccupiedPoint(state, p_in_world_int)) {
+    const src: MoveSource = { t: 'mob', mobType: 'snail' };
+    if (landMoveOnState({ src, p_in_world_int }, state).t == 'place') {
       const orientation = towards_origin(p_in_world_int);
       const newMob: MobState = { t: 'snail', ticks: 0, p_in_world_int, orientation };
       return produce(state, s => {

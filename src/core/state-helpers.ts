@@ -303,7 +303,7 @@ export function dropTopHandTile(state: GameState): GameState {
   if (state.mouseState.t == 'up' && getWidgetPoint(cs, state.mouseState.p_in_canvas).t == 'world') {
     const p_in_world_int = pointFall(cs, state.mouseState.p_in_canvas);
 
-    const lr = landMoveOnState({ mobile: { t: 'tile', letter: tile.letter }, p_in_world_int }, cs);
+    const lr = landMoveOnState({ src: { t: 'tile', letter: tile.letter }, p_in_world_int }, cs);
     if (lr.t != 'collision') {
       return withCoreState(state, cs => checkValid(resolveLandResult(cs, lr, { p_in_world_int, src: { t: 'mobile', id: tile.id } })));
     }

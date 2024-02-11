@@ -13,7 +13,7 @@ export type MoveSource =
   | { t: 'mob', mobType: MobType }
   ;
 
-export type LandingMove = { mobile: MoveSource, p_in_world_int: Point };
+export type LandingMove = { src: MoveSource, p_in_world_int: Point };
 
 // When A lands on B, this type says what happens. It tries *not* to
 // produce information about identity of the A involved, but it may
@@ -77,7 +77,7 @@ export function landMoveOnMob(m: LandingMove, mob: MobState): LandingResult {
 
 export function landMoveOnStateForMobiles(m: LandingMove, state: CoreState, mobiles: MobileEntity[]): LandingResult {
   return disjuncts(
-    landMobileOnCell(m.mobile, cellAtPointForMobiles(state, m.p_in_world_int, mobiles)),
+    landMobileOnCell(m.src, cellAtPointForMobiles(state, m.p_in_world_int, mobiles)),
     ...state.mobsState.mobs.map(mob => landMoveOnMob(m, mob))
   );
 }
