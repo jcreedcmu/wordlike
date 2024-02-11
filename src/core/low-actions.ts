@@ -591,6 +591,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
       });
     }
 
+    // XXX addResource is deprecated
     case 'addResource': {
       const cs1 = produce(state.coreState, cs => { cs.slowState.resource.wood--; });
       const cs2 = addResourceMobile(cs1, action.p_in_world_int, action.res);

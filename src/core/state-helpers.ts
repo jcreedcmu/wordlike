@@ -14,7 +14,8 @@ import { BIT_CONNECTED } from "./chunk";
 import { PANIC_INTERVAL_MS, PanicData, PauseData, WORD_BONUS_INTERVAL_MS, now_in_game } from "./clock";
 import { DrawForce, getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, gridKeys, mkGridOfMainTiles } from "./grid";
-import { LandingResult } from "./landing-result";
+import { resolveLandResult } from "./landing-resolve";
+import { LandingResult, landMoveOnState } from "./landing-result";
 import { mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
 import { addRandomMob, collidesWithMob } from "./mobs";
 import { PROGRESS_ANIMATION_POINTS, getHighWaterMark, getScore, setHighWaterMark } from "./scoring";
@@ -301,8 +302,10 @@ export function dropTopHandTile(state: GameState): GameState {
   const tile = handTiles[0];
   if (state.mouseState.t == 'up' && getWidgetPoint(cs, state.mouseState.p_in_canvas).t == 'world') {
     const p_in_world_int = pointFall(cs, state.mouseState.p_in_canvas);
-    if (!isOccupied(cs, { mobile: { t: 'tile', letter: tile.letter }, p_in_world_int })) {
-      return withCoreState(state, cs => checkValid(putMobileInWorld(cs, tile.id, p_in_world_int)));
+
+    const lr = landMoveOnState({ mobile: { t: 'tile', letter: tile.letter }, p_in_world_int }, cs);
+    if (lr.t != 'collision') {
+      return withCoreState(state, cs => checkValid(resolveLandResult(cs, lr, { p_in_world_int, src: { t: 'mobile', id: tile.id } })));
     }
   }
   return state;

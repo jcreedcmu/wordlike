@@ -2,7 +2,8 @@ import { DEBUG } from "../util/debug";
 import { Point } from "../util/types";
 import { MobState, MobType, collidesWithMob } from "./mobs";
 import { CoreState, MobileEntity } from "./state";
-import { CellContents, cellAtPointForMobiles, get_mobiles } from "./tile-helpers";
+import { checkValid, withCoreState } from "./state-helpers";
+import { CellContents, cellAtPointForMobiles, get_mobiles, putMobileInWorld } from "./tile-helpers";
 import { Resource } from "./tools";
 
 // A thing that can be moved onto something else

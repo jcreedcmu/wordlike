@@ -48,6 +48,7 @@ export type GameLowAction =
   | { t: 'popCacheUpdateQueue', n: number }
   | { t: 'addMob' }
   | { t: 'startDragResource', wp: WidgetPoint, res: Resource, res_ix: number } // XXX: rename to startDragResbar or something
+  // XXX addResource is deprecated, should add "resolveLandResult" instead
   | { t: 'addResource', p_in_world_int: Point, res: Resource }
   ;
 
