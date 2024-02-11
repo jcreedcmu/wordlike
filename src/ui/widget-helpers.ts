@@ -1,4 +1,4 @@
-import { CoreState, HAND_TILE_LIMIT } from "../core/state";
+import { CoreState, HAND_TILE_LIMIT, Location } from "../core/state";
 import { Resource, Tool, getCurrentResources, getCurrentTools } from "../core/tools";
 import { SE2, apply, inverse } from "../util/se2";
 import { Point, Rect } from "../util/types";
@@ -238,5 +238,16 @@ export function getDragWidgetPoint(state: CoreState, p_in_canvas: Point): DragWi
       p_in_canvas,
       local_from_canvas: inverse(state.canvas_from_world),
     };
+  }
+}
+
+export function locationOfWidgetPoint(wp: WidgetPoint): Location {
+  switch (wp.t) {
+    case 'world': return { t: 'world', p_in_world_int: vint(wp.p_in_local) };
+    case 'hand': return wp.indexValid ? { t: 'hand', index: wp.index } : { t: 'nowhere' };
+    case 'toolbar': return { t: 'nowhere' };
+    case 'resbar': return { t: 'nowhere' };
+    case 'pauseButton': return { t: 'nowhere' };
+    case 'nowhere': return { t: 'nowhere' };
   }
 }

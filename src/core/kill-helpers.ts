@@ -1,4 +1,4 @@
-import { DragWidgetPoint, WidgetPoint } from "../ui/widget-helpers";
+import { DragWidgetPoint, WidgetPoint, locationOfWidgetPoint } from "../ui/widget-helpers";
 import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { vequal, vint } from "../util/vutil";
@@ -7,7 +7,7 @@ import { getBonusFromLayer, updateBonusLayer } from "./bonus-helpers";
 import { KillIntent, killableBonus } from './intent';
 import { getScore, incrementScore } from "./scoring";
 import { deselect } from "./selection";
-import { CoreState, MainTile } from "./state";
+import { CoreState, Location, MainTile } from "./state";
 import { checkValid } from './state-helpers';
 import { get_hand_tiles, get_main_tiles, removeMobile } from "./tile-helpers";
 import { BOMB_RADIUS } from './tools';
@@ -27,15 +27,20 @@ function spendKillIntent(state: CoreState, intent: KillIntent): CoreState {
   }
 }
 
+export function tryKillTileOfStateLoc(state: CoreState, loc: Location, intent: KillIntent): CoreState {
+  if (!eligibleKillIntent(state, intent))
+    return state;
+
+  return killTileOfStateLoc(state, loc, intent);
+}
+
 export function tryKillTileOfState(state: CoreState, wp: WidgetPoint, intent: KillIntent): CoreState {
   if (!eligibleKillIntent(state, intent))
     return state;
 
-  if (!(wp.t == 'world' || wp.t == 'hand'))
-    return state;
-
   return killTileOfState(state, wp, intent);
 }
+
 function splashDamage(center: Point, radius: number): Point[] {
   if (radius == 0)
     return [center];
@@ -47,16 +52,22 @@ function splashDamage(center: Point, radius: number): Point[] {
   }
   return pts;
 }
-function killTileOfState(state: CoreState, wp: DragWidgetPoint, intent: KillIntent): CoreState {
+
+
+function killTileOfState(state: CoreState, wp: WidgetPoint, intent: KillIntent): CoreState {
+  return killTileOfStateLoc(state, locationOfWidgetPoint(wp), intent);
+}
+
+function killTileOfStateLoc(state: CoreState, loc: Location, intent: KillIntent): CoreState {
   const radius = intent.t == 'bomb' ? BOMB_RADIUS : intent.t == 'fillWater' ? 0 : intent.radius;
 
   // Definitely want to clear the selection, because invariants get
   // violated if a tileId gets deleted but remains in the selection
   state = deselect(state);
 
-  switch (wp.t) {
+  switch (loc.t) {
     case 'world': {
-      const p_in_world_int = vint(wp.p_in_local);
+      const p_in_world_int = loc.p_in_world_int;
       const anim: Animation = mkExplosionAnimation(p_in_world_int, radius, state.game_from_clock);
 
       function tileAt(p: Point): MainTile | undefined {
@@ -81,9 +92,9 @@ function killTileOfState(state: CoreState, wp: DragWidgetPoint, intent: KillInte
       }));
     }
     case 'hand': {
-      const index = wp.index;
+      const index = loc.index;
       const hand_tiles = get_hand_tiles(state);
-      if (wp.indexValid && index >= 0 && index < hand_tiles.length) {
+      if (index >= 0 && index < hand_tiles.length) {
         const tile = hand_tiles[index];
         if (tile == undefined)
           return state;
@@ -93,5 +104,7 @@ function killTileOfState(state: CoreState, wp: DragWidgetPoint, intent: KillInte
         return state;
       }
     }
+    case 'nowhere':
+      return state;
   }
 }

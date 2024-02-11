@@ -11,7 +11,7 @@ import { GameAction, GameLowAction, LowAction } from './action';
 import { getBonusFromLayer } from './bonus-helpers';
 import { getPanicFraction, now_in_game } from './clock';
 import { getIntentOfMouseDown, reduceIntent } from './intent';
-import { tryKillTileOfState } from './kill-helpers';
+import { tryKillTileOfState, tryKillTileOfStateLoc } from './kill-helpers';
 import { mkOverlayFrom } from './layer';
 import { addRandomMob, advanceMob } from './mobs';
 import { reduceKey } from './reduceKey';
@@ -155,12 +155,12 @@ function resolveMouseup(state: GameState, p_in_canvas: Point): GameLowAction {
   };
 }
 
-function lowActionOfResourceDrop(state: CoreState, res: Resource, wp: WidgetPoint, p_in_world_int: Point): GameLowAction {
+function lowActionOfResourceDrop(state: CoreState, res: Resource, p_in_world_int: Point): GameLowAction {
   switch (res) {
     case 'wood':
       const bonus = getBonusFromLayer(state, p_in_world_int);
       if (bonus.t == 'water') {
-        return { t: 'fillWater', wp };
+        return { t: 'fillWater', p_in_world_int };
       }
       else if (bonus.t == 'empty') {
         if (isOccupied(state, { p_in_world_int, mobile: { t: 'resource', res: res } }))
@@ -263,6 +263,7 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
         }
       }
       else if (wp.t == 'hand') {
+        // what if resource to hand?
         const handTiles = get_hand_tiles(state.coreState);
         if (proposedHandDragOverLimit(state.coreState, state.mouseState)) {
           return bailout;
@@ -315,7 +316,7 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
       if (wp.t != 'world')
         return { t: 'none' };
       const p_in_world_int: Point = pointFall(state.coreState, wp.p_in_canvas);
-      return lowActionOfResourceDrop(state.coreState, ms.res, wp, p_in_world_int);
+      return lowActionOfResourceDrop(state.coreState, ms.res, p_in_world_int);
 
     }
     case 'up': return { t: 'none' }; // no drag to resolve
@@ -383,7 +384,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     case 'dynamiteTile':
       return withCoreState(state, cs => tryKillTileOfState(cs, action.wp, dynamiteIntent));
     case 'fillWater':
-      return withCoreState(state, cs => tryKillTileOfState(cs, action.wp, fillWaterIntent));
+      return withCoreState(state, cs => tryKillTileOfStateLoc(cs, { t: 'world', p_in_world_int: action.p_in_world_int }, fillWaterIntent));
     case 'dropTopHandTile': return dropTopHandTile(state);
     case 'debug': {
       return withCoreState(state, cs => checkValid(produce(addWorldTiles(removeAllMobiles(cs), debugTiles()), s => {
