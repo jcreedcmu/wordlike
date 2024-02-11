@@ -5,15 +5,15 @@ import { DEBUG, debugTiles } from '../util/debug';
 import { produce } from '../util/produce';
 import { SE2, apply, compose, composen, inverse, scale, translate } from '../util/se2';
 import { Point } from '../util/types';
-import { getRandomOrder } from '../util/util';
+import { flatUndef, getRandomOrder } from '../util/util';
 import { vequal, vint, vm, vscale, vsub } from '../util/vutil';
 import { GameAction, GameLowAction, LowAction } from './action';
 import { getBonusFromLayer } from './bonus-helpers';
 import { getPanicFraction, now_in_game } from './clock';
 import { getIntentOfMouseDown, reduceIntent } from './intent';
 import { tryKillTileOfState, tryKillTileOfStateLoc } from './kill-helpers';
-import { requireNoCollision, resolveLandResult } from './landing-resolve';
-import { landMoveOnState, landMoveOnStateForMobiles, landingMoveOfMoveMobile } from './landing-result';
+import { LandingMoveId, landingMoveIdOfMoveMobile, requireNoCollision, resolveLandResult } from './landing-resolve';
+import { ProperLandingResult, landMoveOnState, landMoveOnStateForMobiles, landingMoveOfMoveMobile } from './landing-result';
 import { mkOverlayFrom } from './layer';
 import { addRandomMob, advanceMob } from './mobs';
 import { reduceKey } from './reduceKey';
@@ -214,17 +214,28 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
             else return [];
           });
 
-          const tgts = moves.map(x => x.p_in_world_int);
-          const lrs = requireNoCollision(moves.map(move => landMoveOnStateForMobiles(landingMoveOfMoveMobile(move), state.coreState, remainingMobiles)));
-          if (lrs == undefined) {
+          const pairs = flatUndef(moves.map(move => {
+            const lr = landMoveOnStateForMobiles(landingMoveOfMoveMobile(move), state.coreState, remainingMobiles);
+            const plr = requireNoCollision(lr);
+            if (plr == undefined)
+              return undefined;
+            return { plr, move };
+          }));
+
+          if (pairs == undefined) {
             return bailout;
           }
 
-          // TODO(landing) use lrs to generate LowAction instead of putMobilesInWorld
-
+          const tgts = pairs.map(pair => pair.move.p_in_world_int);
           return {
             t: 'multiple', actions: [
-              { t: 'putMobilesInWorld', moves },
+              {
+                t: 'landResults',
+                lrms: pairs.map(pair => ({
+                  lr: pair.plr,
+                  move: landingMoveIdOfMoveMobile(pair.move),
+                }))
+              },
               { t: 'setSelected', sel: { overlay: mkOverlayFrom(tgts), selectedIds: selected.selectedIds } },
               { t: 'checkValid' },
             ]
@@ -254,7 +265,7 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
           return {
             t: 'multiple',
             actions: [
-              { t: 'landResults', lrms: [{ lr, move: { p_in_world_int: moveTile.p_in_world_int, src: { t: 'mobile', id: ms.id } } }] },
+              { t: 'landResults', lrms: [{ lr, move: landingMoveIdOfMoveMobile(moveTile) }] },
               { t: 'checkValid' }]
           };
         }

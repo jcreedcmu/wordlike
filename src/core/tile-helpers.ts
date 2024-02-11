@@ -103,8 +103,8 @@ export function addHandTileEntity(state: Draft<CoreState>, letter: string, index
   return newTile;
 }
 
-export function putMobileInWorld(state: CoreState, id: string, p_in_world_int: Point): CoreState {
-  const nowhere = putMobileNowhere(state, id);
+export function putMobileInWorld(state: CoreState, id: string, p_in_world_int: Point, noclear?: 'noclear'): CoreState {
+  const nowhere = putMobileNowhere(state, id, noclear);
   const mobile = getMobileId(state, id);
   const cacheUpdate: CacheUpdate = {
     p_in_world_int,
@@ -116,6 +116,7 @@ export function putMobileInWorld(state: CoreState, id: string, p_in_world_int: P
   });
 }
 
+// XXX deprecated?
 export function putMobilesInWorld(state: CoreState, moves: MoveMobile[]): CoreState {
   let cs = state;
   for (const move of moves) {
@@ -183,7 +184,7 @@ export function putTileInHand(state: CoreState, id: string, ix: number): CoreSta
   });
 }
 
-export function putMobileNowhere(state: CoreState, id: string): CoreState {
+export function putMobileNowhere(state: CoreState, id: string, noclear?: 'noclear'): CoreState {
   const loc = getMobileLoc(state, id);
   const handTiles = get_hand_tiles(state);
 
@@ -193,7 +194,8 @@ export function putMobileNowhere(state: CoreState, id: string): CoreState {
       const cacheUpdate: CacheUpdate = { p_in_world_int: loc.p_in_world_int, chunkUpdate: { t: 'removeMobile' } };
       return produce(state, s => {
         setMobileLoc(s, id, { t: 'nowhere' });
-        s._cacheUpdateQueue.push(cacheUpdate);
+        if (!noclear)
+          s._cacheUpdateQueue.push(cacheUpdate);
       });
     case 'hand':
       return produce(state, s => {

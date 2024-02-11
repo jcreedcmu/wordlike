@@ -164,3 +164,12 @@ export function pixelSnapRect(r: Rect): Rect {
 export function fpart(x: number): number {
   return x - Math.floor(x);
 }
+
+export function flatUndef<A>(xs: (undefined | A)[]): undefined | A[] {
+  const rv: A[] = [];
+  for (const x of xs) {
+    if (x == undefined) return undefined;
+    rv.push(x);
+  }
+  return rv;
+}
