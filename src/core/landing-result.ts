@@ -30,6 +30,7 @@ export type LandingResult =
   | { t: 'collision' } // the attempt to place A on B "fails"
   | { t: 'place' } // the attempt to place A on B "succeeds" in the most trivial way
   /* other things that I expect to go here include: success which transforms the B somehow */
+  /* e.g.: wood fills water */
   ;
 
 // this is some kind of algebraic operation on landing results.

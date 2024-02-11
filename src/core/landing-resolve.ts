@@ -1,6 +1,6 @@
 import { produce } from "../util/produce";
 import { Point } from "../util/types";
-import { LandingResult } from "./landing-result";
+import { LandingMove, LandingResult, MoveSource } from "./landing-result";
 import { MobType } from "./mobs";
 import { CoreState } from "./state";
 import { checkValid } from "./state-helpers";

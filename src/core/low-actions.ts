@@ -6,7 +6,7 @@ import { produce } from '../util/produce';
 import { SE2, apply, compose, composen, inverse, scale, translate } from '../util/se2';
 import { Point } from '../util/types';
 import { getRandomOrder } from '../util/util';
-import { vequal, vm, vscale, vsub } from '../util/vutil';
+import { vequal, vint, vm, vscale, vsub } from '../util/vutil';
 import { GameAction, GameLowAction, LowAction } from './action';
 import { getBonusFromLayer } from './bonus-helpers';
 import { getPanicFraction, now_in_game } from './clock';
@@ -155,23 +155,6 @@ function resolveMouseup(state: GameState, p_in_canvas: Point): GameLowAction {
     t: 'andMouseUp',
     p_in_canvas: p_in_canvas,
   };
-}
-
-// TODO(landing): isn't this whole function due for replacement?
-function lowActionOfResourceDrop(state: CoreState, res: Resource, p_in_world_int: Point): GameLowAction {
-  switch (res) {
-    case 'wood':
-      const bonus = getBonusFromLayer(state, p_in_world_int);
-      if (bonus.t == 'water') {
-        return { t: 'fillWater', p_in_world_int };
-      }
-      else if (bonus.t == 'empty') {
-        return { t: 'resolveLandResult', lr: { t: 'place' }, move: { p_in_world_int, src: { t: 'freshResource', res } } };
-      }
-      else {
-        return { t: 'none' };
-      }
-  }
 }
 
 function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowAction {
@@ -336,8 +319,11 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
       const wp = getWidgetPoint(state.coreState, ms.p_in_canvas);
       if (wp.t != 'world')
         return { t: 'none' };
-      const p_in_world_int: Point = pointFall(state.coreState, wp.p_in_canvas);
-      return lowActionOfResourceDrop(state.coreState, ms.res, p_in_world_int);
+
+      const p_in_world_int: Point = vint(wp.p_in_local);
+      const lr = landMoveOnState({ p_in_world_int, src: { t: 'resource', res: ms.res } }, state.coreState)
+      if (lr.t == 'collision') return { t: 'none' };
+      return { t: 'resolveLandResult', lr, move: { p_in_world_int, src: { t: 'freshResource', res: ms.res } } };
 
     }
     case 'up': return { t: 'none' }; // no drag to resolve
