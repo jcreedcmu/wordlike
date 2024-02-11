@@ -2,13 +2,10 @@ import { ViewData } from '../ui/ui-helpers';
 import { WidgetPoint } from '../ui/widget-helpers';
 import { SE2 } from '../util/se2';
 import { Point } from '../util/types';
-import { Chunk } from './chunk';
 import { PanicData, PauseData } from './clock';
 import { Intent } from './intent';
-import { Overlay } from './layer';
 import { SelectionState } from './selection';
-import { CoreState, GameState, InventoryItems, Location, MouseState, SceneState } from './state';
-import { MoveMobile } from './state-helpers';
+import { InventoryItems, Location, MouseState, MoveMobile, SceneState } from './state';
 import { Resource, Tool } from './tools';
 
 export type GameLowAction =

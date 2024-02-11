@@ -7,8 +7,7 @@ import { vadd, vdiv, vint, vm, vsnorm, vsub } from '../util/vutil';
 import { deterministicLetterSample } from './distribution';
 import { Layer, mkLayer } from './layer';
 import { incrementScore } from './scoring';
-import { CacheUpdate, CoreState } from './state';
-import { MoveMobile, MoveMobileNoId, Scoring } from './state-helpers';
+import { CoreState, MoveMobileNoId, Scoring } from './state';
 import { mkActiveWordBonus } from './word-bonus';
 
 export type ScoringBonus =

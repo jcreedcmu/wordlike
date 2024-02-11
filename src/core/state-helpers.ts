@@ -14,20 +14,15 @@ import { BIT_CONNECTED } from "./chunk";
 import { PANIC_INTERVAL_MS, PanicData, PauseData, WORD_BONUS_INTERVAL_MS, now_in_game } from "./clock";
 import { DrawForce, getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, gridKeys, mkGridOfMainTiles } from "./grid";
+import { LandingResult } from "./landing-result";
 import { mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
 import { addRandomMob, collidesWithMob } from "./mobs";
 import { PROGRESS_ANIMATION_POINTS, getHighWaterMark, getScore, setHighWaterMark } from "./scoring";
-import { CacheUpdate, CoreState, GameState, HAND_TILE_LIMIT, Location, MainLoc, MobileEntity, MouseState, RenderableMobile, Tile, TileEntity, WordBonusState } from "./state";
-import { addHandTileEntity, addWorldTile, get_hand_tiles, get_main_tiles, get_mobiles, get_tiles, putMobileInWorld } from "./tile-helpers";
+import { CacheUpdate, CoreState, GameState, HAND_TILE_LIMIT, Location, MainLoc, MobileEntity, MouseState, MoveMobileNoId, RenderableMobile, Scoring, Tile, TileEntity, WordBonusState } from "./state";
+import { CellContents, addHandTileEntity, addWorldTile, get_hand_tiles, get_main_tiles, get_mobiles, get_tiles, putMobileInWorld } from "./tile-helpers";
 import { ensureTileId } from "./tile-id-helpers";
 import { getCurrentTool } from "./tools";
 import { WIN_SCORE, canWinFromState, shouldStartPanicBar } from "./winState";
-
-export type Scoring = {
-  bonus: ScoringBonus | { t: 'wordAchieved', word: string },
-  p_in_world_int: Point,
-  destroy: boolean,
-};
 
 export function addWorldTiles(state: CoreState, tiles: Tile[]): CoreState {
   return produce(state, s => {
@@ -45,12 +40,7 @@ export function addHandTileEntities(state: CoreState, tiles: { letter: string, i
   });
 }
 
-
-export type MoveMobile = { mobile: RenderableMobile, id: string, p_in_world_int: Point };
-export type MoveMobileNoId = { mobile: RenderableMobile, p_in_world_int: Point };
-export type GenMoveTile = { id: string, loc: Location };
-
-// XXX: unify isOccupiedForTiles and isOccupiedPointForTiles
+// XXX: unify isOccupiedForMobiles and isOccupiedPointForMobiles
 
 // Returns true if there is a collision when
 // - we are trying to land `moveMobile`
