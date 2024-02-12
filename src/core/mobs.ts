@@ -156,6 +156,10 @@ function towards_origin(p: Point): Orientation {
   return orientations[ix];
 }
 
+export function addMob(state: CoreState, newMob: MobState): CoreState {
+  return produce(state, s => { s.mobsState.mobs.push(newMob); })
+}
+
 export function addRandomMob(state: CoreState): CoreState {
   const ATTEMPTS = 5;
   const RANGE = 10;
@@ -173,13 +177,12 @@ export function addRandomMob(state: CoreState): CoreState {
     if (landMoveOnState({ src, p_in_world_int }, state).t == 'place') {
       const orientation = towards_origin(p_in_world_int);
       const newMob: MobState = { t: 'snail', ticks: 0, p_in_world_int, orientation };
-      return produce(state, s => {
-        s.mobsState.mobs.push(newMob);
+      return produce(addMob(state, newMob), s => {
         s.seed = seed;
       });
     }
   }
-
+  // Fallthrough; didn't succeed at adding mob, but still shoud update seed.
   return produce(state, s => {
     s.seed = seed;
   });
