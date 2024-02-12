@@ -14,8 +14,13 @@ function testState(): GameState {
 describe('advanceMob', () => {
   test('should work', () => {
 
-    const cs = testState().coreState;
-    const nextState = advanceMob(cs, cs.mobsState.mobs[0]);
-    expect(nextState.ticks).toEqual(1);
+    let cs = testState().coreState;
+    const state1 = advanceMob(cs, cs.mobsState.mobs[0]);
+    expect(state1.ticks).toEqual(1);
+
+    cs = produce(cs, s => { s.mobsState.mobs[0] = state1; });
+    const state2 = advanceMob(cs, cs.mobsState.mobs[0]);
+    expect(state2.ticks).toEqual(2);
+
   });
 });
