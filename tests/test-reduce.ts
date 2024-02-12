@@ -1,5 +1,5 @@
 import { GameLowAction } from '../src/core/action';
-import { BIT_CONNECTED } from '../src/core/chunk';
+import { BIT_CONNECTED, BIT_SELECTED } from '../src/core/chunk';
 import { mkOverlayFrom } from '../src/core/layer';
 import { resolveGameLowActions } from '../src/core/low-actions';
 import { GameState, mkGameState } from '../src/core/state';
@@ -46,7 +46,15 @@ describe('kill', () => {
     expect(state.coreState._cacheUpdateQueue).toEqual(
       [
         {
-          chunkUpdate: { t: 'removeTile', },
+          chunkUpdate: { t: 'clearBit', bit: BIT_SELECTED },
+          p_in_world_int: { x: 0, y: 0 },
+        },
+        {
+          chunkUpdate: { t: 'clearBit', bit: BIT_SELECTED },
+          p_in_world_int: { x: 1, y: 0 },
+        },
+        {
+          chunkUpdate: { t: 'removeMobile', },
           p_in_world_int: { x: 2, y: 0 },
         },
         {

@@ -1,5 +1,5 @@
 import { reduce } from "../src/core/reduce";
-import { GameState, mkGameState } from "../src/core/state";
+import { GameState, MobileEntity, mkGameState } from "../src/core/state";
 import { checkValid, addWorldTiles, withCoreState } from "../src/core/state-helpers";
 import { addWorldTile, removeMobile, putMobileInWorld } from "../src/core/tile-helpers";
 import { debugTiles } from "../src/util/debug";
@@ -19,6 +19,7 @@ describe('addWorldTile', () => {
     const state = twoTileState();
     expect(state.coreState.mobile_entities).toEqual({
       '1': {
+        t: 'tile',
         id: '1',
         letter: 'A',
         loc: {
@@ -30,6 +31,7 @@ describe('addWorldTile', () => {
         },
       },
       '2': {
+        t: 'tile',
         id: '2',
         letter: 'B',
         loc: {
@@ -56,8 +58,9 @@ describe('moveTile', () => {
   test('should work correctly', () => {
     let state = twoTileState();
     state = withCoreState(state, cs => putMobileInWorld(cs, '2', { x: 3, y: 3 }));
-    expect(state.coreState.mobile_entities).toEqual({
+    const expected: Record<string, MobileEntity> = {
       '1': {
+        t: 'tile',
         id: '1',
         letter: 'A',
         loc: {
@@ -69,6 +72,7 @@ describe('moveTile', () => {
         },
       },
       '2': {
+        t: 'tile',
         id: '2',
         letter: 'B',
         loc: {
@@ -79,8 +83,8 @@ describe('moveTile', () => {
           },
         },
       },
-    });
-
+    };
+    expect(state.coreState.mobile_entities).toEqual(expected);
   });
 });
 
