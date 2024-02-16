@@ -31,6 +31,7 @@ export type ProperLandingResult =
   | { t: 'place' } // the attempt to place A on B "succeeds" in the most trivial way
   /* other things that I expect to go here include: success which transforms the B somehow */
   | { t: 'fillWater' }
+  | { t: 'replaceResource', res: Resource }
   ;
 
 export type LandingResult =
@@ -46,8 +47,9 @@ export type LandingResult =
 // being equal.
 export function disjunction(lr1: LandingResult, lr2: LandingResult): LandingResult {
   switch (lr1.t) {
-    case 'collision': return { t: 'collision' };
-    case 'fillWater': return { t: 'fillWater' };
+    case 'collision': // fallthrough intentional
+    case 'fillWater': // fallthrough intentional
+    case 'replaceResource': return lr1;
     case 'place': return lr2;
   }
 }
@@ -59,8 +61,15 @@ export function disjuncts(...lrs: LandingResult[]): LandingResult {
 }
 
 export function landMobileOnCell(m: MoveSource, c: CellContents): LandingResult {
-  switch (c.t) {
-    case 'mobile': return { t: 'collision' };
+  switch (c.t) { // first branch on what exists on the target
+    case 'mobile': {
+      if (c.mobile.t == 'resource' && c.mobile.res == 'wood') {
+        if (m.t == 'resource' && m.res == 'axe') {
+          return { t: 'replaceResource', res: 'planks' };
+        }
+      }
+      return { t: 'collision' };
+    }
     case 'bonus': {
       const bonus = c.bonus;
       switch (bonus.t) {

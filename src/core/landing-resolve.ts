@@ -29,12 +29,16 @@ export function resolveLandResult(_state: CoreState, lr: ProperLandingResult, mo
   const state = removeSource(_state, move.src);
 
   switch (lr.t) {
-    case 'place':
+    case 'place': {
       switch (src.t) {
         case 'mobile': return putMobileInWorld(state, src.id, move.p_in_world_int, 'noclear');
         case 'freshResource': return addResourceMobile(state, move.p_in_world_int, src.res);
-
       }
+    }
+    case 'replaceResource': {
+      const { res } = lr;
+      return addResourceMobile(state, move.p_in_world_int, res);
+    }
     case 'fillWater': {
       return tryKillTileOfStateLoc(state, { t: 'world', p_in_world_int: move.p_in_world_int }, fillWaterIntent);
     }
