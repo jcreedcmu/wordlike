@@ -3,7 +3,7 @@ import { Point } from "../util/types";
 import { tryKillTileOfStateLoc } from "./kill-helpers";
 import { LandingResult, ProperLandingResult } from "./landing-result";
 import { CoreState, MoveMobile } from "./state";
-import { addResourceMobile, putMobileInWorld, putMobileNowhere } from "./tile-helpers";
+import { addResourceMobile, mobileAtPoint, putMobileInWorld, putMobileNowhere, removeMobile } from "./tile-helpers";
 import { Resource, fillWaterIntent } from "./tools";
 
 // A thing that can be moved onto something else
@@ -37,7 +37,14 @@ export function resolveLandResult(_state: CoreState, lr: ProperLandingResult, mo
     }
     case 'replaceResource': {
       const { res } = lr;
-      return addResourceMobile(state, move.p_in_world_int, res);
+      let cs = state;
+      if (move.src.t == 'mobile')
+        cs = removeMobile(cs, move.src.id);
+      const mobile = mobileAtPoint(cs, move.p_in_world_int);
+      if (mobile != undefined)
+        cs = removeMobile(cs, mobile.id);
+      cs = addResourceMobile(cs, move.p_in_world_int, res);
+      return cs;
     }
     case 'fillWater': {
       return tryKillTileOfStateLoc(state, { t: 'world', p_in_world_int: move.p_in_world_int }, fillWaterIntent);
