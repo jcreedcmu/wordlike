@@ -104,6 +104,9 @@ function drawResbar(d: CanvasRenderingContext2D, state: CoreState) {
     if (res == 'wood') {
       drawToolbarCount(d, rect_in_canvas, state.slowState.resource.wood);
     }
+    if (res == 'axe') {
+      drawToolbarCount(d, rect_in_canvas, state.slowState.resource.axe);
+    }
   });
 
 }

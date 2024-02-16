@@ -161,6 +161,7 @@ export type InventoryItems = {
 
 export type ResourceItems = {
   wood: number,
+  axe: number,
 };
 
 // state such that, if it updates, should induce redraw of Canvas2d content
@@ -237,6 +238,7 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
         },
         resource: {
           wood: 0,
+          axe: 0,
         },
         scoring: { score: 0, highWaterMark: 0 },
         currentTool: 'pointer',

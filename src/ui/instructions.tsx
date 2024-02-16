@@ -184,6 +184,7 @@ function exampleState(): GameState {
         },
         resource: {
           wood: 0,
+          axe: 0,
         },
         scoring: {
           score: 7,

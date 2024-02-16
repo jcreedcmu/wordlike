@@ -24,7 +24,8 @@ const tools = [
 export type Tool = (typeof tools)[number];
 
 const resources = [
-  'wood'
+  'wood',
+  'axe'
 ] as const;
 
 export type Resource = (typeof resources)[number];
@@ -83,6 +84,9 @@ export function getCurrentResources(state: CoreState): Resource[] {
   const resources: Resource[] = [];
   if (state.slowState.resource.wood > 0) {
     resources.push('wood');
+  }
+  if (state.slowState.resource.axe > 0) {
+    resources.push('axe');
   }
   return resources;
 }
