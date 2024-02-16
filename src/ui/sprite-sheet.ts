@@ -77,8 +77,9 @@ export function spriteLocOfTool(tool: Tool): Point {
 
 export function spriteLocOfRes(res: Resource): Point {
   switch (res) {
-    case 'wood': return { y: 6, x: 1 };
-    case 'axe': return { y: 7, x: 1 };
+    case 'wood': return { x: 1, y: 6 };
+    case 'axe': return { x: 1, y: 7 };
+    case 'planks': return { x: 1, y: 8 };
   }
 }
 
@@ -94,6 +95,7 @@ export function largeSpriteLoc(tool: Tool | Resource): Point {
     case 'time': return { y: 0, x: 7 };
     case 'wood': return { y: 0, x: 8 };
     case 'axe': return { y: 0, x: 9 };
+    case 'planks': return { y: 0, x: 0 }; // XXX - this is invalid
   }
 }
 

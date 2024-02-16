@@ -25,7 +25,8 @@ export type Tool = (typeof tools)[number];
 
 const resources = [
   'wood',
-  'axe'
+  'axe',
+  'planks',
 ] as const;
 
 export type Resource = (typeof resources)[number];
