@@ -8,7 +8,7 @@ import { LandingMoveId } from './landing-resolve';
 import { LandingResult, ProperLandingResult } from './landing-result';
 import { SelectionState } from './selection';
 import { InventoryItems, Location, MouseState, MoveMobile, SceneState } from './state';
-import { Resource, Tool } from './tools';
+import { ResbarResource, Tool } from './tools';
 
 export type GameLowAction =
   | { t: 'zoom', center: Point, amount: number }
@@ -47,7 +47,7 @@ export type GameLowAction =
   | { t: 'restoreMobiles', ids: string[] } // put held mobiles back in cache
   | { t: 'popCacheUpdateQueue', n: number }
   | { t: 'addMob' }
-  | { t: 'startDragResource', wp: WidgetPoint, res: Resource, res_ix: number } // XXX: rename to startDragResbar or something
+  | { t: 'startDragResource', wp: WidgetPoint, res: ResbarResource, res_ix: number } // XXX: rename to startDragResbar or something
   | { t: 'landResults', lrms: { lr: ProperLandingResult, move: LandingMoveId }[] }
   ;
 

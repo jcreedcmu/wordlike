@@ -1,7 +1,7 @@
 import { Bonus } from "../core/bonus";
 import { ChunkValue } from "../core/chunk";
 import { MobState } from "../core/mobs";
-import { LARGE_SPRITE_PIXEL_WIDTH, Resource, SPRITE_PIXEL_WIDTH, Tool } from "../core/tools";
+import { LARGE_SPRITE_PIXEL_WIDTH, ResbarResource, SPRITE_PIXEL_WIDTH, Tool, Resource } from "../core/tools";
 import { Buffer, buffer, fillRect } from "../util/dutil";
 import { scale } from "../util/se2";
 import { apply_to_rect } from "../util/se2-extra";
@@ -83,7 +83,7 @@ export function spriteLocOfRes(res: Resource): Point {
   }
 }
 
-export function largeSpriteLoc(tool: Tool | Resource): Point {
+export function largeSpriteLoc(tool: Tool | ResbarResource): Point {
   switch (tool) {
     case 'pointer': return { y: 0, x: 0 };
     case 'hand': return { y: 0, x: 1 };
@@ -95,7 +95,6 @@ export function largeSpriteLoc(tool: Tool | Resource): Point {
     case 'time': return { y: 0, x: 7 };
     case 'wood': return { y: 0, x: 8 };
     case 'axe': return { y: 0, x: 9 };
-    case 'planks': return { y: 0, x: 0 }; // XXX - this is invalid
   }
 }
 

@@ -23,13 +23,16 @@ const tools = [
 
 export type Tool = (typeof tools)[number];
 
-const resources = [
+const resbarResources = [
   'wood',
   'axe',
-  'planks',
 ] as const;
 
-export type Resource = (typeof resources)[number];
+export type ResbarResource = (typeof resbarResources)[number];
+export type WorldOnlyResource =
+  | 'planks'
+  ;
+export type Resource = ResbarResource | WorldOnlyResource;
 
 export function toolOfIndex(index: number): Tool | undefined {
   return tools[index];
@@ -78,11 +81,11 @@ export function getCurrentTools(state: CoreState): Tool[] {
   return tools;
 }
 
-export function getCurrentResources(state: CoreState): Resource[] {
+export function getCurrentResources(state: CoreState): ResbarResource[] {
   if (state.slowState.winState.t == 'lost') {
     return [];
   }
-  const resources: Resource[] = [];
+  const resources: ResbarResource[] = [];
   if (state.slowState.resource.wood > 0) {
     resources.push('wood');
   }
@@ -96,7 +99,7 @@ export function rectOfTool(tool: Tool): Rect {
   return spriteRectOfPos(spriteLocOfTool(tool));
 }
 
-export function largeRectOf(tool: Tool | Resource): Rect {
+export function largeRectOf(tool: Tool | ResbarResource): Rect {
   return largeSpriteRectOfPos(largeSpriteLoc(tool));
 }
 

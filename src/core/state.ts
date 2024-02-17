@@ -12,7 +12,7 @@ import { Grid, LocatedWord, mkGridOf } from './grid';
 import { Overlay, mkOverlay } from './layer';
 import { MobState } from './mobs';
 import { SelectionOperation, SelectionState } from './selection';
-import { Resource, Tool } from './tools';
+import { ResbarResource, Tool, Resource } from './tools';
 import { WinState } from './winState';
 
 export type Scoring = {
@@ -48,7 +48,7 @@ export type MouseState =
     t: 'drag_resource',
     p_in_canvas: Point,
     orig_p_in_canvas: Point,
-    res: Resource,
+    res: ResbarResource,
     res_ix: number,
   }
   ;
@@ -159,10 +159,7 @@ export type InventoryItems = {
   times: number,
 };
 
-export type ResourceItems = {
-  wood: number,
-  axe: number,
-};
+export type ResourceItems = Record<ResbarResource, number>;
 
 // state such that, if it updates, should induce redraw of Canvas2d content
 export type SlowState = {

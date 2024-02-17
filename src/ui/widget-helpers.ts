@@ -1,5 +1,5 @@
 import { CoreState, HAND_TILE_LIMIT, Location } from "../core/state";
-import { Resource, Tool, getCurrentResources, getCurrentTools } from "../core/tools";
+import { ResbarResource, Tool, getCurrentResources, getCurrentTools } from "../core/tools";
 import { SE2, apply, inverse } from "../util/se2";
 import { Point, Rect } from "../util/types";
 import { lerp, mapval, pixelSnapRect, pointInRect } from "../util/util";
@@ -161,7 +161,7 @@ export type DragWidgetPoint =
 export type WidgetPoint =
   | DragWidgetPoint
   | { t: 'toolbar', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2, tool: Tool }
-  | { t: 'resbar', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2, res: Resource }
+  | { t: 'resbar', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2, res: ResbarResource }
   | { t: 'pauseButton', p_in_canvas: Point }
   | { t: 'nowhere', p_in_canvas: Point } // outside canvas bounds
   ;
