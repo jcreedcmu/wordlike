@@ -90,7 +90,6 @@ function drawResbar(d: CanvasRenderingContext2D, state: CoreState) {
 
   const ress = getCurrentResources(state);
   ress.forEach((res, ix_in_resbar) => {
-
     const ICON_SCALE = 0.7;
     const S_in_canvas = resbar_bds_in_canvas.sz.x;
     const rect_in_canvas = apply_to_rect(
@@ -98,15 +97,8 @@ function drawResbar(d: CanvasRenderingContext2D, state: CoreState) {
       { p: { x: 0, y: S_in_canvas * ix_in_resbar }, sz: { x: S_in_canvas, y: S_in_canvas } },
     );
     const scaled_rect_in_canvas = scaleRectToCenter(rect_in_canvas, ICON_SCALE);
-
     drawImage(d, toolbar, largeRectOf(res), scaled_rect_in_canvas);
-
-    if (res == 'wood') {
-      drawToolbarCount(d, rect_in_canvas, state.slowState.resource.wood);
-    }
-    if (res == 'axe') {
-      drawToolbarCount(d, rect_in_canvas, state.slowState.resource.axe);
-    }
+    drawToolbarCount(d, rect_in_canvas, state.slowState.resource[res]);
   });
 
 }

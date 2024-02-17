@@ -80,6 +80,7 @@ export function spriteLocOfRes(res: Resource): Point {
     case 'wood': return { x: 1, y: 6 };
     case 'axe': return { x: 1, y: 7 };
     case 'planks': return { x: 1, y: 8 };
+    case 'stone': return { x: 1, y: 9 };
   }
 }
 
@@ -94,7 +95,7 @@ export function largeSpriteLoc(tool: Tool | ResbarResource): Point {
     case 'copy': return { y: 0, x: 6 };
     case 'time': return { y: 0, x: 7 };
     case 'wood': return { y: 0, x: 8 };
-    case 'axe': return { y: 0, x: 9 };
+    case 'stone': return { y: 0, x: 9 };
   }
 }
 

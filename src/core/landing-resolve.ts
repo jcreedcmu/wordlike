@@ -18,8 +18,7 @@ export function removeSource(state: CoreState, src: MoveSourceId): CoreState {
   switch (src.t) {
     case 'mobile': return putMobileNowhere(state, src.id, 'noclear');
     case 'freshResource': return produce(state, cs => {
-      if (src.res == 'wood' || src.res == 'axe')
-        cs.slowState.resource[src.res]--;
+      cs.slowState.resource[src.res]--;
     });
   }
 }

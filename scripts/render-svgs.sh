@@ -18,6 +18,6 @@ do
   inkscape -z -w ${LARGE_SIZE} -h ${LARGE_SIZE}  ${WORKDIR}/${base}.svg -e ${WORKDIR}/${base}.png
 done
 
-PNGS=$(echo "arrow hand dynamite bomb vowel consonant copy timer wood axe" | perl -ane "for (@F) {print qq(${WORKDIR}\/\$_.png )}")
+PNGS=$(echo "arrow hand dynamite bomb vowel consonant copy timer wood stone" | perl -ane "for (@F) {print qq(${WORKDIR}\/\$_.png )}")
 echo $PNGS
 montage $PNGS -background '#ffffff00' -tile 16x1 public/assets/toolbar-large.png

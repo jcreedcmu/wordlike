@@ -25,12 +25,13 @@ export type Tool = (typeof tools)[number];
 
 const resbarResources = [
   'wood',
-  'axe',
+  'stone',
 ] as const;
 
 export type ResbarResource = (typeof resbarResources)[number];
 export type WorldOnlyResource =
   | 'planks'
+  | 'axe'
   ;
 export type Resource = ResbarResource | WorldOnlyResource;
 
@@ -85,14 +86,7 @@ export function getCurrentResources(state: CoreState): ResbarResource[] {
   if (state.slowState.winState.t == 'lost') {
     return [];
   }
-  const resources: ResbarResource[] = [];
-  if (state.slowState.resource.wood > 0) {
-    resources.push('wood');
-  }
-  if (state.slowState.resource.axe > 0) {
-    resources.push('axe');
-  }
-  return resources;
+  return resbarResources.filter(res => state.slowState.resource[res] > 0);
 }
 
 export function rectOfTool(tool: Tool): Rect {

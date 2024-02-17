@@ -235,7 +235,7 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
         },
         resource: {
           wood: 0,
-          axe: 0,
+          stone: 0,
         },
         scoring: { score: 0, highWaterMark: 0 },
         currentTool: 'pointer',
