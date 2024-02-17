@@ -64,6 +64,9 @@ export function landMobileOnCell(m: MoveSource, c: CellContents): LandingResult 
   switch (c.t) { // first branch on what exists on the target
     case 'mobile': {
       if (c.mobile.t == 'resource' && c.mobile.res == 'wood') {
+        if (m.t == 'resource' && m.res == 'stone') {
+          return { t: 'replaceResource', res: 'axe' };
+        }
         if (m.t == 'resource' && m.res == 'axe') {
           return { t: 'replaceResource', res: 'planks' };
         }
@@ -83,7 +86,7 @@ export function landMobileOnCell(m: MoveSource, c: CellContents): LandingResult 
         case 'word': return { t: 'collision' };
         case 'time': return { t: 'collision' };
         case 'dynamite': return { t: 'collision' };
-        case 'water': return (m.t == 'resource' && m.res == 'wood') ? { t: 'fillWater' } : { t: 'collision' };
+        case 'water': return (m.t == 'resource' && m.res == 'planks') ? { t: 'fillWater' } : { t: 'collision' };
         case 'mountain': return { t: 'collision' };
       }
     }
