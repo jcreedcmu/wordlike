@@ -59,6 +59,7 @@ export function spriteLocOfBonus(bonus: Bonus): Point {
     case 'word': return { x: 0, y: 8 };
     case 'time': return spriteLocOfTool('time');
     case 'dynamite': return { x: 0, y: 2 };
+    case 'mountain': return { x: 1, y: 10 };
   }
 }
 
@@ -84,8 +85,8 @@ export function spriteLocOfRes(res: Resource): Point {
   }
 }
 
-export function largeSpriteLoc(tool: Tool | ResbarResource): Point {
-  switch (tool) {
+export function largeSpriteLoc(sprite: Tool | ResbarResource): Point {
+  switch (sprite) {
     case 'pointer': return { y: 0, x: 0 };
     case 'hand': return { y: 0, x: 1 };
     case 'dynamite': return { y: 0, x: 2 };

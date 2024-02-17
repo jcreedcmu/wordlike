@@ -12,6 +12,7 @@ import { mkActiveWordBonus } from './word-bonus';
 
 export type ScoringBonus =
   | { t: 'tree' }
+  | { t: 'mountain' }
   | { t: 'bomb' }
   | { t: 'required', letter: string }
   | { t: 'consonant' }
@@ -68,6 +69,9 @@ export function bonusGenerator(p: Point, seed: number): Bonus {
     }
     else if (ph < 0.4) {
       return { t: 'dynamite' };
+    }
+    else if (ph < 0.5) {
+      return { t: 'mountain' };
     }
     else
       return { t: 'tree' };
@@ -131,6 +135,7 @@ export function adjacentScoringOfBonus(bonus: Bonus, p_in_world_int: Point): Sco
     case 'required': return [];
     case 'empty': return [];
     case 'water': return [];
+    case 'mountain': return [{ bonus, p_in_world_int, destroy: true }];
   }
 }
 
@@ -159,6 +164,7 @@ export function resolveScoring(state: CoreState, scoring: Scoring): CoreState {
     case 'wordAchieved': return produce(state, s => { incrementScore(s, bonus.word.length * 10 + 10); });
     case 'time': return produce(state, s => { s.slowState.inventory.times++; });
     case 'dynamite': return produce(state, s => { s.slowState.inventory.dynamites++; });
+    case 'mountain': return produce(state, s => { s.slowState.resource.stone++ });
   }
 }
 
