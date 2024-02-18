@@ -44,7 +44,11 @@ function getWorldChunkData(cs: CoreState, p_in_chunk: Point): Chunk {
       // === cell_data format ===
       //
       // .r: which bonus we should show here. High 4 bits are x coord on the sprite sheet, low 4 bits are y.
-      // .g: which letter tile we should draw here, 32 = none, 0 = A, ..., 25 = Z
+      // .g: which mobile we should draw here.
+      //     bit 7 set: mobile is a tile. 32 = none, 0 = A, ..., 25 = Z
+      //     bit 7 clear: mobile is a resource from the sprite sheet. Format is
+      //                  0[xxx][yyyy] just like .r field. This means we have access
+      //                  to only the left half of the sprite sheet.
       // .b: some metadata.
       //       bit 0: tile is selected
       //       bit 1: tile is connected to origin
