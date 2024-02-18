@@ -19,6 +19,8 @@ const int PREPASS_BUFFER_SIZE = 256; // XXX should be a uniform maybe?
 const float CROSSHAIR_OPACITY = 0.3;
 const float CROSSHAIR_LENGTH = 2.;
 
+const float LAND_WATER_TRANSITIONS_X_OFFSET = 8.;
+
 out vec4 outputColor;
 
 // Minimum chunk identifier that occurs in prepass framebuffer
@@ -55,7 +57,7 @@ vec4 get_terrain_pixel(vec2 p_in_world) {
   int bit_8 = is_land(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(1.5,1.5)) / float(PREPASS_BUFFER_SIZE) )));
 
   vec2 bonus_coords = vec2(
-                           2.,
+                           LAND_WATER_TRANSITIONS_X_OFFSET,
                            (bit_8 << 3) +
                            (bit_4 << 2) +
                            (bit_2 << 1) +
