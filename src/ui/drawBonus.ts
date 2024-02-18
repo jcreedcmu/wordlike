@@ -27,8 +27,8 @@ export function drawBonusPoint(d: CanvasRenderingContext2D, pan_canvas_from_worl
 
 export function drawBonusBomb(d: CanvasRenderingContext2D, pan_canvas_from_world: SE2, p: Point, fraction: number = 1) {
   const rect_in_canvas = apply_to_rect(pan_canvas_from_world, { p, sz: { x: 1, y: 1 } });
-  const spriteSheet = getAssets().spriteSheetBuf.c;
-  drawImage(d, spriteSheet, rectOfTool('bomb'), rect_in_canvas);
+  const sprites = getAssets().spritesBuf.c;
+  drawImage(d, sprites, rectOfTool('bomb'), rect_in_canvas);
 }
 
 export function drawRequiredLetterBonus(d: CanvasRenderingContext2D, letter: string, rect_in_canvas: Rect) {
@@ -36,7 +36,7 @@ export function drawRequiredLetterBonus(d: CanvasRenderingContext2D, letter: str
 }
 
 export function drawBonus(d: CanvasRenderingContext2D, bonus: Bonus, canvas_from_world: SE2, p_in_world: Point, fraction: number = 1, active: boolean = false) {
-  const spriteSheet = getAssets().spriteSheetBuf.c;
+  const sprites = getAssets().spritesBuf.c;
   const rect_in_canvas = apply_to_rect(canvas_from_world, { p: p_in_world, sz: { x: 1, y: 1 } });
 
   switch (bonus.t) {
@@ -54,11 +54,11 @@ export function drawBonus(d: CanvasRenderingContext2D, bonus: Bonus, canvas_from
       drawRequiredLetterBonus(d, bonus.letter, rect_in_canvas);
     } return;
     case 'word': {
-      drawImage(d, spriteSheet, spriteRectOfPos(vadd(spriteLocOfBonus(bonus), { x: 0, y: active ? 1 : 0 })), rect_in_canvas);
+      drawImage(d, sprites, spriteRectOfPos(vadd(spriteLocOfBonus(bonus), { x: 0, y: active ? 1 : 0 })), rect_in_canvas);
       return;
     }
     default: {
-      drawImage(d, spriteSheet, rectOfBonus(bonus), rect_in_canvas);
+      drawImage(d, sprites, rectOfBonus(bonus), rect_in_canvas);
       return;
     }
   }

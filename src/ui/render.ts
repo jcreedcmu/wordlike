@@ -85,7 +85,7 @@ function drawToolbarCount(d: CanvasRenderingContext2D, rect: Rect, count: number
 }
 
 function drawResbar(d: CanvasRenderingContext2D, state: CoreState) {
-  const toolbar = getAssets().toolbarBuf.c;
+  const largeSprites = getAssets().largeSpritesBuf.c;
   d.imageSmoothingEnabled = true;
 
   const ress = getCurrentResources(state);
@@ -97,14 +97,14 @@ function drawResbar(d: CanvasRenderingContext2D, state: CoreState) {
       { p: { x: 0, y: S_in_canvas * ix_in_resbar }, sz: { x: S_in_canvas, y: S_in_canvas } },
     );
     const scaled_rect_in_canvas = scaleRectToCenter(rect_in_canvas, ICON_SCALE);
-    drawImage(d, toolbar, largeRectOf(res), scaled_rect_in_canvas);
+    drawImage(d, largeSprites, largeRectOf(res), scaled_rect_in_canvas);
     drawToolbarCount(d, rect_in_canvas, state.slowState.resource[res]);
   });
 
 }
 
 function drawToolbar(d: CanvasRenderingContext2D, state: CoreState) {
-  const toolbar = getAssets().toolbarBuf.c;
+  const largeSprites = getAssets().largeSpritesBuf.c;
   d.imageSmoothingEnabled = true;
 
   const tools = getCurrentTools(state);
@@ -123,7 +123,7 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState) {
       fillRect(d, insetRect(rect_in_canvas, 4), 'rgba(0, 128, 0, 0.5)');
     }
 
-    drawImage(d, toolbar, largeRectOf(tool), scaled_rect_in_canvas);
+    drawImage(d, largeSprites, largeRectOf(tool), scaled_rect_in_canvas);
 
     if (tool == 'dynamite') {
       drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.dynamites);

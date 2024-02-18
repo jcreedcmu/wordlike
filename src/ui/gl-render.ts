@@ -365,7 +365,7 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
   gl.activeTexture(gl.TEXTURE0 + SPRITE_TEXTURE_UNIT);
   gl.bindTexture(gl.TEXTURE_2D, spriteTexture);
 
-  const spriteImdat = imageDataOfBuffer(getAssets().spriteSheetBuf);
+  const spriteImdat = imageDataOfBuffer(getAssets().spritesBuf);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
