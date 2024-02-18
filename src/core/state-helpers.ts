@@ -154,17 +154,14 @@ function updateFogOfWar(state: CoreState): CoreState {
   const irad = Math.ceil(rad);
   const updates: Point[] = [];
   const recentlySeen: Overlay<boolean> = mkOverlay();
-  get_mobiles(state).forEach(({ loc }) => {
-    if (loc.t == 'world') {
-      const { p_in_world_int: center } = loc;
-      for (let x = -irad; x <= irad; x++) {
-        for (let y = -irad; y <= irad; y++) {
-          const off = { x, y };
-          const p_in_world_int = vadd(center, off);
-          if (vsnorm(off) <= rad * rad && !getOverlay(state.seen_cells, p_in_world_int) && !getOverlay(recentlySeen, p_in_world_int)) {
-            setOverlay(recentlySeen, p_in_world_int, true);
-            updates.push(p_in_world_int);
-          }
+  get_main_tiles(state).forEach(({ loc: { p_in_world_int: center } }) => {
+    for (let x = -irad; x <= irad; x++) {
+      for (let y = -irad; y <= irad; y++) {
+        const off = { x, y };
+        const p_in_world_int = vadd(center, off);
+        if (vsnorm(off) <= rad * rad && !getOverlay(state.seen_cells, p_in_world_int) && !getOverlay(recentlySeen, p_in_world_int)) {
+          setOverlay(recentlySeen, p_in_world_int, true);
+          updates.push(p_in_world_int);
         }
       }
     }
