@@ -41,6 +41,14 @@ function getWorldChunkData(cs: CoreState, p_in_chunk: Point): Chunk {
       const spritePos = spriteLocOfBonus(bonus);
       const ix = x + y * chunk.size.x;
       const fix = 4 * ix;
+      // === cell_data format ===
+      //
+      // .r: which bonus we should show here. High 4 bits are x coord on the sprite sheet, low 4 bits are y.
+      // .g: which letter tile we should draw here, 32 = none, 0 = A, ..., 25 = Z
+      // .b: some metadata.
+      //       bit 0: tile is selected
+      //       bit 1: tile is connected to origin
+      // .a: unused
       imdat.data[fix + 0] = (spritePos.x << 4) + spritePos.y;
       imdat.data[fix + 1] = byteOfEmpty();
       imdat.data[fix + 2] = 0;

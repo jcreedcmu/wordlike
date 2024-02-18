@@ -93,12 +93,10 @@ vec4 get_origin_pixel(vec2 p_in_world_int, vec2 p_in_world_fp) {
   return mix(vec4(0.,0.,0.,0.), vec4(0.,0.,0.,0.5), oam * is_origin);
 }
 
-// grid_data holds cached information about this particular square world cell.
-// .r: which bonus we should show here. High 4 bits are x coord on the sprite sheet, low 4 bits are y.
-// .g: which letter tile we should draw here, 32 = none, 0 = A, ..., 25 = Z
-// .b: some metadata.
-//       bit 0: tile is selected
-//       bit 1: tile is connected to origin
+// cell_data holds cached information about this particular square world cell.
+//
+// See src/core/chunk.ts (search "cell_data format") for documentation
+// on the format of cell_data
 vec4 get_cell_pixel(vec2 p_in_world, vec2 p_in_world_fp, ivec3 cell_data) {
   int channel_g = cell_data.g;
   int flags = cell_data.b;
