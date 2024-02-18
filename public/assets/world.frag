@@ -20,6 +20,7 @@ const float CROSSHAIR_OPACITY = 0.3;
 const float CROSSHAIR_LENGTH = 2.;
 
 const float LAND_WATER_TRANSITIONS_X_OFFSET = 8.;
+const float FOG_OF_WAR_TRANSITIONS_X_OFFSET = 9.;
 
 out vec4 outputColor;
 
@@ -56,7 +57,7 @@ vec4 get_terrain_pixel(vec2 p_in_world) {
   int bit_4 = is_land(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(0.5,1.5)) / float(PREPASS_BUFFER_SIZE) )));
   int bit_8 = is_land(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(1.5,1.5)) / float(PREPASS_BUFFER_SIZE) )));
 
-  vec2 bonus_coords = vec2(
+  vec2 sprite_coords = vec2(
                            LAND_WATER_TRANSITIONS_X_OFFSET,
                            (bit_8 << 3) +
                            (bit_4 << 2) +
@@ -64,7 +65,38 @@ vec4 get_terrain_pixel(vec2 p_in_world) {
                            (bit_1 << 0)
                            );
 
-  return get_sprite_pixel(p_in_world_hfp, bonus_coords);
+  return get_sprite_pixel(p_in_world_hfp, sprite_coords);
+}
+
+int is_fog(vec4 cell_data) {
+  int ci = int(round(cell_data.b));
+  return int((ci & 0x4) == 0);
+}
+
+vec4 get_fog_pixel(vec2 p_in_world) {
+  // "fog-of-war" drawing
+
+  // All these h-suffixed values are minus 0.5 in world coordinates from the "real" p.
+  vec2 p_in_world_h = p_in_world - vec2(0.5);
+  vec2 p_in_world_hint = floor(p_in_world_h);
+  vec2 p_in_world_hfp = p_in_world_h - p_in_world_hint;
+
+  vec2 ul_in_prepass = p_in_world_hint - u_min_p_in_chunk * CHUNK_SIZE;
+
+  int bit_1 = is_fog(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(0.5,0.5)) / float(PREPASS_BUFFER_SIZE) )));
+  int bit_2 = is_fog(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(1.5,0.5)) / float(PREPASS_BUFFER_SIZE) )));
+  int bit_4 = is_fog(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(0.5,1.5)) / float(PREPASS_BUFFER_SIZE) )));
+  int bit_8 = is_fog(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(1.5,1.5)) / float(PREPASS_BUFFER_SIZE) )));
+
+  vec2 sprite_coords = vec2(
+                           FOG_OF_WAR_TRANSITIONS_X_OFFSET,
+                           (bit_8 << 3) +
+                           (bit_4 << 2) +
+                           (bit_2 << 1) +
+                           (bit_1 << 0)
+                           );
+
+  return get_sprite_pixel(p_in_world_hfp, sprite_coords);
 }
 
 // a over b
@@ -75,7 +107,8 @@ vec4 blendOver(vec4 a, vec4 b) {
     return vec4(divideFactor * newColor, newAlpha);
 }
 
-vec4 pre_get_sprite_pixel(vec2 p_in_world, vec2 p_in_world_fp, vec2 sprite_coords) {
+// A wrapper around get_sprite_pixel which incorporates the terrain underneath the sprite.
+vec4 get_base_layer_sprite_pixel(vec2 p_in_world, vec2 p_in_world_fp, vec2 sprite_coords) {
   vec4 bonus_pixel = vec4(0.,0.,0.,0.);
   if (sprite_coords != EMPTY_SPRITE && sprite_coords != vec2(WATER_SPRITE)) {
     bonus_pixel = get_sprite_pixel(p_in_world_fp, sprite_coords);
@@ -107,7 +140,7 @@ vec4 get_cell_pixel(vec2 p_in_world, vec2 p_in_world_fp, ivec3 cell_data) {
 
   vec2 bonus_coords = vec2(cell_data.r >> 4, cell_data.r & 0xf);
 
-  vec4 bonus_pixel = pre_get_sprite_pixel(p_in_world, p_in_world_fp, bonus_coords);
+  vec4 base_layer_pixel = get_base_layer_sprite_pixel(p_in_world, p_in_world_fp, bonus_coords);
 
   vec4 mobile_pixel = vec4(0.,0.,0.,0.);
 
@@ -130,7 +163,7 @@ vec4 get_cell_pixel(vec2 p_in_world, vec2 p_in_world_fp, ivec3 cell_data) {
     mobile_pixel = get_sprite_pixel(p_in_world_fp, vec2(channel_g >> 4, channel_g & 0xf));
   }
 
-  return blendOver(mobile_pixel, bonus_pixel);
+  return blendOver(get_fog_pixel(p_in_world), blendOver(mobile_pixel, base_layer_pixel));
 }
 
 vec4 getColor() {

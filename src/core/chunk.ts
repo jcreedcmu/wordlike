@@ -14,6 +14,7 @@ export type ChunkValue = { t: 'bonus', bonus: Bonus } | { t: 'mobile', mobile: R
 
 export const BIT_SELECTED = 0;
 export const BIT_CONNECTED = 1;
+export const BIT_VISIBLE = 2;
 
 export type ChunkUpdate =
   | { t: 'bonus', bonus: Bonus }
@@ -52,6 +53,7 @@ function getWorldChunkData(cs: CoreState, p_in_chunk: Point): Chunk {
       // .b: some metadata.
       //       bit 0: tile is selected
       //       bit 1: tile is connected to origin
+      //       bit 2: cell is visible
       // .a: unused
       imdat.data[fix + 0] = (spritePos.x << 4) + spritePos.y;
       imdat.data[fix + 1] = byteOfEmpty();
@@ -91,6 +93,10 @@ function byteOfEmpty(): number {
   return 128 + 32;
 }
 
+function freshMobileFlags(): number {
+  return (1 << BIT_VISIBLE);
+}
+
 function processChunkUpdate(cu: ChunkUpdate, oldVec: number[]): number[] {
   const rv = [...oldVec];
   switch (cu.t) {
@@ -100,7 +106,7 @@ function processChunkUpdate(cu: ChunkUpdate, oldVec: number[]): number[] {
     }
     case 'addMobile': {
       rv[1] = byteOfMobile(cu.mobile);
-      rv[2] = 0;
+      rv[2] = freshMobileFlags();
       return rv;
     }
     case 'removeMobile': {
