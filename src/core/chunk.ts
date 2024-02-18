@@ -93,8 +93,8 @@ function byteOfEmpty(): number {
   return 128 + 32;
 }
 
-function freshMobileFlags(): number {
-  return (1 << BIT_VISIBLE);
+function freshMobileFlags(oldFlags: number): number {
+  return oldFlags & ~(BIT_CONNECTED | BIT_SELECTED); // leave visibility bit alone
 }
 
 function processChunkUpdate(cu: ChunkUpdate, oldVec: number[]): number[] {
@@ -106,7 +106,7 @@ function processChunkUpdate(cu: ChunkUpdate, oldVec: number[]): number[] {
     }
     case 'addMobile': {
       rv[1] = byteOfMobile(cu.mobile);
-      rv[2] = freshMobileFlags();
+      rv[2] = freshMobileFlags(oldVec[2]);
       return rv;
     }
     case 'removeMobile': {
