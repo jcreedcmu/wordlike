@@ -3,13 +3,14 @@ import * as se1 from '../util/se1';
 import { SE1 } from '../util/se1';
 import { SE2 } from '../util/se2';
 import { Point } from '../util/types';
+import { vsnorm } from '../util/vutil';
 import { Animation } from './animations';
 import { Bonus, ScoringBonus } from './bonus';
-import { Chunk, ChunkUpdate } from './chunk';
+import { BIT_VISIBLE, Chunk, ChunkUpdate } from './chunk';
 import { PanicData, PauseData } from './clock';
 import { Energies, initialEnergies } from './distribution';
 import { Grid, LocatedWord, mkGridOf } from './grid';
-import { Overlay, mkOverlay } from './layer';
+import { Overlay, mkOverlay, setOverlay } from './layer';
 import { MobState } from './mobs';
 import { SelectionOperation, SelectionState } from './selection';
 import { ResbarResource, Tool, Resource } from './tools';
@@ -186,7 +187,12 @@ export type MobsState = {
 export type CoreState = {
   slowState: SlowState,
   animations: Animation[],
+
+  // indexed by position
   mobile_entities: Record<string, MobileEntity>,
+  // indexed by position
+  seen_cells: Overlay<boolean>,
+
   connectedSet: Grid<boolean>,
   energies: Energies,
   canvas_from_world: SE2,
@@ -219,8 +225,23 @@ export function mkGameSceneState(seed: number, creative: boolean, bonusLayerSeed
 
 const DEFAULT_SCALE = 48.001;
 const epsilon = 0.0001;
+const INITIAL_SEEN_CELLS_RADIUS = 5.5;
 
 export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: number): GameState {
+  const rad = INITIAL_SEEN_CELLS_RADIUS;
+  const irad = Math.ceil(rad);
+
+  const seen_cells: Overlay<boolean> = mkOverlay();
+  const _cacheUpdateQueue: CacheUpdate[] = [];
+  for (let x = -irad; x <= irad; x++) {
+    for (let y = -irad; y <= irad; y++) {
+      const p_in_world_int = { x, y };
+      if (vsnorm(p_in_world_int) <= rad * rad) {
+        setOverlay(seen_cells, p_in_world_int, true);
+        _cacheUpdateQueue.push({ p_in_world_int, chunkUpdate: { t: 'setBit', bit: BIT_VISIBLE } });
+      }
+    }
+  }
   return {
     coreState: {
       slowState: {
@@ -250,6 +271,7 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
       },
       animations: [],
       mobile_entities: {},
+      seen_cells,
       bonusOverlay: mkOverlay<Bonus>(),
       canvas_from_world: {
         scale: { x: DEFAULT_SCALE, y: DEFAULT_SCALE },
@@ -265,7 +287,7 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
       game_from_clock: se1.translate(-Date.now()),
       bonusLayerSeed,
       mobsState: { mobs: [] },
-      _cacheUpdateQueue: [],
+      _cacheUpdateQueue,
     },
     mouseState: { t: 'up', p_in_canvas: { x: 0, y: 0 } },
   };
