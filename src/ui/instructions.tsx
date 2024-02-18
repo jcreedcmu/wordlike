@@ -203,6 +203,7 @@ function exampleState(): GameState {
       _cacheUpdateQueue: [],
       animations: [],
       mobile_entities: {},
+      seen_cells: mkOverlay(),
       connectedSet: mkGridOf([]),
       energies: {
         byLetter: [

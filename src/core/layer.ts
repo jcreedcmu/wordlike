@@ -84,3 +84,9 @@ export function mkOverlayFrom(points: Point[]): Overlay<boolean> {
   });
   return layer;
 }
+
+export function combineOverlay<T>(layer1: Overlay<T>, layer2: Overlay<T>): Overlay<T> {
+  return {
+    cells: { ...layer1.cells, ...layer2.cells }
+  }
+}

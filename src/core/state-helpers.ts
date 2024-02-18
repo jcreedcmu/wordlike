@@ -5,18 +5,18 @@ import { produce } from "../util/produce";
 import * as se1 from '../util/se1';
 import { SE2, apply, compose, inverse } from '../util/se2';
 import { Point } from "../util/types";
-import { vadd, vequal, vm } from "../util/vutil";
+import { vadd, vequal, vm, vsnorm } from "../util/vutil";
 import { Animation, mkPointDecayAnimation, mkScoreAnimation, mkWinAnimation } from './animations';
 import { getAssets } from "./assets";
 import { ScoringBonus, adjacentScoringOfBonus, isBlocking, isBlockingPoint, overlapScoringOfBonus, resolveScoring } from "./bonus";
 import { getBonusFromLayer, updateBonusLayer } from "./bonus-helpers";
-import { BIT_CONNECTED } from "./chunk";
+import { BIT_CONNECTED, BIT_VISIBLE } from "./chunk";
 import { PANIC_INTERVAL_MS, PanicData, PauseData, WORD_BONUS_INTERVAL_MS, now_in_game } from "./clock";
 import { DrawForce, getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, gridKeys, mkGridOfMainTiles } from "./grid";
 import { resolveLandResult } from "./landing-resolve";
 import { LandingResult, landMoveOnState } from "./landing-result";
-import { mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
+import { Overlay, combineOverlay, getOverlay, mkOverlay, mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
 import { addRandomMob, collidesWithMob } from "./mobs";
 import { PROGRESS_ANIMATION_POINTS, getHighWaterMark, getScore, setHighWaterMark } from "./scoring";
 import { CacheUpdate, CoreState, GameState, HAND_TILE_LIMIT, Location, MainLoc, MobileEntity, MouseState, MoveMobileNoId, RenderableMobile, Scoring, Tile, TileEntity, WordBonusState } from "./state";
@@ -24,6 +24,8 @@ import { CellContents, addHandTileEntity, addWorldTile, get_hand_tiles, get_main
 import { ensureTileId } from "./tile-id-helpers";
 import { getCurrentTool } from "./tools";
 import { WIN_SCORE, canWinFromState, shouldStartPanicBar } from "./winState";
+
+const PLACED_MOBILE_SEEN_CELLS_RADIUS = 2.5;
 
 export function addWorldTiles(state: CoreState, tiles: Tile[]): CoreState {
   return produce(state, s => {
@@ -147,6 +149,36 @@ export function freshPanic(state: CoreState): PanicData {
   return { currentTime_in_game, lastClear_in_game: currentTime_in_game - debug_offset };
 }
 
+function updateFogOfWar(state: CoreState): CoreState {
+  const rad = PLACED_MOBILE_SEEN_CELLS_RADIUS;
+  const irad = Math.ceil(rad);
+  const updates: Point[] = [];
+  const recentlySeen: Overlay<boolean> = mkOverlay();
+  get_mobiles(state).forEach(({ loc }) => {
+    if (loc.t == 'world') {
+      const { p_in_world_int: center } = loc;
+      for (let x = -irad; x <= irad; x++) {
+        for (let y = -irad; y <= irad; y++) {
+          const off = { x, y };
+          const p_in_world_int = vadd(center, off);
+          if (vsnorm(off) <= rad * rad && !getOverlay(state.seen_cells, p_in_world_int) && !getOverlay(recentlySeen, p_in_world_int)) {
+            setOverlay(recentlySeen, p_in_world_int, true);
+            updates.push(p_in_world_int);
+          }
+        }
+      }
+    }
+  });
+
+  const cacheUpdates: CacheUpdate[] = updates.map(p => ({ p_in_world_int: p, chunkUpdate: { t: 'setBit', bit: BIT_VISIBLE } }));
+  const combined = combineOverlay(state.seen_cells, recentlySeen);
+  return produce(state, s => {
+    s._cacheUpdateQueue.push(...cacheUpdates);
+    s.seen_cells = combined;
+  });
+}
+
+
 export function checkValid(state: CoreState): CoreState {
   const tiles = get_main_tiles(state);
   const grid = mkGridOfMainTiles(tiles);
@@ -188,7 +220,7 @@ export function checkValid(state: CoreState): CoreState {
       chunkUpdate: { t: 'setBit', bit: BIT_CONNECTED }
     }));
 
-  return produce(state, s => {
+  state = produce(state, s => {
     s.panic = panic;
     s.slowState.invalidWords = invalidWords;
     s.connectedSet = connectedSet;
@@ -201,6 +233,11 @@ export function checkValid(state: CoreState): CoreState {
     if (getCurrentTool(state) != 'dynamite')
       s.slowState.currentTool = 'pointer';
   });
+
+  if (allValid)
+    state = updateFogOfWar(state);
+
+  return state;
 }
 
 
