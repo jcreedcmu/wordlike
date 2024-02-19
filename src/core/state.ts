@@ -6,14 +6,14 @@ import { Point } from '../util/types';
 import { vsnorm } from '../util/vutil';
 import { Animation } from './animations';
 import { Bonus, ScoringBonus } from './bonus';
-import { BIT_VISIBLE, Chunk, ChunkUpdate } from './chunk';
+import { BIT_VISIBLE, ChunkUpdate } from './chunk';
 import { PanicData, PauseData } from './clock';
 import { Energies, initialEnergies } from './distribution';
 import { Grid, LocatedWord, mkGridOf } from './grid';
 import { Overlay, mkOverlay, setOverlay } from './layer';
 import { MobState } from './mobs';
 import { SelectionOperation, SelectionState } from './selection';
-import { ResbarResource, Tool, Resource } from './tools';
+import { ResbarResource, Resource, Tool } from './tools';
 import { WinState } from './winState';
 
 export type Scoring = {
