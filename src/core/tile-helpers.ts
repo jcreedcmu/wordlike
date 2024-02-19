@@ -4,7 +4,7 @@ import { Point } from "../util/types";
 import { vequal, vm } from "../util/vutil";
 import { Bonus } from "./bonus";
 import { getBonusFromLayer } from "./bonus-helpers";
-import { CacheUpdate, CoreState, GameState, GenMoveTile, HandTile, Location, MainTile, MobileEntity, MoveMobile, RenderableMobile, TileEntity, TileOptionalId } from "./state";
+import { CacheUpdate, CoreState, GameState, GenMoveTile, HandTile, Location, MainTile, MobileEntity, RenderableMobile, TileEntity, TileOptionalId } from "./state";
 import { addId, ensureId, freshId } from "./tile-id-helpers";
 import { Resource } from "./tools";
 
@@ -68,7 +68,6 @@ export function get_hand_tiles(state: CoreState): HandTile[] {
 }
 
 export function removeMobile(state: CoreState, id: string): CoreState {
-  const loc = getMobileLoc(state, id);
   const nowhere = putMobileNowhere(state, id);
   return produce(nowhere, s => {
     delete s.mobile_entities[id];
@@ -245,17 +244,17 @@ export function cellAtPoint(state: CoreState, p_in_world: Point): CellContents {
 }
 
 export function mobileAtPoint(state: CoreState, p_in_world: Point): MobileEntity | undefined {
-  return mobileAtPointForMobiles(state, p_in_world, get_mobiles(state));
+  return mobileAtPointForMobiles(p_in_world, get_mobiles(state));
 }
 
 export function cellAtPointForMobiles(state: CoreState, p_in_world: Point, mobiles: MobileEntity[]): CellContents {
-  const mobile = mobileAtPointForMobiles(state, p_in_world, mobiles);
+  const mobile = mobileAtPointForMobiles(p_in_world, mobiles);
   if (mobile !== undefined)
     return { t: 'mobile', mobile };
   return { t: 'bonus', bonus: getBonusFromLayer(state, p_in_world) };
 }
 
-export function mobileAtPointForMobiles(state: CoreState, p_in_world: Point, mobiles: MobileEntity[]): MobileEntity | undefined {
+export function mobileAtPointForMobiles(p_in_world: Point, mobiles: MobileEntity[]): MobileEntity | undefined {
   const p_in_world_int = vm(p_in_world, Math.floor);
   for (const mobile of mobiles) {
     if (mobile.loc.t == 'world' && vequal(p_in_world_int, mobile.loc.p_in_world_int)) {

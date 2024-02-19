@@ -42,7 +42,7 @@ export function killableBonus(intent: KillIntent, bonus: Bonus): boolean {
 
 }
 
-export function getIntentOfMouseDown(tool: Tool, wp: WidgetPoint, button: number, mods: Set<string>, hoverCell: CellContents, pinned: boolean): Intent {
+export function getIntentOfMouseDown(tool: Tool, button: number, mods: Set<string>, hoverCell: CellContents, pinned: boolean): Intent {
   if (button == 2 || button == 4)
     return { t: 'panWorld' };
 

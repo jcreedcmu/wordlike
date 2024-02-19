@@ -117,7 +117,6 @@ export function checkGridWordsHoriz(grid: Grid<string>, isWord: (x: string) => b
   let validWords: LocatedWord[] = [];
   let invalidWords: LocatedWord[] = [];
   let wordSoFar = '';
-  let allValid = true;
   // returns false if we've discovered a non-word
   function endWord(p: Point) {
     if (wordSoFar.length > 1 && !isWord(wordSoFar)) {

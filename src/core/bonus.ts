@@ -76,10 +76,6 @@ export function bonusGenerator(p: Point, seed: number): Bonus {
     else
       return { t: 'tree' };
   }
-  function gradual(x: number): number {
-    // graph in desmos: 1-\frac{1}{\log\left(1+x^{2}\right)+1}
-    return 1 - 1 / (1 + Math.log(1 + x));
-  }
   if (vsnorm(p) > 100 && perlinterpolate(blockOrigin, vsub(dp, blockOrigin), seed) < 0.5) {
     const ph = point_hash(p, seed + 1000);
     if (ph < 0.5) {

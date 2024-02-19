@@ -1,6 +1,4 @@
-import { Draft } from "immer";
 import { produce } from "../util/produce";
-import { SE1 } from "../util/se1";
 import { Point } from "../util/types";
 import { next_rand } from "../util/util";
 import { getAssets } from "./assets";

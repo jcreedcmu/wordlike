@@ -32,7 +32,6 @@ export type Chunk = {
 function getWorldChunkData(cs: CoreState, p_in_chunk: Point): Chunk {
   const chunk: Chunk = mkChunk(WORLD_CHUNK_SIZE);
 
-  const bonuses: Bonus[] = [];
   const { imdat, size } = chunk;
   for (let x = 0; x < size.x; x++) {
     for (let y = 0; y < size.y; y++) {
@@ -122,7 +121,6 @@ function processChunkUpdate(cu: ChunkUpdate, oldVec: number[]): number[] {
       return rv;
     }
     case 'restoreMobile': {
-      const spritePos = spriteLocOfChunkValue({ t: 'mobile', mobile: cu.mobile });
       rv[1] = byteOfMobile(cu.mobile);
       return rv;
     }

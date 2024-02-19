@@ -1,11 +1,9 @@
 import { largeSpriteLoc, largeSpriteRectOfPos, spriteLocOfTool, spriteRectOfPos } from "../ui/sprite-sheet";
-import { produce } from "../util/produce";
 import { Rect } from "../util/types";
 import { GameLowAction } from "./action";
 import { Intent } from './intent';
-import { getScore } from "./scoring";
 import { CoreState } from "./state";
-import { drawOfState, freshPanic } from "./state-helpers";
+import { freshPanic } from "./state-helpers";
 
 export const SPRITE_PIXEL_WIDTH = 32;
 export const LARGE_SPRITE_PIXEL_WIDTH = 128;

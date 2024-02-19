@@ -3,7 +3,7 @@ import { canvas_from_drag_mobile, pan_canvas_from_canvas_of_mouse_state } from '
 import { TOOLBAR_WIDTH, WidgetPoint, getWidgetPoint } from '../ui/widget-helpers';
 import { DEBUG, debugTiles } from '../util/debug';
 import { produce } from '../util/produce';
-import { SE2, apply, compose, composen, inverse, scale, translate } from '../util/se2';
+import { apply, compose, composen, inverse, scale, translate } from '../util/se2';
 import { Point } from '../util/types';
 import { flatUndef, getRandomOrder } from '../util/util';
 import { vequal, vint, vm, vscale, vsub } from '../util/vutil';
@@ -53,11 +53,11 @@ function reduceMouseDownInWorld(state: GameState, wp: WidgetPoint & { t: 'world'
   const hoverCell = cellAtPoint(state.coreState, p_in_world_int);
   let pinned =
     (hoverCell.t == 'mobile' && hoverCell.mobile.loc.t == 'world') ? isMobilePinned(state.coreState, hoverCell.mobile.id, hoverCell.mobile.loc) : false;
-  const intent = getIntentOfMouseDown(getCurrentTool(state.coreState), wp, button, mods, hoverCell, pinned);
+  const intent = getIntentOfMouseDown(getCurrentTool(state.coreState), button, mods, hoverCell, pinned);
   return { t: 'mouseDownIntent', intent, wp };
 }
 
-function reduceMouseDownInHand(state: GameState, wp: WidgetPoint & { t: 'hand' }, button: number, mods: Set<string>): GameLowAction {
+function reduceMouseDownInHand(state: GameState, wp: WidgetPoint & { t: 'hand' }, button: number, _mods: Set<string>): GameLowAction {
   if (state.coreState.slowState.winState.t == 'lost')
     return { t: 'vacuousDown', wp }
 
@@ -79,7 +79,7 @@ function reduceMouseDownInHand(state: GameState, wp: WidgetPoint & { t: 'hand' }
   }
 }
 
-function reduceMouseDownInToolbar(state: GameState, wp: WidgetPoint & { t: 'toolbar' }, button: number, mods: Set<string>): GameLowAction {
+function reduceMouseDownInToolbar(state: GameState, wp: WidgetPoint & { t: 'toolbar' }, _button: number, _mods: Set<string>): GameLowAction {
   const tool = wp.tool;
   if (tool !== undefined) {
     return {
@@ -94,7 +94,7 @@ function reduceMouseDownInToolbar(state: GameState, wp: WidgetPoint & { t: 'tool
   }
 }
 
-function reduceMouseDownInResbar(state: GameState, wp: WidgetPoint & { t: 'resbar' }, button: number, mods: Set<string>): GameLowAction {
+function reduceMouseDownInResbar(_state: GameState, wp: WidgetPoint & { t: 'resbar' }, _button: number, _mods: Set<string>): GameLowAction {
   const res = wp.res;
   if (res !== undefined) {
     return {
@@ -187,7 +187,6 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
             return bailout;
           }
           const old_tile_in_world_int = old_tile_loc.p_in_world_int;
-          const new_tile_from_old_tile: SE2 = translate(vsub(new_tile_in_world_int, old_tile_in_world_int));
 
           const moves: MoveMobile[] = selected.selectedIds.flatMap(id => {
             const mobile = getMobileId(state.coreState, id);
@@ -276,7 +275,6 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
           return bailout;
         }
 
-        const handTiles = get_hand_tiles(state.coreState);
         if (proposedHandDragOverLimit(state.coreState, state.mouseState)) {
           return bailout;
         }

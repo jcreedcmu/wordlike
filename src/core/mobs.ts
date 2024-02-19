@@ -1,6 +1,6 @@
 import { produce } from "../util/produce";
 import { Point } from "../util/types";
-import { next_rand, unreachable } from "../util/util";
+import { next_rand } from "../util/util";
 import { vadd, vequal, vint, vm, vscale } from "../util/vutil";
 import { MoveSource, landMoveOnState } from "./landing-result";
 import { CoreState } from "./state";
@@ -124,7 +124,6 @@ export function advanceMob(state: CoreState, mob: MobState): MobState {
   switch (mob.t) {
     case 'snail':
       if (mob.ticks == 0) {
-        const forward = forward_of(mob);
         if (isOccupied(back_right_of(mob)) && !isOccupied(right_of(mob)))
           return advanceWith(clockwise_of(mob.orientation));
         if (!isOccupied(forward_of(mob)))

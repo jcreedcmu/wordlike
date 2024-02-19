@@ -1,9 +1,6 @@
-import { SE2, translate } from "../util/se2";
-import { boundRect } from "../util/util";
-import { vadd, vdiag, vscale } from "../util/vutil";
-import { Chunk, mkChunk } from "./chunk";
-import { overlayForEach, overlayPoints } from "./layer";
-import { CoreState, GameState } from "./state";
+import { SE2 } from "../util/se2";
+import { Chunk } from "./chunk";
+import { CoreState } from "./state";
 
 export type CacheState = {
   selection: CachedSelection,
@@ -25,6 +22,6 @@ const cacheState: CacheState = {
 }
 
 // gets mutable handle to cache state
-export function getCacheState(coreState: CoreState): CacheState {
+export function getCacheState(_coreState: CoreState): CacheState {
   return cacheState;
 }

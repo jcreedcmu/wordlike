@@ -91,7 +91,6 @@ export function initialEnergies(): Energies {
 }
 
 export function initialEnergiesOf(distribution: number[], beta: number): number[] {
-  const energies: number[] = [];
   return distribution.map(v => (1 / beta) * Math.log(1 / v));
 }
 

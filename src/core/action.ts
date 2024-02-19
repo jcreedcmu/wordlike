@@ -5,9 +5,9 @@ import { Point } from '../util/types';
 import { PanicData, PauseData } from './clock';
 import { Intent } from './intent';
 import { LandingMoveId } from './landing-resolve';
-import { LandingResult, ProperLandingResult } from './landing-result';
+import { ProperLandingResult } from './landing-result';
 import { SelectionState } from './selection';
-import { InventoryItems, Location, MouseState, MoveMobile, SceneState } from './state';
+import { InventoryItems, Location, MouseState, SceneState } from './state';
 import { ResbarResource, Tool } from './tools';
 
 export type GameLowAction =

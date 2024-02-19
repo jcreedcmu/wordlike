@@ -3,8 +3,7 @@ import { Point } from "../util/types";
 import { getOverlay } from "./layer";
 import { MobState, MobType, collidesWithMob } from "./mobs";
 import { CoreState, MobileEntity, MoveMobile } from "./state";
-import { checkValid, withCoreState } from "./state-helpers";
-import { CellContents, cellAtPointForMobiles, get_mobiles, putMobileInWorld } from "./tile-helpers";
+import { CellContents, cellAtPointForMobiles, get_mobiles } from "./tile-helpers";
 import { Resource } from "./tools";
 
 // A thing that can be moved onto something else
