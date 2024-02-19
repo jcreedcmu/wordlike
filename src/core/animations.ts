@@ -45,7 +45,7 @@ function mkFireworksAnimation(game_from_clock: SE1, message: string, num_firewor
     message,
     duration_ms: duration_ms,
     start_in_game: now_in_game(game_from_clock),
-    fireworks: range(num_fireworks).map(x => {
+    fireworks: range(num_fireworks).map(_ => {
       return {
         start_in_anim: Math.random() * (duration_ms - 1000),
         duration_ms: Math.random() * 500 + 500,

@@ -26,14 +26,14 @@ export function drawAnimation(d: CanvasRenderingContext2D, pan_canvas_from_world
       );
       d.stroke();
       return;
-    } break;
+    }
     case 'point-decay': {
       if (!glEnabled) {
         const fraction = Math.min(1, Math.max(0, 1 - (time_ms - anim.start_in_game) / anim.duration_ms));
         drawBonusPoint(d, pan_canvas_from_world, anim.p_in_world_int, fraction);
       }
       return;
-    } break;
+    }
     case 'fireworks': {
       d.textAlign = 'center';
       d.textBaseline = 'middle';
@@ -50,7 +50,7 @@ export function drawAnimation(d: CanvasRenderingContext2D, pan_canvas_from_world
       strokeText(d, anim.message, mp, 'white', 4, '96px sans-serif');
       fillText(d, anim.message, mp, 'rgb(0,128,0)', '96px sans-serif');
       return;
-    } break;
+    }
   }
   unreachable(anim);
 }
