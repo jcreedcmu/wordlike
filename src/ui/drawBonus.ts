@@ -1,6 +1,5 @@
 import { getAssets } from '../core/assets';
 import { Bonus, rectOfBonus } from '../core/bonus';
-import { rectOfTool } from '../core/tools';
 import { drawImage, fillRect } from '../util/dutil';
 import { SE2 } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
@@ -22,20 +21,13 @@ export function drawBonusPoint(d: CanvasRenderingContext2D, pan_canvas_from_worl
     0, 2 * Math.PI * fraction,
   );
   d.fill();
-
-}
-
-export function drawBonusBomb(d: CanvasRenderingContext2D, pan_canvas_from_world: SE2, p: Point, fraction: number = 1) {
-  const rect_in_canvas = apply_to_rect(pan_canvas_from_world, { p, sz: { x: 1, y: 1 } });
-  const sprites = getAssets().spritesBuf.c;
-  drawImage(d, sprites, rectOfTool('bomb'), rect_in_canvas);
 }
 
 export function drawRequiredLetterBonus(d: CanvasRenderingContext2D, letter: string, rect_in_canvas: Rect) {
   drawTileLetter(d, letter, rect_in_canvas, '#aaa');
 }
 
-export function drawBonus(d: CanvasRenderingContext2D, bonus: Bonus, canvas_from_world: SE2, p_in_world: Point, fraction: number = 1, active: boolean = false) {
+export function drawBonus(d: CanvasRenderingContext2D, bonus: Bonus, canvas_from_world: SE2, p_in_world: Point, active: boolean = false) {
   const sprites = getAssets().spritesBuf.c;
   const rect_in_canvas = apply_to_rect(canvas_from_world, { p: p_in_world, sz: { x: 1, y: 1 } });
 

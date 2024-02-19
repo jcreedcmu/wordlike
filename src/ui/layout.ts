@@ -1,5 +1,4 @@
 import { Point, Rect } from "../util/types";
-import { vint } from "../util/vutil";
 
 export type LayoutRect = {
   stretch?: Point,
@@ -79,7 +78,7 @@ function max(xs: number[]): number {
   return xs.length == 0 ? 0 : xs.reduce((a, b) => Math.max(a, b));
 }
 
-function zero(xs: number[]): number {
+function zero(_xs: number[]): number {
   return 0;
 }
 

@@ -46,7 +46,7 @@ export function useEffectfulReducer<A, S, E>(
   [S, (action: A) => void] {
   const [state, setState] = React.useState<S>(initialState);
   function dispatch(action: A) {
-    const resultProm = new Promise<Result<S, E>>((res, rej) => {
+    const resultProm = new Promise<Result<S, E>>((res, _rej) => {
       setState(prevState => {
         const result = reduce(prevState, action);
         res(result);

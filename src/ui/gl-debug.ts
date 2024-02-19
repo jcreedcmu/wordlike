@@ -14,7 +14,7 @@ import { canvas_bds_in_canvas } from "./widget-helpers";
 // Scale up the colors by this much during debugging so I can see what's going on
 const DEBUG_COLOR_SCALE = 10.0;
 
-function drawChunkDebugging(gl: WebGL2RenderingContext, env: GlEnv, state: CoreState, offset_in_canvas: Point, src_texture: number) {
+function drawChunkDebugging(gl: WebGL2RenderingContext, env: GlEnv, _state: CoreState, offset_in_canvas: Point, src_texture: number) {
   const { prog, position } = env.debugQuadDrawer;
   gl.useProgram(prog);
   const sz_in_canvas = vdiag(256);

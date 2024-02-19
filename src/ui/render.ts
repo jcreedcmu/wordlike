@@ -364,7 +364,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
         const p: Point = { x: i, y: j };
         const bonus = getBonusFromLayer(cs, p);
         const active = bonus.t == 'word' && cs.wordBonusState.active.findIndex(x => vequal(p, x.p_in_world_int)) != -1;
-        drawBonus(d, bonus, pan_canvas_from_world, p, undefined, active);
+        drawBonus(d, bonus, pan_canvas_from_world, p, active);
       }
     }
 

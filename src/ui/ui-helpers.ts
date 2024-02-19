@@ -9,7 +9,6 @@ export type ViewData = {
 export function resizeView(c: HTMLCanvasElement): ViewData {
   const ratio = devicePixelRatio;
 
-  const parent = c.parentElement?.getBoundingClientRect();
   const w = canvas_bds_in_canvas.sz.x;
   const h = canvas_bds_in_canvas.sz.y;
 

@@ -1,12 +1,10 @@
 import { PanicData, getPanicFraction } from "../core/clock";
-import { ActiveWordBonus } from "../core/state";
 import { RgbColor, fillRect } from "../util/dutil";
 import { SE1 } from "../util/se1";
 import { Spline, lerpSpline } from "../util/spline";
-import { Point, Rect } from "../util/types";
+import { Rect } from "../util/types";
 import { vadd, vint, vscale, vsub } from "../util/vutil";
-import { canvas_bds_in_canvas, hand_bds_in_canvas, rectOfPanic_in_canvas } from "./widget-helpers";
-
+import { hand_bds_in_canvas, rectOfPanic_in_canvas } from "./widget-helpers";
 
 const flashColor: RgbColor = [255, 0, 0];
 

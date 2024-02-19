@@ -1,5 +1,4 @@
 import { SE2, inverse } from "../util/se2";
-import { vdiv } from "../util/vutil";
 import { canvas_bds_in_canvas } from "./widget-helpers";
 
 export const canvas_from_gl: SE2 = {
