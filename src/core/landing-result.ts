@@ -1,5 +1,6 @@
 import { DEBUG } from "../util/debug";
 import { Point } from "../util/types";
+import { getOverlay } from "./layer";
 import { MobState, MobType, collidesWithMob } from "./mobs";
 import { CoreState, MobileEntity, MoveMobile } from "./state";
 import { checkValid, withCoreState } from "./state-helpers";
@@ -110,6 +111,10 @@ export function landingMoveOfMoveMobile(m: MoveMobile): LandingMove {
 }
 
 export function landMoveOnStateForMobiles(m: LandingMove, state: CoreState, mobiles: MobileEntity[]): LandingResult {
+  // Can't move stuff to invisible place
+  if (!getOverlay(state.seen_cells, m.p_in_world_int))
+    return { t: 'collision' };
+
   return disjuncts(
     ...state.mobsState.mobs.map(mob => landMoveOnMob(m, mob)),
     landMobileOnCell(m.src, cellAtPointForMobiles(state, m.p_in_world_int, mobiles)),
