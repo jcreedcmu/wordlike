@@ -5,7 +5,7 @@ import { apply_to_rect, asMatrix } from '../util/se2-extra';
 import { Point } from '../util/types';
 import { rectPts, unreachable } from "../util/util";
 import { vdiag } from '../util/vutil';
-import { GlEnv, drawOneMobile } from './gl-common';
+import { GlEnv } from './gl-common';
 import { gl_from_canvas } from './gl-helpers';
 import { canvas_bds_in_canvas } from './widget-helpers';
 

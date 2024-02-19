@@ -46,14 +46,14 @@ export function mlerp(a: number, b: number, t: number) {
   return Math.exp(lerp(Math.log(a), Math.log(b), t));
 }
 
-export function unreachable<T>(x: never): T {
+export function unreachable<T>(_x: never): T {
   throw new Error('unreachable');
 }
 
 export function filterKeys<T>(rec: Record<string, T>, pred: (x: string) => boolean): Record<string, T> {
   return Object.fromEntries(
     Object.entries(rec)
-      .filter(([k, v]) => pred(k))
+      .filter(([k, _v]) => pred(k))
   );
 }
 
@@ -80,7 +80,7 @@ export function point_hash(p: Point, seed: number): number {
   let c = seed + 1000 * p.x + 3758 * p.y;
 
   for (let i = 0; i < 20; i++) {
-    const { seed, float } = next_rand(c);
+    const { seed } = next_rand(c);
     c = seed;
   };
   return next_rand(c).float;
@@ -122,7 +122,7 @@ export function getRandomOrder(length: number): number[] {
 }
 
 export function range(n: number): number[] {
-  return [...new Array(n)].map((a, b) => b);
+  return [...new Array(n)].map((_a, b) => b);
 }
 
 export function randPointInRect(rect: Rect): Point {

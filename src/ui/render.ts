@@ -1,13 +1,13 @@
 import { getAssets } from '../core/assets';
 import { getBonusFromLayer } from '../core/bonus-helpers';
-import { getWordBonusFraction, now_in_game } from '../core/clock';
+import { now_in_game } from '../core/clock';
 import { LocatedWord, getGrid } from '../core/grid';
 import { getOverlay } from '../core/layer';
 import { getScore } from '../core/scoring';
 import { CoreState, GameState, TileEntity } from '../core/state';
-import { lostState, pointFall, tileFall } from '../core/state-helpers';
-import { getMobileId, get_hand_tiles, get_main_tiles, isSelectedForDrag } from '../core/tile-helpers';
-import { BOMB_RADIUS, getCurrentResources, getCurrentTool, getCurrentTools, largeRectOf } from '../core/tools';
+import { lostState } from '../core/state-helpers';
+import { get_main_tiles, isSelectedForDrag } from '../core/tile-helpers';
+import { getCurrentResources, getCurrentTool, getCurrentTools, largeRectOf } from '../core/tools';
 import { shouldDisplayBackButton } from '../core/winState';
 import { DEBUG, doOnceEvery } from '../util/debug';
 import { clearRect, drawImage, fillRect, fillRoundRect, fillText, lineTo, moveTo, pathRect, pathRectCircle, roundedPath, strokeRect } from '../util/dutil';
@@ -15,26 +15,20 @@ import { SE2, apply, compose, inverse, translate } from '../util/se2';
 import { apply_to_rect } from '../util/se2-extra';
 import { Point, Rect } from '../util/types';
 import { allRectPts, boundRect, insetRect, invertRect, midpointOfRect, scaleRectToCenter, scaleRectToCenterPoint } from '../util/util';
-import { vadd, vdiv, vequal, vm, vscale, vsub, vtrans } from '../util/vutil';
+import { vadd, vdiv, vequal, vm, vscale, vtrans } from '../util/vutil';
 import { drawAnimation } from './drawAnimation';
 import { drawBonus } from './drawBonus';
-import { wordBubblePanicBounds, wordBubblePanicRect, wordBubbleRect } from './drawPanicBar';
+import { wordBubblePanicBounds, wordBubbleRect } from './drawPanicBar';
 import { CanvasInfo } from './use-canvas';
-import { apexOfBubble, cell_in_canvas, drawBubble, drawBubbleAux, pan_canvas_from_world_of_state, textCenterOfBubble } from './view-helpers';
-import { GLOBAL_BORDER, PANIC_THICK, canvas_bds_in_canvas, canvas_from_hand, canvas_from_resbar, canvas_from_toolbar, effective_resbar_bds_in_canvas, effective_toolbar_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas, inner_hand_bds_in_canvas, panic_bds_in_canvas, pause_button_bds_in_canvas, resbar_bds_in_canvas, score_bds_in_canvas, spacer1_bds_in_canvas, spacer2_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
+import { pan_canvas_from_world_of_state } from './view-helpers';
+import { GLOBAL_BORDER, PANIC_THICK, canvas_bds_in_canvas, canvas_from_hand, canvas_from_resbar, canvas_from_toolbar, effective_resbar_bds_in_canvas, effective_toolbar_bds_in_canvas, hand_bds_in_canvas, inner_hand_bds_in_canvas, panic_bds_in_canvas, pause_button_bds_in_canvas, resbar_bds_in_canvas, score_bds_in_canvas, spacer1_bds_in_canvas, spacer2_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
 
 const INTERFACE_RADIUS = 2 * GLOBAL_BORDER;
 const PANIC_RADIUS = Math.min(INTERFACE_RADIUS, PANIC_THICK / 2);
 export const FIXED_WORD_BUBBLE_SIZE = 100;
 
 const interfaceCyanColor = 'rgb(0,255,255,0.5)';
-const shadowColor = 'rgb(128,128,100,0.4)';
 const backgroundGray = '#595959';
-const backgroundRed = '#ffaaaa';
-
-
-
-
 
 export function paintWithScale(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
   const { d } = ci;
@@ -241,7 +235,7 @@ function drawUiFrame(d: CanvasRenderingContext2D, state: CoreState): void {
 function formatTime(x: number) {
   var date = new Date(0);
   date.setMilliseconds(x);
-  let rv = date.toISOString().substr(11, 8);
+  let rv = date.toISOString().substring(11, 19);
   rv = rv.replace(/^0/, '');
   rv = rv.replace(/^0:/, '');
   rv = rv.replace(/^0/, '');
@@ -253,7 +247,7 @@ export function canvas_from_hand_tile(index: number): SE2 {
 }
 
 
-function drawWordBonuses(ci: CanvasInfo, cs: CoreState, pan_canvas_from_world: SE2) {
+function drawWordBonuses(ci: CanvasInfo, cs: CoreState) {
   const { d } = ci;
 
   cs.wordBonusState.active.forEach((wordBonus, i) => {
@@ -402,37 +396,6 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
     }
   }
 
-  function drawHand(illegalDrag: boolean) {
-    // const handBackgroundColor = illegalDrag ? backgroundRed : backgroundGray;
-    // fillRect(d, hand_bds_in_canvas, handBackgroundColor);
-
-    // draw hand tiles
-    get_hand_tiles(cs).forEach(tile => {
-      if (isSelectedForDrag(state, tile))
-        return;
-      drawTile(d, canvas_from_tile(tile), tile);
-    });
-  }
-
-  function drawShadows() {
-
-    d.save();
-    d.clip(worldClip);
-
-    const currentTool = getCurrentTool(cs);
-    if (currentTool == 'bomb' && getWidgetPoint(cs, ms.p_in_canvas).t == 'world') {
-
-      const radius = BOMB_RADIUS;
-      for (let x = -radius; x <= radius; x++) {
-        for (let y = -radius; y <= radius; y++) {
-          fillRect(d, cell_in_canvas(vadd({ x, y }, pointFall(cs, ms.p_in_canvas)), pan_canvas_from_world), shadowColor);
-        }
-      }
-    }
-
-    d.restore();
-  }
-
   function drawOtherUi() {
 
     // draw exchange guide
@@ -506,7 +469,7 @@ export function rawPaint(ci: CanvasInfo, state: GameState, glEnabled: boolean) {
     drawWorld();
   }
 
-  drawWordBonuses(ci, cs, pan_canvas_from_world);
+  drawWordBonuses(ci, cs);
 
   const mp = midpointOfRect(canvas_bds_in_canvas);
 
@@ -545,7 +508,6 @@ function colorsOfTile(opts?: { connected?: boolean, selected?: boolean }): { fg:
 }
 
 function drawInvalidWord(d: CanvasRenderingContext2D, canvas_from_world: SE2, word: LocatedWord) {
-  const thickness = 0.1;
   const along = word.orientation; // vector pointing along the length of the word
   const perp = vtrans(along); // vector pointing perpendicular to it
   const rect_in_world: Rect = {

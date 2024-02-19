@@ -8,7 +8,7 @@ export type Buffer = {
 }
 
 export function imgProm(src: string): Promise<HTMLImageElement> {
-  return new Promise((res, rej) => {
+  return new Promise((res, _rej) => {
     const sprite = new Image();
     sprite.src = src;
     sprite.onload = function() { res(sprite); }

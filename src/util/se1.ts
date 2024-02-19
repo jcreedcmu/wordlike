@@ -1,6 +1,3 @@
-import { Point } from "./types";
-import { vm, vm2, vm3 } from "./vutil";
-
 export type SE1 = {
   scale: number,
   translate: number,

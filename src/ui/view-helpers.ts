@@ -81,7 +81,7 @@ export function drawBubbleAux(
   textCenter: Point,
   coneApex: Point,
   maxWidth: number,
-  progress: number | undefined = undefined,
+  _progress: number | undefined = undefined,
 ): void {
   d.font = `${BUBBLE_FONT_SIZE}px sans-serif`;
   const MARGIN = 8;
