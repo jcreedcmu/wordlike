@@ -2,9 +2,8 @@ import { apply, compose, ident, inverse, SE2, translate } from '../util/se2';
 import { vadd, vm, vsub } from '../util/vutil';
 import { CoreState, GameState, MouseState } from '../core/state';
 import { Point, Rect } from '../util/types';
-import { getDragWidgetPoint, getWidgetPoint } from './widget-helpers';
+import { getDragWidgetPoint } from './widget-helpers';
 import { apply_to_rect, matchScale } from '../util/se2-extra';
-import { drawRenderableRect, drawWordBonusPanicBar, wordBubblePanicRect } from './drawPanicBar';
 
 export function pan_canvas_from_canvas_of_mouse_state(state: MouseState): SE2 {
   if (state.t == 'drag_world') {
@@ -47,7 +46,6 @@ export function canvas_from_drag_mobile(state: CoreState, ms: MouseState): SE2 {
       const mobile0_from_canvas = compose(inverse(local0_from_mobile0), wp0.local_from_canvas);
       const canvas_from_mobile1 = inverse(matchScale(local1_from_canvas, wp1.p_in_canvas, apply(mobile0_from_canvas, wp0.p_in_canvas)));
       return canvas_from_mobile1;
-      break;
     default: return ident();
   }
 }

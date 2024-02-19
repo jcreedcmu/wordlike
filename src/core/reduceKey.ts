@@ -12,14 +12,12 @@ export function reduceKey(state: GameState, code: string): GameLowAction {
       }
       else
         return { t: 'zoom', center: midpointOfRect(canvas_bds_in_canvas), amount: -1 };
-      break;
     case '-':
       if (state.mouseState.t == 'up') {
         return { t: 'zoom', center: state.mouseState.p_in_canvas, amount: 1 };
       }
       else
         return { t: 'zoom', center: midpointOfRect(canvas_bds_in_canvas), amount: 1 };
-      break;
     case '<space>': return { t: 'drawTile' };
     case '`':  // fallthrough intentional
     case '/': return { t: 'flipOrientation' };

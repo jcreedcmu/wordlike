@@ -51,8 +51,9 @@ export function drawAnimation(d: CanvasRenderingContext2D, pan_canvas_from_world
       fillText(d, anim.message, mp, 'rgb(0,128,0)', '96px sans-serif');
       return;
     }
+    default: unreachable(anim);
   }
-  unreachable(anim);
+
 }
 
 export function isActiveCanvasAnimation(anim: Animation): boolean {

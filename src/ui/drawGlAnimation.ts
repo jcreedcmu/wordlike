@@ -59,13 +59,13 @@ export function drawGlAnimation(env: GlEnv, canvas_from_world: SE2, anim: Animat
       //   d.stroke();
       //   return;
       return;
-    } break;
+    }
     case 'point-decay': {
       const fraction = Math.min(1, Math.max(0, 1 - (time_ms - anim.start_in_game) / anim.duration_ms));
       drawBonusPoint(env, canvas_from_world, anim.p_in_world_int, fraction);
 
       return;
-    } break;
+    }
     case 'fireworks': {
       // d.textAlign = 'center';
       // d.textBaseline = 'middle';
@@ -82,7 +82,8 @@ export function drawGlAnimation(env: GlEnv, canvas_from_world: SE2, anim: Animat
       // strokeText(d, anim.message, mp, 'white', 4, '96px sans-serif');
       // fillText(d, anim.message, mp, 'rgb(0,128,0)', '96px sans-serif');
       return;
-    } break;
+    }
+    default: unreachable(anim);
   }
-  unreachable(anim);
+
 }

@@ -5,28 +5,28 @@ import { ActiveChunkInfo, Chunk, WORLD_CHUNK_SIZE, activeChunks, ensureChunk, ge
 import { getWordBonusFraction, now_in_game } from "../core/clock";
 import { mkOverlay } from "../core/layer";
 import { eff_mob_in_world } from "../core/mobs";
-import { CacheUpdate, CoreState, GameState, MobsState, MouseState } from "../core/state";
-import { pointFall, pointFallForPan } from "../core/state-helpers";
+import { CoreState, GameState, MobsState, MouseState } from "../core/state";
+import { pointFallForPan } from "../core/state-helpers";
 import { getMobileId, getRenderableMobile, get_hand_tiles, isSelectedForDrag } from "../core/tile-helpers";
 import { BOMB_RADIUS, SPRITE_PIXEL_WIDTH, getCurrentTool } from "../core/tools";
 import { DEBUG, doOnce, doOnceEvery, logger } from "../util/debug";
 import { RgbColor, RgbaColor, imageDataOfBuffer } from "../util/dutil";
 import { bufferSetFloats } from "../util/gl-util";
-import { SE2, apply, compose, inverse, mkSE2, scale, translate } from "../util/se2";
+import { SE2, compose, inverse, mkSE2, scale, translate } from "../util/se2";
 import { apply_to_rect, asMatrix } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
 import { rectPts, unreachable } from "../util/util";
-import { vadd, vdiag, vequal, vmul, vsub } from "../util/vutil";
+import { vadd, vdiag, vmul, vsub } from "../util/vutil";
 import { drawGlAnimation } from "./drawGlAnimation";
-import { drawRenderableRect, renderPanicBar, wordBubblePanicBounds, wordBubblePanicRect } from "./drawPanicBar";
+import { renderPanicBar, wordBubblePanicBounds, wordBubblePanicRect } from "./drawPanicBar";
 import { CANVAS_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, PREPASS_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, drawOneSprite, drawOneMobile, mkBonusDrawer, mkCanvasDrawer, mkDebugQuadDrawer, mkPrepassHelper, mkRectDrawer, mkSpriteDrawer, mkTileDrawer, mkWorldDrawer } from "./gl-common";
 import { gl_from_canvas } from "./gl-helpers";
-import { FIXED_WORD_BUBBLE_SIZE, canvas_from_hand_tile } from "./render";
+import { canvas_from_hand_tile } from "./render";
 import { spriteLocOfRes, spriteLocOfMob } from "./sprite-sheet";
 import { resizeView } from "./ui-helpers";
 import { CanvasGlInfo } from "./use-canvas";
-import { BUBBLE_FONT_SIZE, canvas_from_drag_mobile, cell_in_canvas, drawBubbleAux, pan_canvas_from_world_of_state, textCenterOfBubble } from "./view-helpers";
-import { TOOLBAR_WIDTH, canvas_bds_in_canvas, getWidgetPoint, hand_bds_in_canvas, panic_bds_in_canvas, resbar_bds_in_canvas } from "./widget-helpers";
+import { canvas_from_drag_mobile, cell_in_canvas, pan_canvas_from_world_of_state } from "./view-helpers";
+import { TOOLBAR_WIDTH, canvas_bds_in_canvas, getWidgetPoint, panic_bds_in_canvas, resbar_bds_in_canvas } from "./widget-helpers";
 
 const shadowColorRgba: RgbaColor = [128, 128, 100, Math.floor(0.4 * 255)];
 
@@ -95,7 +95,7 @@ function glFillRect(env: GlEnv, rect_in_canvas: Rect, color: RgbColor): void {
   glFillRecta(env, rect_in_canvas, [...color, 255]);
 }
 
-function renderPrepass(env: GlEnv, state: CoreState, canvas_from_world: SE2): ActiveChunkInfo {
+function renderPrepass(env: GlEnv, _state: CoreState, canvas_from_world: SE2): ActiveChunkInfo {
   const { gl } = env;
 
 
@@ -128,7 +128,7 @@ function renderPrepass(env: GlEnv, state: CoreState, canvas_from_world: SE2): Ac
 }
 
 
-function drawWorld(env: GlEnv, state: GameState, canvas_from_world: SE2, aci: ActiveChunkInfo): void {
+function drawWorld(env: GlEnv, _state: GameState, canvas_from_world: SE2, aci: ActiveChunkInfo): void {
   const { gl } = env;
   const { prog, position } = env.worldDrawer;
   gl.useProgram(prog);
@@ -178,7 +178,7 @@ function drawMobs(env: GlEnv, canvas_from_world: SE2, mobsState: MobsState): voi
 }
 
 
-function drawMouseStateTransients(env: GlEnv, canvas_from_world: SE2, cs: CoreState, ms: MouseState) {
+function drawMouseStateTransients(env: GlEnv, _canvas_from_world: SE2, cs: CoreState, ms: MouseState) {
   // Here's where we draw dragged mobiles in general
   // draw dragged mobiles from selection
   switch (ms.t) {
@@ -221,12 +221,10 @@ function drawMouseStateTransients(env: GlEnv, canvas_from_world: SE2, cs: CoreSt
     case 'drag_world': return;
     case 'drag_selection': return;
     case 'exchange_tiles': return;
+    default: unreachable(ms);
   }
-  unreachable(ms);
 }
 
-const shouldDebug = { v: false };
-let oldState: GameState | null = null;
 export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): void {
   // process cache update queue
   state.coreState._cacheUpdateQueue.forEach(cu => {
