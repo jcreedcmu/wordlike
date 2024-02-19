@@ -1,4 +1,4 @@
-import { Layer, getLayer, mkLayer } from '../src/core/layer';
+import { getLayer, mkLayer } from '../src/core/layer';
 import { vequal } from '../src/util/vutil';
 
 describe('mkLayer', () => {

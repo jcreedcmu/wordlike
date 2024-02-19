@@ -1,7 +1,6 @@
 import { GameState, mkGameState } from "../src/core/state";
 import { addHandTileEntity, addWorldTile, getMobileLoc, putMobileInWorld } from "../src/core/tile-helpers";
 import { produce } from "../src/util/produce";
-import { Location } from '../src/core/state';
 
 const SEED = 12345678;
 

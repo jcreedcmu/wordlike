@@ -1,8 +1,7 @@
-import { gl_from_canvas } from '../src/ui/gl-helpers';
 import { SE2, apply, compose, composen, ident, inverse, mkSE2, scale, translate } from '../src/util/se2';
-import { apply_to_rect, matchScale } from '../src/util/se2-extra';
+import { matchScale } from '../src/util/se2-extra';
 import { Point } from '../src/util/types';
-import { vadd, vdiag, vmul } from '../src/util/vutil';
+import { vadd, vmul } from '../src/util/vutil';
 
 const xform1 = translate({ x: 1, y: 5 });
 const xform2 = scale({ x: 2, y: 5 });

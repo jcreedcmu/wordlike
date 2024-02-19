@@ -1,4 +1,4 @@
-import { canvas_from_gl, gl_from_canvas } from "../src/ui/gl-helpers";
+import { gl_from_canvas } from "../src/ui/gl-helpers";
 import { apply } from "../src/util/se2";
 
 

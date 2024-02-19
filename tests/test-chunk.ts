@@ -1,7 +1,5 @@
 // XXX fix this test to be meaningful
 
-import { WORLD_CHUNK_SIZE } from "../src/core/chunk";
-import { getOverlay } from "../src/core/layer";
 import { GameState, mkGameState } from "../src/core/state";
 import { addHandTileEntity, addWorldTile, putMobileInWorld } from "../src/core/tile-helpers";
 import { produce } from "../src/util/produce";

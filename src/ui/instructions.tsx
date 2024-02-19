@@ -9,13 +9,11 @@ import { ensureTileId } from "../core/tile-id-helpers";
 import { DEBUG } from '../util/debug';
 import { relpos } from '../util/dutil';
 import * as SE1 from '../util/se1';
-import { Point } from '../util/types';
-import { paintWithScale, rawPaint } from './render';
+import { rawPaint } from './render';
 import { resizeView } from './ui-helpers';
 import { CanvasInfo, useCanvas, useNonreactiveCanvasGl } from './use-canvas';
 import { produce } from '../util/produce';
 import { mkOverlay } from '../core/layer';
-import { Chunk } from '../core/chunk';
 import { drawBubble } from './view-helpers';
 import { GlEnv, glCopyCanvas } from './gl-common';
 import { glInitialize, renderGlPane } from './gl-render';
@@ -52,7 +50,7 @@ export function Instructions(props: { dispatch: Dispatch, page: number }): JSX.E
   });
 
 
-  function renderBubbles(ci: CanvasInfo, props: {}) {
+  function renderBubbles(ci: CanvasInfo, _props: {}) {
     const { d } = ci;
     d.save();
     d.scale(devicePixelRatio, devicePixelRatio);
@@ -89,7 +87,7 @@ export function Instructions(props: { dispatch: Dispatch, page: number }): JSX.E
       dispatch({ t: 'resize', vd: resizeView(ci.c) });
     });
 
-  const [bubcref, bubmc] = useCanvas<{}>(
+   const [bubcref, _bubmc] = useCanvas<{}>(
     {}, renderBubbles, [], ci => {
       dispatch({ t: 'resize', vd: resizeView(ci.c) });
     });

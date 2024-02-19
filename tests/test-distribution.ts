@@ -6,7 +6,6 @@ describe('getSample', () => {
 
     const samples = [];
     let seed = 124;
-    let sample = 0;
     for (let i = 0; i < 20; i++) {
       const b = getSample(seed, [0.1, 0.3, 0.6]);
       seed = b.seed;
@@ -44,7 +43,6 @@ describe('getLetterSample', () => {
     const alphabet = ['A', 'B', 'C', 'D', 'E'];
     const counts: Record<string, number> = {};
     let seed = 121;
-    let sample = 0;
     for (let i = 0; i < 1000; i++) {
       const b = getLetterSampleOf(seed, energies, letterDistribution, classDistribution, alphabet, 1, 10, undefined);
       seed = b.seed;

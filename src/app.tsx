@@ -27,7 +27,7 @@ type CanvasProps = {
   main: ForRenderState,
 };
 
-export function App(props: {}): JSX.Element {
+export function App(_props: {}): JSX.Element {
   const [state, dispatch] = useEffectfulReducer<Action, SceneState, Effect>(mkSceneState(), reduce, doEffect);
 
   if (DEBUG.stateExporter) {
@@ -116,7 +116,7 @@ export function Game(props: GameProps): JSX.Element {
     }
   }
 
-  function handleResize(e: UIEvent) {
+  function handleResize(_e: UIEvent) {
     withCanvas(c => dispatch({ t: 'resize', vd: resizeView(c) }));
   }
 
@@ -278,7 +278,7 @@ export function Game(props: GameProps): JSX.Element {
 }
 
 
-export function doEffect(state: SceneState, dispatch: (action: Action) => void, effect: Effect): void {
+export function doEffect(_state: SceneState, _dispatch: (action: Action) => void, _effect: Effect): void {
   return;
   // switch (effect.t) {
   // }
