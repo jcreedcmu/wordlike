@@ -231,6 +231,9 @@ export function Game(props: GameProps): JSX.Element {
     if (tool == 'hand') {
       return 'grab';
     }
+    if (tool == 'magnifying-glass') {
+      return 'zoom-in';
+    }
     switch (state.mouseState.t) {
       case 'up': return undefined;
       case 'drag_world': return 'grab';

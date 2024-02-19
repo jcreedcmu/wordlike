@@ -137,6 +137,9 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState) {
     else if (tool == 'time') {
       drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.times);
     }
+    else if (tool == 'magnifying-glass') {
+      drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.glasses);
+    }
   });
 }
 

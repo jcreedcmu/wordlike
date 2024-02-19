@@ -410,6 +410,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
         s.slowState.inventory.consonants = 15;
         s.slowState.inventory.copies = 15;
         s.slowState.inventory.times = 15;
+        s.slowState.inventory.glasses = 15;
       })));
     }
     case 'incrementScore':

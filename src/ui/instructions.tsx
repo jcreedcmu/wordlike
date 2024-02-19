@@ -179,6 +179,7 @@ function exampleState(): GameState {
           consonants: 0,
           copies: 0,
           times: 0,
+          glasses: 0,
         },
         resource: {
           wood: 0,

@@ -17,6 +17,7 @@ const tools = [
   'consonant',
   'copy',
   'time',
+  'magnifying-glass',
 ] as const;
 
 export type Tool = (typeof tools)[number];
@@ -53,6 +54,7 @@ export const fillWaterIntent: Intent & { t: 'fillWater' } = { t: 'fillWater' };
 export const BOMB_RADIUS = 2;
 export const bombIntent: Intent & { t: 'bomb' } = { t: 'bomb' };
 export const copyIntent: Intent & { t: 'copy' } = { t: 'copy' };
+export const magnifyIntent: Intent & { t: 'magnify' } = { t: 'magnify' };
 
 export function getCurrentTools(state: CoreState): Tool[] {
   if (state.slowState.winState.t == 'lost') {
@@ -76,6 +78,9 @@ export function getCurrentTools(state: CoreState): Tool[] {
   }
   if (state.slowState.inventory.times > 0) {
     tools.push('time');
+  }
+  if (state.slowState.inventory.glasses > 0) {
+    tools.push('magnifying-glass');
   }
   return tools;
 }
@@ -125,5 +130,6 @@ export function toolPrecondition(state: CoreState, tool: Tool): boolean {
     case 'consonant': return state.slowState.inventory.consonants >= 1;
     case 'copy': return state.slowState.inventory.copies >= 1;
     case 'time': return state.slowState.inventory.times >= 1;
+    case 'magnifying-glass': return state.slowState.inventory.glasses >= 1;
   }
 }

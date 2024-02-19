@@ -5,26 +5,27 @@ import { produce } from "../util/produce";
 import * as se1 from '../util/se1';
 import { SE2, apply, compose, inverse } from '../util/se2';
 import { Point } from "../util/types";
-import { vadd, vequal, vm, vsnorm } from "../util/vutil";
+import { vadd, vequal, vm } from "../util/vutil";
 import { Animation, mkPointDecayAnimation, mkScoreAnimation, mkWinAnimation } from './animations';
 import { getAssets } from "./assets";
 import { adjacentScoringOfBonus, overlapScoringOfBonus, resolveScoring } from "./bonus";
 import { getBonusFromLayer, updateBonusLayer } from "./bonus-helpers";
-import { BIT_CONNECTED, BIT_VISIBLE } from "./chunk";
+import { BIT_CONNECTED } from "./chunk";
 import { PANIC_INTERVAL_MS, PanicData, PauseData, WORD_BONUS_INTERVAL_MS, now_in_game } from "./clock";
 import { DrawForce, getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, gridKeys, mkGridOfMainTiles } from "./grid";
 import { resolveLandResult } from "./landing-resolve";
 import { landMoveOnState } from "./landing-result";
-import { Overlay, combineOverlay, getOverlay, mkOverlay, mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
+import { mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
 import { addRandomMob } from "./mobs";
 import { PROGRESS_ANIMATION_POINTS, getHighWaterMark, getScore, setHighWaterMark } from "./scoring";
 import { CacheUpdate, CoreState, GameState, HAND_TILE_LIMIT, MainLoc, MouseState, Scoring, Tile, TileEntity, WordBonusState } from "./state";
-import { addHandTileEntity, addWorldTile, get_hand_tiles, get_main_tiles } from "./tile-helpers";
+import { addHandTileEntity, addWorldTile, get_hand_tiles, get_main_tiles as get_world_tiles } from "./tile-helpers";
 import { getCurrentTool } from "./tools";
+import { updateFogOfWar } from "./fog-of-war";
 import { WIN_SCORE, canWinFromState, shouldStartPanicBar } from "./winState";
 
-const PLACED_MOBILE_SEEN_CELLS_RADIUS = 2.5;
+export const PLACED_MOBILE_SEEN_CELLS_RADIUS = 2.5;
 
 export function addWorldTiles(state: CoreState, tiles: Tile[]): CoreState {
   return produce(state, s => {
@@ -74,7 +75,7 @@ export function drawSpecific(state: CoreState, letter: string): { cs: CoreState,
 const directions: Point[] = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([x, y]) => ({ x, y }));
 
 export function resolveValid(state: CoreState, validWords: Set<string>): CoreState {
-  const tiles = get_main_tiles(state);
+  const tiles = get_world_tiles(state);
   logger('words', 'grid valid');
   const layer = mkOverlayFrom([]);
 
@@ -148,35 +149,8 @@ export function freshPanic(state: CoreState): PanicData {
   return { currentTime_in_game, lastClear_in_game: currentTime_in_game - debug_offset };
 }
 
-function updateFogOfWar(state: CoreState): CoreState {
-  const rad = PLACED_MOBILE_SEEN_CELLS_RADIUS;
-  const irad = Math.ceil(rad);
-  const updates: Point[] = [];
-  const recentlySeen: Overlay<boolean> = mkOverlay();
-  get_main_tiles(state).forEach(({ loc: { p_in_world_int: center } }) => {
-    for (let x = -irad; x <= irad; x++) {
-      for (let y = -irad; y <= irad; y++) {
-        const off = { x, y };
-        const p_in_world_int = vadd(center, off);
-        if (vsnorm(off) <= rad * rad && !getOverlay(state.seen_cells, p_in_world_int) && !getOverlay(recentlySeen, p_in_world_int)) {
-          setOverlay(recentlySeen, p_in_world_int, true);
-          updates.push(p_in_world_int);
-        }
-      }
-    }
-  });
-
-  const cacheUpdates: CacheUpdate[] = updates.map(p => ({ p_in_world_int: p, chunkUpdate: { t: 'setBit', bit: BIT_VISIBLE } }));
-  const combined = combineOverlay(state.seen_cells, recentlySeen);
-  return produce(state, s => {
-    s._cacheUpdateQueue.push(...cacheUpdates);
-    s.seen_cells = combined;
-  });
-}
-
-
 export function checkValid(state: CoreState): CoreState {
-  const tiles = get_main_tiles(state);
+  const tiles = get_world_tiles(state);
   const grid = mkGridOfMainTiles(tiles);
 
   const oldConnectedSet = state.connectedSet;

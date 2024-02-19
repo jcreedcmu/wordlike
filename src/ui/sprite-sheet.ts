@@ -60,6 +60,7 @@ export function spriteLocOfBonus(bonus: Bonus): Point {
     case 'time': return spriteLocOfTool('time');
     case 'dynamite': return { x: 0, y: 2 };
     case 'mountain': return { x: 1, y: 10 };
+    case 'magnifying-glass': return { x: 1, y: 11 };
   }
 }
 
@@ -73,6 +74,7 @@ export function spriteLocOfTool(tool: Tool): Point {
     case 'consonant': return { x: 0, y: 5 };
     case 'copy': return { x: 0, y: 6 };
     case 'time': return { x: 0, y: 10 };
+    case 'magnifying-glass': return { x: 1, y: 11 };
   }
 }
 
@@ -97,6 +99,7 @@ export function largeSpriteLoc(sprite: Tool | ResbarResource): Point {
     case 'time': return { y: 0, x: 7 };
     case 'wood': return { y: 0, x: 8 };
     case 'stone': return { y: 0, x: 9 };
+    case 'magnifying-glass': return { y: 0, x: 10 };
   }
 }
 

@@ -21,6 +21,7 @@ export type ScoringBonus =
   | { t: 'word' }
   | { t: 'time' }
   | { t: 'dynamite' }
+  | { t: 'magnifying-glass' }
   ;
 
 export type Bonus =
@@ -72,6 +73,9 @@ export function bonusGenerator(p: Point, seed: number): Bonus {
     }
     else if (ph < 0.5) {
       return { t: 'mountain' };
+    }
+    else if (ph < 0.6) {
+      return { t: 'magnifying-glass' };
     }
     else
       return { t: 'tree' };
@@ -132,6 +136,7 @@ export function adjacentScoringOfBonus(bonus: Bonus, p_in_world_int: Point): Sco
     case 'empty': return [];
     case 'water': return [];
     case 'mountain': return [{ bonus, p_in_world_int, destroy: true }];
+    case 'magnifying-glass': return [{ bonus, p_in_world_int, destroy: true }];
   }
 }
 
@@ -161,6 +166,7 @@ export function resolveScoring(state: CoreState, scoring: Scoring): CoreState {
     case 'time': return produce(state, s => { s.slowState.inventory.times++; });
     case 'dynamite': return produce(state, s => { s.slowState.inventory.dynamites++; });
     case 'mountain': return produce(state, s => { s.slowState.resource.stone++ });
+    case 'magnifying-glass': return produce(state, s => { s.slowState.inventory.glasses++ });
   }
 }
 

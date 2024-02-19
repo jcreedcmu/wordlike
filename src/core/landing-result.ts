@@ -88,6 +88,7 @@ export function landMobileOnCell(m: MoveSource, c: CellContents): LandingResult 
         case 'dynamite': return { t: 'collision' };
         case 'water': return (m.t == 'resource' && m.res == 'planks') ? { t: 'fillWater' } : { t: 'collision' };
         case 'mountain': return { t: 'collision' };
+        case 'magnifying-glass': return { t: 'collision' };
       }
     }
   }

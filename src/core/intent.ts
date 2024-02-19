@@ -9,7 +9,9 @@ import { SelectionOperation, deselect, selectionOperationOfMods } from './select
 import { CacheUpdate, GameState } from './state';
 import { checkValid, drawSpecific, withCoreState } from './state-helpers';
 import { CellContents, getMobileLoc, mobileAtPoint } from './tile-helpers';
-import { Tool, bombIntent, copyIntent, dynamiteIntent } from './tools';
+import { Tool, bombIntent, copyIntent, dynamiteIntent, magnifyIntent } from './tools';
+import { updateFogOfWarAtPoint } from './fog-of-war';
+import { getOverlay } from './layer';
 
 export type KillIntent =
   | { t: 'kill', radius: number }
@@ -24,6 +26,7 @@ export type Intent =
   | { t: 'exchangeTiles', id: string }
   | { t: 'startSelection', opn: SelectionOperation }
   | { t: 'copy' }
+  | { t: 'magnify' }
   | KillIntent
   ;
 
@@ -74,6 +77,7 @@ export function getIntentOfMouseDown(tool: Tool, button: number, mods: Set<strin
     case 'consonant': throw new Error(`shoudn't be able have consonant tool active`);
     case 'time': throw new Error(`shoudn't be able have time tool active`);
     case 'copy': return copyIntent;
+    case 'magnifying-glass': return magnifyIntent;
   }
 }
 
@@ -185,6 +189,25 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
       else {
         return state;
       }
+    }
+    case 'magnify': {
+      if (wp.t != 'world')
+        return vacuous_down(state, wp);
+      if (state.coreState.slowState.inventory.glasses <= 0)
+        return vacuous_down(state, wp);
+
+      const p_in_world_int = vm(wp.p_in_local, Math.floor);
+
+      if (!getOverlay(state.coreState.seen_cells, p_in_world_int))
+        return vacuous_down(state, wp);
+
+      let cs = state.coreState;
+      cs = produce(cs, cs => { cs.slowState.inventory.glasses--; });
+      if (cs.slowState.inventory.glasses <= 0) {
+        cs = produce(cs, cs => { cs.slowState.currentTool = 'pointer'; });
+      }
+      cs = updateFogOfWarAtPoint(cs, p_in_world_int, 5.5);
+      return produce(state, s => { s.coreState = cs; });
     }
   }
 }

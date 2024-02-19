@@ -158,6 +158,7 @@ export type InventoryItems = {
   consonants: number,
   copies: number,
   times: number,
+  glasses: number,
 };
 
 export type ResourceItems = Record<ResbarResource, number>;
@@ -253,6 +254,7 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
           consonants: 0,
           copies: 0,
           times: 0,
+          glasses: 0,
         },
         resource: {
           wood: 0,
