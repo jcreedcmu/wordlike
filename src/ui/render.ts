@@ -19,6 +19,7 @@ import { vadd, vdiv, vequal, vm, vscale, vtrans } from '../util/vutil';
 import { drawAnimation } from './drawAnimation';
 import { drawBonus } from './drawBonus';
 import { wordBubblePanicBounds, wordBubbleRect } from './drawPanicBar';
+import { formatTime } from './formatTime';
 import { CanvasInfo } from './use-canvas';
 import { pan_canvas_from_world_of_state } from './view-helpers';
 import { GLOBAL_BORDER, PANIC_THICK, canvas_bds_in_canvas, canvas_from_hand, canvas_from_resbar, canvas_from_toolbar, effective_resbar_bds_in_canvas, effective_toolbar_bds_in_canvas, hand_bds_in_canvas, inner_hand_bds_in_canvas, panic_bds_in_canvas, pause_button_bds_in_canvas, resbar_bds_in_canvas, score_bds_in_canvas, spacer1_bds_in_canvas, spacer2_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
@@ -233,16 +234,6 @@ function drawUiFrame(d: CanvasRenderingContext2D, state: CoreState): void {
 
   // Draw resbar
   drawResbar(d, state);
-}
-
-function formatTime(x: number) {
-  var date = new Date(0);
-  date.setMilliseconds(x);
-  let rv = date.toISOString().substring(11, 19);
-  rv = rv.replace(/^0/, '');
-  rv = rv.replace(/^0:/, '');
-  rv = rv.replace(/^0/, '');
-  return rv;
 }
 
 export function canvas_from_hand_tile(index: number): SE2 {
