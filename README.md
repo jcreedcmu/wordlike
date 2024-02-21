@@ -32,9 +32,11 @@ Directory Structure
 
 | Directory | Description |
 | --- | --- |
-| [public](public) | Static assets for browser version |
-| [src](src) | Typescript code of the main body of the game |
-| [tests](tests) | Unit tests |
 | [.github/workflows](.github/workflows) | Deploy scripts
 | [precompute](precompute) | Scripts to precompute assets
+| [public](public) | Static assets for browser version |
+| [src/core](src/core) | State and state update code |
+| [src/ui](src/ui) | Frontend code |
+| [src/util](src/util) | Utilities |
+| [tests](tests) | Unit tests |
 | [vendor](vendor) | Vendored libraries (for now just stb's font library)
