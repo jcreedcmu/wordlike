@@ -14,7 +14,7 @@ import { tryKillTileOfState } from './kill-helpers';
 import { landingMoveIdOfMoveMobile, requireNoCollision, resolveLandResult } from './landing-resolve';
 import { landMoveOnState, landMoveOnStateForMobiles, landingMoveOfMoveMobile } from './landing-result';
 import { mkOverlayFrom } from './layer';
-import { addRandomMob, advanceMob } from './mobs';
+import { addRandomMob, advanceMob, mobsMapVal } from './mobs';
 import { reduceKey } from './reduceKey';
 import { incrementScore, setScore } from './scoring';
 import { deselect, resolveSelection, setSelected } from './selection';
@@ -464,7 +464,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
         }
 
         // advance mobs
-        const newMobs: MobsState = { mobs: cs.mobsState.mobs.map(mob => advanceMob(cs, mob)) };
+        const newMobs: MobsState = mobsMapVal(cs.mobsState, mob => advanceMob(cs, mob));
         state = produce(state, s => {
           s.coreState.mobsState = newMobs;
         });

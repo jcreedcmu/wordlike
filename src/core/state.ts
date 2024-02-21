@@ -182,7 +182,7 @@ export type CacheUpdate = {
 };
 
 export type MobsState = {
-  mobs: MobState[],
+  mobs: Record<string, MobState>,
 }
 // State other than mouse state
 export type CoreState = {
@@ -288,7 +288,7 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
       panic: undefined,
       game_from_clock: se1.translate(-Date.now()),
       bonusLayerSeed,
-      mobsState: { mobs: [] },
+      mobsState: { mobs: {} },
       _cacheUpdateQueue,
     },
     mouseState: { t: 'up', p_in_canvas: { x: 0, y: 0 } },

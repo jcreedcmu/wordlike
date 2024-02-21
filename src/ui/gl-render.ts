@@ -4,7 +4,7 @@ import { getAssets } from "../core/assets";
 import { ActiveChunkInfo, Chunk, WORLD_CHUNK_SIZE, activeChunks, ensureChunk, getChunk, updateChunkCache } from "../core/chunk";
 import { getWordBonusFraction, now_in_game } from "../core/clock";
 import { mkOverlay } from "../core/layer";
-import { eff_mob_in_world } from "../core/mobs";
+import { eff_mob_in_world, mobsMap } from "../core/mobs";
 import { CoreState, GameState, MobsState, MouseState } from "../core/state";
 import { pointFallForPan } from "../core/state-helpers";
 import { getMobileId, getRenderableMobile, get_hand_tiles, isSelectedForDrag } from "../core/tile-helpers";
@@ -168,7 +168,7 @@ function drawAnimations(env: GlEnv, canvas_from_world: SE2, animations: Animatio
 }
 
 function drawMobs(env: GlEnv, canvas_from_world: SE2, mobsState: MobsState): void {
-  mobsState.mobs.forEach(mob => {
+  mobsMap(mobsState, mob => {
     switch (mob.t) {
       case 'snail':
         drawOneSprite(env, spriteLocOfMob(mob), compose(canvas_from_world, translate(eff_mob_in_world(mob))));

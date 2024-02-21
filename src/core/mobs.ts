@@ -1,9 +1,10 @@
 import { produce } from "../util/produce";
 import { Point } from "../util/types";
-import { next_rand } from "../util/util";
+import { mapval, next_rand } from "../util/util";
 import { vadd, vequal, vint, vm, vscale } from "../util/vutil";
 import { MoveSource, landMoveOnState } from "./landing-result";
-import { CoreState } from "./state";
+import { CoreState, MobsState } from "./state";
+import { freshId } from "./tile-id-helpers";
 
 export type Orientation = 'N' | 'W' | 'E' | 'S';
 
@@ -156,14 +157,17 @@ function towards_origin(p: Point): Orientation {
 }
 
 export function addMob(state: CoreState, newMob: MobState): CoreState {
-  return produce(state, s => { s.mobsState.mobs.push(newMob); })
+  return produce(state, s => {
+    const id = freshId();
+    s.mobsState.mobs[id] = newMob;
+  })
 }
 
 export function addRandomMob(state: CoreState): CoreState {
   const ATTEMPTS = 5;
   const RANGE = 10;
   const MAX_MOBS = 5;
-  if (state.mobsState.mobs.length >= MAX_MOBS)
+  if (Object.keys(state.mobsState.mobs).length >= MAX_MOBS)
     return state;
   let seed = state.seed;
   for (let i = 0; i < ATTEMPTS; i++) {
@@ -186,4 +190,16 @@ export function addRandomMob(state: CoreState): CoreState {
     s.seed = seed;
   });
 
+}
+
+export function mkMobsState(): MobsState {
+  return { mobs: {} };
+}
+
+export function mobsMap<T>(state: MobsState, k: (mob: MobState, id: string) => T): T[] {
+  return Object.keys(state.mobs).map(id => k(state.mobs[id], id));
+}
+
+export function mobsMapVal(state: MobsState, k: (mob: MobState, id: string) => MobState): MobsState {
+  return { mobs: mapval(state.mobs, k) };
 }

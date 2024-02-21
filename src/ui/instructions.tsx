@@ -17,6 +17,7 @@ import { mkOverlay } from '../core/layer';
 import { drawBubble } from './view-helpers';
 import { GlEnv, glCopyCanvas } from './gl-common';
 import { glInitialize, renderGlPane } from './gl-render';
+import { mkMobsState } from '../core/mobs';
 
 export const NUM_PAGES = 2;
 
@@ -254,7 +255,7 @@ function exampleState(): GameState {
         }
       },
       panic: { currentTime_in_game: Date.now(), lastClear_in_game: Date.now() - PANIC_INTERVAL_MS / 3 },
-      mobsState: { mobs: [] },
+      mobsState: mkMobsState(),
     },
     mouseState: {
       t: "up",

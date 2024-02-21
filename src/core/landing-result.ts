@@ -1,7 +1,7 @@
 import { DEBUG } from "../util/debug";
 import { Point } from "../util/types";
 import { getOverlay } from "./layer";
-import { MobState, MobType, collidesWithMob } from "./mobs";
+import { MobState, MobType, collidesWithMob, mobsMap } from "./mobs";
 import { CoreState, MobileEntity, MoveMobile } from "./state";
 import { CellContents, cellAtPointForMobiles, get_mobiles } from "./tile-helpers";
 import { Resource } from "./tools";
@@ -116,7 +116,7 @@ export function landMoveOnStateForMobiles(m: LandingMove, state: CoreState, mobi
     return { t: 'collision' };
 
   return disjuncts(
-    ...state.mobsState.mobs.map(mob => landMoveOnMob(m, mob)),
+    ...mobsMap(state.mobsState, mob => landMoveOnMob(m, mob)),
     landMobileOnCell(m.src, cellAtPointForMobiles(state, m.p_in_world_int, mobiles)),
   );
 }

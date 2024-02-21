@@ -1,7 +1,7 @@
 import { Point, Rect } from "./types";
 import { vadd, vm, vm2, vm3, vmul, vscale, vsub } from "./vutil";
 
-export function mapval<T, U>(m: { [k: string]: T }, f: (x: T, k?: string) => U): { [k: string]: U } {
+export function mapval<T, U>(m: { [k: string]: T }, f: (x: T, k: string) => U): { [k: string]: U } {
   return Object.fromEntries(Object.entries(m).map(([k, v]) => [k, f(v, k)]));
 }
 
