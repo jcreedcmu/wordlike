@@ -48,6 +48,11 @@ export function resolveLandResult(_state: CoreState, lr: ProperLandingResult, mo
     case 'fillWater': {
       return tryKillTileOfStateLoc(state, { t: 'world', p_in_world_int: move.p_in_world_int }, fillWaterIntent);
     }
+    case 'removeMob': {
+      return produce(state, cs => {
+        delete cs.mobsState.mobs[lr.id];
+      });
+    }
   }
 }
 

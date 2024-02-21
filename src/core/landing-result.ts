@@ -32,6 +32,7 @@ export type ProperLandingResult =
   /* other things that I expect to go here include: success which transforms the B somehow */
   | { t: 'fillWater' }
   | { t: 'replaceResource', res: Resource }
+  | { t: 'removeMob', id: string }
   ;
 
 export type LandingResult =
@@ -49,6 +50,7 @@ export function disjunction(lr1: LandingResult, lr2: LandingResult): LandingResu
   switch (lr1.t) {
     case 'collision': // fallthrough intentional
     case 'fillWater': // fallthrough intentional
+    case 'removeMob': // fallthrough intentional
     case 'replaceResource': return lr1;
     case 'place': return lr2;
   }
@@ -94,12 +96,16 @@ export function landMobileOnCell(m: MoveSource, c: CellContents): LandingResult 
   }
 }
 
-export function landMoveOnMob(m: LandingMove, mob: MobState): LandingResult {
-  // TODO(landing): Peek into m.mobile to see if it interacts more
-  // interestingly with mob. This would require reorganizing mob state
-  // to be keyed by-id.
-  if (collidesWithMob(mob, m.p_in_world_int))
-    return { t: 'collision' };
+export function landMoveOnMob(m: LandingMove, mob: MobState, id: string): LandingResult {
+  if (collidesWithMob(mob, m.p_in_world_int)) {
+    switch (mob.t) {
+      case 'snail':
+        if (m.src.t == 'resource' && m.src.res == 'axe')
+          return { t: 'removeMob', id };
+        else
+          return { t: 'collision' };
+    }
+  }
   return { t: 'place' };
 }
 
@@ -116,7 +122,7 @@ export function landMoveOnStateForMobiles(m: LandingMove, state: CoreState, mobi
     return { t: 'collision' };
 
   return disjuncts(
-    ...mobsMap(state.mobsState, mob => landMoveOnMob(m, mob)),
+    ...mobsMap(state.mobsState, (mob, id) => landMoveOnMob(m, mob, id)),
     landMobileOnCell(m.src, cellAtPointForMobiles(state, m.p_in_world_int, mobiles)),
   );
 }
