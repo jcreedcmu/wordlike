@@ -28,4 +28,4 @@ deploy:
 	git push origin "main:deploy"
 
 render-svgs:
-	scripts/render-svgs.sh
+	precompute/svg/render-svgs.sh

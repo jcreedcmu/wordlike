@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# This expects to be run from the repo root
+
 UI_FILL_REPL="#ff0000"
 UI_STROKE_REPL="#0000ff"
 

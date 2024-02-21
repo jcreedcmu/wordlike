@@ -35,3 +35,6 @@ Directory Structure
 | [public](public) | Static assets for browser version |
 | [src](src) | Typescript code of the main body of the game |
 | [tests](tests) | Unit tests |
+| [.github/workflows](.github/workflows) | Deploy scripts
+| [precompute](precompute) | Scripts to precompute assets
+| [vendor](vendor) | Vendored libraries (for now just stb's font library)
