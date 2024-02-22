@@ -73,6 +73,11 @@ export function landMobileOnCell(m: MoveSource, c: CellContents): LandingResult 
           return { t: 'replaceResource', res: 'planks' };
         }
       }
+      if (c.mobile.t == 'resource' && c.mobile.res == 'stone') {
+        if (m.t == 'resource' && m.res == 'wood') {
+          return { t: 'replaceResource', res: 'axe' };
+        }
+      }
       return { t: 'collision' };
     }
     case 'bonus': {
