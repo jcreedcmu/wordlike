@@ -73,30 +73,34 @@ int is_fog(vec4 cell_data) {
   return int((ci & 0x4) == 0);
 }
 
+vec4 get_fog_pixel_aux(vec2 contrib_ul_in_prepass, vec2 offset_in_world, vec2 p_in_world_fp) {
+  vec2 cell_center_in_prepass = contrib_ul_in_prepass + vec2(0.5,0.5) + offset_in_world;
+  int bit = is_fog(round(255.0 * texture(u_prepassTexture, cell_center_in_prepass / float(PREPASS_BUFFER_SIZE) )));
+
+  vec2 sample_pt = p_in_world_fp - offset_in_world  - vec2(0.5);
+  float circle = smoothstep(sqrt(2.)/2., 3./2., length(sample_pt));
+  float aa = 1.-((1.-float(bit)) *  (1.- circle)) ;
+  return vec4(0.,0.,0.,aa);
+}
+
 vec4 get_fog_pixel(vec2 p_in_world) {
   // "fog-of-war" drawing
 
-  // All these h-suffixed values are minus 0.5 in world coordinates from the "real" p.
-  vec2 p_in_world_h = p_in_world - vec2(0.5);
-  vec2 p_in_world_hint = floor(p_in_world_h);
-  vec2 p_in_world_hfp = p_in_world_h - p_in_world_hint;
+  vec2 p_in_world_int = floor(p_in_world);
+  vec2 p_in_world_fp = p_in_world - p_in_world_int;
 
-  vec2 ul_in_prepass = p_in_world_hint - u_min_p_in_chunk * CHUNK_SIZE;
+  vec2 ul_in_prepass = p_in_world_int - u_min_p_in_chunk * CHUNK_SIZE;
 
-  int bit_1 = is_fog(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(0.5,0.5)) / float(PREPASS_BUFFER_SIZE) )));
-  int bit_2 = is_fog(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(1.5,0.5)) / float(PREPASS_BUFFER_SIZE) )));
-  int bit_4 = is_fog(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(0.5,1.5)) / float(PREPASS_BUFFER_SIZE) )));
-  int bit_8 = is_fog(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(1.5,1.5)) / float(PREPASS_BUFFER_SIZE) )));
-
-  vec2 sprite_coords = vec2(
-                           FOG_OF_WAR_TRANSITIONS_X_OFFSET,
-                           (bit_8 << 3) +
-                           (bit_4 << 2) +
-                           (bit_2 << 1) +
-                           (bit_1 << 0)
-                           );
-
-  return get_sprite_pixel(p_in_world_hfp, sprite_coords);
+  return get_fog_pixel_aux(ul_in_prepass, vec2(0,0), p_in_world_fp)
+     * get_fog_pixel_aux(ul_in_prepass, vec2(-1,0), p_in_world_fp)
+     * get_fog_pixel_aux(ul_in_prepass, vec2(1,0), p_in_world_fp)
+    * get_fog_pixel_aux(ul_in_prepass, vec2(0,-1), p_in_world_fp)
+    * get_fog_pixel_aux(ul_in_prepass, vec2(-1,-1), p_in_world_fp)
+    * get_fog_pixel_aux(ul_in_prepass, vec2(1,-1), p_in_world_fp)
+    * get_fog_pixel_aux(ul_in_prepass, vec2(0,1), p_in_world_fp)
+    * get_fog_pixel_aux(ul_in_prepass, vec2(-1,1), p_in_world_fp)
+    * get_fog_pixel_aux(ul_in_prepass, vec2(1,1), p_in_world_fp)
+    ;
 }
 
 // a over b
