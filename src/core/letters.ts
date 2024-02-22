@@ -41,3 +41,9 @@ export function letterOfIndex(i: number): AbstractLetter {
   }
   throw new Error(`Unknown abstract letter index ${i}`);
 }
+
+export function lettersMatch(al1: AbstractLetter, al2: AbstractLetter): boolean {
+  switch (al1.t) {
+    case 'single': return al2.t == 'single' && al2.letter == al1.letter;
+  }
+}

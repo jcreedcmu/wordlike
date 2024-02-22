@@ -1,7 +1,7 @@
 import { DEBUG } from "../util/debug";
 import { Point } from "../util/types";
 import { getOverlay } from "./layer";
-import { AbstractLetter } from "./letters";
+import { AbstractLetter, lettersMatch } from "./letters";
 import { MobState, MobType, collidesWithMob, mobsMap } from "./mobs";
 import { CoreState, MobileEntity, MoveMobile } from "./state";
 import { CellContents, cellAtPointForMobiles, get_mobiles } from "./tile-helpers";
@@ -87,7 +87,7 @@ export function landMobileOnCell(m: MoveSource, c: CellContents): LandingResult 
         case 'empty': return { t: 'place' };
         case 'tree': return { t: 'collision' };
         case 'bomb': return { t: 'collision' };
-        case 'required': return (m.t == 'tile' && (m.letter == bonus.letter || DEBUG.allWords)) ? { t: 'place' } : { t: 'collision' };
+        case 'required': return (m.t == 'tile' && (lettersMatch(m.letter, bonus.letter) || DEBUG.allWords)) ? { t: 'place' } : { t: 'collision' };
         case 'consonant': return { t: 'collision' };
         case 'vowel': return { t: 'collision' };
         case 'copy': return { t: 'collision' };
