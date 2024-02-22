@@ -18,6 +18,7 @@ export type GameLowAction =
   | { t: 'dynamiteTile', wp: WidgetPoint }
   | { t: 'dropTopHandTile' }
   | { t: 'debug' }
+  | { t: 'debug2' }
   | { t: 'incrementScore', amount: number }
   | { t: 'toggleGl' }
   | { t: 'setTool', tool: Tool }

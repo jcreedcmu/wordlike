@@ -413,6 +413,17 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
         s.slowState.inventory.glasses = 15;
       })));
     }
+    case 'debug2': {
+      return withCoreState(state, cs => checkValid(produce(cs, s => {
+        s.slowState.inventory.dynamites = 15;
+        s.slowState.inventory.bombs = 15;
+        s.slowState.inventory.vowels = 15;
+        s.slowState.inventory.consonants = 15;
+        s.slowState.inventory.copies = 15;
+        s.slowState.inventory.times = 15;
+        s.slowState.inventory.glasses = 15;
+      })));
+    }
     case 'incrementScore':
       return withCoreState(state, cs => checkValid(produce(cs, s => {
         incrementScore(s, action.amount);

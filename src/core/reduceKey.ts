@@ -24,6 +24,7 @@ export function reduceKey(state: GameState, code: string): GameLowAction {
     case 'k': return { t: 'dynamiteTile', wp: getWidgetPoint(state.coreState, state.mouseState.p_in_canvas) }
     case 'a': return { t: 'dropTopHandTile' };
     case 'S-d': return { t: 'debug' };
+    case 'S-f': return { t: 'debug2' };
     case 'S-m': return { t: 'addMob' };
     case 'S-s': return { t: 'incrementScore', amount: 90 };
     case 'S-g': return { t: 'toggleGl' };
