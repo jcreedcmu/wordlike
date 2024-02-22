@@ -43,8 +43,8 @@ describe('checking words', () => {
     const horizResults = checkGridWordsHoriz(mkGrid(tiles1), isWord);
 
     expect(horizResults.validWords).toEqual([
-      { word: 'fumble', p: { x: 2, y: 2 }, orientation: { x: 1, y: 0 } },
-      { word: 'nib', p: { x: 0, y: 4 }, orientation: { x: 1, y: 0 } },
+      { word: 'fumble', p: { x: 2, y: 2 }, orientation: { x: 1, y: 0 }, length: 6 },
+      { word: 'nib', p: { x: 0, y: 4 }, orientation: { x: 1, y: 0 }, length: 3 },
     ]);
 
     expect(horizResults.invalidWords).toEqual([]);
@@ -53,12 +53,12 @@ describe('checking words', () => {
   test('works vertically', () => {
     const vertResults = checkGridWordsVert(mkGrid(tiles1), isWord);
     expect(vertResults.invalidWords).toEqual([
-      { word: 'fob', p: { x: 2, y: 2 }, orientation: { x: 0, y: 1 } },
+      { word: 'fob', p: { x: 2, y: 2 }, orientation: { x: 0, y: 1 }, length: 3 },
     ]);
 
     expect(vertResults.validWords).toEqual([
-      { word: 'baz', p: { x: 5, y: 2 }, orientation: { x: 0, y: 1 } },
-      { word: 'the', p: { x: 7, y: 0 }, orientation: { x: 0, y: 1 } },
+      { word: 'baz', p: { x: 5, y: 2 }, orientation: { x: 0, y: 1 }, length: 3 },
+      { word: 'the', p: { x: 7, y: 0 }, orientation: { x: 0, y: 1 }, length: 3 },
     ]);
   });
 

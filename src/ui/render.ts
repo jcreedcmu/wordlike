@@ -507,7 +507,7 @@ function drawInvalidWord(d: CanvasRenderingContext2D, canvas_from_world: SE2, wo
   const perp = vtrans(along); // vector pointing perpendicular to it
   const rect_in_world: Rect = {
     p: word.p,
-    sz: vadd(perp, vscale(along, word.word.length)),
+    sz: vadd(perp, vscale(along, word.length)),
   };
   const rect_in_canvas = apply_to_rect(canvas_from_world, rect_in_world);
   d.strokeStyle = '#7f0000';

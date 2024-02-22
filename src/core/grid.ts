@@ -105,6 +105,7 @@ export type LocatedWord = {
   p: Point,
   orientation: Point, // {x:1,y:0} or {x:0,y:1}
   word: string,
+  length: number, // this is measured in tiles, which may not be equal to `word.length` as a string
 }
 
 export type CheckResult = {
@@ -118,19 +119,22 @@ export function checkGridWordsHoriz(grid: Grid<AbstractLetter>, isWord: (x: stri
   let validWords: LocatedWord[] = [];
   let invalidWords: LocatedWord[] = [];
   let wordSoFar = '';
+  let wordLengthSoFar = 0;
   // returns false if we've discovered a non-word
   function endWord(p: Point) {
-    if (wordSoFar.length > 1 && !isWord(wordSoFar)) {
+    if (wordLengthSoFar > 1 && !isWord(wordSoFar)) {
       if (DEBUG.words)
         console.log(`nonword: ${wordSoFar}`);
-      invalidWords.push({ word: wordSoFar, orientation: { x: 1, y: 0 }, p });
+      invalidWords.push({ word: wordSoFar, length: wordLengthSoFar, orientation: { x: 1, y: 0 }, p });
       wordSoFar = '';
+      wordLengthSoFar = 0;
     }
     else {
-      if (wordSoFar.length > 1) {
-        validWords.push({ word: wordSoFar, orientation: { x: 1, y: 0 }, p });
+      if (wordLengthSoFar > 1) {
+        validWords.push({ word: wordSoFar, length: wordLengthSoFar, orientation: { x: 1, y: 0 }, p });
       }
       wordSoFar = '';
+      wordLengthSoFar = 0;
     }
   }
   for (let yo = 0; yo <= grid.rect.sz.y; yo++) {
@@ -139,13 +143,14 @@ export function checkGridWordsHoriz(grid: Grid<AbstractLetter>, isWord: (x: stri
       const x = xo + grid.rect.p.x;
       const letter = getGrid(grid, { x, y });
       if (letter == undefined) {
-        endWord({ x: x - wordSoFar.length, y });
+        endWord({ x: x - wordLengthSoFar, y });
       }
       else {
         wordSoFar += stringOfLetter(letter);
+        wordLengthSoFar += 1;
       }
     }
-    endWord({ x: grid.rect.sz.x - wordSoFar.length, y });
+    endWord({ x: grid.rect.sz.x - wordLengthSoFar, y });
   }
   return { validWords, invalidWords };
 }
@@ -155,6 +160,7 @@ function transposeLocatedWord(lw: LocatedWord): LocatedWord {
     word: lw.word,
     orientation: vtrans(lw.orientation),
     p: vtrans(lw.p),
+    length: lw.length,
   };
 }
 
