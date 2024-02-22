@@ -10,7 +10,7 @@ function tilesOfString(x: string): Tile[] {
   return x.replace(/^\n/, '').split('\n').flatMap((line, y) => line.split('').flatMap((letter, x) => {
     if (letter == '.')
       return [];
-    return [ensureTileId({ letter, p_in_world_int: { x, y } })];
+    return [ensureTileId({ letter: { t: 'single', letter }, p_in_world_int: { x, y } })];
   }));
 }
 

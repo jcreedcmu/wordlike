@@ -6,11 +6,11 @@ const SEED = 12345678;
 
 function testState(): GameState {
   let state = mkGameState(SEED, false, SEED);
-  state = produce(state, s => { addWorldTile(s.coreState, { letter: 'A', p_in_world_int: { x: 0, y: 0 }, id: '1' }); });
-  state = produce(state, s => { addWorldTile(s.coreState, { letter: 'B', p_in_world_int: { x: 1, y: 0 }, id: '2' }); });
-  state = produce(state, s => { addHandTileEntity(s.coreState, 'C', 0, '3'); });
-  state = produce(state, s => { addHandTileEntity(s.coreState, 'D', 1, '4'); });
-  state = produce(state, s => { addHandTileEntity(s.coreState, 'E', 2, '5'); });
+  state = produce(state, s => { addWorldTile(s.coreState, { letter: { t: 'single', letter: 'A' }, p_in_world_int: { x: 0, y: 0 }, id: '1' }); });
+  state = produce(state, s => { addWorldTile(s.coreState, { letter: { t: 'single', letter: 'B' }, p_in_world_int: { x: 1, y: 0 }, id: '2' }); });
+  state = produce(state, s => { addHandTileEntity(s.coreState, { t: 'single', letter: 'C' }, 0, '3'); });
+  state = produce(state, s => { addHandTileEntity(s.coreState, { t: 'single', letter: 'D' }, 1, '4'); });
+  state = produce(state, s => { addHandTileEntity(s.coreState, { t: 'single', letter: 'E' }, 2, '5'); });
   return state;
 }
 

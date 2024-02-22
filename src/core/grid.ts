@@ -2,6 +2,7 @@ import { DEBUG } from "../util/debug";
 import { Point, Rect } from "../util/types";
 import { boundRect } from "../util/util";
 import { vtrans } from "../util/vutil";
+import { AbstractLetter, stringOfLetter } from "./letters";
 import { MainTile, Tile } from "./state";
 
 // Implements a spatially-bounded sparse map from coordinates to T
@@ -67,8 +68,8 @@ export function mkGridOf<T>(elms: { p: Point, v: T }[]): Grid<T> {
   };
 }
 
-export function mkGrid(tiles: Tile[]): Grid<string> {
-  const elems: Record<string, string> = {};
+export function mkGrid(tiles: Tile[]): Grid<AbstractLetter> {
+  const elems: Record<string, AbstractLetter> = {};
   tiles.forEach(tile => {
     elems[unparseCoord(tile.p_in_world_int)] = tile.letter;
   });
@@ -78,8 +79,8 @@ export function mkGrid(tiles: Tile[]): Grid<string> {
   };
 }
 
-export function mkGridOfMainTiles(tiles: MainTile[]): Grid<string> {
-  const elems: Record<string, string> = {};
+export function mkGridOfMainTiles(tiles: MainTile[]): Grid<AbstractLetter> {
+  const elems: Record<string, AbstractLetter> = {};
   tiles.forEach(tile => {
     elems[unparseCoord(tile.loc.p_in_world_int)] = tile.letter;
   });
@@ -113,7 +114,7 @@ export type CheckResult = {
 
 // returns true if every horizontally-consecutive sequence of at least
 // 2 characters in grid is a word according to isWord.
-export function checkGridWordsHoriz(grid: Grid<string>, isWord: (x: string) => boolean): CheckResult {
+export function checkGridWordsHoriz(grid: Grid<AbstractLetter>, isWord: (x: string) => boolean): CheckResult {
   let validWords: LocatedWord[] = [];
   let invalidWords: LocatedWord[] = [];
   let wordSoFar = '';
@@ -141,7 +142,7 @@ export function checkGridWordsHoriz(grid: Grid<string>, isWord: (x: string) => b
         endWord({ x: x - wordSoFar.length, y });
       }
       else {
-        wordSoFar += letter;
+        wordSoFar += stringOfLetter(letter);
       }
     }
     endWord({ x: grid.rect.sz.x - wordSoFar.length, y });
@@ -159,7 +160,7 @@ function transposeLocatedWord(lw: LocatedWord): LocatedWord {
 
 // returns true if every vertically-consecutive sequence of at least
 // 2 characters in grid is a word according to isWord.
-export function checkGridWordsVert(grid: Grid<string>, isWord: (x: string) => boolean): CheckResult {
+export function checkGridWordsVert(grid: Grid<AbstractLetter>, isWord: (x: string) => boolean): CheckResult {
   const { validWords, invalidWords } = checkGridWordsHoriz(transpose(grid), isWord);
   return {
     validWords: validWords.map(transposeLocatedWord),
@@ -169,7 +170,7 @@ export function checkGridWordsVert(grid: Grid<string>, isWord: (x: string) => bo
 
 // returns true if every horizontally- or vertically-consecutive
 // sequence of at least 2 tiles in grid is a word according to isWord.
-export function checkGridWords(grid: Grid<string>, isWord: (x: string) => boolean): CheckResult {
+export function checkGridWords(grid: Grid<AbstractLetter>, isWord: (x: string) => boolean): CheckResult {
   const { validWords: validHorizWords, invalidWords: invalidHorizWords } = checkGridWordsHoriz(grid, isWord);
   const { validWords: validVertWords, invalidWords: invalidVertWords } = checkGridWordsVert(grid, isWord);
   return {

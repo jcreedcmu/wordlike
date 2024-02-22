@@ -1,5 +1,6 @@
 import { getAssets } from '../core/assets';
 import { Bonus, rectOfBonus } from '../core/bonus';
+import { AbstractLetter } from '../core/letters';
 import { drawImage, fillRect } from '../util/dutil';
 import { SE2 } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
@@ -23,7 +24,7 @@ export function drawBonusPoint(d: CanvasRenderingContext2D, pan_canvas_from_worl
   d.fill();
 }
 
-export function drawRequiredLetterBonus(d: CanvasRenderingContext2D, letter: string, rect_in_canvas: Rect) {
+export function drawRequiredLetterBonus(d: CanvasRenderingContext2D, letter: AbstractLetter, rect_in_canvas: Rect) {
   drawTileLetter(d, letter, rect_in_canvas, '#aaa');
 }
 

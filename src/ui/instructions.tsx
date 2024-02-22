@@ -3,7 +3,8 @@ import { useEffect } from 'react';
 import { Dispatch } from '../core/action';
 import { PANIC_INTERVAL_MS } from '../core/clock';
 import { mkGridOf } from '../core/grid';
-import { GameState, Tile } from '../core/state';
+import { GameState, TileOptionalId } from '../core/state';
+import { AbstractLetter } from '../core/letters';
 import { addHandTileEntities, addWorldTiles, checkValid, resolveValid, withCoreState } from '../core/state-helpers';
 import { ensureTileId } from "../core/tile-id-helpers";
 import { DEBUG } from '../util/debug';
@@ -266,57 +267,58 @@ function exampleState(): GameState {
     },
   };
 
-  const tiles: Tile[] = [
-    { letter: "p", p_in_world_int: { x: 0, y: 0 } },
-    { letter: "i", p_in_world_int: { x: 2, y: 2 } },
-    { letter: "t", p_in_world_int: { x: 2, y: 0 } },
-    { letter: "o", p_in_world_int: { x: 1, y: 0 } },
-    { letter: "w", p_in_world_int: { x: 2, y: 1 } },
-    { letter: "c", p_in_world_int: { x: 9, y: -3 } },
-    { letter: "e", p_in_world_int: { x: 2, y: 4 } },
-    { letter: "q", p_in_world_int: { x: 1, y: 2 } },
-    { letter: "h", p_in_world_int: { x: 1, y: 4 } },
-    { letter: "n", p_in_world_int: { x: 6, y: 2 } },
-    { letter: "l", p_in_world_int: { x: 3, y: 4 } },
-    { letter: "s", p_in_world_int: { x: 0, y: 4 } },
-    { letter: "v", p_in_world_int: { x: 4, y: 4 } },
-    { letter: "e", p_in_world_int: { x: 5, y: 4 } },
-    { letter: "d", p_in_world_int: { x: 6, y: 4 } },
-    { letter: "l", p_in_world_int: { x: 9, y: -1 } },
-    { letter: "i", p_in_world_int: { x: 6, y: 1 } },
-    { letter: "e", p_in_world_int: { x: 6, y: 3 } },
-    { letter: "i", p_in_world_int: { x: 8, y: 4 } },
-    { letter: "m", p_in_world_int: { x: 9, y: 0 } },
-    { letter: "r", p_in_world_int: { x: 11, y: -2 } },
-    { letter: "r", p_in_world_int: { x: 6, y: 0 } },
-    { letter: "n", p_in_world_int: { x: 2, y: 3 } },
-    { letter: "a", p_in_world_int: { x: 9, y: -2 } },
-    { letter: "u", p_in_world_int: { x: 0, y: -1 } },
-    { letter: "o", p_in_world_int: { x: 7, y: -1 } },
-    { letter: "n", p_in_world_int: { x: 8, y: 5 } },
-    { letter: "e", p_in_world_int: { x: 7, y: 3 } },
-    { letter: "i", p_in_world_int: { x: 8, y: -1 } },
-    { letter: "b", p_in_world_int: { x: 6, y: -1 } },
-    { letter: "l", p_in_world_int: { x: 8, y: 3 } },
-    { letter: "t", p_in_world_int: { x: 8, y: 6 } },
-    { letter: "c", p_in_world_int: { x: 11, y: 0 } },
-    { letter: "k", p_in_world_int: { x: 12, y: 0 } },
-    { letter: "f", p_in_world_int: { x: 11, y: -4 } },
-    { letter: "r", p_in_world_int: { x: 10, y: -3 } },
-    { letter: "a", p_in_world_int: { x: 11, y: -3 } },
-    { letter: "g", p_in_world_int: { x: 12, y: -3 } },
-    { letter: "e", p_in_world_int: { x: 12, y: -2 } },
-    { letter: "e", p_in_world_int: { x: 12, y: -1 } },
-    { letter: "u", p_in_world_int: { x: 10, y: 0 } },
-    { letter: "y", p_in_world_int: { x: 13, y: 0 } },
-    { letter: "x", p_in_world_int: { x: 13, y: -2 } },
-    { letter: "j", p_in_world_int: { x: 6, y: 6 } },
-    { letter: "o", p_in_world_int: { x: 7, y: 6 } }
-  ].map(ensureTileId);
-  const handTiles = [
-    { letter: "e", index: 0 },
-    { letter: "t", index: 1 },
-    { letter: "a", index: 2 },
+  const tois: TileOptionalId[] = [
+    { letter: {t:'single', letter: "p"}, p_in_world_int: { x: 0, y: 0 } },
+    { letter: {t:'single', letter: "i"}, p_in_world_int: { x: 2, y: 2 } },
+    { letter: {t:'single', letter: "t"}, p_in_world_int: { x: 2, y: 0 } },
+    { letter: {t:'single', letter: "o"}, p_in_world_int: { x: 1, y: 0 } },
+    { letter: {t:'single', letter: "w"}, p_in_world_int: { x: 2, y: 1 } },
+    { letter: {t:'single', letter: "c"}, p_in_world_int: { x: 9, y: -3 } },
+    { letter: {t:'single', letter: "e"}, p_in_world_int: { x: 2, y: 4 } },
+    { letter: {t:'single', letter: "q"}, p_in_world_int: { x: 1, y: 2 } },
+    { letter: {t:'single', letter: "h"}, p_in_world_int: { x: 1, y: 4 } },
+    { letter: {t:'single', letter: "n"}, p_in_world_int: { x: 6, y: 2 } },
+    { letter: {t:'single', letter: "l"}, p_in_world_int: { x: 3, y: 4 } },
+    { letter: {t:'single', letter: "s"}, p_in_world_int: { x: 0, y: 4 } },
+    { letter: {t:'single', letter: "v"}, p_in_world_int: { x: 4, y: 4 } },
+    { letter: {t:'single', letter: "e"}, p_in_world_int: { x: 5, y: 4 } },
+    { letter: {t:'single', letter: "d"}, p_in_world_int: { x: 6, y: 4 } },
+    { letter: {t:'single', letter: "l"}, p_in_world_int: { x: 9, y: -1 } },
+    { letter: {t:'single', letter: "i"}, p_in_world_int: { x: 6, y: 1 } },
+    { letter: {t:'single', letter: "e"}, p_in_world_int: { x: 6, y: 3 } },
+    { letter: {t:'single', letter: "i"}, p_in_world_int: { x: 8, y: 4 } },
+    { letter: {t:'single', letter: "m"}, p_in_world_int: { x: 9, y: 0 } },
+    { letter: {t:'single', letter: "r"}, p_in_world_int: { x: 11, y: -2 } },
+    { letter: {t:'single', letter: "r"}, p_in_world_int: { x: 6, y: 0 } },
+    { letter: {t:'single', letter: "n"}, p_in_world_int: { x: 2, y: 3 } },
+    { letter: {t:'single', letter: "a"}, p_in_world_int: { x: 9, y: -2 } },
+    { letter: {t:'single', letter: "u"}, p_in_world_int: { x: 0, y: -1 } },
+    { letter: {t:'single', letter: "o"}, p_in_world_int: { x: 7, y: -1 } },
+    { letter: {t:'single', letter: "n"}, p_in_world_int: { x: 8, y: 5 } },
+    { letter: {t:'single', letter: "e"}, p_in_world_int: { x: 7, y: 3 } },
+    { letter: {t:'single', letter: "i"}, p_in_world_int: { x: 8, y: -1 } },
+    { letter: {t:'single', letter: "b"}, p_in_world_int: { x: 6, y: -1 } },
+    { letter: {t:'single', letter: "l"}, p_in_world_int: { x: 8, y: 3 } },
+    { letter: {t:'single', letter: "t"}, p_in_world_int: { x: 8, y: 6 } },
+    { letter: {t:'single', letter: "c"}, p_in_world_int: { x: 11, y: 0 } },
+    { letter: {t:'single', letter: "k"}, p_in_world_int: { x: 12, y: 0 } },
+    { letter: {t:'single', letter: "f"}, p_in_world_int: { x: 11, y: -4 } },
+    { letter: {t:'single', letter: "r"}, p_in_world_int: { x: 10, y: -3 } },
+    { letter: {t:'single', letter: "a"}, p_in_world_int: { x: 11, y: -3 } },
+    { letter: {t:'single', letter: "g"}, p_in_world_int: { x: 12, y: -3 } },
+    { letter: {t:'single', letter: "e"}, p_in_world_int: { x: 12, y: -2 } },
+    { letter: {t:'single', letter: "e"}, p_in_world_int: { x: 12, y: -1 } },
+    { letter: {t:'single', letter: "u"}, p_in_world_int: { x: 10, y: 0 } },
+    { letter: {t:'single', letter: "y"}, p_in_world_int: { x: 13, y: 0 } },
+    { letter: {t:'single', letter: "x"}, p_in_world_int: { x: 13, y: -2 } },
+    { letter: {t:'single', letter: "j"}, p_in_world_int: { x: 6, y: 6 } },
+    { letter: {t:'single', letter: "o"}, p_in_world_int: { x: 7, y: 6 } }
+  ];
+  const tiles = tois.map(ensureTileId);
+  const handTiles: {letter:AbstractLetter, index:number}[] = [
+    { letter: {t:'single', letter: "e"}, index: 0 },
+    { letter: {t:'single', letter: "t"}, index: 1 },
+    { letter: {t:'single', letter: "a"}, index: 2 },
   ];
   const almost = withCoreState(state, cs => resolveValid(checkValid(addHandTileEntities(addWorldTiles(cs, tiles), handTiles)), new Set()));
   return produce(almost, s => {

@@ -157,8 +157,14 @@ function towards_origin(p: Point): Orientation {
 }
 
 export function addMob(state: CoreState, newMob: MobState): CoreState {
+  const id = freshId();
   return produce(state, s => {
-    const id = freshId();
+    s.mobsState.mobs[id] = newMob;
+  })
+}
+
+export function addMobWithId(state: CoreState, newMob: MobState, id: string): CoreState {
+  return produce(state, s => {
     s.mobsState.mobs[id] = newMob;
   })
 }

@@ -7,6 +7,7 @@ import { getBonusFromLayer } from "./bonus-helpers";
 import { CacheUpdate, CoreState, GameState, GenMoveTile, HandTile, Location, MainTile, MobileEntity, RenderableMobile, TileEntity, TileOptionalId } from "./state";
 import { addId, ensureId, freshId } from "./tile-id-helpers";
 import { Resource } from "./tools";
+import { AbstractLetter } from "./letters";
 
 export type TileId = string;
 
@@ -96,7 +97,7 @@ export function addResourceMobile(state: CoreState, p_in_world_int: Point, res: 
   });
 }
 
-export function addHandTileEntity(state: Draft<CoreState>, letter: string, index: number, forceId?: string): TileEntity {
+export function addHandTileEntity(state: Draft<CoreState>, letter: AbstractLetter, index: number, forceId?: string): TileEntity {
   const newTile: TileEntity = addId({ letter, loc: { t: 'hand', index } }, forceId);
   state.mobile_entities[newTile.id] = newTile;
   return newTile;

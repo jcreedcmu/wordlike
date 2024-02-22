@@ -8,8 +8,8 @@ const SEED = 12345678;
 
 function twoTileState(): GameState {
   let state = mkGameState(SEED, false, SEED);
-  state = produce(state, s => addWorldTile(s.coreState, { letter: 'A', p_in_world_int: { x: 0, y: 0 }, id: '1' }));
-  state = produce(state, s => addWorldTile(s.coreState, { letter: 'B', p_in_world_int: { x: 1, y: 0 }, id: '2' }));
+  state = produce(state, s => addWorldTile(s.coreState, { letter: { t: 'single', letter: 'A' }, p_in_world_int: { x: 0, y: 0 }, id: '1' }));
+  state = produce(state, s => addWorldTile(s.coreState, { letter: { t: 'single', letter: 'B' }, p_in_world_int: { x: 1, y: 0 }, id: '2' }));
   return state;
 }
 
@@ -20,7 +20,7 @@ describe('addWorldTile', () => {
       '1': {
         t: 'tile',
         id: '1',
-        letter: 'A',
+        letter: { t: 'single', letter: 'A' },
         loc: {
           t: 'world',
           p_in_world_int: {
@@ -32,7 +32,7 @@ describe('addWorldTile', () => {
       '2': {
         t: 'tile',
         id: '2',
-        letter: 'B',
+        letter: { t: 'single', letter: 'B' },
         loc: {
           t: 'world',
           p_in_world_int: {
@@ -47,8 +47,8 @@ describe('addWorldTile', () => {
 
   test('should generate ids correctly', () => {
     let state = mkGameState(SEED, false, SEED);
-    state = produce(state, s => addWorldTile(s.coreState, { letter: 'A', p_in_world_int: { x: 0, y: 0 } }));
-    state = produce(state, s => addWorldTile(s.coreState, { letter: 'B', p_in_world_int: { x: 1, y: 0 } }));
+    state = produce(state, s => addWorldTile(s.coreState, { letter: { t: 'single', letter: 'A' }, p_in_world_int: { x: 0, y: 0 } }));
+    state = produce(state, s => addWorldTile(s.coreState, { letter: { t: 'single', letter: 'B' }, p_in_world_int: { x: 1, y: 0 } }));
     expect(Object.keys(state.coreState.mobile_entities).length).toBe(2);
   });
 });
@@ -61,7 +61,7 @@ describe('moveTile', () => {
       '1': {
         t: 'tile',
         id: '1',
-        letter: 'A',
+        letter: { t: 'single', letter: 'A' },
         loc: {
           t: 'world',
           p_in_world_int: {
@@ -73,7 +73,7 @@ describe('moveTile', () => {
       '2': {
         t: 'tile',
         id: '2',
-        letter: 'B',
+        letter: { t: 'single', letter: 'B' },
         loc: {
           t: 'world',
           p_in_world_int: {

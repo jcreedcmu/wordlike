@@ -11,6 +11,7 @@ import { PanicData, PauseData } from './clock';
 import { Energies, initialEnergies } from './distribution';
 import { Grid, LocatedWord, mkGridOf } from './grid';
 import { Overlay, mkOverlay, setOverlay } from './layer';
+import { AbstractLetter } from './letters';
 import { MobState } from './mobs';
 import { SelectionOperation, SelectionState } from './selection';
 import { ResbarResource, Resource, Tool } from './tools';
@@ -75,13 +76,13 @@ export type State = {
 export type Tile = {
   id: string,
   p_in_world_int: Point,
-  letter: string,
+  letter: AbstractLetter,
 }
 
 export type TileOptionalId = {
   id?: string,
   p_in_world_int: Point,
-  letter: string,
+  letter: AbstractLetter,
 }
 
 export const HAND_TILE_LIMIT = 10;
@@ -99,7 +100,7 @@ export type TileEntity = {
   t: 'tile',
   id: string,
   loc: Location,
-  letter: string,
+  letter: AbstractLetter,
 };
 
 export type ResourceEntity = {
@@ -117,13 +118,13 @@ export type MobileEntity =
 // This should contain enough information to render a mobile assuming we
 // already know its location.
 export type RenderableMobile =
-  | { t: 'tile', letter: string }
+  | { t: 'tile', letter: AbstractLetter }
   | { t: 'resource', res: Resource }
   ;
 
 export type PreTileEntity = {
   loc: Location,
-  letter: string,
+  letter: AbstractLetter,
 };
 
 export type MainTile = TileEntity & { loc: MainLoc };
@@ -132,7 +133,7 @@ export type HandTile = TileEntity & { loc: HandLoc };
 export type TileEntityOptionalId = {
   id: string | undefined,
   loc: Location,
-  letter: string,
+  letter: AbstractLetter,
 };
 
 export type ScoreState = {

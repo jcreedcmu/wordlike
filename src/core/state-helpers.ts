@@ -24,6 +24,7 @@ import { addHandTileEntity, addWorldTile, get_hand_tiles, get_main_tiles as get_
 import { getCurrentTool } from "./tools";
 import { updateFogOfWar } from "./fog-of-war";
 import { WIN_SCORE, canWinFromState, shouldStartPanicBar } from "./winState";
+import { AbstractLetter } from "./letters";
 
 export const PLACED_MOBILE_SEEN_CELLS_RADIUS = 2.5;
 
@@ -35,7 +36,7 @@ export function addWorldTiles(state: CoreState, tiles: Tile[]): CoreState {
   });
 }
 
-export function addHandTileEntities(state: CoreState, tiles: { letter: string, index: number }[]): CoreState {
+export function addHandTileEntities(state: CoreState, tiles: { letter: AbstractLetter, index: number }[]): CoreState {
   return produce(state, s => {
     tiles.forEach(tile => {
       addHandTileEntity(s, tile.letter, tile.index);
@@ -51,12 +52,12 @@ export function drawOfState(state: CoreState, drawForce?: DrawForce): CoreState 
   return checkValid(produce(state, s => {
     s.seed = seed;
     s.energies = energies;
-    addHandTileEntity(s, letter, handLength);
+    addHandTileEntity(s, { t: 'single', letter }, handLength);
   }));
 }
 
 // doesn't call checkValid!
-export function drawSpecific(state: CoreState, letter: string): { cs: CoreState, newId: string } | undefined {
+export function drawSpecific(state: CoreState, letter: AbstractLetter): { cs: CoreState, newId: string } | undefined {
   const handLength = get_hand_tiles(state).length;
   if (handLength >= HAND_TILE_LIMIT)
     return undefined;

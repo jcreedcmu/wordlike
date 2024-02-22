@@ -6,6 +6,7 @@ import { Point } from "../util/types";
 import { vadd, vinv, vm, vm2, vm3, vmul, vsub } from "../util/vutil";
 import { Bonus, bonusGenerator } from "./bonus";
 import { Overlay, getOverlay, setOverlay } from "./layer";
+import { byteOfLetter } from "./letters";
 import { CoreState, RenderableMobile } from "./state";
 
 export const WORLD_CHUNK_SIZE = { x: 8, y: 8 };
@@ -83,7 +84,7 @@ function byteOfSpriteLoc(p: Point): number {
 // world.frag
 function byteOfMobile(m: RenderableMobile): number {
   switch (m.t) {
-    case 'tile': return 128 + m.letter.charCodeAt(0) - 97;
+    case 'tile': return byteOfLetter(m.letter);
     case 'resource': return byteOfSpriteLoc(spriteLocOfRes(m.res));
   }
 }

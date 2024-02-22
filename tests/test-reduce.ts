@@ -10,9 +10,9 @@ const SEED = 12345678;
 
 function threeTileState(): GameState {
   let state = mkGameState(SEED, false, SEED);
-  state = produce(state, s => addWorldTile(s.coreState, { letter: 'A', p_in_world_int: { x: 0, y: 0 }, id: '1' }));
-  state = produce(state, s => addWorldTile(s.coreState, { letter: 'B', p_in_world_int: { x: 1, y: 0 }, id: '2' }));
-  state = produce(state, s => addWorldTile(s.coreState, { letter: 'C', p_in_world_int: { x: 2, y: 0 }, id: '3' }));
+  state = produce(state, s => addWorldTile(s.coreState, { letter: { t: 'single', letter: 'A' }, p_in_world_int: { x: 0, y: 0 }, id: '1' }));
+  state = produce(state, s => addWorldTile(s.coreState, { letter: { t: 'single', letter: 'B' }, p_in_world_int: { x: 1, y: 0 }, id: '2' }));
+  state = produce(state, s => addWorldTile(s.coreState, { letter: { t: 'single', letter: 'C' }, p_in_world_int: { x: 2, y: 0 }, id: '3' }));
   return state;
 }
 

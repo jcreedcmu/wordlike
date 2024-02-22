@@ -1,6 +1,7 @@
 import { getAssets } from "../core/assets";
 import { Chunk, WORLD_CHUNK_SIZE } from "../core/chunk";
 import { Overlay } from "../core/layer";
+import { indexOfLetter } from "../core/letters";
 import { RenderableMobile } from "../core/state";
 import { BufferAttr, attributeCreate, bufferSetFloats, shaderProgram } from "../util/gl-util";
 import { SE2, compose, inverse, scale } from "../util/se2";
@@ -234,7 +235,7 @@ export function drawOneMobile(env: GlEnv, m: RenderableMobile, canvas_from_tile:
     ]);
 
     const u_tileLetter = gl.getUniformLocation(prog, 'u_tileLetter');
-    gl.uniform1i(u_tileLetter, m.letter.charCodeAt(0) - 97);
+    gl.uniform1i(u_tileLetter, indexOfLetter(m.letter));
 
     const u_fontTexture = gl.getUniformLocation(prog, 'u_fontTexture');
     gl.uniform1i(u_fontTexture, FONT_TEXTURE_UNIT);

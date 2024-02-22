@@ -6,6 +6,7 @@ import { lerp, point_hash } from '../util/util';
 import { vadd, vdiv, vint, vm, vsnorm, vsub } from '../util/vutil';
 import { deterministicLetterSample } from './distribution';
 import { Layer, mkLayer } from './layer';
+import { AbstractLetter } from './letters';
 import { incrementScore } from './scoring';
 import { CoreState, MoveMobileNoId, Scoring } from './state';
 import { mkActiveWordBonus } from './word-bonus';
@@ -14,7 +15,7 @@ export type ScoringBonus =
   | { t: 'tree' }
   | { t: 'mountain' }
   | { t: 'bomb' }
-  | { t: 'required', letter: string }
+  | { t: 'required', letter: AbstractLetter }
   | { t: 'consonant' }
   | { t: 'vowel' }
   | { t: 'copy' }
@@ -83,7 +84,7 @@ export function bonusGenerator(p: Point, seed: number): Bonus {
   if (vsnorm(p) > 100 && perlinterpolate(blockOrigin, vsub(dp, blockOrigin), seed) < 0.5) {
     const ph = point_hash(p, seed + 1000);
     if (ph < 0.5) {
-      return { t: 'required', letter: deterministicLetterSample(ph * 1e9) };
+      return { t: 'required', letter: { t: 'single', letter: deterministicLetterSample(ph * 1e9) } };
     }
     else if (ph < 0.53) {
       return { t: 'copy' };

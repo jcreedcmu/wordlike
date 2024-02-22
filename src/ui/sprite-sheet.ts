@@ -1,5 +1,6 @@
 import { Bonus } from "../core/bonus";
 import { ChunkValue } from "../core/chunk";
+import { NUM_LETTERS, indexOfLetter, letterOfIndex, spriteLocOfLetter } from "../core/letters";
 import { MobState } from "../core/mobs";
 import { LARGE_SPRITE_PIXEL_WIDTH, ResbarResource, SPRITE_PIXEL_WIDTH, Tool, Resource } from "../core/tools";
 import { Buffer, buffer, fillRect } from "../util/dutil";
@@ -29,11 +30,7 @@ export function spriteLocOfChunkValue(cval: ChunkValue) {
       const mobile = cval.mobile;
       switch (mobile.t) {
         case 'tile':
-          const letterIndex = mobile.letter.charCodeAt(0) - 97;
-          return {
-            x: 14 + Math.floor(letterIndex / SPRITE_SHEET_SIZE.y),
-            y: letterIndex % SPRITE_SHEET_SIZE.y,
-          };
+          return spriteLocOfLetter(mobile.letter);
         case 'resource':
           return spriteLocOfRes(mobile.res);
       }
@@ -46,7 +43,7 @@ export function spriteLocOfBonus(bonus: Bonus): Point {
   switch (bonus.t) {
     case 'tree': return { x: 1, y: 1 };
     case 'bomb': return spriteLocOfTool('bomb');
-    case 'required': return spriteLocOfRequiredBonus(bonus.letter.charCodeAt(0) - 97);
+    case 'required': return spriteLocOfRequiredBonus(indexOfLetter(bonus.letter));
     case 'consonant': return spriteLocOfTool('consonant');
     case 'vowel': return spriteLocOfTool('vowel');
     case 'copy': return spriteLocOfTool('copy');
@@ -123,10 +120,10 @@ export function prerenderSpriteSheet(img: HTMLImageElement): Buffer {
   const buf = buffer({ x: img.width, y: img.height });
   buf.d.drawImage(img, 0, 0);
 
-  for (let i = 0; i < 26; i++) {
+  for (let i = 0; i < NUM_LETTERS; i++) {
     const rect_in_canvas = apply_to_rect(scale(vdiag(SPRITE_PIXEL_WIDTH)), { p: spriteLocOfRequiredBonus(i), sz: { x: 1, y: 1 } });
     fillRect(buf.d, rect_in_canvas, 'white');
-    drawRequiredLetterBonus(buf.d, String.fromCharCode(65 + i), rect_in_canvas);
+    drawRequiredLetterBonus(buf.d, letterOfIndex(i), rect_in_canvas);
   }
   return buf;
 }
