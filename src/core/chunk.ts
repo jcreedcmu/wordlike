@@ -151,8 +151,27 @@ export type ActiveChunkInfo = {
   min_p_in_chunk: Point,
 }
 
-// returns
-export function activeChunks(canvas_from_world: SE2): ActiveChunkInfo {
+// Returns a collection of chunks that is as least as big as the
+// minimal set needed to correctly render what's on the screen right
+// now.
+//
+// canvas_from_world is the transformation from world coordinates to
+// canvas coordinates. We assume world_bnds_in_canvas is the rect that
+// describes what is actually potentially visible in the world
+// display.
+
+// The number `margin` is the amount of cells we want to expand our
+// view by. This is needed because the data a cell's rendering depends
+// on includes adjacent cells. (both because of land/water
+// transitions, and because of fogged/visible transitions)
+
+// To put it another way:
+//
+// Every fragment in the canvas is something I need to render. I can
+// map this fragment point to a world point p. To render point p, I
+// need to sample the bonus-cell value at p + (±0.5, ±0.5). To do that
+// I need to know about the bonus data at ⌊p + (±0.5, ±0.5)⌋.
+export function activeChunks(canvas_from_world: SE2, margin: number = 1): ActiveChunkInfo {
   const chunk_from_canvas = compose(scale(vinv(WORLD_CHUNK_SIZE)), inverse(canvas_from_world));
   const top_left_in_canvas = world_bds_in_canvas.p;
   const bot_right_in_canvas = vadd(world_bds_in_canvas.p, world_bds_in_canvas.sz);
@@ -160,8 +179,8 @@ export function activeChunks(canvas_from_world: SE2): ActiveChunkInfo {
   const bot_right_in_chunk = vm(apply(chunk_from_canvas, bot_right_in_canvas), Math.floor);
   const chunks: Point[] = [];
   let min_p_in_chunk: Point = { x: Infinity, y: Infinity };
-  for (let x = top_left_in_chunk.x; x <= bot_right_in_chunk.x; x++) {
-    for (let y = top_left_in_chunk.y; y <= bot_right_in_chunk.y; y++) {
+  for (let x = top_left_in_chunk.x - margin; x <= bot_right_in_chunk.x + margin; x++) {
+    for (let y = top_left_in_chunk.y - margin; y <= bot_right_in_chunk.y + margin; y++) {
       chunks.push({ x, y });
       min_p_in_chunk.x = Math.min(x, min_p_in_chunk.x);
       min_p_in_chunk.y = Math.min(y, min_p_in_chunk.y);

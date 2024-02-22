@@ -103,14 +103,6 @@ function renderPrepass(env: GlEnv, _state: CoreState, canvas_from_world: SE2): A
   gl.clearColor(0.03, 0.03, 0.05, 0.05); // predivided by DEBUG_COLOR_SCALE
   gl.clear(gl.COLOR_BUFFER_BIT);
 
-  // XXX I think I want to have activeChunks return just a bit
-  // larger of a region than it currently is.
-  //
-  // My reasoning is this. Every fragment in the canvas is something
-  // I need to render. I can map this fragment point to a world
-  // point p. To render point p, I need to sample the bonus-cell
-  // value at p + (±0.5, ±0.5). To do that I need to know about the
-  // bonus data at ⌊p + (±0.5, ±0.5)⌋.
   const aci = activeChunks(canvas_from_world);
   gl.activeTexture(gl.TEXTURE0 + PREPASS_TEXTURE_UNIT);
 
