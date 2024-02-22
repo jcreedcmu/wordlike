@@ -53,7 +53,8 @@ export function App(_props: {}): JSX.Element {
 
       return <div style={{ textAlign: 'center', fontSize: 48, fontFamily: 'sans-serif' }}>
         <div dangerouslySetInnerHTML={{ __html: githubLink }}></div>
-        Wordlike<p />
+        <img src="assets/title.png" width="50%"/><br/>
+
         <button style={style} onClick={() => dispatch({ t: 'newGame' })}>Start Game</button>
         <p /><p />
         <button style={style} onClick={() => dispatch({ t: 'newGame', creative: true })}>Start Game (Sandbox Mode)</button>
