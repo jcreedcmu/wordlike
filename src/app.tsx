@@ -55,10 +55,10 @@ export function App(_props: {}): JSX.Element {
       return  (
   <span>
     <div dangerouslySetInnerHTML={{ __html: githubLink }}></div>
-    <div class="container">
-        <img src="assets/title.png" class="hero"/><br/>
+    <div className="container">
+        <img src="assets/title.png" className="hero"/><br/>
     </div>
-    <div class="buttons-container">
+    <div className="buttons-container">
       <div style={{ textAlign: 'center', fontSize: 48, fontFamily: 'sans-serif' }}>
         <button style={style} onClick={() => dispatch({ t: 'newGame' })}>Start Game</button>
         <p /><p />
