@@ -108,6 +108,7 @@ export type ResourceEntity = {
   id: string,
   loc: Location,
   res: Resource,
+  durability: number, // XXX: should this be more tied to the particular resource?
 };
 
 export type MobileEntity =

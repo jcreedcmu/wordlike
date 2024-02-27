@@ -89,6 +89,7 @@ export function addResourceMobile(state: CoreState, p_in_world_int: Point, res: 
     t: 'resource',
     id: freshId(),
     loc: { t: 'world', p_in_world_int },
+    durability: 0,
     res,
   });
   return produce(state, s => {
