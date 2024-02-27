@@ -22,7 +22,7 @@ import { resolveLandResult } from "./landing-resolve";
 import { landMoveOnState } from "./landing-result";
 import { mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
 import { AbstractLetter } from "./letters";
-import { addRandomMob } from "./mobs";
+import { addRandomMob } from "./mob-helpers";
 import { PROGRESS_ANIMATION_POINTS, getHighWaterMark, getScore, setHighWaterMark } from "./scoring";
 import { CoreState, GameState } from "./state";
 import { HAND_TILE_LIMIT, MainLoc, MobileId, MouseState, Tile, TileEntity, WordBonusState } from './state-types';
