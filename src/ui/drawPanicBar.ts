@@ -4,7 +4,7 @@ import { SE1 } from "../util/se1";
 import { Spline, lerpSpline } from "../util/spline";
 import { Rect } from "../util/types";
 import { vadd, vint, vscale, vsub } from "../util/vutil";
-import { rectOfPanic_in_canvas } from "./widget-helpers";
+import { rectOfPanic_in_canvas } from "../layout/widget-helpers";
 import { hand_bds_in_canvas } from "./widget-layout";
 
 const flashColor: RgbColor = [255, 0, 0];

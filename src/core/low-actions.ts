@@ -1,6 +1,6 @@
-import { canvas_from_drag_mobile, pan_canvas_from_canvas_of_mouse_state } from '../ui/view-helpers';
+import { canvas_from_drag_mobile, pan_canvas_from_canvas_of_mouse_state } from '../layout/view-helpers';
 import { TOOLBAR_WIDTH } from "../ui/widget-constants";
-import { getWidgetPoint } from '../ui/widget-helpers';
+import { getWidgetPoint } from '../layout/widget-helpers';
 import { DEBUG } from '../util/debug';
 import { debugTiles } from "../util/debugTiles";
 import { produce } from '../util/produce';

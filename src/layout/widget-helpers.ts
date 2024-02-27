@@ -5,8 +5,8 @@ import { SE2, apply, inverse } from "../util/se2";
 import { Point, Rect } from "../util/types";
 import { lerp, pointInRect } from "../util/util";
 import { vint } from "../util/vutil";
-import { DEFAULT_TILE_SCALE, PANIC_THICK, TOOLBAR_WIDTH, canvas_bds_in_canvas, resbar_bds_in_canvas, toolbar_bds_in_canvas } from "./widget-constants";
-import { hand_bds_in_canvas, hand_tile_bds_in_canvas, panic_bds_in_canvas, rects } from "./widget-layout";
+import { DEFAULT_TILE_SCALE, PANIC_THICK, TOOLBAR_WIDTH, canvas_bds_in_canvas, resbar_bds_in_canvas, toolbar_bds_in_canvas } from "../ui/widget-constants";
+import { hand_bds_in_canvas, hand_tile_bds_in_canvas, panic_bds_in_canvas, rects } from "../ui/widget-layout";
 
 export function rectOfPanic_in_canvas(panic_fraction: number): Rect {
   return {

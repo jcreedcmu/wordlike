@@ -1,5 +1,5 @@
-import { canvas_from_drag_mobile } from "../ui/view-helpers";
-import { getWidgetPoint } from "../ui/widget-helpers";
+import { canvas_from_drag_mobile } from "../layout/view-helpers";
+import { getWidgetPoint } from "../layout/widget-helpers";
 import { DEBUG, logger } from "../util/debug";
 import { produce } from "../util/produce";
 import * as se1 from '../util/se1';

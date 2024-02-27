@@ -9,7 +9,7 @@ import { glInitialize, renderGlPane } from './gl-render';
 import { rawPaint } from './render';
 import { resizeView } from './ui-helpers';
 import { CanvasInfo, useCanvas, useNonreactiveCanvasGl } from './use-canvas';
-import { drawBubble } from './view-helpers';
+import { drawBubble } from './bubble-helpers';
 import { exampleState } from '../core/exampleState';
 
 export const NUM_PAGES = 2;
