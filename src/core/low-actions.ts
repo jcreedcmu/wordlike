@@ -21,7 +21,7 @@ import { mkOverlayFrom } from './layer';
 import { addRandomMob, advanceMob, mobsMapVal } from './mob-helpers';
 import { reduceKey } from './reduceKey';
 import { incrementScore, setScore } from './scoring';
-import { deselect, resolveSelection, setSelected } from './selection';
+import { deselect, resolveSelection, setSelected } from "./selection-operations";
 import { CoreState, GameState, SceneState } from './state';
 import { addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isMobilePinned, needsRefresh, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
 import { Location, MobileId, MobsState, MoveMobile } from './state-types';

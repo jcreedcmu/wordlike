@@ -6,7 +6,7 @@ import { mkExplosionAnimation } from './animations';
 import { Animation } from "./animation-types";
 import { getBonusFromLayer, updateBonusLayer } from "./bonus-helpers";
 import { KillIntent, killableBonus } from './intent';
-import { deselect } from "./selection";
+import { deselect } from "./selection-operations";
 import { CoreState } from "./state";
 import { Location, MainTile } from './state-types';
 import { checkValid } from './state-helpers';
