@@ -21,7 +21,7 @@ test:
 	npm test
 
 count:
-	ag -g 'c$$|cc$$|hh$$|tsx?$$|frag$$|vert$$' --ignore='tests' | xargs wc -l
+	ag -g 'c$$|cc$$|hh$$|js$$|tsx?$$|frag$$|vert$$' --ignore='tests' | xargs wc -l
 
 # deploy to github pages
 deploy:
