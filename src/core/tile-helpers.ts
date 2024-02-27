@@ -22,11 +22,6 @@ export function getMobileId(state: CoreState, id: MobileId): MobileEntity {
   return state.mobile_entities[id];
 }
 
-// FIXME(mobile) - this shouldn't have to exist
-export function getMobileByKey(state: CoreState, key: string): MobileEntity {
-  return state.mobile_entities[key];
-}
-
 export function getMobileLoc(state: CoreState, id: MobileId): Location {
   return state.mobile_entities[id].loc;
 }
@@ -48,23 +43,27 @@ export function get_mobiles(state: CoreState): MobileEntity[] {
   return Object.values(state.mobile_entities);
 }
 
+export function mapMobiles<T>(state: CoreState, f: (m: MobileEntity) => T): T[] {
+  return Object.keys(state.mobile_entities).map(k => f(state.mobile_entities[k]));
+}
+
+export function flatMapMobiles<T>(state: CoreState, f: (m: MobileEntity) => T[]): T[] {
+  return Object.keys(state.mobile_entities).flatMap(k => f(state.mobile_entities[k]));
+}
+
 export function get_main_tiles(state: CoreState): MainTile[] {
-  const keys: string[] = Object.keys(state.mobile_entities);
-  function mainTilesOfString(k: string): MainTile[] {
-    const mobile = getMobileByKey(state, k);
+  return flatMapMobiles(state, mobile => {
     const loc = mobile.loc;
     if (loc.t == 'world' && mobile.t == 'tile') {
       return [{ ...mobile, loc }];
     }
     else
       return [];
-  }
-  return keys.flatMap(mainTilesOfString);
+  });
 }
 
 export function get_hand_tiles(state: CoreState): HandTile[] {
-  return Object.keys(state.mobile_entities).flatMap(k => {
-    const mobile = getMobileByKey(state, k);
+  return flatMapMobiles(state, mobile => {
     const loc = mobile.loc;
     if (loc.t == 'hand' && mobile.t == 'tile')
       return [{ ...mobile, loc }];
