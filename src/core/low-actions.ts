@@ -13,7 +13,7 @@ import { vequal, vint, vm, vscale, vsub } from '../util/vutil';
 import { GameAction, GameLowAction, LowAction } from './action';
 import { CacheUpdate } from './cache-types';
 import { getPanicFraction, now_in_game } from './clock';
-import { getIntentOfMouseDown, reduceIntent } from './intent';
+import { getIntentOfMouseDown, reduceIntent, vacuous_down } from './intent';
 import { tryKillTileOfState } from './kill-helpers';
 import { landingMoveIdOfMoveMobile, requireNoCollision, resolveLandResult } from './landing-resolve';
 import { landMoveOnState, landMoveOnStateForMobiles, landingMoveOfMoveMobile } from './landing-result';
@@ -47,10 +47,6 @@ export function reduceZoom(state: GameState, p_in_canvas: Point, delta: number):
     s.coreState.canvas_from_world = canvas_from_world;
   });
 
-}
-
-export function vacuous_down(state: GameState, wp: WidgetPoint): GameState {
-  return produce(state, s => { s.mouseState = { t: 'down', p_in_canvas: wp.p_in_canvas }; });
 }
 
 function reduceMouseDownInWorld(state: GameState, wp: WidgetPoint & { t: 'world' }, button: number, mods: Set<string>): GameLowAction {

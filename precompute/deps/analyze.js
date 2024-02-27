@@ -45,11 +45,19 @@ function getDepth(x, path) {
   return cache[x];
 }
 
+let icount = 0;
+Object.keys(seen).forEach(file => {
+  const depth = getDepth(file);
+  if (depth == Infinity) {
+    icount++;
+  }
+});
+
+console.log(`${cycles.length} cycles found, ${icount} infinities found`);
+cycles.forEach(c => console.log('---\n'+ c));
+
 
 Object.keys(seen).forEach(file => {
   const depth = getDepth(file);
   console.log(`${file}: ${depth}`);
 });
-
-console.log(`${cycles.length} cycles found`);
-cycles.forEach(c => console.log('---\n'+ c));

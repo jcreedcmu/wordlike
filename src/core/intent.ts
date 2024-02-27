@@ -8,7 +8,6 @@ import { CacheUpdate } from './cache-types';
 import { updateFogOfWarAtPoint } from './fog-of-war';
 import { tryKillTileOfState } from './kill-helpers';
 import { getOverlay } from './layer';
-import { vacuous_down } from './low-actions';
 import { deselect, selectionOperationOfMods } from './selection';
 import { SelectionOperation } from './selection-operation';
 import { GameState } from './state';
@@ -214,4 +213,8 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
       return produce(state, s => { s.coreState = cs; });
     }
   }
+}
+
+export function vacuous_down(state: GameState, wp: WidgetPoint): GameState {
+  return produce(state, s => { s.mouseState = { t: 'down', p_in_canvas: wp.p_in_canvas }; });
 }
