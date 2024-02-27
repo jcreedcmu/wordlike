@@ -9,7 +9,7 @@ import { Energies } from './distribution';
 import { Grid, LocatedWord } from './grid';
 import { Overlay } from './layer';
 import { SelectionState } from './selection';
-import { Tool } from './tools';
+import { Tool } from "./tool-types";
 import { WinState } from './winState';
 
 // state such that, if it updates, should induce redraw of Canvas2d content

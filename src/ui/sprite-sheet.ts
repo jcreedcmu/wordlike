@@ -2,7 +2,7 @@ import { Bonus } from "../core/bonus";
 import { ChunkValue } from "../core/chunk";
 import { AbstractLetter, NUM_LETTERS, indexOfLetter, letterOfIndex } from "../core/letters";
 import { MobState } from "../core/mobs";
-import { LARGE_SPRITE_PIXEL_WIDTH, ResbarResource, Resource, SPRITE_PIXEL_WIDTH, Tool } from "../core/tools";
+import { LARGE_SPRITE_PIXEL_WIDTH, ResbarResource, Resource, SPRITE_PIXEL_WIDTH, Tool } from "../core/tool-types";
 import { Buffer, buffer, fillRect } from "../util/dutil";
 import { scale } from "../util/se2";
 import { apply_to_rect } from "../util/se2-extra";

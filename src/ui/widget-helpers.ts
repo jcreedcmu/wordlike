@@ -1,12 +1,13 @@
+import { DragWidgetPoint, WidgetPoint } from "../core/core-ui-types";
 import { CoreState } from "../core/state";
 import { Location } from '../core/state-types';
-import { ResbarResource, Tool, getCurrentResources, getCurrentTools } from "../core/tools";
+import { getCurrentResources, getCurrentTools } from "../core/tools";
 import { SE2, apply, inverse } from "../util/se2";
 import { Point, Rect } from "../util/types";
 import { lerp, pointInRect } from "../util/util";
 import { vint } from "../util/vutil";
-import { DEFAULT_TILE_SCALE, PANIC_THICK, canvas_bds_in_canvas, TOOLBAR_WIDTH, toolbar_bds_in_canvas, resbar_bds_in_canvas } from "./widget-constants";
-import { panic_bds_in_canvas, rects, hand_tile_bds_in_canvas, hand_bds_in_canvas } from "./widget-layout";
+import { DEFAULT_TILE_SCALE, PANIC_THICK, TOOLBAR_WIDTH, canvas_bds_in_canvas, resbar_bds_in_canvas, toolbar_bds_in_canvas } from "./widget-constants";
+import { hand_bds_in_canvas, hand_tile_bds_in_canvas, panic_bds_in_canvas, rects } from "./widget-layout";
 
 export function rectOfPanic_in_canvas(panic_fraction: number): Rect {
   return {
@@ -60,34 +61,6 @@ export function canvas_from_resbar(): SE2 {
     translate: resbar_bds_in_canvas.p,
   };
 }
-
-// The crucial thing about DragWidgetPoint is that it must define the
-// field p_in_local. Semantically it is a potentially valid drag
-// target.
-export type DragWidgetPoint =
-  | { t: 'world', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2 }
-
-  | {
-    t: 'hand',
-    p_in_local: Point,
-    p_in_canvas: Point,
-    local_from_canvas: SE2,
-    // When indexValid is false, it means the point was not precisely over the area where tiles go.
-    // Dropping tiles may prefer to tolerate this being false
-    indexValid: boolean,
-    // Effective index into hand tiles. The number *is* allowed to be
-    // negative or beyond the last tile currently in the hand, so
-    // callers should do their own clamping if necessary
-    index: number
-  }
-
-export type WidgetPoint =
-  | DragWidgetPoint
-  | { t: 'toolbar', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2, tool: Tool }
-  | { t: 'resbar', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2, res: ResbarResource }
-  | { t: 'pauseButton', p_in_canvas: Point }
-  | { t: 'nowhere', p_in_canvas: Point } // outside canvas bounds
-  ;
 
 export function getWidgetPoint(state: CoreState, p_in_canvas: Point): WidgetPoint {
   const toolbar_bds = effective_toolbar_bds_in_canvas(state);

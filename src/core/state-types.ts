@@ -2,7 +2,7 @@ import { Point } from '../util/types';
 import { AbstractLetter } from './letters';
 import { MobState } from './mobs';
 import { SelectionOperation } from './selection-operation';
-import { ResbarResource, Resource } from './tools';
+import { ResbarResource, Resource } from "./tool-types";
 
 export type MobileId = number;
 

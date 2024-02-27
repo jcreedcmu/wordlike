@@ -1,36 +1,8 @@
+import { Tool, tools, ResbarResource, resbarResources } from "./tool-types";
 import { GameLowAction } from "./action";
 import { Intent } from './intent';
 import { CoreState } from "./state";
 import { freshPanic } from "./state-helpers";
-
-export const SPRITE_PIXEL_WIDTH = 32;
-export const LARGE_SPRITE_PIXEL_WIDTH = 128;
-
-const tools = [
-  'pointer',
-  'hand',
-  'dynamite',
-  'bomb',
-  'vowel',
-  'consonant',
-  'copy',
-  'time',
-  'magnifying-glass',
-] as const;
-
-export type Tool = (typeof tools)[number];
-
-const resbarResources = [
-  'wood',
-  'stone',
-] as const;
-
-export type ResbarResource = (typeof resbarResources)[number];
-export type WorldOnlyResource =
-  | 'planks'
-  | 'axe'
-  ;
-export type Resource = ResbarResource | WorldOnlyResource;
 
 export function toolOfIndex(index: number): Tool | undefined {
   return tools[index];

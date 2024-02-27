@@ -1,4 +1,4 @@
-import { WidgetPoint, locationOfWidgetPoint } from "../ui/widget-helpers";
+import { locationOfWidgetPoint } from "../ui/widget-helpers";
 import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { vequal } from "../util/vutil";
@@ -12,6 +12,7 @@ import { Location, MainTile } from './state-types';
 import { checkValid } from './state-helpers';
 import { get_hand_tiles, get_main_tiles, removeMobile } from "./tile-helpers";
 import { BOMB_RADIUS } from './tools';
+import { WidgetPoint } from "./core-ui-types";
 
 function eligibleKillIntent(state: CoreState, intent: KillIntent): boolean {
   switch (intent.t) {

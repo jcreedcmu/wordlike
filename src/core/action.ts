@@ -1,15 +1,14 @@
-import { ViewData } from '../ui/ui-helpers';
-import { WidgetPoint } from '../ui/widget-helpers';
 import { SE2 } from '../util/se2';
 import { Point } from '../util/types';
 import { PanicData, PauseData } from './clock';
+import { ViewData, WidgetPoint } from './core-ui-types';
 import { Intent } from './intent';
 import { LandingMoveId } from './landing-resolve';
 import { ProperLandingResult } from './landing-result';
 import { SelectionState } from './selection';
 import { SceneState } from './state';
 import { InventoryItems, Location, MobileId, MouseState } from './state-types';
-import { ResbarResource, Tool } from './tools';
+import { ResbarResource, Tool } from "./tool-types";
 
 export type GameLowAction =
   | { t: 'zoom', center: Point, amount: number }

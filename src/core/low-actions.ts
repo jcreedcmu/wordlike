@@ -1,7 +1,7 @@
 import { isActiveCanvasAnimation } from '../ui/drawAnimation';
 import { canvas_from_drag_mobile, pan_canvas_from_canvas_of_mouse_state } from '../ui/view-helpers';
 import { TOOLBAR_WIDTH } from "../ui/widget-constants";
-import { WidgetPoint, getWidgetPoint } from '../ui/widget-helpers';
+import { getWidgetPoint } from '../ui/widget-helpers';
 import { DEBUG } from '../util/debug';
 import { debugTiles } from "../util/debugTiles";
 import { produce } from '../util/produce';
@@ -12,6 +12,7 @@ import { vequal, vint, vm, vscale, vsub } from '../util/vutil';
 import { GameAction, GameLowAction, LowAction } from './action';
 import { CacheUpdate, mkChunkUpdate } from './cache-types';
 import { getPanicFraction, now_in_game } from './clock';
+import { WidgetPoint } from './core-ui-types';
 import { getIntentOfMouseDown, reduceIntent, vacuous_down } from './intent';
 import { tryKillTileOfState } from './kill-helpers';
 import { landingMoveIdOfMoveMobile, requireNoCollision, resolveLandResult } from './landing-resolve';

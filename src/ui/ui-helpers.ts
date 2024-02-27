@@ -1,10 +1,6 @@
-import { canvas_bds_in_canvas } from "./widget-constants";
-import { Point } from '../util/types';
+import { ViewData } from '../core/core-ui-types';
 import { vint } from '../util/vutil';
-
-export type ViewData = {
-  wsize: Point,
-};
+import { canvas_bds_in_canvas } from "./widget-constants";
 
 export function resizeView(c: HTMLCanvasElement): ViewData {
   const ratio = devicePixelRatio;

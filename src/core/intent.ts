@@ -1,9 +1,9 @@
-import { WidgetPoint } from '../ui/widget-helpers';
 import { produce } from '../util/produce';
 import { Point } from '../util/types';
 import { vm } from '../util/vutil';
 import { Bonus } from './bonus';
 import { CacheUpdate, mkChunkUpdate } from './cache-types';
+import { WidgetPoint } from './core-ui-types';
 import { updateFogOfWarAtPoint } from './fog-of-war';
 import { tryKillTileOfState } from './kill-helpers';
 import { getOverlay } from './layer';
@@ -13,7 +13,8 @@ import { GameState } from './state';
 import { checkValid, drawSpecific, withCoreState } from './state-helpers';
 import { MobileId } from './state-types';
 import { CellContents, getMobileLoc, mobileAtPoint } from './tile-helpers';
-import { Tool, bombIntent, copyIntent, dynamiteIntent, magnifyIntent } from './tools';
+import { bombIntent, copyIntent, dynamiteIntent, magnifyIntent } from './tools';
+import { Tool } from "./tool-types";
 
 export type KillIntent =
   | { t: 'kill', radius: number }

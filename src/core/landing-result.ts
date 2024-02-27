@@ -7,7 +7,7 @@ import { MobState, MobType, collidesWithMob } from "./mobs";
 import { CoreState } from "./state";
 import { MobileEntity, MoveMobile } from './state-types';
 import { CellContents, cellAtPointForMobiles, get_mobiles } from "./tile-helpers";
-import { Resource } from "./tools";
+import { Resource } from "./tool-types";
 
 // A thing that can be moved onto something else
 export type MoveSource =

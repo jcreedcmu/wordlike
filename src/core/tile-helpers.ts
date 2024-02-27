@@ -9,7 +9,7 @@ import { addId, ensureId, freshId } from "./id-helpers";
 import { AbstractLetter } from "./letters";
 import { CoreState, GameState } from "./state";
 import { GenMoveTile, HandTile, Location, MainTile, MobileEntity, MobileId, RenderableMobile, TileEntity, TileOptionalId } from './state-types';
-import { Resource } from "./tools";
+import { Resource } from "./tool-types";
 
 export type TileId = string;
 
