@@ -6,7 +6,11 @@ import { BIT_VISIBLE, mkChunkUpdate } from './chunk';
 import { initialEnergies } from './distribution';
 import { mkGridOf } from './grid';
 import { Overlay, mkOverlay, setOverlay } from './layer';
-import { GameState, INITIAL_SEEN_CELLS_RADIUS, CacheUpdate, DEFAULT_SCALE, epsilon } from './state';
+import { GameState, CacheUpdate } from './state';
+
+const DEFAULT_SCALE = 48.001;
+const epsilon = 0.0001;
+const INITIAL_SEEN_CELLS_RADIUS = 5.5;
 
 export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: number): GameState {
   const rad = INITIAL_SEEN_CELLS_RADIUS;

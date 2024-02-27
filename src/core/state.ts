@@ -223,7 +223,3 @@ export function mkGameSceneState(seed: number, creative: boolean, bonusLayerSeed
     gameState: mkGameState(seed, creative, bonusLayerSeed), revision: 0
   };
 }
-
-export const DEFAULT_SCALE = 48.001;
-export const epsilon = 0.0001;
-export const INITIAL_SEEN_CELLS_RADIUS = 5.5;
