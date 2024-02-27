@@ -1,7 +1,7 @@
 import { PreTileEntity, Tile, TileEntity, TileEntityOptionalId, TileOptionalId } from "./state";
 
 // FIXME: global counter
-let idCounter = 1000;
+let idCounter = 1;
 
 export type MobileId = number;
 
