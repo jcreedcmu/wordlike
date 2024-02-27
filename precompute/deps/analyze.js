@@ -52,4 +52,4 @@ Object.keys(seen).forEach(file => {
 });
 
 console.log(`${cycles.length} cycles found`);
-cycles.forEach(c => console.log('---', c));
+cycles.forEach(c => console.log('---\n'+ c));
