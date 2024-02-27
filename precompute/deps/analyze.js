@@ -36,11 +36,21 @@ function getDepth(x, path) {
       path = [];
     if (path.includes(x)) {
       cycles.push([...path, x].map(x => ' ' + x).join("\n"));
+      cache[x] = Infinity;
       return Infinity;
     }
     if (deps[x] == undefined)
       return 0;
-    cache[x] = 1 + Math.max(...deps[x].map(d => getDepth(d, [...path, x])));
+    const depDepths = deps[x].map(dep => ({dep, depth: getDepth(dep, [...path, x])}));
+    for (const {dep, depth} of depDepths) {
+      if (depth === Infinity) {
+        cycles.push(`${x} infinite because ${dep} is`);
+        cache[x] = Infinity;
+        return Infinity;
+      }
+    }
+    const nextDepth = 1 + Math.max(...depDepths.map(x => x.depth));
+    cache[x] = nextDepth;
   }
   return cache[x];
 }
