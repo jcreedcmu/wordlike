@@ -7,7 +7,7 @@ import { apply_to_rect } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
 import { midpointOfRect } from "../util/util";
 import { vadd } from '../util/vutil';
-import { drawTileLetter } from './render';
+import { drawTileLetter } from './draw-tile-letter';
 import { rectOfBonus, spriteLocOfBonus, spriteRectOfPos } from './sprite-sheet';
 
 export function drawBonusPoint(d: CanvasRenderingContext2D, pan_canvas_from_world: SE2, p: Point, fraction: number = 1) {

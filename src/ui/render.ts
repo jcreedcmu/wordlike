@@ -3,7 +3,6 @@ import { getBonusFromLayer } from '../core/bonus-helpers';
 import { now_in_game } from '../core/clock';
 import { LocatedWord, getGrid } from '../core/grid';
 import { getOverlay } from '../core/layer';
-import { AbstractLetter, stringOfLetter } from '../core/letters';
 import { getScore } from '../core/scoring';
 import { CoreState, GameState } from '../core/state';
 import { TileEntity } from '../core/state-types';
@@ -28,6 +27,7 @@ import { pan_canvas_from_world_of_state } from './view-helpers';
 import { canvas_from_hand, canvas_from_resbar, canvas_from_toolbar, effective_resbar_bds_in_canvas, effective_toolbar_bds_in_canvas, pause_button_bds_in_canvas } from './widget-helpers';
 import { hand_bds_in_canvas, inner_hand_bds_in_canvas, panic_bds_in_canvas, score_bds_in_canvas, spacer1_bds_in_canvas, spacer2_bds_in_canvas } from "./widget-layout";
 import { GLOBAL_BORDER, PANIC_THICK, canvas_bds_in_canvas, resbar_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from "./widget-constants";
+import { drawTileLetter } from './draw-tile-letter';
 
 const INTERFACE_RADIUS = 2 * GLOBAL_BORDER;
 const PANIC_RADIUS = Math.min(INTERFACE_RADIUS, PANIC_THICK / 2);
@@ -533,14 +533,4 @@ function drawTile(d: CanvasRenderingContext2D, canvas_from_tile: SE2, tile: Tile
   fillRect(d, halfOff(rect_in_canvas), bg);
   strokeRect(d, halfOff(rect_in_canvas), fg);
   drawTileLetter(d, tile.letter, rect_in_canvas, fg);
-}
-
-export function drawTileLetter(d: CanvasRenderingContext2D, letter: AbstractLetter, rect_in_canvas: Rect, color: string) {
-  d.fillStyle = color;
-  d.textBaseline = 'middle';
-  d.textAlign = 'center';
-  const fontSize = Math.round(0.6 * rect_in_canvas.sz.x);
-  d.font = `bold ${fontSize}px sans-serif`;
-  d.fillText(stringOfLetter(letter).toUpperCase(), rect_in_canvas.p.x + rect_in_canvas.sz.x / 2 + 0.5,
-    rect_in_canvas.p.y + rect_in_canvas.sz.y / 2 + 1.5);
 }
