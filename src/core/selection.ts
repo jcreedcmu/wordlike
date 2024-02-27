@@ -11,13 +11,7 @@ import { CoreState } from "./state";
 import { MobileId, MouseState } from './state-types';
 import { CacheUpdate } from './cache-types';
 import { getMobileId, get_main_tiles } from "./tile-helpers";
-
-export type SelectionOperation =
-  | 'set'
-  | 'union'
-  | 'subtract'
-  | 'intersection'
-  ;
+import { SelectionOperation } from "./selection-operation";
 
 export type SelectionState = {
   overlay: Overlay<boolean>,

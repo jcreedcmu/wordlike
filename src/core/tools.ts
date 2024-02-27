@@ -1,5 +1,3 @@
-import { largeSpriteLoc, largeSpriteRectOfPos, spriteLocOfTool, spriteRectOfPos } from "../ui/sprite-sheet";
-import { Rect } from "../util/types";
 import { GameLowAction } from "./action";
 import { Intent } from './intent';
 import { CoreState } from "./state";
@@ -92,13 +90,6 @@ export function getCurrentResources(state: CoreState): ResbarResource[] {
   return resbarResources.filter(res => state.slowState.resource[res] > 0);
 }
 
-export function rectOfTool(tool: Tool): Rect {
-  return spriteRectOfPos(spriteLocOfTool(tool));
-}
-
-export function largeRectOf(tool: Tool | ResbarResource): Rect {
-  return largeSpriteRectOfPos(largeSpriteLoc(tool));
-}
 
 export function reduceToolSelect(state: CoreState, tool: Tool): GameLowAction {
   switch (tool) {

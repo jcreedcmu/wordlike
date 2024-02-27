@@ -1,7 +1,7 @@
 import { Point } from '../util/types';
 import { AbstractLetter } from './letters';
 import { MobState } from './mobs';
-import { SelectionOperation } from './selection';
+import { SelectionOperation } from './selection-operation';
 import { ResbarResource, Resource } from './tools';
 
 export type MobileId = number;

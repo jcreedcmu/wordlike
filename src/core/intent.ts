@@ -1,20 +1,21 @@
+import { mkChunkUpdate } from "../ui/chunk-helpers";
 import { WidgetPoint } from '../ui/widget-helpers';
 import { produce } from '../util/produce';
 import { Point } from '../util/types';
 import { vm } from '../util/vutil';
 import { Bonus } from './bonus';
-import { tryKillTileOfState } from './kill-helpers';
-import { vacuous_down } from './low-actions';
-import { SelectionOperation, deselect, selectionOperationOfMods } from './selection';
-import { GameState } from './state';
 import { CacheUpdate } from './cache-types';
+import { updateFogOfWarAtPoint } from './fog-of-war';
+import { tryKillTileOfState } from './kill-helpers';
+import { getOverlay } from './layer';
+import { vacuous_down } from './low-actions';
+import { deselect, selectionOperationOfMods } from './selection';
+import { SelectionOperation } from './selection-operation';
+import { GameState } from './state';
 import { checkValid, drawSpecific, withCoreState } from './state-helpers';
+import { MobileId } from './state-types';
 import { CellContents, getMobileLoc, mobileAtPoint } from './tile-helpers';
 import { Tool, bombIntent, copyIntent, dynamiteIntent, magnifyIntent } from './tools';
-import { updateFogOfWarAtPoint } from './fog-of-war';
-import { getOverlay } from './layer';
-import { mkChunkUpdate } from "../ui/chunk-helpers";
-import { MobileId } from './state-types';
 
 export type KillIntent =
   | { t: 'kill', radius: number }
