@@ -3,7 +3,8 @@ import { Point } from "../util/types";
 import { next_rand } from "../util/util";
 import { getAssets } from "./assets";
 import { now_in_game } from "./clock";
-import { ActiveWordBonus, CoreState } from "./state";
+import { CoreState } from "./state";
+import { ActiveWordBonus } from './state-types';
 
 export function mkActiveWordBonus(state: CoreState, p_in_world_int: Point): { wordBonus: ActiveWordBonus, state: CoreState } {
   const { state: state1, word } = getNextWord(state);

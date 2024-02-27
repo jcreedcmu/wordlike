@@ -1,5 +1,6 @@
 import { mkGameState } from "../src/core/mkGameState";
-import { GameState, MobileEntity } from "../src/core/state";
+import { GameState } from "../src/core/state";
+import { MobileEntity } from '../src/core/state-types';
 import { checkValid, addWorldTiles, withCoreState } from "../src/core/state-helpers";
 import { addWorldTile, removeMobile, putMobileInWorld } from "../src/core/tile-helpers";
 import { debugTiles } from "../src/util/debugTiles";

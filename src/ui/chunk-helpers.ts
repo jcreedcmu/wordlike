@@ -7,7 +7,9 @@ import { vadd, vinv, vm, vm2, vm3, vmul, vsub } from "../util/vutil";
 import { bonusGenerator } from "../core/bonus";
 import { Overlay, getOverlay, setOverlay } from "../core/layer";
 import { byteOfLetter } from "../core/letters";
-import { CacheUpdate, CoreState, RenderableMobile } from "../core/state";
+import { CoreState } from "../core/state";
+import { RenderableMobile } from '../core/state-types';
+import { CacheUpdate } from '../core/cache-types';
 import { Chunk, WORLD_CHUNK_SIZE, BONUS_CHANNEL, METADATA_CHANNEL, MOBILE_CHANNEL, UNUSED_CHANNEL, BIT_CONNECTED, BIT_SELECTED, ChunkUpdate } from "../core/chunk";
 
 function getWorldChunkData(cs: CoreState, p_in_chunk: Point): Chunk {

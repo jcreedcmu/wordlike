@@ -1,7 +1,8 @@
 import { PANIC_INTERVAL_MS } from '../core/clock';
 import { ensureTileId } from "../core/id-helpers";
 import { AbstractLetter } from '../core/letters';
-import { GameState, TileOptionalId } from '../core/state';
+import { GameState } from '../core/state';
+import { TileOptionalId } from './state-types';
 import { addHandTileEntities, addWorldTiles, checkValid, resolveValid, withCoreState } from '../core/state-helpers';
 import { produce } from '../util/produce';
 import * as SE1 from '../util/se1';

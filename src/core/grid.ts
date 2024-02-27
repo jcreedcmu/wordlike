@@ -3,7 +3,7 @@ import { Point, Rect } from "../util/types";
 import { boundRect } from "../util/util";
 import { vtrans } from "../util/vutil";
 import { AbstractLetter, stringOfLetter } from "./letters";
-import { MainTile, Tile } from "./state";
+import { MainTile, Tile } from './state-types';
 
 // Implements a spatially-bounded sparse map from coordinates to T
 

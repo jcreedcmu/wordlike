@@ -3,7 +3,8 @@ import { Point } from "../util/types";
 import { getOverlay } from "./layer";
 import { AbstractLetter, lettersMatch } from "./letters";
 import { MobState, MobType, collidesWithMob, mobsMap } from "./mobs";
-import { CoreState, MobileEntity, MoveMobile } from "./state";
+import { CoreState } from "./state";
+import { MobileEntity, MoveMobile } from './state-types';
 import { CellContents, cellAtPointForMobiles, get_mobiles } from "./tile-helpers";
 import { Resource } from "./tools";
 

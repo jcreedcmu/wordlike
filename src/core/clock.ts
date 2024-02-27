@@ -4,7 +4,7 @@
 
 import { DEBUG } from "../util/debug";
 import { SE1, apply } from "../util/se1";
-import { ActiveWordBonus } from "./state";
+import { ActiveWordBonus } from './state-types';
 
 export type PanicData = {
   lastClear_in_game: number,

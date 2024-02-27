@@ -2,7 +2,7 @@ import { getAssets } from "../core/assets";
 import { Chunk } from "../core/chunk";
 import { Overlay } from "../core/layer";
 import { indexOfLetter } from "../core/letters";
-import { RenderableMobile } from "../core/state";
+import { RenderableMobile } from '../core/state-types';
 import { BufferAttr, attributeCreate, bufferSetFloats, shaderProgram } from "../util/gl-util";
 import { SE2, compose, inverse, scale } from "../util/se2";
 import { apply_to_rect, asMatrix } from "../util/se2-extra";

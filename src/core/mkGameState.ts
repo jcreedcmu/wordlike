@@ -7,7 +7,8 @@ import { mkChunkUpdate } from "../ui/chunk-helpers";
 import { initialEnergies } from './distribution';
 import { mkGridOf } from './grid';
 import { Overlay, mkOverlay, setOverlay } from './layer';
-import { GameState, CacheUpdate, SceneState } from './state';
+import { GameState, SceneState } from './state';
+import { CacheUpdate } from './cache-types';
 
 const DEFAULT_SCALE = 48.001;
 const epsilon = 0.0001;

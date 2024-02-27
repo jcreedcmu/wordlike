@@ -1,6 +1,6 @@
 import { Point } from "../util/types";
 import { Bonus } from "./bonus";
-import { RenderableMobile } from "./state";
+import { RenderableMobile } from './state-types';
 
 export const WORLD_CHUNK_SIZE = { x: 8, y: 8 };
 

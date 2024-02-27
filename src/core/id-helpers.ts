@@ -1,4 +1,4 @@
-import { PreTileEntity, Tile, TileEntity, TileEntityOptionalId, TileOptionalId } from "./state";
+import { PreTileEntity, Tile, TileEntity, TileEntityOptionalId, TileOptionalId } from './state-types';
 
 // FIXME: global counter
 let idCounter = 1;

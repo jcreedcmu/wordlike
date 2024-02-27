@@ -1,6 +1,7 @@
 import { apply, compose, ident, inverse, SE2, translate } from '../util/se2';
 import { vadd, vm, vsub } from '../util/vutil';
-import { CoreState, GameState, MouseState } from '../core/state';
+import { CoreState, GameState } from '../core/state';
+import { MouseState } from '../core/state-types';
 import { Point, Rect } from '../util/types';
 import { getDragWidgetPoint } from './widget-helpers';
 import { apply_to_rect, matchScale } from '../util/se2-extra';

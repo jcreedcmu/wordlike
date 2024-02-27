@@ -6,7 +6,8 @@ import { ActiveChunkInfo, activeChunks, ensureChunk, getChunk, updateChunkCache 
 import { getWordBonusFraction, now_in_game } from "../core/clock";
 import { mkOverlay } from "../core/layer";
 import { eff_mob_in_world, mobsMap } from "../core/mobs";
-import { CoreState, GameState, MobsState, MouseState } from "../core/state";
+import { CoreState, GameState } from "../core/state";
+import { MobsState, MouseState } from '../core/state-types';
 import { pointFallForPan } from "../core/state-helpers";
 import { getMobileId, getRenderableMobile, get_hand_tiles, isSelectedForDrag } from "../core/tile-helpers";
 import { BOMB_RADIUS, SPRITE_PIXEL_WIDTH, getCurrentTool } from "../core/tools";

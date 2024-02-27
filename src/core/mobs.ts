@@ -3,7 +3,8 @@ import { Point } from "../util/types";
 import { mapval, next_rand } from "../util/util";
 import { vadd, vequal, vint, vm, vscale } from "../util/vutil";
 import { MoveSource, landMoveOnState } from "./landing-result";
-import { CoreState, MobsState } from "./state";
+import { CoreState } from "./state";
+import { MobsState } from './state-types';
 import { freshId } from "./id-helpers";
 
 export type Orientation = 'N' | 'W' | 'E' | 'S';

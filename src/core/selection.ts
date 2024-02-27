@@ -7,7 +7,9 @@ import { getCacheState } from "./cache-state";
 import { BIT_SELECTED } from "./chunk";
 import { mkChunkUpdate } from "../ui/chunk-helpers";
 import { Overlay, mkOverlay, overlayForEach, setOverlay } from "./layer";
-import { CacheUpdate, CoreState, MouseState } from "./state";
+import { CoreState } from "./state";
+import { MouseState } from './state-types';
+import { CacheUpdate } from './cache-types';
 import { getMobileId, get_main_tiles } from "./tile-helpers";
 import { MobileId } from "./id-helpers";
 

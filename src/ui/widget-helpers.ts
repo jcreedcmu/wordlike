@@ -1,4 +1,5 @@
-import { CoreState, Location } from "../core/state";
+import { CoreState } from "../core/state";
+import { Location } from '../core/state-types';
 import { ResbarResource, Tool, getCurrentResources, getCurrentTools } from "../core/tools";
 import { SE2, apply, inverse } from "../util/se2";
 import { Point, Rect } from "../util/types";

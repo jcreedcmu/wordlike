@@ -7,7 +7,8 @@ import { Intent } from './intent';
 import { LandingMoveId } from './landing-resolve';
 import { ProperLandingResult } from './landing-result';
 import { SelectionState } from './selection';
-import { InventoryItems, Location, MouseState, SceneState } from './state';
+import { SceneState } from './state';
+import { InventoryItems, Location, MouseState } from './state-types';
 import { MobileId } from './id-helpers';
 import { ResbarResource, Tool } from './tools';
 

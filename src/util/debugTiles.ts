@@ -1,4 +1,4 @@
-import { Tile, TileOptionalId } from "../core/state";
+import { Tile, TileOptionalId } from '../core/state-types';
 import { ensureTileId } from "../core/id-helpers";
 
 

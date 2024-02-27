@@ -4,7 +4,8 @@ import { vadd, vsnorm } from "../util/vutil";
 import { BIT_VISIBLE } from "./chunk";
 import { mkChunkUpdate } from "../ui/chunk-helpers";
 import { Overlay, combineOverlay, getOverlay, mkOverlay, overlayPoints, setOverlay } from "./layer";
-import { CacheUpdate, CoreState } from "./state";
+import { CoreState } from "./state";
+import { CacheUpdate } from './cache-types';
 import { get_main_tiles as get_world_tiles } from "./tile-helpers";
 import { PLACED_MOBILE_SEEN_CELLS_RADIUS } from "./state-helpers";
 
