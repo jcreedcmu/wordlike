@@ -1,6 +1,7 @@
 import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { Bonus, getBonusLayer } from "./bonus";
+import { mkChunkUpdate } from "./chunk";
 import { getOverlayLayer, setOverlay } from "./layer";
 import { CacheUpdate, CoreState } from "./state";
 
@@ -14,7 +15,7 @@ export function updateBonusLayer(state: CoreState, p_in_world_int: Point, bonus:
     setOverlay(cs.bonusOverlay, p_in_world_int, bonus);
   });
 
-  const cacheUpdate: CacheUpdate = { p_in_world_int, chunkUpdate: { t: 'bonus', bonus } };
+  const cacheUpdate: CacheUpdate = mkChunkUpdate(p_in_world_int, { t: 'bonus', bonus });
 
   return produce(newState, cs => {
     cs._cacheUpdateQueue.push(cacheUpdate);

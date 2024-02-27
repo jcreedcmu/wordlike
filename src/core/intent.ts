@@ -13,6 +13,7 @@ import { Tool, bombIntent, copyIntent, dynamiteIntent, magnifyIntent } from './t
 import { updateFogOfWarAtPoint } from './fog-of-war';
 import { getOverlay } from './layer';
 import { MobileId } from './id-helpers';
+import { mkChunkUpdate } from './chunk';
 
 export type KillIntent =
   | { t: 'kill', radius: number }
@@ -104,7 +105,7 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
           return loc.p_in_world_int;
         })
         : [p_in_world_int];
-      const cacheUpdates: CacheUpdate[] = toErase.map(p_in_world_int => ({ p_in_world_int, chunkUpdate: { t: 'removeMobile' } }));
+      const cacheUpdates: CacheUpdate[] = toErase.map(p_in_world_int => mkChunkUpdate(p_in_world_int, { t: 'removeMobile' }));
 
       if (sel) {
         // If we start dragging a tile not in the selection, we should deselect it first

@@ -6,7 +6,7 @@ import { Point } from '../util/types';
 import { vsnorm } from '../util/vutil';
 import { Animation } from './animations';
 import { Bonus, ScoringBonus } from './bonus';
-import { BIT_VISIBLE, ChunkUpdate } from './chunk';
+import { BIT_VISIBLE, ChunkUpdate, mkChunkUpdate } from './chunk';
 import { PanicData, PauseData } from './clock';
 import { Energies, initialEnergies } from './distribution';
 import { Grid, LocatedWord, mkGridOf } from './grid';
@@ -179,10 +179,9 @@ export type SlowState = {
   winState: WinState,
 }
 
-export type CacheUpdate = {
-  p_in_world_int: Point,
-  chunkUpdate: ChunkUpdate,
-};
+export type CacheUpdate =
+  | { t: 'chunkUpdate', p_in_world_int: Point, chunkUpdate: ChunkUpdate }
+  ;
 
 export type MobsState = {
   mobs: Record<string, MobState>,
@@ -242,7 +241,7 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
       const p_in_world_int = { x, y };
       if (vsnorm(p_in_world_int) <= rad * rad) {
         setOverlay(seen_cells, p_in_world_int, true);
-        _cacheUpdateQueue.push({ p_in_world_int, chunkUpdate: { t: 'setBit', bit: BIT_VISIBLE } });
+        _cacheUpdateQueue.push(mkChunkUpdate(p_in_world_int, { t: 'setBit', bit: BIT_VISIBLE }));
       }
     }
   }

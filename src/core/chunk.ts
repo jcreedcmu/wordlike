@@ -7,7 +7,7 @@ import { vadd, vinv, vm, vm2, vm3, vmul, vsub } from "../util/vutil";
 import { Bonus, bonusGenerator } from "./bonus";
 import { Overlay, getOverlay, setOverlay } from "./layer";
 import { byteOfLetter } from "./letters";
-import { CoreState, RenderableMobile } from "./state";
+import { CacheUpdate, CoreState, RenderableMobile } from "./state";
 
 export const WORLD_CHUNK_SIZE = { x: 8, y: 8 };
 
@@ -200,4 +200,8 @@ export function mkChunk(size: Point): Chunk {
     size,
     imdat: new ImageData(size.x, size.y)
   };
+}
+
+export function mkChunkUpdate(p_in_world_int: Point, cu: ChunkUpdate): CacheUpdate {
+  return { t: 'chunkUpdate', chunkUpdate: cu, p_in_world_int };
 }

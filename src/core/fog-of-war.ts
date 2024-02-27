@@ -1,7 +1,7 @@
 import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { vadd, vsnorm } from "../util/vutil";
-import { BIT_VISIBLE } from "./chunk";
+import { BIT_VISIBLE, mkChunkUpdate } from "./chunk";
 import { Overlay, combineOverlay, getOverlay, mkOverlay, overlayPoints, setOverlay } from "./layer";
 import { CacheUpdate, CoreState } from "./state";
 import { get_main_tiles as get_world_tiles } from "./tile-helpers";
@@ -22,9 +22,9 @@ function updateFogOfWarAtPointAux(state: CoreState, recentlySeen: Overlay<boolea
 }
 
 function updateFogOfWarApply(state: CoreState, recentlySeen: Overlay<boolean>): CoreState {
-  const cacheUpdates: CacheUpdate[] = overlayPoints(recentlySeen).map(p => (
-    { p_in_world_int: p, chunkUpdate: { t: 'setBit', bit: BIT_VISIBLE } }
-  ));
+  const cacheUpdates: CacheUpdate[] = overlayPoints(recentlySeen).map(p =>
+    mkChunkUpdate(p, { t: 'setBit', bit: BIT_VISIBLE })
+  );
   const combined = combineOverlay(state.seen_cells, recentlySeen);
   return produce(state, s => {
     s._cacheUpdateQueue.push(...cacheUpdates);

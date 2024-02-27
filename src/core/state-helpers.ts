@@ -10,7 +10,7 @@ import { Animation, mkPointDecayAnimation, mkScoreAnimation, mkWinAnimation } fr
 import { getAssets } from "./assets";
 import { adjacentScoringOfBonus, overlapScoringOfBonus, resolveScoring } from "./bonus";
 import { getBonusFromLayer, updateBonusLayer } from "./bonus-helpers";
-import { BIT_CONNECTED } from "./chunk";
+import { BIT_CONNECTED, mkChunkUpdate } from "./chunk";
 import { PANIC_INTERVAL_MS, PanicData, PauseData, WORD_BONUS_INTERVAL_MS, now_in_game } from "./clock";
 import { DrawForce, getLetterSample } from "./distribution";
 import { checkConnected, checkGridWords, gridKeys, mkGridOfMainTiles } from "./grid";
@@ -181,16 +181,16 @@ export function checkValid(state: CoreState): CoreState {
   }
 
   const oldCacheUpdates: CacheUpdate[] =
-    gridKeys(oldConnectedSet).map(p_in_world_int => ({
+    gridKeys(oldConnectedSet).map(p_in_world_int => mkChunkUpdate(
       p_in_world_int,
-      chunkUpdate: { t: 'clearBit', bit: BIT_CONNECTED }
-    }));
+      { t: 'clearBit', bit: BIT_CONNECTED }
+    ));
 
   const newCacheUpdates: CacheUpdate[] =
-    gridKeys(connectedSet).map(p_in_world_int => ({
+    gridKeys(connectedSet).map(p_in_world_int => mkChunkUpdate(
       p_in_world_int,
-      chunkUpdate: { t: 'setBit', bit: BIT_CONNECTED }
-    }));
+      { t: 'setBit', bit: BIT_CONNECTED }
+    ));
 
   state = produce(state, s => {
     s.panic = panic;

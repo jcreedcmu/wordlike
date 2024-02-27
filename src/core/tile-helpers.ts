@@ -8,6 +8,7 @@ import { CacheUpdate, CoreState, GameState, GenMoveTile, HandTile, Location, Mai
 import { MobileId, addId, ensureId, freshId } from "./id-helpers";
 import { Resource } from "./tools";
 import { AbstractLetter } from "./letters";
+import { mkChunkUpdate } from "./chunk";
 
 export type TileId = string;
 
@@ -85,7 +86,7 @@ export function addWorldTile(state: Draft<CoreState>, tile: TileOptionalId): voi
     letter: tile.letter, loc: { t: 'world', p_in_world_int: tile.p_in_world_int }
   });
   state.mobile_entities[newTile.id] = newTile;
-  state._cacheUpdateQueue.push({ p_in_world_int: tile.p_in_world_int, chunkUpdate: { t: 'addMobile', mobile: { t: 'tile', letter: tile.letter } } });
+  state._cacheUpdateQueue.push(mkChunkUpdate(tile.p_in_world_int, { t: 'addMobile', mobile: { t: 'tile', letter: tile.letter } }));
 }
 
 export function addResourceMobile(state: CoreState, p_in_world_int: Point, res: Resource): CoreState {
@@ -98,7 +99,7 @@ export function addResourceMobile(state: CoreState, p_in_world_int: Point, res: 
   });
   return produce(state, s => {
     s.mobile_entities[mobile.id] = mobile;
-    s._cacheUpdateQueue.push({ p_in_world_int, chunkUpdate: { t: 'addMobile', mobile: { t: 'resource', res } } });
+    s._cacheUpdateQueue.push(mkChunkUpdate(p_in_world_int, { t: 'addMobile', mobile: { t: 'resource', res } }));
   });
 }
 
@@ -111,10 +112,7 @@ export function addHandTileEntity(state: Draft<CoreState>, letter: AbstractLette
 export function putMobileInWorld(state: CoreState, id: MobileId, p_in_world_int: Point, noclear?: 'noclear'): CoreState {
   const nowhere = putMobileNowhere(state, id, noclear);
   const mobile = getMobileId(state, id);
-  const cacheUpdate: CacheUpdate = {
-    p_in_world_int,
-    chunkUpdate: { t: 'addMobile', mobile: getRenderableMobile(mobile) }
-  };
+  const cacheUpdate = mkChunkUpdate(p_in_world_int, { t: 'addMobile', mobile: getRenderableMobile(mobile) });
   return produce(nowhere, s => {
     setMobileLoc(s, id, { t: 'world', p_in_world_int });
     s._cacheUpdateQueue.push(cacheUpdate);
@@ -134,7 +132,7 @@ export function moveTiles(state: CoreState, moves: GenMoveTile[]): CoreState {
     const loc = move.loc;
     switch (loc.t) {
       case 'world':
-        cacheUpdate = { p_in_world_int: loc.p_in_world_int, chunkUpdate: { t: 'addMobile', mobile: getRenderableMobile(mobile) } };
+        cacheUpdate = mkChunkUpdate(loc.p_in_world_int, { t: 'addMobile', mobile: getRenderableMobile(mobile) });
         break;
       case 'nowhere':
         break;
@@ -176,7 +174,7 @@ export function putMobileNowhere(state: CoreState, id: MobileId, noclear?: 'nocl
 
   switch (loc.t) {
     case 'world':
-      const cacheUpdate: CacheUpdate = { p_in_world_int: loc.p_in_world_int, chunkUpdate: { t: 'removeMobile' } };
+      const cacheUpdate: CacheUpdate = mkChunkUpdate(loc.p_in_world_int, { t: 'removeMobile' });
       return produce(state, s => {
         setMobileLoc(s, id, { t: 'nowhere' });
         if (!noclear)
@@ -210,7 +208,7 @@ export function putTilesInHandFromNotHand(state: CoreState, ids: MobileId[], ix:
     // XXX: should be checking that this is really a tile
     if (mobile.loc.t == 'world') {
       const p = mobile.loc.p_in_world_int;
-      cacheUpdates.push({ p_in_world_int: p, chunkUpdate: { t: 'removeMobile' } });
+      cacheUpdates.push(mkChunkUpdate(p, { t: 'removeMobile' }));
     }
   }
 

@@ -24,6 +24,7 @@ import { cellAtPoint, getMobileId, getMobileLoc, getRenderableMobile, get_hand_t
 import { MobileId } from './id-helpers';
 import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
 import { shouldDisplayBackButton } from './winState';
+import { mkChunkUpdate } from './chunk';
 
 export function reduceZoom(state: GameState, p_in_canvas: Point, delta: number): GameState {
   const sf = delta < 0 ? 1.1 : 1 / 1.1;
@@ -574,10 +575,10 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
         const mobile = getMobileId(cs, id);
         if (mobile.loc.t != 'world')
           return [];
-        const cu: CacheUpdate = {
-          p_in_world_int: mobile.loc.p_in_world_int,
-          chunkUpdate: { t: 'restoreMobile', mobile: getRenderableMobile(mobile) }
-        };
+        const cu: CacheUpdate = mkChunkUpdate(
+          mobile.loc.p_in_world_int,
+          { t: 'restoreMobile', mobile: getRenderableMobile(mobile) }
+        );
         return [cu];
       });
 

@@ -4,7 +4,7 @@ import { apply_to_rect } from "../util/se2-extra";
 import { boundRect, pointInRect } from "../util/util";
 import { vadd, vsub } from "../util/vutil";
 import { getCacheState } from "./cache-state";
-import { BIT_SELECTED } from "./chunk";
+import { BIT_SELECTED, mkChunkUpdate } from "./chunk";
 import { Overlay, mkOverlay, overlayForEach, setOverlay } from "./layer";
 import { CacheUpdate, CoreState, MouseState } from "./state";
 import { getMobileId, get_main_tiles } from "./tile-helpers";
@@ -83,13 +83,13 @@ export function setSelected(state: CoreState, sel: SelectionState | undefined): 
 
   if (state.selected) {
     overlayForEach(state.selected.overlay, p => {
-      cacheUpdates.push({ p_in_world_int: p, chunkUpdate: { t: 'clearBit', bit: BIT_SELECTED } });
+      cacheUpdates.push(mkChunkUpdate(p, { t: 'clearBit', bit: BIT_SELECTED }));
     });
   }
 
   if (sel) {
     overlayForEach(sel.overlay, p => {
-      cacheUpdates.push({ p_in_world_int: p, chunkUpdate: { t: 'setBit', bit: BIT_SELECTED } });
+      cacheUpdates.push(mkChunkUpdate(p, { t: 'setBit', bit: BIT_SELECTED }));
     });
   }
   return produce(state, s => {
