@@ -101,7 +101,7 @@ vec4 get_origin_pixel(vec2 p_in_world_int, vec2 p_in_world_fp) {
 
 // cell_data holds cached information about this particular square world cell.
 //
-// See src/core/chunk.ts (search "cell_data format") for documentation
+// See src/ui/chunk-helpers.ts (search "cell_data format") for documentation
 // on the format of cell_data
 vec4 get_cell_pixel(vec2 p_in_world, vec2 p_in_world_fp, ivec3 cell_data) {
   int bonus_channel = cell_data.BONUS_CHANNEL;

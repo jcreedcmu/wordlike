@@ -8,7 +8,7 @@ import { CacheUpdate, CoreState, GameState, GenMoveTile, HandTile, Location, Mai
 import { MobileId, addId, ensureId, freshId } from "./id-helpers";
 import { Resource } from "./tools";
 import { AbstractLetter } from "./letters";
-import { mkChunkUpdate } from "./chunk";
+import { mkChunkUpdate } from "../ui/chunk-helpers";
 
 export type TileId = string;
 

@@ -13,7 +13,7 @@ import { Tool, bombIntent, copyIntent, dynamiteIntent, magnifyIntent } from './t
 import { updateFogOfWarAtPoint } from './fog-of-war';
 import { getOverlay } from './layer';
 import { MobileId } from './id-helpers';
-import { mkChunkUpdate } from './chunk';
+import { mkChunkUpdate } from "../ui/chunk-helpers";
 
 export type KillIntent =
   | { t: 'kill', radius: number }

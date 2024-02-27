@@ -11,7 +11,8 @@ import { mkPointDecayAnimation, mkScoreAnimation, mkWinAnimation } from './anima
 import { getAssets } from "./assets";
 import { Scoring, adjacentScoringOfBonus, overlapScoringOfBonus } from "./bonus";
 import { getBonusFromLayer, resolveScoring, updateBonusLayer } from "./bonus-helpers";
-import { BIT_CONNECTED, mkChunkUpdate } from "./chunk";
+import { BIT_CONNECTED } from "./chunk";
+import { mkChunkUpdate } from "../ui/chunk-helpers";
 import { PANIC_INTERVAL_MS, PanicData, PauseData, WORD_BONUS_INTERVAL_MS, now_in_game } from "./clock";
 import { DrawForce, getLetterSample } from "./distribution";
 import { updateFogOfWar } from "./fog-of-war";

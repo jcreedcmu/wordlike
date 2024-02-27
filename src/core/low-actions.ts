@@ -26,7 +26,7 @@ import { cellAtPoint, getMobileId, getMobileLoc, getRenderableMobile, get_hand_t
 import { MobileId } from './id-helpers';
 import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
 import { shouldDisplayBackButton } from './winState';
-import { mkChunkUpdate } from './chunk';
+import { mkChunkUpdate } from "../ui/chunk-helpers";
 
 export function reduceZoom(state: GameState, p_in_canvas: Point, delta: number): GameState {
   const sf = delta < 0 ? 1.1 : 1 / 1.1;

@@ -1,7 +1,8 @@
 import { Dispatch } from "../core/action";
 import { Animation } from "../core/animation-types";
 import { getAssets } from "../core/assets";
-import { ActiveChunkInfo, Chunk, WORLD_CHUNK_SIZE, activeChunks, ensureChunk, getChunk, updateChunkCache } from "../core/chunk";
+import { Chunk, WORLD_CHUNK_SIZE } from "../core/chunk";
+import { ActiveChunkInfo, activeChunks, ensureChunk, getChunk, updateChunkCache } from "./chunk-helpers";
 import { getWordBonusFraction, now_in_game } from "../core/clock";
 import { mkOverlay } from "../core/layer";
 import { eff_mob_in_world, mobsMap } from "../core/mobs";

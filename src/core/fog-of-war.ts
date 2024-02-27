@@ -1,7 +1,8 @@
 import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { vadd, vsnorm } from "../util/vutil";
-import { BIT_VISIBLE, mkChunkUpdate } from "./chunk";
+import { BIT_VISIBLE } from "./chunk";
+import { mkChunkUpdate } from "../ui/chunk-helpers";
 import { Overlay, combineOverlay, getOverlay, mkOverlay, overlayPoints, setOverlay } from "./layer";
 import { CacheUpdate, CoreState } from "./state";
 import { get_main_tiles as get_world_tiles } from "./tile-helpers";

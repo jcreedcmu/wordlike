@@ -2,7 +2,7 @@ import { DEBUG } from "../util/debug";
 import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { Bonus, Scoring, getBonusLayer } from "./bonus";
-import { mkChunkUpdate } from "./chunk";
+import { mkChunkUpdate } from "../ui/chunk-helpers";
 import { getOverlayLayer, setOverlay } from "./layer";
 import { incrementScore } from "./scoring";
 import { CacheUpdate, CoreState, MoveMobileNoId } from "./state";
