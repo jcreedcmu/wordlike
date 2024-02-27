@@ -25,6 +25,7 @@ import { getCurrentTool } from "./tools";
 import { updateFogOfWar } from "./fog-of-war";
 import { WIN_SCORE, canWinFromState, shouldStartPanicBar } from "./winState";
 import { AbstractLetter } from "./letters";
+import { MobileId } from "./tile-id-helpers";
 
 export const PLACED_MOBILE_SEEN_CELLS_RADIUS = 2.5;
 
@@ -57,7 +58,7 @@ export function drawOfState(state: CoreState, drawForce?: DrawForce): CoreState 
 }
 
 // doesn't call checkValid!
-export function drawSpecific(state: CoreState, letter: AbstractLetter): { cs: CoreState, newId: string } | undefined {
+export function drawSpecific(state: CoreState, letter: AbstractLetter): { cs: CoreState, newId: MobileId } | undefined {
   const handLength = get_hand_tiles(state).length;
   if (handLength >= HAND_TILE_LIMIT)
     return undefined;
@@ -212,7 +213,7 @@ export function checkValid(state: CoreState): CoreState {
 }
 
 
-export function isMobilePinned(state: CoreState, id: string, loc: MainLoc): boolean {
+export function isMobilePinned(state: CoreState, id: MobileId, loc: MainLoc): boolean {
   if (state.selected && state.selected.selectedIds.includes(id)) {
     return overlayAny(state.selected.overlay, p => vequal(p, { x: 0, y: 0 }));
   }

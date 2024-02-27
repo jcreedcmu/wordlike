@@ -12,6 +12,7 @@ import { CellContents, getMobileLoc, mobileAtPoint } from './tile-helpers';
 import { Tool, bombIntent, copyIntent, dynamiteIntent, magnifyIntent } from './tools';
 import { updateFogOfWarAtPoint } from './fog-of-war';
 import { getOverlay } from './layer';
+import { MobileId } from './tile-id-helpers';
 
 export type KillIntent =
   | { t: 'kill', radius: number }
@@ -20,10 +21,10 @@ export type KillIntent =
   ;
 
 export type Intent =
-  | { t: 'dragTile', id: string }
+  | { t: 'dragTile', id: MobileId } // FIXME(mobile): these 'tiles' should be called 'mobiles'
   | { t: 'vacuous' }
   | { t: 'panWorld' }
-  | { t: 'exchangeTiles', id: string }
+  | { t: 'exchangeTiles', id: MobileId }
   | { t: 'startSelection', opn: SelectionOperation }
   | { t: 'copy' }
   | { t: 'magnify' }

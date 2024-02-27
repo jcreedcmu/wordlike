@@ -4,11 +4,12 @@ import { tryKillTileOfStateLoc } from "./kill-helpers";
 import { LandingResult, ProperLandingResult } from "./landing-result";
 import { CoreState, MoveMobile } from "./state";
 import { addResourceMobile, mobileAtPoint, putMobileInWorld, putMobileNowhere, removeMobile } from "./tile-helpers";
+import { MobileId } from "./tile-id-helpers";
 import { ResbarResource, fillWaterIntent } from "./tools";
 
 // A thing that can be moved onto something else
 export type MoveSourceId =
-  | { t: 'mobile', id: string }
+  | { t: 'mobile', id: MobileId }
   | { t: 'freshResource', res: ResbarResource }
   ;
 

@@ -8,6 +8,7 @@ import { LandingMoveId } from './landing-resolve';
 import { ProperLandingResult } from './landing-result';
 import { SelectionState } from './selection';
 import { InventoryItems, Location, MouseState, SceneState } from './state';
+import { MobileId } from './tile-id-helpers';
 import { ResbarResource, Tool } from './tools';
 
 export type GameLowAction =
@@ -36,16 +37,16 @@ export type GameLowAction =
   | { t: 'andMouseUp', p_in_canvas: Point, action: GameLowAction }
   | { t: 'dragSelectionEnd', ms: MouseState & { t: 'drag_selection' } }
   | { t: 'set_canvas_from_world', canvas_from_world: SE2 }
-  | { t: 'putTilesInHandFromNotHand', ids: string[], ix: number } // ix may be < 0 or >= handsize
-  | { t: 'putTileInHand', id: string, ix: number } // ix may be < 0 or >= handsize
+  | { t: 'putTilesInHandFromNotHand', ids: MobileId[], ix: number } // ix may be < 0 or >= handsize
+  | { t: 'putTileInHand', id: MobileId, ix: number } // ix may be < 0 or >= handsize
   | { t: 'setSelected', sel: SelectionState | undefined }
   | { t: 'checkValid' } // XXX break this up into more low-level actions
-  | { t: 'swap', id0: string, id1: string, loc0: Location, loc1: Location }
+  | { t: 'swap', id0: MobileId, id1: MobileId, loc0: Location, loc1: Location }
   | { t: 'decrement', which: keyof InventoryItems }
   | { t: 'drawConsonant' }
   | { t: 'drawVowel' }
   | { t: 'setPanic', panic: PanicData }
-  | { t: 'restoreMobiles', ids: string[] } // put held mobiles back in cache
+  | { t: 'restoreMobiles', ids: MobileId[] } // put held mobiles back in cache
   | { t: 'popCacheUpdateQueue', n: number }
   | { t: 'addMob' }
   | { t: 'startDragResource', wp: WidgetPoint, res: ResbarResource, res_ix: number } // XXX: rename to startDragResbar or something

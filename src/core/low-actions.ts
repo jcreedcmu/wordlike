@@ -21,6 +21,7 @@ import { deselect, resolveSelection, setSelected } from './selection';
 import { CacheUpdate, CoreState, GameState, Location, MobsState, MoveMobile, SceneState } from './state';
 import { addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isMobilePinned, needsRefresh, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
 import { cellAtPoint, getMobileId, getMobileLoc, getRenderableMobile, get_hand_tiles, get_mobiles, mobileAtPoint, moveTiles, moveToHandLoc, putTileInHand, putTilesInHandFromNotHand, removeAllMobiles } from "./tile-helpers";
+import { MobileId } from './tile-id-helpers';
 import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
 import { shouldDisplayBackButton } from './winState';
 
@@ -122,7 +123,7 @@ function reduceShuffle(state: CoreState): CoreState {
     randomOrder = getRandomOrder(hs.length);
     retries++;
   }
-  const newLocs: { id: string, loc: Location & { t: 'hand' } }[] = hs.map((h, ix) => {
+  const newLocs: { id: MobileId, loc: Location & { t: 'hand' } }[] = hs.map((h, ix) => {
     return { id: h.id, loc: { t: 'hand', index: randomOrder[ix] } };
   });
   return produce(state, s => {

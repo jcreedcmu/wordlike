@@ -8,6 +8,7 @@ import { BIT_SELECTED } from "./chunk";
 import { Overlay, mkOverlay, overlayForEach, setOverlay } from "./layer";
 import { CacheUpdate, CoreState, MouseState } from "./state";
 import { getMobileId, get_main_tiles } from "./tile-helpers";
+import { MobileId } from "./tile-id-helpers";
 
 export type SelectionOperation =
   | 'set'
@@ -18,7 +19,7 @@ export type SelectionOperation =
 
 export type SelectionState = {
   overlay: Overlay<boolean>,
-  selectedIds: string[],
+  selectedIds: MobileId[],
 };
 
 export function resolveSelection(state: CoreState, ms: MouseState & { t: 'drag_selection' }): CoreState {
@@ -52,7 +53,7 @@ export function resolveSelection(state: CoreState, ms: MouseState & { t: 'drag_s
   return setSelected(state, realSelected);
 }
 
-function evalSelectionOperation(opn: SelectionOperation, a: string[], b: string[]): string[] {
+function evalSelectionOperation<T>(opn: SelectionOperation, a: T[], b: T[]): T[] {
   switch (opn) {
     case 'set': return b;
     case 'union': return [...new Set([...a, ...b])];

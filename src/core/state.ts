@@ -14,6 +14,7 @@ import { Overlay, mkOverlay, setOverlay } from './layer';
 import { AbstractLetter } from './letters';
 import { MobState } from './mobs';
 import { SelectionOperation, SelectionState } from './selection';
+import { MobileId } from './tile-id-helpers';
 import { ResbarResource, Resource, Tool } from './tools';
 import { WinState } from './winState';
 
@@ -23,9 +24,9 @@ export type Scoring = {
   destroy: boolean,
 };
 
-export type MoveMobile = { mobile: RenderableMobile, id: string, p_in_world_int: Point };
+export type MoveMobile = { mobile: RenderableMobile, id: MobileId, p_in_world_int: Point };
 export type MoveMobileNoId = { mobile: RenderableMobile, p_in_world_int: Point };
-export type GenMoveTile = { id: string, loc: Location };
+export type GenMoveTile = { id: MobileId, loc: Location };
 
 export type MouseState =
   | { t: 'up', p_in_canvas: Point }
@@ -34,14 +35,14 @@ export type MouseState =
   | { t: 'drag_world', orig_p: Point, p_in_canvas: Point }
   // drag_selection means we're actually dragging out the selection rectangle
   | { t: 'drag_selection', orig_p: Point, p_in_canvas: Point, opn: SelectionOperation }
-  | { t: 'exchange_tiles', orig_loc: Location, orig_p_in_canvas: Point, p_in_canvas: Point, id: string }
+  | { t: 'exchange_tiles', orig_loc: Location, orig_p_in_canvas: Point, p_in_canvas: Point, id: MobileId }
   // drag_mobile means we're dragging one or more mobiles starting from a position in-world, or in-hand
   | {
     t: 'drag_mobile',
     orig_loc: Location,
     orig_p_in_canvas: Point,
     p_in_canvas: Point,
-    id: string,
+    id: MobileId,
     flipped: boolean,
   }
   // drag_resource means we're dragging a resource starting from a position in the resbar.
@@ -74,13 +75,13 @@ export type State = {
 };
 
 export type Tile = {
-  id: string,
+  id: MobileId,
   p_in_world_int: Point,
   letter: AbstractLetter,
 }
 
 export type TileOptionalId = {
-  id?: string,
+  id?: MobileId,
   p_in_world_int: Point,
   letter: AbstractLetter,
 }
@@ -98,14 +99,14 @@ export type Location =
 
 export type TileEntity = {
   t: 'tile',
-  id: string,
+  id: MobileId,
   loc: Location,
   letter: AbstractLetter,
 };
 
 export type ResourceEntity = {
   t: 'resource',
-  id: string,
+  id: MobileId,
   loc: Location,
   res: Resource,
   durability: number, // XXX: should this be more tied to the particular resource?
@@ -132,7 +133,7 @@ export type MainTile = TileEntity & { loc: MainLoc };
 export type HandTile = TileEntity & { loc: HandLoc };
 
 export type TileEntityOptionalId = {
-  id: string | undefined,
+  id: MobileId | undefined,
   loc: Location,
   letter: AbstractLetter,
 };

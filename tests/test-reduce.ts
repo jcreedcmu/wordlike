@@ -10,9 +10,9 @@ const SEED = 12345678;
 
 function threeTileState(): GameState {
   let state = mkGameState(SEED, false, SEED);
-  state = produce(state, s => addWorldTile(s.coreState, { letter: { t: 'single', letter: 'A' }, p_in_world_int: { x: 0, y: 0 }, id: '1' }));
-  state = produce(state, s => addWorldTile(s.coreState, { letter: { t: 'single', letter: 'B' }, p_in_world_int: { x: 1, y: 0 }, id: '2' }));
-  state = produce(state, s => addWorldTile(s.coreState, { letter: { t: 'single', letter: 'C' }, p_in_world_int: { x: 2, y: 0 }, id: '3' }));
+  state = produce(state, s => addWorldTile(s.coreState, { letter: { t: 'single', letter: 'A' }, p_in_world_int: { x: 0, y: 0 }, id: 1 }));
+  state = produce(state, s => addWorldTile(s.coreState, { letter: { t: 'single', letter: 'B' }, p_in_world_int: { x: 1, y: 0 }, id: 2 }));
+  state = produce(state, s => addWorldTile(s.coreState, { letter: { t: 'single', letter: 'C' }, p_in_world_int: { x: 2, y: 0 }, id: 3 }));
   return state;
 }
 
@@ -24,7 +24,7 @@ describe('kill', () => {
     state = resolveGameLowActions(state, [{
       t: 'setSelected', sel: {
         overlay: mkOverlayFrom([{ x: 0, y: 0 }, { x: 1, y: 0 }]),
-        selectedIds: ['1', '2']
+        selectedIds: [1, 2]
       }
     }]);
     state = resolveGameLowActions(state, [{ t: 'popCacheUpdateQueue', n: state.coreState._cacheUpdateQueue.length }]);
@@ -40,7 +40,7 @@ describe('kill', () => {
       }
     };
 
-    expect(state.coreState.selected?.selectedIds).toEqual(['1', '2']);
+    expect(state.coreState.selected?.selectedIds).toEqual([1, 2]);
 
     state = resolveGameLowActions(state, [action]);
     expect(state.coreState._cacheUpdateQueue).toEqual(

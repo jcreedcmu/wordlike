@@ -3,8 +3,10 @@ import { PreTileEntity, Tile, TileEntity, TileEntityOptionalId, TileOptionalId }
 // FIXME: global counter
 let idCounter = 1000;
 
-export function freshId(): string {
-  return `id${idCounter++}`;
+export type MobileId = number;
+
+export function freshId(): number {
+  return idCounter++;
 }
 
 export function ensureId(tile: TileEntityOptionalId): TileEntity {
@@ -12,7 +14,7 @@ export function ensureId(tile: TileEntityOptionalId): TileEntity {
   return { t: 'tile', ...tile, id };
 }
 
-export function addId(tile: PreTileEntity, forceId?: string): TileEntity {
+export function addId(tile: PreTileEntity, forceId?: MobileId): TileEntity {
   const id = forceId ?? freshId();
   return { t: 'tile', ...tile, id };
 }

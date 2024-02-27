@@ -5,7 +5,7 @@ import { vequal, vm } from "../util/vutil";
 import { Bonus } from "./bonus";
 import { getBonusFromLayer } from "./bonus-helpers";
 import { CacheUpdate, CoreState, GameState, GenMoveTile, HandTile, Location, MainTile, MobileEntity, RenderableMobile, TileEntity, TileOptionalId } from "./state";
-import { addId, ensureId, freshId } from "./tile-id-helpers";
+import { MobileId, addId, ensureId, freshId } from "./tile-id-helpers";
 import { Resource } from "./tools";
 import { AbstractLetter } from "./letters";
 
@@ -18,19 +18,24 @@ export function getRenderableMobile(m: MobileEntity): RenderableMobile {
   }
 }
 
-export function getMobileId(state: CoreState, id: string): MobileEntity {
+export function getMobileId(state: CoreState, id: MobileId): MobileEntity {
   return state.mobile_entities[id];
 }
 
-export function getMobileLoc(state: CoreState, id: string): Location {
+// FIXME(mobile) - this shouldn't have to exist
+export function getMobileByKey(state: CoreState, key: string): MobileEntity {
+  return state.mobile_entities[key];
+}
+
+export function getMobileLoc(state: CoreState, id: MobileId): Location {
   return state.mobile_entities[id].loc;
 }
 
-function setMobileLoc(state: Draft<CoreState>, id: string, loc: Location): void {
+function setMobileLoc(state: Draft<CoreState>, id: MobileId, loc: Location): void {
   state.mobile_entities[id].loc = loc;
 }
 
-export function moveToHandLoc(state: Draft<CoreState>, id: string, loc: Location & { t: 'hand' }) {
+export function moveToHandLoc(state: Draft<CoreState>, id: MobileId, loc: Location & { t: 'hand' }) {
   state.mobile_entities[id].loc = loc;
   // XXX update any hand cache?
 }
@@ -46,7 +51,7 @@ export function get_mobiles(state: CoreState): MobileEntity[] {
 export function get_main_tiles(state: CoreState): MainTile[] {
   const keys: string[] = Object.keys(state.mobile_entities);
   function mainTilesOfString(k: string): MainTile[] {
-    const mobile = getMobileId(state, k);
+    const mobile = getMobileByKey(state, k);
     const loc = mobile.loc;
     if (loc.t == 'world' && mobile.t == 'tile') {
       return [{ ...mobile, loc }];
@@ -59,7 +64,7 @@ export function get_main_tiles(state: CoreState): MainTile[] {
 
 export function get_hand_tiles(state: CoreState): HandTile[] {
   return Object.keys(state.mobile_entities).flatMap(k => {
-    const mobile = getMobileId(state, k);
+    const mobile = getMobileByKey(state, k);
     const loc = mobile.loc;
     if (loc.t == 'hand' && mobile.t == 'tile')
       return [{ ...mobile, loc }];
@@ -68,7 +73,7 @@ export function get_hand_tiles(state: CoreState): HandTile[] {
   }).sort((a, b) => a.loc.index - b.loc.index);
 }
 
-export function removeMobile(state: CoreState, id: string): CoreState {
+export function removeMobile(state: CoreState, id: MobileId): CoreState {
   const nowhere = putMobileNowhere(state, id);
   return produce(nowhere, s => {
     delete s.mobile_entities[id];
@@ -98,13 +103,13 @@ export function addResourceMobile(state: CoreState, p_in_world_int: Point, res: 
   });
 }
 
-export function addHandTileEntity(state: Draft<CoreState>, letter: AbstractLetter, index: number, forceId?: string): TileEntity {
+export function addHandTileEntity(state: Draft<CoreState>, letter: AbstractLetter, index: number, forceId?: MobileId): TileEntity {
   const newTile: TileEntity = addId({ letter, loc: { t: 'hand', index } }, forceId);
   state.mobile_entities[newTile.id] = newTile;
   return newTile;
 }
 
-export function putMobileInWorld(state: CoreState, id: string, p_in_world_int: Point, noclear?: 'noclear'): CoreState {
+export function putMobileInWorld(state: CoreState, id: MobileId, p_in_world_int: Point, noclear?: 'noclear'): CoreState {
   const nowhere = putMobileNowhere(state, id, noclear);
   const mobile = getMobileId(state, id);
   const cacheUpdate: CacheUpdate = {
@@ -148,7 +153,7 @@ export function moveTiles(state: CoreState, moves: GenMoveTile[]): CoreState {
 }
 
 // ix may be < 0 or >= handsize
-export function putTileInHand(state: CoreState, id: string, ix: number): CoreState {
+export function putTileInHand(state: CoreState, id: MobileId, ix: number): CoreState {
   const nowhere = putMobileNowhere(state, id);
   const handTiles = get_hand_tiles(nowhere);
 
@@ -165,7 +170,7 @@ export function putTileInHand(state: CoreState, id: string, ix: number): CoreSta
   });
 }
 
-export function putMobileNowhere(state: CoreState, id: string, noclear?: 'noclear'): CoreState {
+export function putMobileNowhere(state: CoreState, id: MobileId, noclear?: 'noclear'): CoreState {
   const loc = getMobileLoc(state, id);
   const handTiles = get_hand_tiles(state);
 
@@ -191,7 +196,7 @@ export function putMobileNowhere(state: CoreState, id: string, noclear?: 'noclea
 }
 
 // ix may be < 0 or >= handsize
-export function putTilesInHandFromNotHand(state: CoreState, ids: string[], ix: number): CoreState {
+export function putTilesInHandFromNotHand(state: CoreState, ids: MobileId[], ix: number): CoreState {
   const handTiles = get_hand_tiles(state);
 
   if (ix > handTiles.length)
