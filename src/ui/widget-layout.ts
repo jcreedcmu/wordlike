@@ -2,7 +2,7 @@ import { HAND_TILE_LIMIT } from '../core/state-types';
 import { mapval, pixelSnapRect } from "../util/util";
 import { vdiag } from "../util/vutil";
 import { DEFAULT_TILE_SCALE, HAND_VERT_PADDING, HAND_VERT_MARGIN, HAND_HORIZ_MARGIN, PANIC_THICK, SPACER_WIDTH, GLOBAL_BORDER, canvas_bds_in_canvas } from "./widget-constants";
-import { centerX, fixedRect, layout, nameRect, packHoriz, packVert, padRect, stretchRectY } from "./layout";
+import { centerX, fixedRect, layout, nameRect, packHoriz, packVert, padRect, stretchRectY } from "../layout/layout";
 
 const pauseButton = packVert(
   nameRect('pause', fixedRect(vdiag(DEFAULT_TILE_SCALE + 2 * HAND_VERT_PADDING - HAND_VERT_MARGIN))),

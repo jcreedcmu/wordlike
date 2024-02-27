@@ -1,4 +1,4 @@
-import { LayoutTree, layout, nameRect } from '../src/ui/layout';
+import { LayoutTree, layout, nameRect } from '../src/layout/layout';
 import { Rect } from '../src/util/types';
 
 describe('horizontal layout', () => {
