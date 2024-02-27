@@ -1,12 +1,9 @@
 import { Point } from '../util/types';
-import { PauseData } from './clock';
-import { LocatedWord } from './grid';
 import { MobileId } from './id-helpers';
 import { AbstractLetter } from './letters';
 import { MobState } from './mobs';
 import { SelectionOperation } from './selection';
-import { ResbarResource, Resource, Tool } from './tools';
-import { WinState } from './winState';
+import { ResbarResource, Resource } from './tools';
 
 
 export type MoveMobile = { mobile: RenderableMobile; id: MobileId; p_in_world_int: Point; };
@@ -134,19 +131,6 @@ export type InventoryItems = {
 };
 
 export type ResourceItems = Record<ResbarResource, number>;
-// state such that, if it updates, should induce redraw of Canvas2d content
-
-export type SlowState = {
-  generation: number; // an arbitrary mechanism for forcing a redraw
-  inventory: InventoryItems;
-  resource: ResourceItems;
-  scoring: ScoreState;
-  currentTool: Tool;
-  invalidWords: LocatedWord[];
-  renderToGl: boolean;
-  paused: PauseData | undefined;
-  winState: WinState;
-};
 
 export type MobsState = {
   mobs: Record<string, MobState>;

@@ -1,14 +1,29 @@
 import { SE1 } from '../util/se1';
 import { SE2 } from '../util/se2';
-import { SlowState, MobileEntity, WordBonusState, MobsState, MouseState } from './state-types';
+import { MobileEntity, WordBonusState, MobsState, MouseState, InventoryItems, ResourceItems, ScoreState } from './state-types';
 import { CacheUpdate } from './cache-types';
 import { Animation } from "./animation-types";
 import { Bonus } from './bonus';
-import { PanicData } from './clock';
+import { PanicData, PauseData } from './clock';
 import { Energies } from './distribution';
-import { Grid } from './grid';
+import { Grid, LocatedWord } from './grid';
 import { Overlay } from './layer';
 import { SelectionState } from './selection';
+import { Tool } from './tools';
+import { WinState } from './winState';
+
+// state such that, if it updates, should induce redraw of Canvas2d content
+export type SlowState = {
+  generation: number; // an arbitrary mechanism for forcing a redraw
+  inventory: InventoryItems;
+  resource: ResourceItems;
+  scoring: ScoreState;
+  currentTool: Tool;
+  invalidWords: LocatedWord[];
+  renderToGl: boolean;
+  paused: PauseData | undefined;
+  winState: WinState;
+};
 
 // State other than mouse state
 export type CoreState = {
