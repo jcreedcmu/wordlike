@@ -90,8 +90,7 @@ describe('moveTile', () => {
 describe('removeTile', () => {
   test('should work correctly', () => {
     const state = withCoreState(mkGameState(SEED, false, SEED), cs => checkValid(addWorldTiles(cs, debugTiles())));
-    // FIXME(mobile): horrible use of parseInt
-    const state2 = removeMobile(state.coreState, parseInt(Object.keys(state.coreState.mobile_entities)[0]));
+    const state2 = removeMobile(state.coreState, Object.values(state.coreState.mobile_entities)[0].id);
     expect(Object.keys(state2.mobile_entities).length).toBe(Object.keys(state.coreState.mobile_entities).length - 1);
   });
 });
