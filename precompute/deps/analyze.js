@@ -63,11 +63,14 @@ Object.keys(seen).forEach(file => {
   }
 });
 
-console.log(`${cycles.length} cycles found, ${icount} infinities found`);
-cycles.forEach(c => console.log('---\n'+ c));
+if (icount > 0) {
+  console.log(`${cycles.length} cycles found, ${icount} infinities found`);
+  cycles.forEach(c => console.log('---\n'+ c));
 
+  Object.keys(seen).forEach(file => {
+    const depth = getDepth(file);
+    console.log(`${file}: ${depth}`);
+  });
 
-Object.keys(seen).forEach(file => {
-  const depth = getDepth(file);
-  console.log(`${file}: ${depth}`);
-});
+  process.exit(1);
+}
