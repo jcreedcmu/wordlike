@@ -6,7 +6,7 @@ import { BIT_VISIBLE, mkChunkUpdate } from './chunk';
 import { initialEnergies } from './distribution';
 import { mkGridOf } from './grid';
 import { Overlay, mkOverlay, setOverlay } from './layer';
-import { GameState, CacheUpdate } from './state';
+import { GameState, CacheUpdate, SceneState } from './state';
 
 const DEFAULT_SCALE = 48.001;
 const epsilon = 0.0001;
@@ -76,5 +76,12 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
       _cacheUpdateQueue,
     },
     mouseState: { t: 'up', p_in_canvas: { x: 0, y: 0 } },
+  };
+}
+
+export function mkGameSceneState(seed: number, creative: boolean, bonusLayerSeed: number): SceneState {
+  return {
+    t: 'game',
+    gameState: mkGameState(seed, creative, bonusLayerSeed), revision: 0
   };
 }

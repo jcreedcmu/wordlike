@@ -7,14 +7,13 @@ import { ChunkUpdate } from './chunk';
 import { PanicData, PauseData } from './clock';
 import { Energies } from './distribution';
 import { Grid, LocatedWord } from './grid';
+import { MobileId } from './id-helpers';
 import { Overlay } from './layer';
 import { AbstractLetter } from './letters';
 import { MobState } from './mobs';
 import { SelectionOperation, SelectionState } from './selection';
-import { MobileId } from './id-helpers';
 import { ResbarResource, Resource, Tool } from './tools';
 import { WinState } from './winState';
-import { mkGameState } from './mkGameState';
 
 export type Scoring = {
   bonus: ScoringBonus | { t: 'wordAchieved', word: string },
@@ -215,11 +214,4 @@ export type GameState = {
 
 export function mkSceneState(): SceneState {
   return { t: 'menu' };
-}
-
-export function mkGameSceneState(seed: number, creative: boolean, bonusLayerSeed: number): SceneState {
-  return {
-    t: 'game',
-    gameState: mkGameState(seed, creative, bonusLayerSeed), revision: 0
-  };
 }
