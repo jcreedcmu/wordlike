@@ -122,3 +122,28 @@ export function locationOfWidgetPoint(wp: WidgetPoint): Location {
     case 'nowhere': return { t: 'nowhere' };
   }
 }
+
+export function getDragWidgetPoint(state: CoreState, p_in_canvas: Point): DragWidgetPoint {
+  if (pointInRect(p_in_canvas, hand_bds_in_canvas) || !pointInRect(p_in_canvas, canvas_bds_in_canvas)) {
+    const p_in_local = apply(inverse(canvas_from_hand()), p_in_canvas);
+    const p_in_hand_int = vint(p_in_local);
+    const index = p_in_hand_int.x;
+    const indexValid = p_in_hand_int.y == 0;
+    return {
+      t: 'hand',
+      p_in_local,
+      p_in_canvas,
+      local_from_canvas: inverse(canvas_from_hand()),
+      index,
+      indexValid,
+    };
+  }
+  else {
+    return {
+      t: 'world',
+      p_in_local: apply(inverse(state.canvas_from_world), p_in_canvas),
+      p_in_canvas,
+      local_from_canvas: inverse(state.canvas_from_world),
+    };
+  }
+}

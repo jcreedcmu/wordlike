@@ -1,20 +1,5 @@
-import { SE2 } from "../util/se2";
-import { Chunk } from "./chunk";
+import { CacheState } from "./cache-types";
 import { CoreState } from "./state";
-
-export type CacheState = {
-  selection: CachedSelection,
-}
-
-export type CachedSelectionData = {
-  selection_chunk_from_world: SE2,
-  chunk: Chunk,
-}
-
-export type CachedSelection = {
-  data: CachedSelectionData | undefined,
-  dirty: boolean,
-}
 
 // XXX global
 const cacheState: CacheState = {
