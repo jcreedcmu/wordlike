@@ -8,7 +8,7 @@ import { SE2, compose, inverse, scale } from "../util/se2";
 import { apply_to_rect, asMatrix } from "../util/se2-extra";
 import { Point } from "../util/types";
 import { pixelSnapRect, rectPts } from "../util/util";
-import { vdiag } from "../util/vutil";
+import { vdiag, vscale } from "../util/vutil";
 import { gl_from_canvas } from "./gl-helpers";
 import { spriteLocOfRes } from "./sprite-sheet";
 import { canvas_bds_in_canvas } from "./widget-helpers";
@@ -18,6 +18,7 @@ export const CHUNK_DATA_TEXTURE_UNIT = 1;
 export const FONT_TEXTURE_UNIT = 2;
 export const CELL_PREPASS_TEXTURE_UNIT = 3;
 export const CANVAS_TEXTURE_UNIT = 4;
+export const MOBILE_PREPASS_TEXTURE_UNIT = 5;
 
 export type RectDrawer = {
   prog: WebGLProgram,
@@ -56,9 +57,17 @@ export type BonusDrawer = {
   prog: WebGLProgram,
 };
 
+// this holds some prepass data.
 export type PrepassHelper = {
-  size: Point,
-  texture: WebGLTexture,
+  // We render chunks into a buffer that has one pixel per cell, so
+  // that the screen-resolution fragment shader can consult it.
+  cellSize: Point,
+  cellTexture: WebGLTexture,
+
+  // We render mobiles by id into a buffer that has one pixel per mobile, so
+  // that the screen-resolution fragment shader can consult it.
+  mobileSize: Point,
+  mobileTexture: WebGLTexture,
 };
 
 export type GlEnv = {
@@ -131,6 +140,21 @@ export function mkDebugQuadDrawer(gl: WebGL2RenderingContext): DebugQuadDrawer {
   return { prog, position };
 }
 
+function mkTexture(gl: WebGL2RenderingContext, textureUnit: number, size: Point): WebGLTexture {
+  const texture = gl.createTexture()!;
+  gl.activeTexture(gl.TEXTURE0 + textureUnit);
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+
+  const data = new Uint8Array(size.x * size.y * 4); // avoid lazy texture initialization warning
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, size.x, size.y, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
+
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  return texture;
+}
+
 export function mkCanvasDrawer(gl: WebGL2RenderingContext): CanvasDrawer {
   const prog = shaderProgram(gl, getAssets().canvasShaders);
   gl.useProgram(prog);
@@ -139,20 +163,7 @@ export function mkCanvasDrawer(gl: WebGL2RenderingContext): CanvasDrawer {
   if (position == null)
     throw new Error(`couldn't allocate position buffer`);
 
-  const texture = gl.createTexture()!;
-  gl.activeTexture(gl.TEXTURE0 + CANVAS_TEXTURE_UNIT);
-  gl.bindTexture(gl.TEXTURE_2D, texture);
-
-  const data = null;
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA,
-    canvas_bds_in_canvas.sz.x * devicePixelRatio,
-    canvas_bds_in_canvas.sz.y * devicePixelRatio, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
-
-  // set the filtering so we don't need mips
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  const texture = mkTexture(gl, CANVAS_TEXTURE_UNIT, vscale(canvas_bds_in_canvas.sz, devicePixelRatio));
 
   const [p1, p2] = rectPts(apply_to_rect(gl_from_canvas, canvas_bds_in_canvas));
   bufferSetFloats(gl, position, [
@@ -166,20 +177,12 @@ export function mkCanvasDrawer(gl: WebGL2RenderingContext): CanvasDrawer {
 }
 
 export function mkPrepassHelper(gl: WebGL2RenderingContext, size: Point): PrepassHelper {
-  const texture = gl.createTexture()!;
-  gl.activeTexture(gl.TEXTURE0 + CELL_PREPASS_TEXTURE_UNIT);
-  gl.bindTexture(gl.TEXTURE_2D, texture);
-
-  const data = new Uint8Array(size.x * size.y * 4); // avoid lazy texture initialization warning
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, size.x, size.y, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
-
-  // set the filtering so we don't need mips
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-  return { size, texture };
+  const cellSize = size;
+  const mobileSize = size;
+  return {
+    cellSize, cellTexture: mkTexture(gl, CELL_PREPASS_TEXTURE_UNIT, cellSize),
+    mobileSize, mobileTexture: mkTexture(gl, MOBILE_PREPASS_TEXTURE_UNIT, mobileSize),
+  };
 }
 
 export function mkRectDrawer(gl: WebGL2RenderingContext): RectDrawer {
