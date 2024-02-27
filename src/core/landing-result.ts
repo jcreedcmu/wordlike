@@ -1,22 +1,13 @@
 import { DEBUG } from "../util/debug";
-import { Point } from "../util/types";
+import { LandingMove, MoveSource } from "./landing-types";
 import { getOverlay } from "./layer";
-import { AbstractLetter, lettersMatch } from "./letters";
-import { MobState, MobType, collidesWithMob } from "./mobs";
+import { lettersMatch } from "./letters";
+import { MobState, collidesWithMob } from "./mobs";
 import { mobsMap } from "./mobs-map";
 import { CoreState } from "./state";
 import { MobileEntity, MoveMobile } from './state-types';
 import { CellContents, cellAtPointForMobiles, get_mobiles } from "./tile-helpers";
 import { Resource } from "./tool-types";
-
-// A thing that can be moved onto something else
-export type MoveSource =
-  | { t: 'tile', letter: AbstractLetter }
-  | { t: 'resource', res: Resource }
-  | { t: 'mob', mobType: MobType }
-  ;
-
-export type LandingMove = { src: MoveSource, p_in_world_int: Point };
 
 // When A lands on B, this type says what happens. It tries *not* to
 // produce information about identity of the A involved, but it may

@@ -1,20 +1,11 @@
 import { produce } from "../util/produce";
-import { Point } from "../util/types";
+import { MoveSourceId, LandingMoveId } from "./landing-types";
 import { tryKillTileOfStateLoc } from "./kill-helpers";
 import { LandingResult, ProperLandingResult } from "./landing-result";
 import { CoreState } from "./state";
-import { MobileId, MoveMobile } from './state-types';
+import { MoveMobile } from './state-types';
 import { addResourceMobile, mobileAtPoint, putMobileInWorld, putMobileNowhere, removeMobile } from "./tile-helpers";
 import { fillWaterIntent } from "./tool-intents";
-import { ResbarResource } from "./tool-types";
-
-// A thing that can be moved onto something else
-export type MoveSourceId =
-  | { t: 'mobile', id: MobileId }
-  | { t: 'freshResource', res: ResbarResource }
-  ;
-
-export type LandingMoveId = { src: MoveSourceId, p_in_world_int: Point };
 
 export function removeSource(state: CoreState, src: MoveSourceId): CoreState {
   switch (src.t) {

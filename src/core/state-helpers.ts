@@ -11,9 +11,10 @@ import { Scoring, adjacentScoringOfBonus, overlapScoringOfBonus } from "./bonus"
 import { getBonusFromLayer, resolveScoring, updateBonusLayer } from "./bonus-helpers";
 import { CacheUpdate, mkChunkUpdate } from './cache-types';
 import { BIT_CONNECTED } from "./chunk";
-import { PANIC_INTERVAL_MS, PanicData, PauseData, WORD_BONUS_INTERVAL_MS, now_in_game } from "./clock";
+import { PauseData, WORD_BONUS_INTERVAL_MS, now_in_game } from "./clock";
 import { DrawForce, getLetterSample } from "./distribution";
 import { updateFogOfWar } from "./fog-of-war";
+import { freshPanic } from "./fresh-panic";
 import { checkConnected, checkGridWords, gridKeys, mkGridOfMainTiles } from "./grid";
 import { mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
 import { AbstractLetter } from "./letters";
@@ -139,12 +140,6 @@ function resolveHighWaterMark(state: CoreState): CoreState {
   else {
     return state;
   }
-}
-
-export function freshPanic(state: CoreState): PanicData {
-  const currentTime_in_game = now_in_game(state.game_from_clock);
-  const debug_offset = DEBUG.skipAheadPanic ? PANIC_INTERVAL_MS - 10000 : 0;
-  return { currentTime_in_game, lastClear_in_game: currentTime_in_game - debug_offset };
 }
 
 export function checkValid(state: CoreState): CoreState {

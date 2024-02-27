@@ -1,7 +1,7 @@
 import { Tool, tools, ResbarResource, resbarResources } from "./tool-types";
 import { GameLowAction } from "./action";
 import { CoreState } from "./state";
-import { freshPanic } from "./state-helpers";
+import { freshPanic } from "./fresh-panic";
 
 export function toolOfIndex(index: number): Tool | undefined {
   return tools[index];
