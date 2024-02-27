@@ -1,4 +1,3 @@
-import { isActiveCanvasAnimation } from '../ui/drawAnimation';
 import { canvas_from_drag_mobile, pan_canvas_from_canvas_of_mouse_state } from '../ui/view-helpers';
 import { TOOLBAR_WIDTH } from "../ui/widget-constants";
 import { getWidgetPoint } from '../ui/widget-helpers';
@@ -10,6 +9,7 @@ import { Point } from '../util/types';
 import { flatUndef, getRandomOrder } from '../util/util';
 import { vequal, vint, vm, vscale, vsub } from '../util/vutil';
 import { GameAction, GameLowAction, LowAction } from './action';
+import { isActiveCanvasAnimation } from './animation-types';
 import { CacheUpdate, mkChunkUpdate } from './cache-types';
 import { getPanicFraction, now_in_game } from './clock';
 import { WidgetPoint } from './core-ui-types';

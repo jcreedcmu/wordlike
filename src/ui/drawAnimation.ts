@@ -55,7 +55,3 @@ export function drawAnimation(d: CanvasRenderingContext2D, pan_canvas_from_world
   }
 
 }
-
-export function isActiveCanvasAnimation(anim: Animation): boolean {
-  return anim.t == 'explosion' || anim.t == 'fireworks';
-}

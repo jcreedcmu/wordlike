@@ -11,3 +11,7 @@ type Firework = {
 export type Animation = { t: 'explosion'; start_in_game: number; duration_ms: number; center_in_world: Point; radius: number; } |
 { t: 'point-decay'; start_in_game: number; duration_ms: number; p_in_world_int: Point; } |
 { t: 'fireworks'; start_in_game: number; duration_ms: number; fireworks: Firework[]; message: string; };
+
+export function isActiveCanvasAnimation(anim: Animation): boolean {
+  return anim.t == 'explosion' || anim.t == 'fireworks';
+}
