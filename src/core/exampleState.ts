@@ -1,11 +1,12 @@
 import { PANIC_INTERVAL_MS } from '../core/clock';
 import { ensureTileId } from "../core/id-helpers";
 import { AbstractLetter } from '../core/letters';
-import { GameState, TileOptionalId, mkGameState } from '../core/state';
+import { GameState, TileOptionalId } from '../core/state';
 import { addHandTileEntities, addWorldTiles, checkValid, resolveValid, withCoreState } from '../core/state-helpers';
 import { produce } from '../util/produce';
 import * as SE1 from '../util/se1';
 import { updateFogOfWar } from './fog-of-war';
+import { mkGameState } from './mkGameState';
 
 export function exampleState(): GameState {
   const state = mkGameState(1533311107, false, 46);

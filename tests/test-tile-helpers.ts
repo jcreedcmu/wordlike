@@ -1,4 +1,5 @@
-import { GameState, mkGameState } from "../src/core/state";
+import { mkGameState } from "../src/core/mkGameState";
+import { GameState } from "../src/core/state";
 import { addHandTileEntity, addWorldTile, getMobileLoc, putMobileInWorld } from "../src/core/tile-helpers";
 import { produce } from "../src/util/produce";
 

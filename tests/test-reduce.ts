@@ -2,7 +2,8 @@ import { GameLowAction } from '../src/core/action';
 import { BIT_CONNECTED, BIT_SELECTED } from '../src/core/chunk';
 import { mkOverlayFrom } from '../src/core/layer';
 import { resolveGameLowActions } from '../src/core/low-actions';
-import { GameState, mkGameState } from '../src/core/state';
+import { mkGameState } from '../src/core/mkGameState';
+import { GameState } from '../src/core/state';
 import { addWorldTile } from '../src/core/tile-helpers';
 import { produce } from '../src/util/produce';
 

@@ -1,5 +1,6 @@
+import { mkGameState } from "../src/core/mkGameState";
 import { addMobWithId, advanceMob } from "../src/core/mobs";
-import { GameState, mkGameState } from "../src/core/state";
+import { GameState } from "../src/core/state";
 import { withCoreState } from "../src/core/state-helpers";
 import { produce } from "../src/util/produce";
 
