@@ -2,10 +2,9 @@ import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { vadd, vsnorm } from "../util/vutil";
 import { BIT_VISIBLE } from "./chunk";
-import { mkChunkUpdate } from "../ui/chunk-helpers";
 import { Overlay, combineOverlay, getOverlay, mkOverlay, overlayPoints, setOverlay } from "./layer";
 import { CoreState } from "./state";
-import { CacheUpdate } from './cache-types';
+import { CacheUpdate, mkChunkUpdate } from './cache-types';
 import { get_main_tiles as get_world_tiles } from "./tile-helpers";
 import { PLACED_MOBILE_SEEN_CELLS_RADIUS } from "./state-helpers";
 

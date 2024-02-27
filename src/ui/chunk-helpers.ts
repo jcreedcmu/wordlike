@@ -9,7 +9,6 @@ import { Overlay, getOverlay, setOverlay } from "../core/layer";
 import { byteOfLetter } from "../core/letters";
 import { CoreState } from "../core/state";
 import { RenderableMobile } from '../core/state-types';
-import { CacheUpdate } from '../core/cache-types';
 import { Chunk, WORLD_CHUNK_SIZE, BONUS_CHANNEL, METADATA_CHANNEL, MOBILE_CHANNEL, UNUSED_CHANNEL, BIT_CONNECTED, BIT_SELECTED, ChunkUpdate } from "../core/chunk";
 
 function getWorldChunkData(cs: CoreState, p_in_chunk: Point): Chunk {
@@ -170,8 +169,4 @@ export function mkChunk(size: Point): Chunk {
     size,
     imdat: new ImageData(size.x, size.y)
   };
-}
-
-export function mkChunkUpdate(p_in_world_int: Point, cu: ChunkUpdate): CacheUpdate {
-  return { t: 'chunkUpdate', chunkUpdate: cu, p_in_world_int };
 }

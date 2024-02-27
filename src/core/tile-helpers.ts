@@ -1,11 +1,10 @@
 import { Draft } from "immer";
-import { mkChunkUpdate } from "../ui/chunk-helpers";
 import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { vequal, vm } from "../util/vutil";
 import { Bonus } from "./bonus";
 import { getBonusFromLayer } from "./bonus-helpers";
-import { CacheUpdate } from './cache-types';
+import { CacheUpdate, mkChunkUpdate } from './cache-types';
 import { addId, ensureId, freshId } from "./id-helpers";
 import { AbstractLetter } from "./letters";
 import { CoreState, GameState } from "./state";

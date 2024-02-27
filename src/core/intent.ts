@@ -1,10 +1,9 @@
-import { mkChunkUpdate } from "../ui/chunk-helpers";
 import { WidgetPoint } from '../ui/widget-helpers';
 import { produce } from '../util/produce';
 import { Point } from '../util/types';
 import { vm } from '../util/vutil';
 import { Bonus } from './bonus';
-import { CacheUpdate } from './cache-types';
+import { CacheUpdate, mkChunkUpdate } from './cache-types';
 import { updateFogOfWarAtPoint } from './fog-of-war';
 import { tryKillTileOfState } from './kill-helpers';
 import { getOverlay } from './layer';

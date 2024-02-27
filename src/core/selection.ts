@@ -5,11 +5,10 @@ import { boundRect, pointInRect } from "../util/util";
 import { vadd, vsub } from "../util/vutil";
 import { getCacheState } from "./cache-state";
 import { BIT_SELECTED } from "./chunk";
-import { mkChunkUpdate } from "../ui/chunk-helpers";
 import { Overlay, mkOverlay, overlayForEach, setOverlay } from "./layer";
 import { CoreState } from "./state";
 import { MobileId, MouseState } from './state-types';
-import { CacheUpdate } from './cache-types';
+import { CacheUpdate, mkChunkUpdate } from './cache-types';
 import { getMobileId, get_main_tiles } from "./tile-helpers";
 import { SelectionOperation } from "./selection-operation";
 

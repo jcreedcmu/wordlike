@@ -2,12 +2,11 @@ import { DEBUG } from "../util/debug";
 import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { Bonus, Scoring, getBonusLayer } from "./bonus";
-import { mkChunkUpdate } from "../ui/chunk-helpers";
 import { getOverlayLayer, setOverlay } from "./layer";
 import { incrementScore } from "./scoring";
 import { CoreState } from "./state";
 import { MoveMobileNoId } from './state-types';
-import { CacheUpdate } from './cache-types';
+import { CacheUpdate, mkChunkUpdate } from './cache-types';
 import { mkActiveWordBonus } from "./word-bonus";
 
 // XXX name?

@@ -1,4 +1,3 @@
-import { mkChunkUpdate } from "../ui/chunk-helpers";
 import { isActiveCanvasAnimation } from '../ui/drawAnimation';
 import { canvas_from_drag_mobile, pan_canvas_from_canvas_of_mouse_state } from '../ui/view-helpers';
 import { TOOLBAR_WIDTH } from "../ui/widget-constants";
@@ -11,7 +10,7 @@ import { Point } from '../util/types';
 import { flatUndef, getRandomOrder } from '../util/util';
 import { vequal, vint, vm, vscale, vsub } from '../util/vutil';
 import { GameAction, GameLowAction, LowAction } from './action';
-import { CacheUpdate } from './cache-types';
+import { CacheUpdate, mkChunkUpdate } from './cache-types';
 import { getPanicFraction, now_in_game } from './clock';
 import { getIntentOfMouseDown, reduceIntent, vacuous_down } from './intent';
 import { tryKillTileOfState } from './kill-helpers';

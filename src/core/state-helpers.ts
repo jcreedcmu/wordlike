@@ -1,4 +1,3 @@
-import { mkChunkUpdate } from "../ui/chunk-helpers";
 import { canvas_from_drag_mobile } from "../ui/view-helpers";
 import { getWidgetPoint } from "../ui/widget-helpers";
 import { DEBUG, logger } from "../util/debug";
@@ -12,7 +11,7 @@ import { mkPointDecayAnimation, mkScoreAnimation, mkWinAnimation } from './anima
 import { getAssets } from "./assets";
 import { Scoring, adjacentScoringOfBonus, overlapScoringOfBonus } from "./bonus";
 import { getBonusFromLayer, resolveScoring, updateBonusLayer } from "./bonus-helpers";
-import { CacheUpdate } from './cache-types';
+import { CacheUpdate, mkChunkUpdate } from './cache-types';
 import { BIT_CONNECTED } from "./chunk";
 import { PANIC_INTERVAL_MS, PanicData, PauseData, WORD_BONUS_INTERVAL_MS, now_in_game } from "./clock";
 import { DrawForce, getLetterSample } from "./distribution";

@@ -3,12 +3,11 @@ import * as se1 from '../util/se1';
 import { vsnorm } from '../util/vutil';
 import { Bonus } from './bonus';
 import { BIT_VISIBLE } from './chunk';
-import { mkChunkUpdate } from "../ui/chunk-helpers";
 import { initialEnergies } from './distribution';
 import { mkGridOf } from './grid';
 import { Overlay, mkOverlay, setOverlay } from './layer';
 import { GameState, SceneState } from './state';
-import { CacheUpdate } from './cache-types';
+import { CacheUpdate, mkChunkUpdate } from './cache-types';
 
 const DEFAULT_SCALE = 48.001;
 const epsilon = 0.0001;
