@@ -17,6 +17,11 @@ export const BIT_SELECTED = 0;
 export const BIT_CONNECTED = 1;
 export const BIT_VISIBLE = 2;
 
+export const BONUS_CHANNEL = 0;
+export const METADATA_CHANNEL = 1;
+export const MOBILE_CHANNEL = 2;
+export const UNUSED_CHANNEL = 3;
+
 export type ChunkUpdate =
   | { t: 'bonus', bonus: Bonus }
   | { t: 'addMobile', mobile: RenderableMobile }
@@ -45,20 +50,20 @@ function getWorldChunkData(cs: CoreState, p_in_chunk: Point): Chunk {
       // === cell_data format ===
       //
       // .r: which bonus we should show here. High 4 bits are x coord on the sprite sheet, low 4 bits are y.
-      // .g: which mobile we should draw here.
+      // .g: some metadata.
+      //       bit 0: tile is selected
+      //       bit 1: tile is connected to origin
+      //       bit 2: cell is visible
+      // .b: which mobile we should draw here.
       //     bit 7 set: mobile is a tile. 32 = none, 0 = A, ..., 25 = Z
       //     bit 7 clear: mobile is a resource from the sprite sheet. Format is
       //                  0[xxx][yyyy] just like .r field. This means we have access
       //                  to only the left half of the sprite sheet.
-      // .b: some metadata.
-      //       bit 0: tile is selected
-      //       bit 1: tile is connected to origin
-      //       bit 2: cell is visible
       // .a: unused
-      imdat.data[fix + 0] = (spritePos.x << 4) + spritePos.y;
-      imdat.data[fix + 1] = byteOfEmpty();
-      imdat.data[fix + 2] = 0;
-      imdat.data[fix + 3] = 0;
+      imdat.data[fix + BONUS_CHANNEL] = (spritePos.x << 4) + spritePos.y;
+      imdat.data[fix + METADATA_CHANNEL] = 0;
+      imdat.data[fix + MOBILE_CHANNEL] = byteOfEmpty();
+      imdat.data[fix + UNUSED_CHANNEL] = 0;
     }
   }
 
@@ -101,28 +106,28 @@ function processChunkUpdate(cu: ChunkUpdate, oldVec: number[]): number[] {
   const rv = [...oldVec];
   switch (cu.t) {
     case 'bonus': {
-      rv[0] = byteOfSpriteLoc(spriteLocOfChunkValue({ t: 'bonus', bonus: cu.bonus }));
+      rv[BONUS_CHANNEL] = byteOfSpriteLoc(spriteLocOfChunkValue({ t: 'bonus', bonus: cu.bonus }));
       return rv;
     }
     case 'addMobile': {
-      rv[1] = byteOfMobile(cu.mobile);
-      rv[2] = freshMobileFlags(oldVec[2]);
+      rv[MOBILE_CHANNEL] = byteOfMobile(cu.mobile);
+      rv[METADATA_CHANNEL] = freshMobileFlags(oldVec[METADATA_CHANNEL]);
       return rv;
     }
     case 'removeMobile': {
-      rv[1] = byteOfEmpty();
+      rv[MOBILE_CHANNEL] = byteOfEmpty();
       return rv;
     }
     case 'setBit': {
-      rv[2] |= 1 << cu.bit;
+      rv[METADATA_CHANNEL] |= 1 << cu.bit;
       return rv;
     }
     case 'clearBit': {
-      rv[2] &= (~(1 << cu.bit));
+      rv[METADATA_CHANNEL] &= (~(1 << cu.bit));
       return rv;
     }
     case 'restoreMobile': {
-      rv[1] = byteOfMobile(cu.mobile);
+      rv[MOBILE_CHANNEL] = byteOfMobile(cu.mobile);
       return rv;
     }
   }

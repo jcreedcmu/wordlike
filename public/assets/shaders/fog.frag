@@ -1,5 +1,5 @@
 int is_fog(vec4 cell_data) {
-  int ci = int(round(cell_data.b));
+  int ci = int(round(cell_data.METADATA_CHANNEL));
   return int((ci & 0x4) == 0);
 }
 

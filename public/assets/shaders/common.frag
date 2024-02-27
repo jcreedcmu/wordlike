@@ -1,3 +1,8 @@
+#define BONUS_CHANNEL r
+#define METADATA_CHANNEL g
+#define MOBILE_CHANNEL b
+#define UNUSED_CHANNEL b
+
 // Size of the 'screen' in pixels
 uniform vec2 u_canvasSize;
 

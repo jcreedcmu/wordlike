@@ -104,20 +104,22 @@ vec4 get_origin_pixel(vec2 p_in_world_int, vec2 p_in_world_fp) {
 // See src/core/chunk.ts (search "cell_data format") for documentation
 // on the format of cell_data
 vec4 get_cell_pixel(vec2 p_in_world, vec2 p_in_world_fp, ivec3 cell_data) {
-  int channel_g = cell_data.g;
-  int flags = cell_data.b;
-  bool selected = (flags & 1) != 0;
-  bool connected = (flags & 2) != 0;
+  int bonus_channel = cell_data.BONUS_CHANNEL;
+  int metadata_channel = cell_data.METADATA_CHANNEL;
+  int mobile_channel = cell_data.MOBILE_CHANNEL;
 
-  vec2 bonus_coords = vec2(cell_data.r >> 4, cell_data.r & 0xf);
+  bool selected = (metadata_channel & 1) != 0;
+  bool connected = (metadata_channel & 2) != 0;
+
+  vec2 bonus_coords = vec2(bonus_channel >> 4, bonus_channel & 0xf);
 
   vec4 base_layer_pixel = get_base_layer_sprite_pixel(p_in_world, p_in_world_fp, bonus_coords);
 
   vec4 mobile_pixel = vec4(0.,0.,0.,0.);
 
   // if high bit is set, that means we're doing letter tiles
-  if ((channel_g & 128) != 0) {
-    int letter = channel_g & 0x7f;
+  if ((mobile_channel & 128) != 0) {
+    int letter = mobile_channel & 0x7f;
 
     // 32 is space
     if (letter != 32) {
@@ -131,7 +133,7 @@ vec4 get_cell_pixel(vec2 p_in_world, vec2 p_in_world_fp, ivec3 cell_data) {
   }
   // if high bit is clear, that means we're doing mobile resources
   else {
-    mobile_pixel = get_sprite_pixel(p_in_world_fp, vec2(channel_g >> 4, channel_g & 0xf));
+    mobile_pixel = get_sprite_pixel(p_in_world_fp, vec2(mobile_channel >> 4, mobile_channel & 0xf));
   }
 
   return blendOver(get_fog_pixel(p_in_world), blendOver(mobile_pixel, base_layer_pixel));
