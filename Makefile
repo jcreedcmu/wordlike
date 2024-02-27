@@ -29,3 +29,6 @@ deploy:
 
 render-svgs:
 	precompute/svg/render-svgs.sh
+
+deps:
+	./precompute/deps/analyze.sh
