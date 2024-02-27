@@ -1,5 +1,5 @@
 import { getAssets } from '../core/assets';
-import { Bonus, rectOfBonus } from '../core/bonus';
+import { Bonus } from '../core/bonus';
 import { AbstractLetter } from '../core/letters';
 import { drawImage, fillRect } from '../util/dutil';
 import { SE2 } from '../util/se2';
@@ -8,7 +8,7 @@ import { Point, Rect } from "../util/types";
 import { midpointOfRect } from "../util/util";
 import { vadd } from '../util/vutil';
 import { drawTileLetter } from './render';
-import { spriteLocOfBonus, spriteRectOfPos } from './sprite-sheet';
+import { rectOfBonus, spriteLocOfBonus, spriteRectOfPos } from './sprite-sheet';
 
 export function drawBonusPoint(d: CanvasRenderingContext2D, pan_canvas_from_world: SE2, p: Point, fraction: number = 1) {
   const rect_in_canvas = apply_to_rect(pan_canvas_from_world, { p, sz: { x: 1, y: 1 } });

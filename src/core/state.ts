@@ -2,7 +2,7 @@ import { SE1 } from '../util/se1';
 import { SE2 } from '../util/se2';
 import { Point } from '../util/types';
 import { Animation } from "./animation-types";
-import { Bonus, ScoringBonus } from './bonus';
+import { Bonus } from './bonus';
 import { ChunkUpdate } from './chunk';
 import { PanicData, PauseData } from './clock';
 import { Energies } from './distribution';
@@ -14,12 +14,6 @@ import { MobState } from './mobs';
 import { SelectionOperation, SelectionState } from './selection';
 import { ResbarResource, Resource, Tool } from './tools';
 import { WinState } from './winState';
-
-export type Scoring = {
-  bonus: ScoringBonus | { t: 'wordAchieved', word: string },
-  p_in_world_int: Point,
-  destroy: boolean,
-};
 
 export type MoveMobile = { mobile: RenderableMobile, id: MobileId, p_in_world_int: Point };
 export type MoveMobileNoId = { mobile: RenderableMobile, p_in_world_int: Point };
