@@ -6,7 +6,8 @@ import { Overlay, combineOverlay, getOverlay, mkOverlay, overlayPoints, setOverl
 import { CoreState } from "./state";
 import { CacheUpdate, mkChunkUpdate } from './cache-types';
 import { get_main_tiles as get_world_tiles } from "./tile-helpers";
-import { PLACED_MOBILE_SEEN_CELLS_RADIUS } from "./state-helpers";
+
+export const PLACED_MOBILE_SEEN_CELLS_RADIUS = 2.5;
 
 // imperatively updates recentlySeen
 function updateFogOfWarAtPointAux(state: CoreState, recentlySeen: Overlay<boolean>, center: Point, radius: number): void {

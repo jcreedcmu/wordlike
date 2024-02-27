@@ -29,8 +29,6 @@ import { addHandTileEntity, addWorldTile, get_hand_tiles, get_main_tiles as get_
 import { getCurrentTool } from "./tools";
 import { WIN_SCORE, canWinFromState, shouldStartPanicBar } from "./winState";
 
-export const PLACED_MOBILE_SEEN_CELLS_RADIUS = 2.5;
-
 export function addWorldTiles(state: CoreState, tiles: Tile[]): CoreState {
   return produce(state, s => {
     tiles.forEach(tile => {
