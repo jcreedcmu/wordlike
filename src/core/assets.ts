@@ -45,13 +45,13 @@ async function preprocess(shaderText: string): Promise<string> {
     const file = ms[1];
     // XXX recursively preprocess?
     // XXX cache fetches?
-    return await grab(`assets/${file}`);
+    return await grab(`assets/shaders/${file}`);
   });
 }
 
 async function getShaders(prefix: string): Promise<ShaderProgramText> {
-  const vert = await preprocess(await grab(`assets/${prefix}.vert`));
-  const frag = await preprocess(await grab(`assets/${prefix}.frag`));
+  const vert = await preprocess(await grab(`assets/shaders/${prefix}.vert`));
+  const frag = await preprocess(await grab(`assets/shaders/${prefix}.frag`));
   return { name: prefix, vert, frag };
 }
 
