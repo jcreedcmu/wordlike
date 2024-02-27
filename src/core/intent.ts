@@ -21,10 +21,10 @@ export type KillIntent =
   ;
 
 export type Intent =
-  | { t: 'dragTile', id: MobileId } // FIXME(mobile): these 'tiles' should be called 'mobiles'
+  | { t: 'dragMobile', id: MobileId }
   | { t: 'vacuous' }
   | { t: 'panWorld' }
-  | { t: 'exchangeTiles', id: MobileId }
+  | { t: 'exchangeMobiles', id: MobileId }
   | { t: 'startSelection', opn: SelectionOperation }
   | { t: 'copy' }
   | { t: 'magnify' }
@@ -57,10 +57,10 @@ export function getIntentOfMouseDown(tool: Tool, button: number, mods: Set<strin
         if (pinned)
           return { t: 'panWorld' };
         if (mods.has('meta')) {
-          return { t: 'exchangeTiles', id: hoverMobile.id };
+          return { t: 'exchangeMobiles', id: hoverMobile.id };
         }
         else {
-          return { t: 'dragTile', id: hoverMobile.id };
+          return { t: 'dragMobile', id: hoverMobile.id };
         }
       }
       return { t: 'startSelection', opn: selectionOperationOfMods(mods) };
@@ -85,7 +85,7 @@ export function getIntentOfMouseDown(tool: Tool, button: number, mods: Set<strin
 export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint): GameState {
 
   switch (intent.t) {
-    case 'dragTile': {
+    case 'dragMobile': {
       const cs = state.coreState;
       if (wp.t != 'world' && wp.t != 'hand') return vacuous_down(state, wp);
       const p_in_world_int = vm(wp.p_in_local, Math.floor);
@@ -124,7 +124,7 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
         };
       });
     }
-    case 'exchangeTiles': {
+    case 'exchangeMobiles': {
       // FIXME: only works for world tiles right now
       if (wp.t != 'world') return vacuous_down(state, wp);
       const p_in_world_int = vm(wp.p_in_local, Math.floor);
