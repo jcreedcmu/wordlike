@@ -32,7 +32,7 @@ import { canvas_from_drag_mobile, cell_in_canvas, pan_canvas_from_world_of_state
 import { getWidgetPoint } from "./widget-helpers";
 import { panic_bds_in_canvas } from "./widget-layout";
 import { TOOLBAR_WIDTH, canvas_bds_in_canvas, resbar_bds_in_canvas } from "./widget-constants";
-import { mobsMap } from "../core/mob-helpers";
+import { mobsMap } from "../core/mobs-map";
 
 const shadowColorRgba: RgbaColor = [128, 128, 100, Math.floor(0.4 * 255)];
 

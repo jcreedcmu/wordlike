@@ -1,6 +1,6 @@
 import { produce } from "../util/produce";
 import { Point } from "../util/types";
-import { mapval, next_rand } from "../util/util";
+import { next_rand } from "../util/util";
 import { vint, vm } from "../util/vutil";
 import { freshId } from "./id-helpers";
 import { MoveSource, landMoveOnState } from "./landing-result";
@@ -97,12 +97,4 @@ export function addMobWithId(state: CoreState, newMob: MobState, id: string): Co
 
 export function mkMobsState(): MobsState {
   return { mobs: {} };
-}
-
-export function mobsMap<T>(state: MobsState, k: (mob: MobState, id: string) => T): T[] {
-  return Object.keys(state.mobs).map(id => k(state.mobs[id], id));
-}
-
-export function mobsMapVal(state: MobsState, k: (mob: MobState, id: string) => MobState): MobsState {
-  return { mobs: mapval(state.mobs, k) };
 }
