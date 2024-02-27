@@ -1,4 +1,4 @@
-import { Animation } from '../core/animations';
+import { Animation } from "../core/animation-types";
 import { bufferSetFloats } from '../util/gl-util';
 import { SE2, compose, inverse, scale, translate } from '../util/se2';
 import { apply_to_rect, asMatrix } from '../util/se2-extra';
@@ -7,7 +7,7 @@ import { rectPts, unreachable } from "../util/util";
 import { vdiag } from '../util/vutil';
 import { GlEnv } from './gl-common';
 import { gl_from_canvas } from './gl-helpers';
-import { canvas_bds_in_canvas } from './widget-helpers';
+import { canvas_bds_in_canvas } from "./widget-constants";
 
 function drawBonusPoint(env: GlEnv, canvas_from_world: SE2, p_in_world: Point, fraction: number): void {
   const { gl } = env;

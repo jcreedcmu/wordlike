@@ -1,7 +1,9 @@
 import { isActiveCanvasAnimation } from '../ui/drawAnimation';
 import { canvas_from_drag_mobile, pan_canvas_from_canvas_of_mouse_state } from '../ui/view-helpers';
-import { TOOLBAR_WIDTH, WidgetPoint, getWidgetPoint } from '../ui/widget-helpers';
-import { DEBUG, debugTiles } from '../util/debug';
+import { WidgetPoint, getWidgetPoint } from '../ui/widget-helpers';
+import { TOOLBAR_WIDTH } from "../ui/widget-constants";
+import { DEBUG } from '../util/debug';
+import { debugTiles } from "../util/debugTiles";
 import { produce } from '../util/produce';
 import { apply, compose, composen, inverse, scale, translate } from '../util/se2';
 import { Point } from '../util/types';

@@ -1,5 +1,5 @@
 import { spriteLocOfBonus, spriteLocOfChunkValue, spriteLocOfRes } from "../ui/sprite-sheet";
-import { world_bds_in_canvas } from "../ui/widget-helpers";
+import { world_bds_in_canvas } from "../ui/widget-constants";
 import { ImageData } from "../util/image-data";
 import { SE2, apply, compose, inverse, scale } from "../util/se2";
 import { Point } from "../util/types";

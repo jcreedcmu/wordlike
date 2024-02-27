@@ -1,4 +1,4 @@
-import { Animation } from '../core/animations';
+import { Animation } from "../core/animation-types";
 import { fillText, pathCircle, strokeText } from '../util/dutil';
 import { SE2 } from '../util/se2';
 import { apply_to_rect } from "../util/se2-extra";
@@ -6,7 +6,7 @@ import { Point } from "../util/types";
 import { midpointOfRect, unreachable } from "../util/util";
 import { vscale, vsub } from "../util/vutil";
 import { drawBonusPoint } from "./drawBonus";
-import { canvas_bds_in_canvas } from './widget-helpers';
+import { canvas_bds_in_canvas } from "./widget-constants";
 
 export function drawAnimation(d: CanvasRenderingContext2D, pan_canvas_from_world: SE2, time_ms: number, anim: Animation, glEnabled: boolean): void {
   switch (anim.t) {

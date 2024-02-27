@@ -1,5 +1,5 @@
 import { Dispatch } from "../core/action";
-import { Animation } from "../core/animations";
+import { Animation } from "../core/animation-types";
 import { getAssets } from "../core/assets";
 import { ActiveChunkInfo, Chunk, WORLD_CHUNK_SIZE, activeChunks, ensureChunk, getChunk, updateChunkCache } from "../core/chunk";
 import { getWordBonusFraction, now_in_game } from "../core/clock";
@@ -26,7 +26,9 @@ import { spriteLocOfRes, spriteLocOfMob } from "./sprite-sheet";
 import { resizeView } from "./ui-helpers";
 import { CanvasGlInfo } from "./use-canvas";
 import { canvas_from_drag_mobile, cell_in_canvas, pan_canvas_from_world_of_state } from "./view-helpers";
-import { TOOLBAR_WIDTH, canvas_bds_in_canvas, getWidgetPoint, panic_bds_in_canvas, resbar_bds_in_canvas } from "./widget-helpers";
+import { getWidgetPoint } from "./widget-helpers";
+import { panic_bds_in_canvas } from "./widget-layout";
+import { TOOLBAR_WIDTH, canvas_bds_in_canvas, resbar_bds_in_canvas } from "./widget-constants";
 
 const shadowColorRgba: RgbaColor = [128, 128, 100, Math.floor(0.4 * 255)];
 

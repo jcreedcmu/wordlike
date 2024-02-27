@@ -1,7 +1,7 @@
 import { SE1 } from '../util/se1';
 import { SE2 } from '../util/se2';
 import { Point } from '../util/types';
-import { Animation } from './animations';
+import { Animation } from "./animation-types";
 import { Bonus, ScoringBonus } from './bonus';
 import { ChunkUpdate } from './chunk';
 import { PanicData, PauseData } from './clock';

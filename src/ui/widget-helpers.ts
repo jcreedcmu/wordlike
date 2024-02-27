@@ -1,69 +1,11 @@
-import { CoreState, HAND_TILE_LIMIT, Location } from "../core/state";
+import { CoreState, Location } from "../core/state";
 import { ResbarResource, Tool, getCurrentResources, getCurrentTools } from "../core/tools";
 import { SE2, apply, inverse } from "../util/se2";
 import { Point, Rect } from "../util/types";
-import { lerp, mapval, pixelSnapRect, pointInRect } from "../util/util";
-import { vdiag, vint } from "../util/vutil";
-import { centerX, fixedRect, layout, nameRect, packHoriz, packVert, padRect, stretchRectY } from "./layout";
-
-export const GLOBAL_BORDER = 5;
-const HAND_VERT_PADDING = 10;
-const HAND_VERT_MARGIN = 12;
-const HAND_HORIZ_MARGIN = 16;
-export const PANIC_THICK = 10;
-const SPACER_WIDTH = 5;
-
-export const canvas_bds_in_canvas: Rect = { p: { x: 0, y: 0 }, sz: { x: 1024, y: 768 } };
-export const DEFAULT_TILE_SCALE = 48;
-
-const pauseButton = packVert(
-  nameRect('pause', fixedRect(vdiag(DEFAULT_TILE_SCALE + 2 * HAND_VERT_PADDING - HAND_VERT_MARGIN))),
-  fixedRect({ x: 0, y: HAND_VERT_MARGIN }),
-);
-const innerHand = nameRect('inner_hand',
-  padRect(10,
-    nameRect('hand_tiles', fixedRect({ x: HAND_TILE_LIMIT * DEFAULT_TILE_SCALE, y: DEFAULT_TILE_SCALE }))));
-
-const scoreRect = nameRect('score', fixedRect({ x: 100, y: 0 }));
-
-
-const widgetTree = packVert(
-  stretchRectY(1),
-  centerX(
-    nameRect('hand',
-      packHoriz(
-        fixedRect({ y: 0, x: HAND_HORIZ_MARGIN }),
-        packVert(
-          fixedRect({ x: 0, y: HAND_VERT_MARGIN }),
-          nameRect('panic', { t: 'rect', single: { base: { x: 0, y: PANIC_THICK }, stretch: { x: 1, y: 0 } } }),
-          fixedRect({ x: 0, y: HAND_VERT_MARGIN }),
-          packHoriz(
-            pauseButton,
-            fixedRect({ y: 0, x: HAND_HORIZ_MARGIN }),
-            nameRect('spacer1', fixedRect({ y: 0, x: SPACER_WIDTH })),
-            fixedRect({ y: 0, x: HAND_HORIZ_MARGIN / 2 }),
-            innerHand,
-            fixedRect({ y: 0, x: HAND_HORIZ_MARGIN / 2 }),
-            nameRect('spacer2', fixedRect({ y: 0, x: SPACER_WIDTH })),
-            fixedRect({ y: 0, x: HAND_HORIZ_MARGIN }),
-            scoreRect,
-          ),
-        ),
-        fixedRect({ y: 0, x: HAND_HORIZ_MARGIN }),
-      ))
-  ),
-  fixedRect({ x: 0, y: GLOBAL_BORDER / 2 }),
-);
-
-const rects = mapval(layout(canvas_bds_in_canvas, widgetTree), pixelSnapRect);
-
-export const score_bds_in_canvas = rects['score'];
-export const spacer1_bds_in_canvas = rects['spacer1'];
-export const spacer2_bds_in_canvas = rects['spacer2'];
-export const hand_bds_in_canvas = rects['hand'];
-export const inner_hand_bds_in_canvas = rects['inner_hand'];
-export const hand_tile_bds_in_canvas = rects['hand_tiles'];
-export const panic_bds_in_canvas = rects['panic'];
+import { lerp, pointInRect } from "../util/util";
+import { vint } from "../util/vutil";
+import { DEFAULT_TILE_SCALE, PANIC_THICK, canvas_bds_in_canvas, TOOLBAR_WIDTH, toolbar_bds_in_canvas, resbar_bds_in_canvas } from "./widget-constants";
+import { panic_bds_in_canvas, rects, hand_tile_bds_in_canvas, hand_bds_in_canvas } from "./widget-layout";
 
 export function rectOfPanic_in_canvas(panic_fraction: number): Rect {
   return {
@@ -78,25 +20,6 @@ export function rectOfPanic_in_canvas(panic_fraction: number): Rect {
   };
 }
 
-export const BAR_WIDTH = 64;
-export const TOOLBAR_WIDTH = 52;
-
-export const world_bds_in_canvas: Rect = {
-  p: { x: 0, y: 0 },
-  sz: { x: canvas_bds_in_canvas.sz.x, y: canvas_bds_in_canvas.sz.y }
-};
-
-// This gives a bound on what could possibly be in the toolbar
-export const toolbar_bds_in_canvas: Rect = {
-  p: { x: 0, y: 0 },
-  sz: { x: TOOLBAR_WIDTH, y: canvas_bds_in_canvas.sz.y }
-};
-
-// This gives a bound on what could possibly be in the resbar
-export const resbar_bds_in_canvas: Rect = {
-  p: { x: canvas_bds_in_canvas.sz.x - TOOLBAR_WIDTH, y: 0 },
-  sz: { x: TOOLBAR_WIDTH, y: canvas_bds_in_canvas.sz.y }
-};
 
 export function effective_toolbar_bds_in_canvas(state: CoreState): Rect {
   const numTools = Math.max(5, getCurrentTools(state).length);

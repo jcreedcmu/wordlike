@@ -1,4 +1,5 @@
-import { canvas_bds_in_canvas, getWidgetPoint } from "../ui/widget-helpers";
+import { getWidgetPoint } from "../ui/widget-helpers";
+import { canvas_bds_in_canvas } from "../ui/widget-constants";
 import { midpointOfRect } from "../util/util";
 import { GameLowAction } from "./action";
 import { GameState } from "./state";

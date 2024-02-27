@@ -23,7 +23,9 @@ import { wordBubblePanicBounds, wordBubbleRect } from './drawPanicBar';
 import { formatTime } from './formatTime';
 import { CanvasInfo } from './use-canvas';
 import { pan_canvas_from_world_of_state } from './view-helpers';
-import { GLOBAL_BORDER, PANIC_THICK, canvas_bds_in_canvas, canvas_from_hand, canvas_from_resbar, canvas_from_toolbar, effective_resbar_bds_in_canvas, effective_toolbar_bds_in_canvas, hand_bds_in_canvas, inner_hand_bds_in_canvas, panic_bds_in_canvas, pause_button_bds_in_canvas, resbar_bds_in_canvas, score_bds_in_canvas, spacer1_bds_in_canvas, spacer2_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from './widget-helpers';
+import { canvas_from_hand, canvas_from_resbar, canvas_from_toolbar, effective_resbar_bds_in_canvas, effective_toolbar_bds_in_canvas, pause_button_bds_in_canvas } from './widget-helpers';
+import { hand_bds_in_canvas, inner_hand_bds_in_canvas, panic_bds_in_canvas, score_bds_in_canvas, spacer1_bds_in_canvas, spacer2_bds_in_canvas } from "./widget-layout";
+import { GLOBAL_BORDER, PANIC_THICK, canvas_bds_in_canvas, resbar_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from "./widget-constants";
 
 const INTERFACE_RADIUS = 2 * GLOBAL_BORDER;
 const PANIC_RADIUS = Math.min(INTERFACE_RADIUS, PANIC_THICK / 2);

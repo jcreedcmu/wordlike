@@ -1,4 +1,4 @@
-import { world_bds_in_canvas } from '../ui/widget-helpers';
+import { world_bds_in_canvas } from "../ui/widget-constants";
 import * as se1 from '../util/se1';
 import { vsnorm } from '../util/vutil';
 import { Bonus } from './bonus';

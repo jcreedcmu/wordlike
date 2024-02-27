@@ -11,7 +11,7 @@ import { pixelSnapRect, rectPts } from "../util/util";
 import { vdiag, vscale } from "../util/vutil";
 import { gl_from_canvas } from "./gl-helpers";
 import { spriteLocOfRes } from "./sprite-sheet";
-import { canvas_bds_in_canvas } from "./widget-helpers";
+import { canvas_bds_in_canvas } from "./widget-constants";
 
 export const SPRITE_TEXTURE_UNIT = 0;
 export const FONT_TEXTURE_UNIT = 1;
