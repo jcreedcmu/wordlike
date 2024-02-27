@@ -1,5 +1,7 @@
 import { SE2 } from "../util/se2";
 import { Point } from "../util/types";
+import { vint } from "../util/vutil";
+import { Location } from "./state-types";
 import { ResbarResource, Tool } from "./tool-types";
 
 export type ViewData = {
@@ -33,3 +35,14 @@ export type WidgetPoint =
   | { t: 'pauseButton', p_in_canvas: Point }
   | { t: 'nowhere', p_in_canvas: Point } // outside canvas bounds
   ;
+
+export function locationOfWidgetPoint(wp: WidgetPoint): Location {
+  switch (wp.t) {
+    case 'world': return { t: 'world', p_in_world_int: vint(wp.p_in_local) };
+    case 'hand': return wp.indexValid ? { t: 'hand', index: wp.index } : { t: 'nowhere' };
+    case 'toolbar': return { t: 'nowhere' };
+    case 'resbar': return { t: 'nowhere' };
+    case 'pauseButton': return { t: 'nowhere' };
+    case 'nowhere': return { t: 'nowhere' };
+  }
+}

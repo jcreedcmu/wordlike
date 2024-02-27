@@ -1,11 +1,10 @@
-import { locationOfWidgetPoint } from "../ui/widget-helpers";
 import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { vequal } from "../util/vutil";
 import { Animation } from "./animation-types";
 import { mkExplosionAnimation } from './animations';
 import { getBonusFromLayer, updateBonusLayer } from "./bonus-helpers";
-import { WidgetPoint } from "./core-ui-types";
+import { WidgetPoint, locationOfWidgetPoint } from "./core-ui-types";
 import { KillIntent, killableBonus } from './intent-types';
 import { deselect } from "./selection-operations";
 import { CoreState } from "./state";

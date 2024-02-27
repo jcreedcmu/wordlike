@@ -1,6 +1,5 @@
 import { DragWidgetPoint, WidgetPoint } from "../core/core-ui-types";
 import { CoreState } from "../core/state";
-import { Location } from '../core/state-types';
 import { getCurrentResources, getCurrentTools } from "../core/tools";
 import { SE2, apply, inverse } from "../util/se2";
 import { Point, Rect } from "../util/types";
@@ -110,17 +109,6 @@ export function getWidgetPoint(state: CoreState, p_in_canvas: Point): WidgetPoin
   }
   else
     return getDragWidgetPoint(state, p_in_canvas);
-}
-
-export function locationOfWidgetPoint(wp: WidgetPoint): Location {
-  switch (wp.t) {
-    case 'world': return { t: 'world', p_in_world_int: vint(wp.p_in_local) };
-    case 'hand': return wp.indexValid ? { t: 'hand', index: wp.index } : { t: 'nowhere' };
-    case 'toolbar': return { t: 'nowhere' };
-    case 'resbar': return { t: 'nowhere' };
-    case 'pauseButton': return { t: 'nowhere' };
-    case 'nowhere': return { t: 'nowhere' };
-  }
 }
 
 export function getDragWidgetPoint(state: CoreState, p_in_canvas: Point): DragWidgetPoint {
