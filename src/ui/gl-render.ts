@@ -5,7 +5,7 @@ import { Chunk, WORLD_CHUNK_SIZE } from "../core/chunk";
 import { ActiveChunkInfo, activeChunks, ensureChunk, getChunk, updateChunkCache } from "./chunk-helpers";
 import { getWordBonusFraction, now_in_game } from "../core/clock";
 import { mkOverlay } from "../core/layer";
-import { eff_mob_in_world, mobsMap } from "../core/mobs";
+import { eff_mob_in_world } from "../core/mobs";
 import { CoreState, GameState } from "../core/state";
 import { MobsState, MouseState } from '../core/state-types';
 import { pointFallForPan } from "../core/state-helpers";
@@ -31,6 +31,7 @@ import { canvas_from_drag_mobile, cell_in_canvas, pan_canvas_from_world_of_state
 import { getWidgetPoint } from "./widget-helpers";
 import { panic_bds_in_canvas } from "./widget-layout";
 import { TOOLBAR_WIDTH, canvas_bds_in_canvas, resbar_bds_in_canvas } from "./widget-constants";
+import { mobsMap } from "../core/mob-helpers";
 
 const shadowColorRgba: RgbaColor = [128, 128, 100, Math.floor(0.4 * 255)];
 

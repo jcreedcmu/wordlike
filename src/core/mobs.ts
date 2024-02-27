@@ -1,7 +1,5 @@
 import { Point } from "../util/types";
-import { mapval } from "../util/util";
 import { vadd, vequal, vscale } from "../util/vutil";
-import { MobsState } from './state-types';
 
 export type Orientation = 'N' | 'W' | 'E' | 'S';
 
@@ -110,16 +108,4 @@ export function towards_origin(p: Point): Orientation {
   const ix = (y > x ? 1 : 0) + (y > -x ? 2 : 0);
   const orientations: Orientation[] = ['S', 'E', 'W', 'N'];
   return orientations[ix];
-}
-
-export function mkMobsState(): MobsState {
-  return { mobs: {} };
-}
-
-export function mobsMap<T>(state: MobsState, k: (mob: MobState, id: string) => T): T[] {
-  return Object.keys(state.mobs).map(id => k(state.mobs[id], id));
-}
-
-export function mobsMapVal(state: MobsState, k: (mob: MobState, id: string) => MobState): MobsState {
-  return { mobs: mapval(state.mobs, k) };
 }

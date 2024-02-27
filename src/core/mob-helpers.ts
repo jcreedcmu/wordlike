@@ -1,13 +1,14 @@
 import { produce } from "../util/produce";
 import { Point } from "../util/types";
-import { next_rand } from "../util/util";
+import { mapval, next_rand } from "../util/util";
 import { vint, vm } from "../util/vutil";
 import { freshId } from "./id-helpers";
 import { MoveSource, landMoveOnState } from "./landing-result";
 import { MobState, Orientation, SNAIL_ADVANCE_TICKS, back_of, back_right_of, ccw_of, clockwise_of, forward_of, left_of, reverse_of, right_of, towards_origin } from "./mobs";
 import { CoreState } from "./state";
+import { MobsState } from "./state-types";
 
-// These are some mob-related functions that depend on landing-results or corestate
+// These are some mob-related functions that depend on landing-results or corestate or state-types
 
 export function advanceMob(state: CoreState, mob: MobState): MobState {
   function advanceWith(or: Orientation): MobState {
@@ -92,4 +93,16 @@ export function addMobWithId(state: CoreState, newMob: MobState, id: string): Co
   return produce(state, s => {
     s.mobsState.mobs[id] = newMob;
   })
+}
+
+export function mkMobsState(): MobsState {
+  return { mobs: {} };
+}
+
+export function mobsMap<T>(state: MobsState, k: (mob: MobState, id: string) => T): T[] {
+  return Object.keys(state.mobs).map(id => k(state.mobs[id], id));
+}
+
+export function mobsMapVal(state: MobsState, k: (mob: MobState, id: string) => MobState): MobsState {
+  return { mobs: mapval(state.mobs, k) };
 }
