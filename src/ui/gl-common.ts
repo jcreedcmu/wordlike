@@ -1,5 +1,5 @@
 import { getAssets } from "../core/assets";
-import { Chunk, WORLD_CHUNK_SIZE } from "../core/chunk";
+import { Chunk } from "../core/chunk";
 import { Overlay } from "../core/layer";
 import { indexOfLetter } from "../core/letters";
 import { RenderableMobile } from "../core/state";
@@ -14,11 +14,10 @@ import { spriteLocOfRes } from "./sprite-sheet";
 import { canvas_bds_in_canvas } from "./widget-helpers";
 
 export const SPRITE_TEXTURE_UNIT = 0;
-export const CHUNK_DATA_TEXTURE_UNIT = 1;
-export const FONT_TEXTURE_UNIT = 2;
-export const CELL_PREPASS_TEXTURE_UNIT = 3;
-export const CANVAS_TEXTURE_UNIT = 4;
-export const MOBILE_PREPASS_TEXTURE_UNIT = 5;
+export const FONT_TEXTURE_UNIT = 1;
+export const CELL_PREPASS_TEXTURE_UNIT = 2;
+export const CANVAS_TEXTURE_UNIT = 3;
+export const MOBILE_PREPASS_TEXTURE_UNIT = 4;
 
 export type RectDrawer = {
   prog: WebGLProgram,
@@ -29,7 +28,6 @@ export type RectDrawer = {
 export type WorldDrawer = {
   prog: WebGLProgram,
   position: BufferAttr,
-  chunkImdat: ImageData,
 };
 
 export type TileDrawer = {
@@ -89,31 +87,7 @@ export function mkWorldDrawer(gl: WebGL2RenderingContext): WorldDrawer {
   if (position == null) {
     throw new Error(`Couldn't allocate position buffer`);
   }
-
-  // Chunk data texture
-  const chunkDataTexture = gl.createTexture();
-  if (chunkDataTexture == null) {
-    throw new Error(`couldn't create chunk data texture`);
-  }
-  gl.activeTexture(gl.TEXTURE0 + CHUNK_DATA_TEXTURE_UNIT);
-  gl.bindTexture(gl.TEXTURE_2D, chunkDataTexture);
-
-  const chunkImdat = new ImageData(WORLD_CHUNK_SIZE.x, WORLD_CHUNK_SIZE.y);
-  for (let y = 0; y < 16; y++) {
-    for (let x = 0; x < 16; x++) {
-      const ix = 4 * (y * 16 + x);
-      chunkImdat.data[ix + 0] = 7;
-      chunkImdat.data[ix + 1] = 32;
-      chunkImdat.data[ix + 2] = 0;
-      chunkImdat.data[ix + 3] = 0;
-    }
-  }
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, chunkImdat);
-
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-
-  return { prog, position, chunkImdat };
+  return { prog, position };
 }
 
 export function mkTileDrawer(gl: WebGL2RenderingContext): TileDrawer {
