@@ -1,3 +1,4 @@
+import { Prerenderers } from "../core/assets";
 import { Bonus } from "../core/bonus";
 import { ChunkValue } from "../core/chunk";
 import { AbstractLetter, NUM_LETTERS, indexOfLetter, letterOfIndex } from "../core/letters";
@@ -128,7 +129,7 @@ function spriteLocOfRequiredBonus(letterIndex: number): Point {
   return { x: 12 + Math.floor(letterIndex / 16), y: letterIndex % 16 };
 }
 
-export function prerenderSpriteSheet(img: HTMLImageElement): Buffer {
+function prerenderSpriteSheet(img: HTMLImageElement): Buffer {
   const buf = buffer({ x: img.width, y: img.height });
   buf.d.drawImage(img, 0, 0);
 
@@ -140,13 +141,13 @@ export function prerenderSpriteSheet(img: HTMLImageElement): Buffer {
   return buf;
 }
 
-export function prerenderFontSheet(img: HTMLImageElement): Buffer {
+function prerenderFontSheet(img: HTMLImageElement): Buffer {
   const buf = buffer({ x: img.width, y: img.height });
   buf.d.drawImage(img, 0, 0);
   return buf;
 }
 
-export function prerenderToolbar(img: HTMLImageElement): Buffer {
+function prerenderToolbar(img: HTMLImageElement): Buffer {
   const buf = buffer({ x: img.width, y: img.height });
   buf.d.drawImage(img, 0, 0);
   return buf;
@@ -154,4 +155,8 @@ export function prerenderToolbar(img: HTMLImageElement): Buffer {
 
 export function rectOfBonus(bonus: Bonus): Rect {
   return spriteRectOfPos(spriteLocOfBonus(bonus));
+}
+
+export function getPrerenderers(): Prerenderers {
+  return { prerenderFontSheet, prerenderSpriteSheet, prerenderToolbar };
 }

@@ -1,4 +1,3 @@
-import { prerenderFontSheet, prerenderSpriteSheet, prerenderToolbar } from "../ui/sprite-sheet";
 import { asyncReplace } from "../util/async-replace";
 import { Buffer, imgProm } from "../util/dutil";
 import { grab } from "../util/util";
@@ -55,7 +54,14 @@ async function getShaders(prefix: string): Promise<ShaderProgramText> {
   return { name: prefix, vert, frag };
 }
 
-export async function initAssets() {
+export type Prerenderers = {
+  prerenderSpriteSheet(im: HTMLImageElement): Buffer;
+  prerenderToolbar(im: HTMLImageElement): Buffer;
+  prerenderFontSheet(im: HTMLImageElement): Buffer;
+}
+
+export async function initAssets(prerenderers: Prerenderers) {
+  const { prerenderSpriteSheet, prerenderFontSheet, prerenderToolbar } = prerenderers;
   const spritesImg = await imgProm('assets/sprites.png');
   const fontSheetImg = await imgProm('assets/font-sheet.png');
   const largeSpritesImg = await imgProm('assets/sprites-large.png');
