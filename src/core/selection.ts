@@ -8,7 +8,7 @@ import { BIT_SELECTED } from "./chunk";
 import { Overlay, mkOverlay, overlayForEach, setOverlay } from "./layer";
 import { CacheUpdate, CoreState, MouseState } from "./state";
 import { getMobileId, get_main_tiles } from "./tile-helpers";
-import { MobileId } from "./tile-id-helpers";
+import { MobileId } from "./id-helpers";
 
 export type SelectionOperation =
   | 'set'

@@ -5,7 +5,7 @@ import { vequal, vm } from "../util/vutil";
 import { Bonus } from "./bonus";
 import { getBonusFromLayer } from "./bonus-helpers";
 import { CacheUpdate, CoreState, GameState, GenMoveTile, HandTile, Location, MainTile, MobileEntity, RenderableMobile, TileEntity, TileOptionalId } from "./state";
-import { MobileId, addId, ensureId, freshId } from "./tile-id-helpers";
+import { MobileId, addId, ensureId, freshId } from "./id-helpers";
 import { Resource } from "./tools";
 import { AbstractLetter } from "./letters";
 

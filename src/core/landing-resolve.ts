@@ -4,7 +4,7 @@ import { tryKillTileOfStateLoc } from "./kill-helpers";
 import { LandingResult, ProperLandingResult } from "./landing-result";
 import { CoreState, MoveMobile } from "./state";
 import { addResourceMobile, mobileAtPoint, putMobileInWorld, putMobileNowhere, removeMobile } from "./tile-helpers";
-import { MobileId } from "./tile-id-helpers";
+import { MobileId } from "./id-helpers";
 import { ResbarResource, fillWaterIntent } from "./tools";
 
 // A thing that can be moved onto something else

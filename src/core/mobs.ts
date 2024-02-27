@@ -4,7 +4,7 @@ import { mapval, next_rand } from "../util/util";
 import { vadd, vequal, vint, vm, vscale } from "../util/vutil";
 import { MoveSource, landMoveOnState } from "./landing-result";
 import { CoreState, MobsState } from "./state";
-import { freshId } from "./tile-id-helpers";
+import { freshId } from "./id-helpers";
 
 export type Orientation = 'N' | 'W' | 'E' | 'S';
 

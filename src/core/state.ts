@@ -14,7 +14,7 @@ import { Overlay, mkOverlay, setOverlay } from './layer';
 import { AbstractLetter } from './letters';
 import { MobState } from './mobs';
 import { SelectionOperation, SelectionState } from './selection';
-import { MobileId } from './tile-id-helpers';
+import { MobileId } from './id-helpers';
 import { ResbarResource, Resource, Tool } from './tools';
 import { WinState } from './winState';
 

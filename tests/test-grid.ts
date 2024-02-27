@@ -1,6 +1,6 @@
 import { checkConnected, checkGridWordsHoriz, checkGridWordsVert, getGrid, mkGrid } from '../src/core/grid';
 import { Tile } from '../src/core/state';
-import { ensureTileId } from '../src/core/tile-id-helpers';
+import { ensureTileId } from '../src/core/id-helpers';
 
 function isWord(word: string): boolean {
   return word == 'foo' || word == 'fumble' || word == 'baz' || word == 'the' || word == 'nib';

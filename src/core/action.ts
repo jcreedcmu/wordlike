@@ -8,7 +8,7 @@ import { LandingMoveId } from './landing-resolve';
 import { ProperLandingResult } from './landing-result';
 import { SelectionState } from './selection';
 import { InventoryItems, Location, MouseState, SceneState } from './state';
-import { MobileId } from './tile-id-helpers';
+import { MobileId } from './id-helpers';
 import { ResbarResource, Tool } from './tools';
 
 export type GameLowAction =

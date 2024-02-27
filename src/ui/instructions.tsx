@@ -6,7 +6,7 @@ import { mkGridOf } from '../core/grid';
 import { GameState, TileOptionalId } from '../core/state';
 import { AbstractLetter } from '../core/letters';
 import { addHandTileEntities, addWorldTiles, checkValid, resolveValid, withCoreState } from '../core/state-helpers';
-import { ensureTileId } from "../core/tile-id-helpers";
+import { ensureTileId } from "../core/id-helpers";
 import { DEBUG } from '../util/debug';
 import { relpos } from '../util/dutil';
 import * as SE1 from '../util/se1';

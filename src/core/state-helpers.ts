@@ -25,7 +25,7 @@ import { getCurrentTool } from "./tools";
 import { updateFogOfWar } from "./fog-of-war";
 import { WIN_SCORE, canWinFromState, shouldStartPanicBar } from "./winState";
 import { AbstractLetter } from "./letters";
-import { MobileId } from "./tile-id-helpers";
+import { MobileId } from "./id-helpers";
 
 export const PLACED_MOBILE_SEEN_CELLS_RADIUS = 2.5;
 

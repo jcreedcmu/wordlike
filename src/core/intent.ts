@@ -12,7 +12,7 @@ import { CellContents, getMobileLoc, mobileAtPoint } from './tile-helpers';
 import { Tool, bombIntent, copyIntent, dynamiteIntent, magnifyIntent } from './tools';
 import { updateFogOfWarAtPoint } from './fog-of-war';
 import { getOverlay } from './layer';
-import { MobileId } from './tile-id-helpers';
+import { MobileId } from './id-helpers';
 
 export type KillIntent =
   | { t: 'kill', radius: number }

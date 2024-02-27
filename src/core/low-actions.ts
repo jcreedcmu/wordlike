@@ -21,7 +21,7 @@ import { deselect, resolveSelection, setSelected } from './selection';
 import { CacheUpdate, CoreState, GameState, Location, MobsState, MoveMobile, SceneState } from './state';
 import { addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isMobilePinned, needsRefresh, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
 import { cellAtPoint, getMobileId, getMobileLoc, getRenderableMobile, get_hand_tiles, get_mobiles, mobileAtPoint, moveTiles, moveToHandLoc, putTileInHand, putTilesInHandFromNotHand, removeAllMobiles } from "./tile-helpers";
-import { MobileId } from './tile-id-helpers';
+import { MobileId } from './id-helpers';
 import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
 import { shouldDisplayBackButton } from './winState';
 
