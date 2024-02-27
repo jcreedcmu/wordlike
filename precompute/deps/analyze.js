@@ -5,7 +5,7 @@ function normalize(x) {
   return x.replace(/^\/src\//, '');
 }
 
-const edges = fs.readFileSync('/tmp/edges', 'utf8').split('\n').filter(x => x.length > 0).map(line => {
+const edges = fs.readFileSync('/tmp/edges', 'utf8').split('\n').filter(x => x.length > 0).sort().map(line => {
   let m;
   if (m = line.match(/(.*):(.*)/)) {
     const src = '/' + m[1].replace(/\.tsx?$/, '');
