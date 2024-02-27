@@ -1,7 +1,7 @@
 import * as effectful from '../ui/use-effectful-reducer';
 import { Action, Effect } from './action';
-// import { mkGameSceneState } from './mkGameState';
 import { getLowAction, resolveLowAction } from './low-actions';
+import { mkGameSceneState } from './mkGameState';
 import { SceneState } from './state';
 
 
@@ -18,10 +18,9 @@ export function reduce(scState: SceneState, action: Action): effectful.Result<Sc
   switch (action.t) {
     case 'resize': return { state: scState, effects: [] }; // XXX maybe stash viewdata this in state somewhere?
     case 'newGame':
-      throw "NOPE";
-    // return {
-    //   state: mkGameSceneState(Date.now(), action.creative ?? false, Date.now()), effects: [],
-    // };
+      return {
+        state: mkGameSceneState(Date.now(), action.creative ?? false, Date.now()), effects: [],
+      };
     case 'setSceneState':
       return { state: action.state, effects: [] };
     default:
