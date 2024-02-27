@@ -19,7 +19,7 @@ import { rectPts, unreachable } from "../util/util";
 import { vadd, vdiag, vmul, vsub } from "../util/vutil";
 import { drawGlAnimation } from "./drawGlAnimation";
 import { renderPanicBar, wordBubblePanicBounds, wordBubblePanicRect } from "./drawPanicBar";
-import { CANVAS_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, PREPASS_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, drawOneSprite, drawOneMobile, mkBonusDrawer, mkCanvasDrawer, mkDebugQuadDrawer, mkPrepassHelper, mkRectDrawer, mkSpriteDrawer, mkTileDrawer, mkWorldDrawer } from "./gl-common";
+import { CANVAS_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, CELL_PREPASS_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, drawOneSprite, drawOneMobile, mkBonusDrawer, mkCanvasDrawer, mkDebugQuadDrawer, mkPrepassHelper, mkRectDrawer, mkSpriteDrawer, mkTileDrawer, mkWorldDrawer } from "./gl-common";
 import { gl_from_canvas } from "./gl-helpers";
 import { canvas_from_hand_tile } from "./render";
 import { spriteLocOfRes, spriteLocOfMob } from "./sprite-sheet";
@@ -39,14 +39,14 @@ const shadowColorRgba: RgbaColor = [128, 128, 100, Math.floor(0.4 * 255)];
 // (A 4k monitor has twice as many pixels, but in that case I think
 // max-zoom-out should have a cell be 16 double-resolution pixels...
 // having >100 × 100 cells per screen is already probably plenty)
-const PREPASS_SIZE: Point = { x: 256, y: 256 };
+const CELL_PREPASS_SIZE: Point = { x: 256, y: 256 };
 
-export const prepass_from_gl: SE2 = {
-  scale: { x: PREPASS_SIZE.x / 2, y: PREPASS_SIZE.y / 2 },
-  translate: { x: PREPASS_SIZE.x / 2, y: PREPASS_SIZE.y / 2 },
+export const cell_prepass_from_gl: SE2 = {
+  scale: { x: CELL_PREPASS_SIZE.x / 2, y: CELL_PREPASS_SIZE.y / 2 },
+  translate: { x: CELL_PREPASS_SIZE.x / 2, y: CELL_PREPASS_SIZE.y / 2 },
 };
 
-export const gl_from_prepass: SE2 = inverse(prepass_from_gl);
+export const gl_from_prepass: SE2 = inverse(cell_prepass_from_gl);
 
 function drawCanvas(env: GlEnv): void {
   const { gl, canvasDrawer: { prog, position } } = env;
@@ -95,16 +95,11 @@ function glFillRect(env: GlEnv, rect_in_canvas: Rect, color: RgbColor): void {
   glFillRecta(env, rect_in_canvas, [...color, 255]);
 }
 
-function renderPrepass(env: GlEnv, _state: CoreState, canvas_from_world: SE2): ActiveChunkInfo {
+function renderCellPrepass(env: GlEnv, _state: CoreState, canvas_from_world: SE2): ActiveChunkInfo {
   const { gl } = env;
 
-
-  // clear offscreen texture
-  gl.clearColor(0.03, 0.03, 0.05, 0.05); // predivided by DEBUG_COLOR_SCALE
-  gl.clear(gl.COLOR_BUFFER_BIT);
-
   const aci = activeChunks(canvas_from_world);
-  gl.activeTexture(gl.TEXTURE0 + PREPASS_TEXTURE_UNIT);
+  gl.activeTexture(gl.TEXTURE0 + CELL_PREPASS_TEXTURE_UNIT);
 
   aci.ps_in_chunk.forEach(p => {
     const chunk = getChunk(env._cachedTileChunkMap, p);
@@ -139,8 +134,8 @@ function drawWorld(env: GlEnv, _state: GameState, canvas_from_world: SE2, aci: A
   gl.uniform1i(u_spriteTexture, SPRITE_TEXTURE_UNIT);
   const u_fontTexture = gl.getUniformLocation(prog, 'u_fontTexture');
   gl.uniform1i(u_fontTexture, FONT_TEXTURE_UNIT);
-  const u_chunkDataTexture = gl.getUniformLocation(prog, 'u_prepassTexture');
-  gl.uniform1i(u_chunkDataTexture, PREPASS_TEXTURE_UNIT);
+  const u_chunkDataTexture = gl.getUniformLocation(prog, 'u_cellPrepassTexture');
+  gl.uniform1i(u_chunkDataTexture, CELL_PREPASS_TEXTURE_UNIT);
   const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
   gl.uniform2f(u_canvasSize, devicePixelRatio * canvas_bds_in_canvas.sz.x, devicePixelRatio * canvas_bds_in_canvas.sz.y);
   const u_min_p_in_chunk = gl.getUniformLocation(prog, 'u_min_p_in_chunk');
@@ -237,9 +232,9 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
     const cs = state.coreState;
     const ms = state.mouseState;
 
-    // render the prepass
+    // render the cell prepass
     const canvas_from_world = pan_canvas_from_world_of_state(state);
-    const aci = renderPrepass(env, cs, canvas_from_world);
+    const aci = renderCellPrepass(env, cs, canvas_from_world);
 
     // clear canvas & initialize blending
     gl.clearColor(1.0, 1.0, 1.0, 1.0);
@@ -301,9 +296,6 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
 
       drawMouseStateTransients(env, canvas_from_world, cs, ms);
     }
-
-    //// show the prepass for debugging reasons
-    // debugPrepass(env, state.coreState);
   };
 
   if (DEBUG.glProfiling) {
@@ -387,7 +379,7 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
     rectDrawer: mkRectDrawer(gl),
     debugQuadDrawer: mkDebugQuadDrawer(gl),
     canvasDrawer: mkCanvasDrawer(gl),
-    prepassHelper: mkPrepassHelper(gl, PREPASS_SIZE),
+    prepassHelper: mkPrepassHelper(gl, CELL_PREPASS_SIZE),
     bonusDrawer: mkBonusDrawer(gl),
     _cachedTileChunkMap: mkOverlay<Chunk>(),
   };

@@ -5,13 +5,13 @@ precision mediump float;
 #include "get_sprite_pixel.frag"
 
 // Prepass data
-uniform sampler2D u_prepassTexture;
+uniform sampler2D u_cellPrepassTexture;
 
 // Minimum chunk identifier that occurs in prepass framebuffer
 uniform vec2 u_min_p_in_chunk;
 
 const float CHUNK_SIZE = 8.;
-const int PREPASS_BUFFER_SIZE = 256; // XXX should be a uniform maybe?
+const int CELL_PREPASS_BUFFER_SIZE = 256; // XXX should be a uniform maybe?
 
 #include "fog.frag"
 
@@ -52,12 +52,12 @@ vec4 get_terrain_pixel(vec2 p_in_world) {
   vec2 p_in_world_hint = floor(p_in_world_h);
   vec2 p_in_world_hfp = p_in_world_h - p_in_world_hint;
 
-  vec2 ul_in_prepass = p_in_world_hint - u_min_p_in_chunk * CHUNK_SIZE;
+  vec2 ul_in_cell_prepass = p_in_world_hint - u_min_p_in_chunk * CHUNK_SIZE;
 
-  int bit_1 = is_land(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(0.5,0.5)) / float(PREPASS_BUFFER_SIZE) )));
-  int bit_2 = is_land(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(1.5,0.5)) / float(PREPASS_BUFFER_SIZE) )));
-  int bit_4 = is_land(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(0.5,1.5)) / float(PREPASS_BUFFER_SIZE) )));
-  int bit_8 = is_land(round(255.0 * texture(u_prepassTexture, (ul_in_prepass + vec2(1.5,1.5)) / float(PREPASS_BUFFER_SIZE) )));
+  int bit_1 = is_land(round(255.0 * texture(u_cellPrepassTexture, (ul_in_cell_prepass + vec2(0.5,0.5)) / float(CELL_PREPASS_BUFFER_SIZE) )));
+  int bit_2 = is_land(round(255.0 * texture(u_cellPrepassTexture, (ul_in_cell_prepass + vec2(1.5,0.5)) / float(CELL_PREPASS_BUFFER_SIZE) )));
+  int bit_4 = is_land(round(255.0 * texture(u_cellPrepassTexture, (ul_in_cell_prepass + vec2(0.5,1.5)) / float(CELL_PREPASS_BUFFER_SIZE) )));
+  int bit_8 = is_land(round(255.0 * texture(u_cellPrepassTexture, (ul_in_cell_prepass + vec2(1.5,1.5)) / float(CELL_PREPASS_BUFFER_SIZE) )));
 
   vec2 sprite_coords = vec2(
                            LAND_WATER_TRANSITIONS_X_OFFSET,
@@ -144,11 +144,11 @@ vec4 getColor() {
 
   vec2 p_in_world_int = floor(p_in_world);
 
-  vec2 p_in_prepass = p_in_world_int - u_min_p_in_chunk * CHUNK_SIZE;
+  vec2 p_in_cell_prepass = p_in_world_int - u_min_p_in_chunk * CHUNK_SIZE;
   vec2 p_in_world_r = round(p_in_world);
   vec2 p_in_world_fp = p_in_world - floor(p_in_world); // fractional part
 
-  vec4 cell_data = round(255.0 * texture(u_prepassTexture, (p_in_prepass + vec2(0.5,0.5)) / float(PREPASS_BUFFER_SIZE) ));
+  vec4 cell_data = round(255.0 * texture(u_cellPrepassTexture, (p_in_cell_prepass + vec2(0.5,0.5)) / float(CELL_PREPASS_BUFFER_SIZE) ));
 
   vec4 cell_pixel = get_cell_pixel(p_in_world, p_in_world_fp, ivec3(cell_data.rgb));
 

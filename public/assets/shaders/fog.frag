@@ -33,7 +33,7 @@ float fog_sdf(vec2 p) {
 
 vec4 get_fog_pixel_aux(vec2 contrib_ul_in_prepass, vec2 offset_in_world, vec2 p_in_world_fp) {
   vec2 cell_center_in_prepass = contrib_ul_in_prepass + vec2(0.5,0.5) + offset_in_world;
-  int bit = is_fog(round(255.0 * texture(u_prepassTexture, cell_center_in_prepass / float(PREPASS_BUFFER_SIZE) )));
+  int bit = is_fog(round(255.0 * texture(u_cellPrepassTexture, cell_center_in_prepass / float(CELL_PREPASS_BUFFER_SIZE) )));
 
   vec2 sample_pt = p_in_world_fp - offset_in_world  - vec2(0.5);
   float circle = fog_sdf(sample_pt);
