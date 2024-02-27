@@ -27,28 +27,29 @@ edges.forEach(({src, tgt}) => {
   deps[src].push(tgt);
 });
 
-class Cycle extends Error {}
+const cycles = [];
+const cache = {};
+
 function getDepth(x, path) {
-  if (path == undefined)
-    path = [];
-  if (path.includes(x)) {
-    throw new Cycle(`cycle detected:\n${[...path, x].map(x => ' ' + x).join("\n")}`);
+  if (cache[x] === undefined) {
+    if (path == undefined)
+      path = [];
+    if (path.includes(x)) {
+      cycles.push([...path, x].map(x => ' ' + x).join("\n"));
+      return Infinity;
+    }
+    if (deps[x] == undefined)
+      return 0;
+    cache[x] = 1 + Math.max(...deps[x].map(d => getDepth(d, [...path, x])));
   }
-  if (deps[x] == undefined)
-    return 0;
-  return 1 + deps[x].map(d => getDepth(d, [...path, x]));
+  return cache[x];
 }
 
-// console.log(JSON.stringify(deps));
 
-try {
 Object.keys(seen).forEach(file => {
-  console.log(`${file}: ${getDepth(file)}`);
+  const depth = getDepth(file);
+  console.log(`${file}: ${depth}`);
 });
-}
-catch (e) {
-  if (e instanceof Cycle)
-    console.log(e.message);
-  else
-    throw e;
-}
+
+console.log(`${cycles.length} cycles found`);
+cycles.forEach(c => console.log('---', c));
