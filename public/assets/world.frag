@@ -3,9 +3,17 @@ precision mediump float;
 
 #include "common.frag"
 #include "get_sprite_pixel.frag"
-#include "fog.frag"
+
+// Prepass data
+uniform sampler2D u_prepassTexture;
+
+// Minimum chunk identifier that occurs in prepass framebuffer
+uniform vec2 u_min_p_in_chunk;
 
 const float CHUNK_SIZE = 8.;
+const int PREPASS_BUFFER_SIZE = 256; // XXX should be a uniform maybe?
+
+#include "fog.frag"
 
 const vec2 EMPTY_SPRITE = vec2(0.,7.);
 const ivec2 WATER_SPRITE = ivec2(1,0);
@@ -15,7 +23,6 @@ const vec3 TILE_SELECTED_COLOR = vec3(.06, .25, .68);
 
 const vec3 TILE_DISCONNECTED_COLOR = vec3(0.9, 0., 0.);
 
-const int PREPASS_BUFFER_SIZE = 256; // XXX should be a uniform maybe?
 
 const float CROSSHAIR_OPACITY = 0.3;
 const float CROSSHAIR_LENGTH = 2.;
@@ -24,12 +31,6 @@ const float LAND_WATER_TRANSITIONS_X_OFFSET = 8.;
 const float FOG_OF_WAR_TRANSITIONS_X_OFFSET = 9.;
 
 out vec4 outputColor;
-
-// Minimum chunk identifier that occurs in prepass framebuffer
-uniform vec2 u_min_p_in_chunk;
-
-// Prepass data
-uniform sampler2D u_prepassTexture;
 
 float crosshair(vec2 p) {
   if (p.x < (CROSSHAIR_LENGTH + 0.5) * u_world_from_canvas[0][0] && p.y < 0.5 * u_world_from_canvas[0][0])
