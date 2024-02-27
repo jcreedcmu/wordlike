@@ -1,9 +1,8 @@
-import { PreTileEntity, Tile, TileEntity, TileEntityOptionalId, TileOptionalId } from './state-types';
+import { MobileId, PreTileEntity, Tile, TileEntity, TileEntityOptionalId, TileOptionalId } from './state-types';
 
 // FIXME: global counter
 let idCounter = 1;
 
-export type MobileId = number;
 
 export function freshId(): number {
   return idCounter++;

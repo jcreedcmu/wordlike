@@ -1,7 +1,8 @@
+import { mkChunkUpdate } from "../ui/chunk-helpers";
 import { isActiveCanvasAnimation } from '../ui/drawAnimation';
 import { canvas_from_drag_mobile, pan_canvas_from_canvas_of_mouse_state } from '../ui/view-helpers';
-import { WidgetPoint, getWidgetPoint } from '../ui/widget-helpers';
 import { TOOLBAR_WIDTH } from "../ui/widget-constants";
+import { WidgetPoint, getWidgetPoint } from '../ui/widget-helpers';
 import { DEBUG } from '../util/debug';
 import { debugTiles } from "../util/debugTiles";
 import { produce } from '../util/produce';
@@ -10,6 +11,7 @@ import { Point } from '../util/types';
 import { flatUndef, getRandomOrder } from '../util/util';
 import { vequal, vint, vm, vscale, vsub } from '../util/vutil';
 import { GameAction, GameLowAction, LowAction } from './action';
+import { CacheUpdate } from './cache-types';
 import { getPanicFraction, now_in_game } from './clock';
 import { getIntentOfMouseDown, reduceIntent } from './intent';
 import { tryKillTileOfState } from './kill-helpers';
@@ -21,14 +23,11 @@ import { reduceKey } from './reduceKey';
 import { incrementScore, setScore } from './scoring';
 import { deselect, resolveSelection, setSelected } from './selection';
 import { CoreState, GameState, SceneState } from './state';
-import { Location, MobsState, MoveMobile } from './state-types';
-import { CacheUpdate } from './cache-types';
 import { addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isMobilePinned, needsRefresh, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
+import { Location, MobileId, MobsState, MoveMobile } from './state-types';
 import { cellAtPoint, getMobileId, getMobileLoc, getRenderableMobile, get_hand_tiles, get_mobiles, mobileAtPoint, moveTiles, moveToHandLoc, putTileInHand, putTilesInHandFromNotHand, removeAllMobiles } from "./tile-helpers";
-import { MobileId } from './id-helpers';
 import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
 import { shouldDisplayBackButton } from './winState';
-import { mkChunkUpdate } from "../ui/chunk-helpers";
 
 export function reduceZoom(state: GameState, p_in_canvas: Point, delta: number): GameState {
   const sf = delta < 0 ? 1.1 : 1 / 1.1;

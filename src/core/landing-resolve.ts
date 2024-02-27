@@ -3,9 +3,8 @@ import { Point } from "../util/types";
 import { tryKillTileOfStateLoc } from "./kill-helpers";
 import { LandingResult, ProperLandingResult } from "./landing-result";
 import { CoreState } from "./state";
-import { MoveMobile } from './state-types';
+import { MobileId, MoveMobile } from './state-types';
 import { addResourceMobile, mobileAtPoint, putMobileInWorld, putMobileNowhere, removeMobile } from "./tile-helpers";
-import { MobileId } from "./id-helpers";
 import { ResbarResource, fillWaterIntent } from "./tools";
 
 // A thing that can be moved onto something else
