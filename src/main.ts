@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { App } from './app';
 import { initAssets } from "./core/assets";
-import { getPrerenderers } from './ui/sprite-sheet';
+import { getPrerenderers } from "./ui/prerender";
 
 async function go() {
   await initAssets(getPrerenderers());
