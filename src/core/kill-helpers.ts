@@ -2,18 +2,17 @@ import { locationOfWidgetPoint } from "../ui/widget-helpers";
 import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { vequal } from "../util/vutil";
-import { mkExplosionAnimation } from './animations';
 import { Animation } from "./animation-types";
+import { mkExplosionAnimation } from './animations';
 import { getBonusFromLayer, updateBonusLayer } from "./bonus-helpers";
-import { killableBonus } from './intent';
-import { KillIntent } from './intent-types';
+import { WidgetPoint } from "./core-ui-types";
+import { KillIntent, killableBonus } from './intent-types';
 import { deselect } from "./selection-operations";
 import { CoreState } from "./state";
-import { Location, MainTile } from './state-types';
 import { checkValid } from './state-helpers';
+import { Location, MainTile } from './state-types';
 import { get_hand_tiles, get_main_tiles, removeMobile } from "./tile-helpers";
 import { BOMB_RADIUS } from './tools';
-import { WidgetPoint } from "./core-ui-types";
 
 function eligibleKillIntent(state: CoreState, intent: KillIntent): boolean {
   switch (intent.t) {

@@ -1,10 +1,10 @@
 import { produce } from '../util/produce';
 import { Point } from '../util/types';
 import { vm } from '../util/vutil';
-import { Bonus } from './bonus';
 import { CacheUpdate, mkChunkUpdate } from './cache-types';
 import { WidgetPoint } from './core-ui-types';
 import { updateFogOfWarAtPoint } from './fog-of-war';
+import { Intent, killableBonus } from './intent-types';
 import { tryKillTileOfState } from './kill-helpers';
 import { getOverlay } from './layer';
 import { selectionOperationOfMods } from './selection';
@@ -14,21 +14,9 @@ import { checkValid, drawSpecific, withCoreState } from './state-helpers';
 import { CellContents, getMobileLoc, mobileAtPoint } from './tile-helpers';
 import { bombIntent, copyIntent, dynamiteIntent, magnifyIntent } from "./tool-intents";
 import { Tool } from "./tool-types";
-import { KillIntent, Intent } from './intent-types';
 
 function dynamiteableCell(cell: CellContents): boolean {
   return cell.t == 'mobile' || (cell.t == 'bonus' && killableBonus(dynamiteIntent, cell.bonus));
-}
-
-export function killableBonus(intent: KillIntent, bonus: Bonus): boolean {
-  switch (intent.t) {
-    case 'fillWater':
-      return !(bonus.t == 'required' || bonus.t == 'empty');
-    case 'kill':
-    case 'bomb':
-      return !(bonus.t == 'water' || bonus.t == 'required' || bonus.t == 'empty');
-  }
-
 }
 
 export function getIntentOfMouseDown(tool: Tool, button: number, mods: Set<string>, hoverCell: CellContents, pinned: boolean): Intent {
