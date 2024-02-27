@@ -8,6 +8,7 @@ import { GameState, TileOptionalId } from '../core/state';
 import { addHandTileEntities, addWorldTiles, checkValid, resolveValid, withCoreState } from '../core/state-helpers';
 import { produce } from '../util/produce';
 import * as SE1 from '../util/se1';
+import { updateFogOfWar } from './fog-of-war';
 
 export function exampleState(): GameState {
   const state: GameState = {
@@ -160,7 +161,12 @@ export function exampleState(): GameState {
     { letter: { t: 'single', letter: "t" }, index: 1 },
     { letter: { t: 'single', letter: "a" }, index: 2 },
   ];
-  const almost = withCoreState(state, cs => resolveValid(checkValid(addHandTileEntities(addWorldTiles(cs, tiles), handTiles)), new Set()));
+  const almost = withCoreState(state, cs => {
+    const withTiles = addHandTileEntities(addWorldTiles(cs, tiles), handTiles);
+    const resolved = resolveValid(checkValid(withTiles), new Set());
+    return updateFogOfWar(resolved);
+  });
+
   return produce(almost, s => {
     s.coreState.animations = [];
   });
