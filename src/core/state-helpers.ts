@@ -1,9 +1,7 @@
-import { canvas_from_drag_mobile } from "../layout/view-helpers";
-import { getWidgetPoint } from "../layout/widget-helpers";
 import { DEBUG, logger } from "../util/debug";
 import { produce } from "../util/produce";
 import * as se1 from '../util/se1';
-import { SE2, apply, compose, inverse } from '../util/se2';
+import { SE2, apply, inverse } from '../util/se2';
 import { Point } from "../util/types";
 import { vadd, vequal, vm } from "../util/vutil";
 import { Animation } from "./animation-types";
@@ -17,8 +15,6 @@ import { PANIC_INTERVAL_MS, PanicData, PauseData, WORD_BONUS_INTERVAL_MS, now_in
 import { DrawForce, getLetterSample } from "./distribution";
 import { updateFogOfWar } from "./fog-of-war";
 import { checkConnected, checkGridWords, gridKeys, mkGridOfMainTiles } from "./grid";
-import { resolveLandResult } from "./landing-resolve";
-import { landMoveOnState } from "./landing-result";
 import { mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
 import { AbstractLetter } from "./letters";
 import { addRandomMob } from "./mob-helpers";
@@ -242,13 +238,6 @@ export function unpauseState(state: CoreState, pause: PauseData): CoreState {
 
 }
 
-export function tileFall(state: CoreState, ms: MouseState): Point {
-  return vm(compose(
-    inverse(state.canvas_from_world),
-    canvas_from_drag_mobile(state, ms)).translate,
-    Math.round);
-}
-
 export function pointFall(state: CoreState, p_in_canvas: Point): Point {
   return pointFallForPan(state.canvas_from_world, p_in_canvas);
 }
@@ -263,24 +252,6 @@ export function withCoreState(state: GameState, k: (cs: CoreState) => CoreState)
   return produce(state, s => {
     s.coreState = ncs;
   });
-}
-
-export function dropTopHandTile(state: GameState): GameState {
-  const cs = state.coreState;
-  const handTiles = get_hand_tiles(cs);
-  if (handTiles.length == 0) {
-    return state;
-  }
-  const tile = handTiles[0];
-  if (state.mouseState.t == 'up' && getWidgetPoint(cs, state.mouseState.p_in_canvas).t == 'world') {
-    const p_in_world_int = pointFall(cs, state.mouseState.p_in_canvas);
-
-    const lr = landMoveOnState({ src: { t: 'tile', letter: tile.letter }, p_in_world_int }, cs);
-    if (lr.t != 'collision') {
-      return withCoreState(state, cs => checkValid(resolveLandResult(cs, lr, { p_in_world_int, src: { t: 'mobile', id: tile.id } })));
-    }
-  }
-  return state;
 }
 
 export function proposedHandDragOverLimit(state: CoreState, mouseState: MouseState): boolean {
