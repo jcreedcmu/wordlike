@@ -2,7 +2,7 @@ import { SE2 } from '../util/se2';
 import { Point } from '../util/types';
 import { PanicData, PauseData } from './clock';
 import { ViewData, WidgetPoint } from './core-ui-types';
-import { Intent } from './intent';
+import { Intent } from './intent-types';
 import { LandingMoveId } from './landing-resolve';
 import { ProperLandingResult } from './landing-result';
 import { SelectionState } from './selection';

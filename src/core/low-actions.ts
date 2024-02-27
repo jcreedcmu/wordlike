@@ -27,7 +27,8 @@ import { CoreState, GameState, SceneState } from './state';
 import { addWorldTiles, checkValid, drawOfState, dropTopHandTile, filterExpiredAnimations, filterExpiredWordBonusState, isMobilePinned, needsRefresh, proposedHandDragOverLimit, tileFall, unpauseState, withCoreState } from './state-helpers';
 import { Location, MobileId, MobsState, MoveMobile } from './state-types';
 import { cellAtPoint, getMobileId, getMobileLoc, getRenderableMobile, get_hand_tiles, get_mobiles, mobileAtPoint, moveTiles, moveToHandLoc, putTileInHand, putTilesInHandFromNotHand, removeAllMobiles } from "./tile-helpers";
-import { bombIntent, dynamiteIntent, getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
+import { getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
+import { bombIntent, dynamiteIntent } from "./tool-intents";
 import { shouldDisplayBackButton } from './winState';
 
 export function reduceZoom(state: GameState, p_in_canvas: Point, delta: number): GameState {

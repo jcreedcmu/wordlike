@@ -1,6 +1,5 @@
 import { Tool, tools, ResbarResource, resbarResources } from "./tool-types";
 import { GameLowAction } from "./action";
-import { Intent } from './intent';
 import { CoreState } from "./state";
 import { freshPanic } from "./state-helpers";
 
@@ -19,12 +18,7 @@ export function getCurrentTool(state: CoreState): Tool {
   return state.slowState.currentTool;
 }
 
-export const dynamiteIntent: Intent & { t: 'kill' } = { t: 'kill', radius: 0 };
-export const fillWaterIntent: Intent & { t: 'fillWater' } = { t: 'fillWater' };
 export const BOMB_RADIUS = 2;
-export const bombIntent: Intent & { t: 'bomb' } = { t: 'bomb' };
-export const copyIntent: Intent & { t: 'copy' } = { t: 'copy' };
-export const magnifyIntent: Intent & { t: 'magnify' } = { t: 'magnify' };
 
 export function getCurrentTools(state: CoreState): Tool[] {
   if (state.slowState.winState.t == 'lost') {

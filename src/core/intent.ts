@@ -9,30 +9,12 @@ import { tryKillTileOfState } from './kill-helpers';
 import { getOverlay } from './layer';
 import { selectionOperationOfMods } from './selection';
 import { deselect } from "./selection-operations";
-import { SelectionOperation } from './selection-operation';
 import { GameState } from './state';
 import { checkValid, drawSpecific, withCoreState } from './state-helpers';
-import { MobileId } from './state-types';
 import { CellContents, getMobileLoc, mobileAtPoint } from './tile-helpers';
-import { bombIntent, copyIntent, dynamiteIntent, magnifyIntent } from './tools';
+import { bombIntent, copyIntent, dynamiteIntent, magnifyIntent } from "./tool-intents";
 import { Tool } from "./tool-types";
-
-export type KillIntent =
-  | { t: 'kill', radius: number }
-  | { t: 'bomb' }
-  | { t: 'fillWater' }
-  ;
-
-export type Intent =
-  | { t: 'dragMobile', id: MobileId }
-  | { t: 'vacuous' }
-  | { t: 'panWorld' }
-  | { t: 'exchangeMobiles', id: MobileId }
-  | { t: 'startSelection', opn: SelectionOperation }
-  | { t: 'copy' }
-  | { t: 'magnify' }
-  | KillIntent
-  ;
+import { KillIntent, Intent } from './intent-types';
 
 function dynamiteableCell(cell: CellContents): boolean {
   return cell.t == 'mobile' || (cell.t == 'bonus' && killableBonus(dynamiteIntent, cell.bonus));
