@@ -5,7 +5,7 @@ import { vequal, vm } from "../util/vutil";
 import { Bonus } from "./bonus";
 import { getBonusFromLayer } from "./bonus-helpers";
 import { CacheUpdate, mkChunkUpdate, mkMobileUpdate } from './cache-types';
-import { withFreshId } from "./id-helpers";
+import { freshId } from "./id-helpers";
 import { AbstractLetter } from "./letters";
 import { CoreState, GameState } from "./state";
 import { GenMoveTile, HandTile, Location, MainTile, MobileEntity, MobileId, RenderableMobile, TileEntity, TileNoId } from './state-types';
@@ -92,26 +92,25 @@ export function addWorldTileWithId(state: CoreState, tile: TileNoId, id: MobileI
 }
 
 export function addWorldTile(state: CoreState, tile: TileNoId): CoreState {
-  return withFreshId(state, (id, state) => {
-    return addWorldTileWithId(state, tile, id);
-  });
+  const { cs, id } = freshId(state);
+  return addWorldTileWithId(cs, tile, id);
 }
 
 export function addResourceMobile(state: CoreState, p_in_world_int: Point, res: Resource): CoreState {
-  return withFreshId(state, (id, state) => {
-    const mobile: MobileEntity = ({
-      t: 'resource',
-      id,
-      loc: { t: 'world', p_in_world_int },
-      durability: 0,
-      res,
-    });
-    return produce(state, s => {
-      s.mobile_entities[mobile.id] = mobile;
-      s._cacheUpdateQueue.push(mkChunkUpdate(p_in_world_int, { t: 'addMobile', id: mobile.id }));
-      s._cacheUpdateQueue.push(mkMobileUpdate(mobile.id, getRenderableMobile(mobile)));
-    });
+  const { cs, id } = freshId(state);
+  const mobile: MobileEntity = ({
+    t: 'resource',
+    id,
+    loc: { t: 'world', p_in_world_int },
+    durability: 0,
+    res,
   });
+  return produce(cs, s => {
+    s.mobile_entities[mobile.id] = mobile;
+    s._cacheUpdateQueue.push(mkChunkUpdate(p_in_world_int, { t: 'addMobile', id: mobile.id }));
+    s._cacheUpdateQueue.push(mkMobileUpdate(mobile.id, getRenderableMobile(mobile)));
+  });
+
 }
 
 export function addHandTileEntityWithId(state: CoreState, letter: AbstractLetter, index: number, id: MobileId): { tile: TileEntity, cs: CoreState } {
@@ -124,9 +123,8 @@ export function addHandTileEntityWithId(state: CoreState, letter: AbstractLetter
 }
 
 export function addHandTileEntity(state: CoreState, letter: AbstractLetter, index: number): { tile: TileEntity, cs: CoreState } {
-  return withFreshId(state, (id, state) => {
-    return addHandTileEntityWithId(state, letter, index, id);
-  });
+  const { cs, id } = freshId(state);
+  return addHandTileEntityWithId(cs, letter, index, id);
 }
 
 export function putMobileInWorld(state: CoreState, id: MobileId, p_in_world_int: Point, noclear?: 'noclear'): CoreState {
