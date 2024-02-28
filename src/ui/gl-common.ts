@@ -18,6 +18,34 @@ export const CELL_PREPASS_TEXTURE_UNIT = 2;
 export const CANVAS_TEXTURE_UNIT = 3;
 export const MOBILE_PREPASS_TEXTURE_UNIT = 4;
 
+// This is for an offscreen texture into which I render one pixel per
+// world *cell*, containing information about bonuses and tile
+// occupancy at that cell. I think 256 is probably big enough to
+// cover, because maybe at max zoom-out a cell could be like 8 pixels,
+// and 8 * 512 = 2048 should be as big as any reasonable screen.
+//
+// (A 4k monitor has twice as many pixels, but in that case I think
+// max-zoom-out should have a cell be 16 double-resolution pixels...
+// having >100 × 100 cells per screen is already probably plenty)
+export const CELL_PREPASS_SIZE: Point = { x: 256, y: 256 };
+
+// This is for an offscreen texture into which I render one pixel per
+// mobile entity that exists. This should be enough because I don't
+// anticipate having more than 32k mobile entities created during the
+// game.
+//
+// If I anticipate that 32k might exist historically, but no more than
+// 32k simultaneously, I could implement an allocator that reuses ids.
+export const MOBILE_PREPASS_SIZE: Point = { x: 256, y: 256 };
+
+// XXXLOCAL unused?
+export const cell_prepass_from_gl: SE2 = {
+  scale: { x: CELL_PREPASS_SIZE.x / 2, y: CELL_PREPASS_SIZE.y / 2 },
+  translate: { x: CELL_PREPASS_SIZE.x / 2, y: CELL_PREPASS_SIZE.y / 2 },
+};
+
+export const gl_from_prepass: SE2 = inverse(cell_prepass_from_gl);
+
 export type RectDrawer = {
   prog: WebGLProgram,
   position: BufferAttr,
@@ -58,12 +86,10 @@ export type BonusDrawer = {
 export type PrepassHelper = {
   // We render chunks into a buffer that has one pixel per cell, so
   // that the screen-resolution fragment shader can consult it.
-  cellSize: Point,
   cellTexture: WebGLTexture,
 
   // We render mobiles by id into a buffer that has one pixel per mobile, so
   // that the screen-resolution fragment shader can consult it.
-  mobileSize: Point,
   mobileTexture: WebGLTexture,
 };
 
@@ -149,12 +175,10 @@ export function mkCanvasDrawer(gl: WebGL2RenderingContext): CanvasDrawer {
   return { prog, position, texture };
 }
 
-export function mkPrepassHelper(gl: WebGL2RenderingContext, size: Point): PrepassHelper {
-  const cellSize = size;
-  const mobileSize = size;
+export function mkPrepassHelper(gl: WebGL2RenderingContext): PrepassHelper {
   return {
-    cellSize, cellTexture: mkTexture(gl, CELL_PREPASS_TEXTURE_UNIT, cellSize),
-    mobileSize, mobileTexture: mkTexture(gl, MOBILE_PREPASS_TEXTURE_UNIT, mobileSize),
+    cellTexture: mkTexture(gl, CELL_PREPASS_TEXTURE_UNIT, CELL_PREPASS_SIZE),
+    mobileTexture: mkTexture(gl, MOBILE_PREPASS_TEXTURE_UNIT, MOBILE_PREPASS_SIZE),
   };
 }
 

@@ -25,7 +25,7 @@ import { vadd, vdiag, vmul, vsub } from "../util/vutil";
 import { ActiveChunkInfo, activeChunks, ensureChunk, getChunk, updateCache } from "./chunk-helpers";
 import { drawGlAnimation } from "./drawGlAnimation";
 import { renderPanicBar, wordBubblePanicBounds, wordBubblePanicRect } from "./drawPanicBar";
-import { CANVAS_TEXTURE_UNIT, CELL_PREPASS_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, MOBILE_PREPASS_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, drawOneMobile, drawOneSprite, mkBonusDrawer, mkCanvasDrawer, mkDebugQuadDrawer, mkPrepassHelper, mkRectDrawer, mkSpriteDrawer, mkTileDrawer, mkWorldDrawer } from "./gl-common";
+import { CANVAS_TEXTURE_UNIT, CELL_PREPASS_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, MOBILE_PREPASS_SIZE, MOBILE_PREPASS_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, drawOneMobile, drawOneSprite, mkBonusDrawer, mkCanvasDrawer, mkDebugQuadDrawer, mkPrepassHelper, mkRectDrawer, mkSpriteDrawer, mkTileDrawer, mkWorldDrawer } from "./gl-common";
 import { gl_from_canvas } from "./gl-helpers";
 import { canvas_from_hand_tile } from "./render";
 import { spriteLocOfMob, spriteLocOfRes } from "./sprite-sheet";
@@ -35,24 +35,6 @@ import { TOOLBAR_WIDTH, canvas_bds_in_canvas, resbar_bds_in_canvas } from "./wid
 import { panic_bds_in_canvas } from "./widget-layout";
 
 const shadowColorRgba: RgbaColor = [128, 128, 100, Math.floor(0.4 * 255)];
-
-// This is for an offscreen texture into which I render one pixel per
-// world *cell*, containing information about bonuses and tile
-// occupancy at that cell. I think 256 is probably big enough to
-// cover, because maybe at max zoom-out a cell could be like 8 pixels,
-// and 8 * 512 = 2048 should be as big as any reasonable screen.
-//
-// (A 4k monitor has twice as many pixels, but in that case I think
-// max-zoom-out should have a cell be 16 double-resolution pixels...
-// having >100 × 100 cells per screen is already probably plenty)
-const CELL_PREPASS_SIZE: Point = { x: 256, y: 256 };
-
-export const cell_prepass_from_gl: SE2 = {
-  scale: { x: CELL_PREPASS_SIZE.x / 2, y: CELL_PREPASS_SIZE.y / 2 },
-  translate: { x: CELL_PREPASS_SIZE.x / 2, y: CELL_PREPASS_SIZE.y / 2 },
-};
-
-export const gl_from_prepass: SE2 = inverse(cell_prepass_from_gl);
 
 function drawCanvas(env: GlEnv): void {
   const { gl, canvasDrawer: { prog, position } } = env;
@@ -125,8 +107,7 @@ function renderMobilePrepass(env: GlEnv): void {
 
   gl.activeTexture(gl.TEXTURE0 + MOBILE_PREPASS_TEXTURE_UNIT);
   const offset: Point = { x: 0, y: 0 };
-  // XXXLOCAL: MOBILE_PREPASS_SIZE should exist
-  gl.texSubImage2D(gl.TEXTURE_2D, 0, offset.x, offset.y, CELL_PREPASS_SIZE.x, CELL_PREPASS_SIZE.y, gl.RGBA, gl.UNSIGNED_BYTE, env._cache.mobileCache);
+  gl.texSubImage2D(gl.TEXTURE_2D, 0, offset.x, offset.y, MOBILE_PREPASS_SIZE.x, MOBILE_PREPASS_SIZE.y, gl.RGBA, gl.UNSIGNED_BYTE, env._cache.mobileCache);
 }
 
 function drawWorld(env: GlEnv, _state: GameState, canvas_from_world: SE2, aci: ActiveChunkInfo): void {
@@ -398,10 +379,10 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
     rectDrawer: mkRectDrawer(gl),
     debugQuadDrawer: mkDebugQuadDrawer(gl),
     canvasDrawer: mkCanvasDrawer(gl),
-    prepassHelper: mkPrepassHelper(gl, CELL_PREPASS_SIZE),
+    prepassHelper: mkPrepassHelper(gl),
     bonusDrawer: mkBonusDrawer(gl),
     _cache: {
-      chunkCache: mkOverlay<Chunk>(), mobileCache: new ImageData(CELL_PREPASS_SIZE.x, CELL_PREPASS_SIZE.y),
+      chunkCache: mkOverlay<Chunk>(), mobileCache: new ImageData(MOBILE_PREPASS_SIZE.x, MOBILE_PREPASS_SIZE.y),
     },
   };
 }
