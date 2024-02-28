@@ -5,10 +5,10 @@ import { vequal, vm } from "../util/vutil";
 import { Bonus } from "./bonus";
 import { getBonusFromLayer } from "./bonus-helpers";
 import { CacheUpdate, mkChunkUpdate, mkMobileUpdate } from './cache-types';
-import { addId, ensureId, freshId } from "./id-helpers";
+import { withFreshId } from "./id-helpers";
 import { AbstractLetter } from "./letters";
 import { CoreState, GameState } from "./state";
-import { GenMoveTile, HandTile, Location, MainTile, MobileEntity, MobileId, RenderableMobile, TileEntity, TileOptionalId } from './state-types';
+import { GenMoveTile, HandTile, Location, MainTile, MobileEntity, MobileId, RenderableMobile, TileEntity, TileNoId } from './state-types';
 import { Resource } from "./tool-types";
 
 export type TileId = string;
@@ -81,36 +81,52 @@ export function removeMobile(state: CoreState, id: MobileId): CoreState {
   });
 }
 
-export function addWorldTile(state: Draft<CoreState>, tile: TileOptionalId): void {
-  const newTile: TileEntity = ensureId({
-    id: tile.id,
-    letter: tile.letter, loc: { t: 'world', p_in_world_int: tile.p_in_world_int }
+
+export function addWorldTileWithId(state: CoreState, tile: TileNoId, id: MobileId): CoreState {
+  const newTile: TileEntity = { t: 'tile', id, letter: tile.letter, loc: { t: 'world', p_in_world_int: tile.p_in_world_int } };
+  return produce(state, cs => {
+    cs.mobile_entities[newTile.id] = newTile;
+    cs._cacheUpdateQueue.push(mkChunkUpdate(tile.p_in_world_int, { t: 'addMobile', id: newTile.id }));
+    cs._cacheUpdateQueue.push(mkMobileUpdate(newTile.id, getRenderableMobile(newTile)));
   });
-  state.mobile_entities[newTile.id] = newTile;
-  state._cacheUpdateQueue.push(mkChunkUpdate(tile.p_in_world_int, { t: 'addMobile', id: newTile.id }));
-  state._cacheUpdateQueue.push(mkMobileUpdate(newTile.id, getRenderableMobile(newTile)));
+}
+
+export function addWorldTile(state: CoreState, tile: TileNoId): CoreState {
+  return withFreshId(state, (id, state) => {
+    return addWorldTileWithId(state, tile, id);
+  });
 }
 
 export function addResourceMobile(state: CoreState, p_in_world_int: Point, res: Resource): CoreState {
-  const mobile: MobileEntity = ({
-    t: 'resource',
-    id: freshId(),
-    loc: { t: 'world', p_in_world_int },
-    durability: 0,
-    res,
-  });
-  return produce(state, s => {
-    s.mobile_entities[mobile.id] = mobile;
-    s._cacheUpdateQueue.push(mkChunkUpdate(p_in_world_int, { t: 'addMobile', id: mobile.id }));
-    s._cacheUpdateQueue.push(mkMobileUpdate(mobile.id, getRenderableMobile(mobile)));
+  return withFreshId(state, (id, state) => {
+    const mobile: MobileEntity = ({
+      t: 'resource',
+      id,
+      loc: { t: 'world', p_in_world_int },
+      durability: 0,
+      res,
+    });
+    return produce(state, s => {
+      s.mobile_entities[mobile.id] = mobile;
+      s._cacheUpdateQueue.push(mkChunkUpdate(p_in_world_int, { t: 'addMobile', id: mobile.id }));
+      s._cacheUpdateQueue.push(mkMobileUpdate(mobile.id, getRenderableMobile(mobile)));
+    });
   });
 }
 
-export function addHandTileEntity(state: Draft<CoreState>, letter: AbstractLetter, index: number, forceId?: MobileId): TileEntity {
-  const newTile: TileEntity = addId({ letter, loc: { t: 'hand', index } }, forceId);
-  state.mobile_entities[newTile.id] = newTile;
-  state._cacheUpdateQueue.push(mkMobileUpdate(newTile.id, getRenderableMobile(newTile)));
-  return newTile;
+export function addHandTileEntityWithId(state: CoreState, letter: AbstractLetter, index: number, id: MobileId): { tile: TileEntity, cs: CoreState } {
+  const tile: TileEntity = { t: 'tile', id, letter, loc: { t: 'hand', index } };
+  const cs = produce(state, cs => {
+    cs.mobile_entities[tile.id] = tile;
+    cs._cacheUpdateQueue.push(mkMobileUpdate(tile.id, getRenderableMobile(tile)));
+  });
+  return { tile, cs };
+}
+
+export function addHandTileEntity(state: CoreState, letter: AbstractLetter, index: number): { tile: TileEntity, cs: CoreState } {
+  return withFreshId(state, (id, state) => {
+    return addHandTileEntityWithId(state, letter, index, id);
+  });
 }
 
 export function putMobileInWorld(state: CoreState, id: MobileId, p_in_world_int: Point, noclear?: 'noclear'): CoreState {

@@ -1,6 +1,7 @@
+import { dropTopHandTile, tileFall } from "../layout/tile-fall";
 import { canvas_from_drag_mobile, pan_canvas_from_canvas_of_mouse_state } from '../layout/view-helpers';
-import { TOOLBAR_WIDTH } from "../ui/widget-constants";
 import { getWidgetPoint } from '../layout/widget-helpers';
+import { TOOLBAR_WIDTH } from "../ui/widget-constants";
 import { DEBUG } from '../util/debug';
 import { debugTiles } from "../util/debugTiles";
 import { produce } from '../util/produce';
@@ -24,12 +25,11 @@ import { reduceKey } from './reduceKey';
 import { incrementScore, setScore } from './scoring';
 import { deselect, resolveSelection, setSelected } from "./selection-operations";
 import { CoreState, GameState, SceneState } from './state';
-import { addWorldTiles, checkValid, drawOfState, filterExpiredAnimations, filterExpiredWordBonusState, isMobilePinned, needsRefresh, proposedHandDragOverLimit, unpauseState, withCoreState } from './state-helpers';
-import { dropTopHandTile, tileFall } from "../layout/tile-fall";
+import { checkValid, drawOfState, filterExpiredAnimations, filterExpiredWordBonusState, addWorldTiles, isMobilePinned, needsRefresh, proposedHandDragOverLimit, unpauseState, withCoreState } from './state-helpers';
 import { Location, MobileId, MobsState, MoveMobile } from './state-types';
 import { cellAtPoint, getMobileId, getMobileLoc, getRenderableMobile, get_hand_tiles, get_mobiles, mobileAtPoint, moveTiles, moveToHandLoc, putTileInHand, putTilesInHandFromNotHand, removeAllMobiles } from "./tile-helpers";
-import { getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
 import { bombIntent, dynamiteIntent } from "./tool-intents";
+import { getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
 import { shouldDisplayBackButton } from './winState';
 
 export function reduceZoom(state: GameState, p_in_canvas: Point, delta: number): GameState {

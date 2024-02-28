@@ -3,7 +3,7 @@ import { Point, Rect } from "../util/types";
 import { boundRect } from "../util/util";
 import { vtrans } from "../util/vutil";
 import { AbstractLetter, stringOfLetter } from "./letters";
-import { MainTile, Tile } from './state-types';
+import { MainTile, TileNoId } from './state-types';
 
 // Implements a spatially-bounded sparse map from coordinates to T
 
@@ -68,7 +68,7 @@ export function mkGridOf<T>(elms: { p: Point, v: T }[]): Grid<T> {
   };
 }
 
-export function mkGrid(tiles: Tile[]): Grid<AbstractLetter> {
+export function mkGrid(tiles: TileNoId[]): Grid<AbstractLetter> {
   const elems: Record<string, AbstractLetter> = {};
   tiles.forEach(tile => {
     elems[unparseCoord(tile.p_in_world_int)] = tile.letter;

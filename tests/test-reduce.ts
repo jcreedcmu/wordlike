@@ -4,17 +4,19 @@ import { mkOverlayFrom } from '../src/core/layer';
 import { resolveGameLowActions } from '../src/core/low-actions';
 import { mkGameState } from '../src/core/mkGameState';
 import { GameState } from '../src/core/state';
-import { addWorldTile } from '../src/core/tile-helpers';
+import { withCoreState } from '../src/core/state-helpers';
+import { addWorldTileWithId } from '../src/core/tile-helpers';
 import { produce } from '../src/util/produce';
 
 const SEED = 12345678;
 
 function threeTileState(): GameState {
-  let state = mkGameState(SEED, false, SEED);
-  state = produce(state, s => addWorldTile(s.coreState, { letter: { t: 'single', letter: 'A' }, p_in_world_int: { x: 0, y: 0 }, id: 1 }));
-  state = produce(state, s => addWorldTile(s.coreState, { letter: { t: 'single', letter: 'B' }, p_in_world_int: { x: 1, y: 0 }, id: 2 }));
-  state = produce(state, s => addWorldTile(s.coreState, { letter: { t: 'single', letter: 'C' }, p_in_world_int: { x: 2, y: 0 }, id: 3 }));
-  return state;
+  return withCoreState(mkGameState(SEED, false, SEED), cs => {
+    cs = addWorldTileWithId(cs, { letter: { t: 'single', letter: 'A' }, p_in_world_int: { x: 0, y: 0 } }, 1);
+    cs = addWorldTileWithId(cs, { letter: { t: 'single', letter: 'A' }, p_in_world_int: { x: 1, y: 0 } }, 2);
+    cs = addWorldTileWithId(cs, { letter: { t: 'single', letter: 'A' }, p_in_world_int: { x: 2, y: 0 } }, 3);
+    return cs;
+  });
 }
 
 describe('kill', () => {
@@ -47,22 +49,27 @@ describe('kill', () => {
     expect(state.coreState._cacheUpdateQueue).toEqual(
       [
         {
+          t: 'chunkUpdate',
           chunkUpdate: { t: 'clearBit', bit: BIT_SELECTED },
           p_in_world_int: { x: 0, y: 0 },
         },
         {
+          t: 'chunkUpdate',
           chunkUpdate: { t: 'clearBit', bit: BIT_SELECTED },
           p_in_world_int: { x: 1, y: 0 },
         },
         {
+          t: 'chunkUpdate',
           chunkUpdate: { t: 'removeMobile', },
           p_in_world_int: { x: 2, y: 0 },
         },
         {
+          t: 'chunkUpdate',
           chunkUpdate: { t: 'setBit', bit: BIT_CONNECTED },
           p_in_world_int: { x: 0, y: 0 },
         },
         {
+          t: 'chunkUpdate',
           chunkUpdate: { t: 'setBit', bit: BIT_CONNECTED },
           p_in_world_int: { x: 1, y: 0 },
         },

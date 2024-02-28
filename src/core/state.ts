@@ -47,6 +47,8 @@ export type CoreState = {
   mobsState: MobsState,
   bonusLayerSeed: number,  // immutable during game play
   _cacheUpdateQueue: CacheUpdate[],
+
+  idCounter: number,
 };
 
 export type GameState = {

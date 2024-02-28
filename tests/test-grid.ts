@@ -1,20 +1,19 @@
 import { checkConnected, checkGridWordsHoriz, checkGridWordsVert, getGrid, mkGrid } from '../src/core/grid';
-import { Tile } from '../src/core/state-types';
-import { ensureTileId } from '../src/core/id-helpers';
+import { TileNoId } from '../src/core/state-types';
 
 function isWord(word: string): boolean {
   return word == 'foo' || word == 'fumble' || word == 'baz' || word == 'the' || word == 'nib';
 }
 
-function tilesOfString(x: string): Tile[] {
+function tilesOfString(x: string): TileNoId[] {
   return x.replace(/^\n/, '').split('\n').flatMap((line, y) => line.split('').flatMap((letter, x) => {
     if (letter == '.')
       return [];
-    return [ensureTileId({ letter: { t: 'single', letter }, p_in_world_int: { x, y } })];
+    return [{ letter: { t: 'single', letter }, p_in_world_int: { x, y } }];
   }));
 }
 
-const tiles1: Tile[] = tilesOfString(`
+const tiles1: TileNoId[] = tilesOfString(`
 .......t
 .......h
 ..fumble
@@ -22,7 +21,7 @@ const tiles1: Tile[] = tilesOfString(`
 nib..z..
 `);
 
-const tiles2: Tile[] = tilesOfString(`
+const tiles2: TileNoId[] = tilesOfString(`
 .......t
 .......h
 ..fumble

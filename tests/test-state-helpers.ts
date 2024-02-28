@@ -1,18 +1,18 @@
 import { mkGameState } from "../src/core/mkGameState";
 import { GameState } from "../src/core/state";
+import { addWorldTiles, checkValid, withCoreState } from "../src/core/state-helpers";
 import { MobileEntity } from '../src/core/state-types';
-import { checkValid, addWorldTiles, withCoreState } from "../src/core/state-helpers";
-import { addWorldTile, removeMobile, putMobileInWorld } from "../src/core/tile-helpers";
+import { addWorldTileWithId, addWorldTile, putMobileInWorld, removeMobile } from "../src/core/tile-helpers";
 import { debugTiles } from "../src/util/debugTiles";
-import { produce } from "../src/util/produce";
 
 const SEED = 12345678;
 
 function twoTileState(): GameState {
-  let state = mkGameState(SEED, false, SEED);
-  state = produce(state, s => addWorldTile(s.coreState, { letter: { t: 'single', letter: 'A' }, p_in_world_int: { x: 0, y: 0 }, id: 1 }));
-  state = produce(state, s => addWorldTile(s.coreState, { letter: { t: 'single', letter: 'B' }, p_in_world_int: { x: 1, y: 0 }, id: 2 }));
-  return state;
+  return withCoreState(mkGameState(SEED, false, SEED), cs => {
+    cs = addWorldTileWithId(cs, { letter: { t: 'single', letter: 'A' }, p_in_world_int: { x: 0, y: 0 } }, 1);
+    cs = addWorldTileWithId(cs, { letter: { t: 'single', letter: 'B' }, p_in_world_int: { x: 1, y: 0 } }, 2);
+    return cs;
+  });
 }
 
 describe('addWorldTile', () => {
@@ -48,9 +48,11 @@ describe('addWorldTile', () => {
   });
 
   test('should generate ids correctly', () => {
-    let state = mkGameState(SEED, false, SEED);
-    state = produce(state, s => addWorldTile(s.coreState, { letter: { t: 'single', letter: 'A' }, p_in_world_int: { x: 0, y: 0 } }));
-    state = produce(state, s => addWorldTile(s.coreState, { letter: { t: 'single', letter: 'B' }, p_in_world_int: { x: 1, y: 0 } }));
+    const state = withCoreState(mkGameState(SEED, false, SEED), cs => {
+      cs = addWorldTile(cs, { letter: { t: 'single', letter: 'A' }, p_in_world_int: { x: 0, y: 0 } });
+      cs = addWorldTile(cs, { letter: { t: 'single', letter: 'B' }, p_in_world_int: { x: 1, y: 0 } });
+      return cs;
+    });
     expect(Object.keys(state.coreState.mobile_entities).length).toBe(2);
   });
 });

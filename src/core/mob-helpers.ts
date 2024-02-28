@@ -2,7 +2,7 @@ import { produce } from "../util/produce";
 import { Point } from "../util/types";
 import { next_rand } from "../util/util";
 import { vint, vm } from "../util/vutil";
-import { freshId } from "./id-helpers";
+import { withFreshId } from "./id-helpers";
 import { landMoveOnState } from "./landing-result";
 import { MoveSource } from "./landing-types";
 import { MobState, Orientation, SNAIL_ADVANCE_TICKS, back_of, back_right_of, ccw_of, clockwise_of, forward_of, left_of, reverse_of, right_of, towards_origin } from "./mobs";
@@ -84,10 +84,11 @@ export function addRandomMob(state: CoreState): CoreState {
 }
 
 export function addMob(state: CoreState, newMob: MobState): CoreState {
-  const id = freshId();
-  return produce(state, s => {
-    s.mobsState.mobs[id] = newMob;
-  })
+  return withFreshId(state, (id, cs) => {
+    return produce(cs, s => {
+      s.mobsState.mobs[id] = newMob;
+    });
+  });
 }
 
 export function addMobWithId(state: CoreState, newMob: MobState, id: string): CoreState {

@@ -21,25 +21,24 @@ import { AbstractLetter } from "./letters";
 import { addRandomMob } from "./mob-helpers";
 import { PROGRESS_ANIMATION_POINTS, getHighWaterMark, getScore, setHighWaterMark } from "./scoring";
 import { CoreState, GameState } from "./state";
-import { HAND_TILE_LIMIT, MainLoc, MobileId, MouseState, Tile, TileEntity, WordBonusState } from './state-types';
+import { HAND_TILE_LIMIT, MainLoc, MobileId, MouseState, TileNoId, WordBonusState } from './state-types';
 import { addHandTileEntity, addWorldTile, get_hand_tiles, get_main_tiles as get_world_tiles } from "./tile-helpers";
 import { getCurrentTool } from "./tools";
 import { WIN_SCORE, canWinFromState, shouldStartPanicBar } from "./winState";
 
-export function addWorldTiles(state: CoreState, tiles: Tile[]): CoreState {
-  return produce(state, s => {
-    tiles.forEach(tile => {
-      addWorldTile(s, tile);
-    });
+export function addWorldTiles(state: CoreState, tiles: TileNoId[]): CoreState {
+  tiles.forEach(tile => {
+    state = addWorldTile(state, tile);
   });
+  return state;
 }
 
 export function addHandTileEntities(state: CoreState, tiles: { letter: AbstractLetter, index: number }[]): CoreState {
-  return produce(state, s => {
-    tiles.forEach(tile => {
-      addHandTileEntity(s, tile.letter, tile.index);
-    });
+  tiles.forEach(tile => {
+    const { cs } = addHandTileEntity(state, tile.letter, tile.index);
+    state = cs;
   });
+  return state;
 }
 
 export function drawOfState(state: CoreState, drawForce?: DrawForce): CoreState {
@@ -47,10 +46,10 @@ export function drawOfState(state: CoreState, drawForce?: DrawForce): CoreState 
   if (handLength >= HAND_TILE_LIMIT)
     return state;
   const { letter, energies, seed } = getLetterSample(state.seed, state.energies, drawForce);
-  return checkValid(produce(state, s => {
+  const { cs } = addHandTileEntity(state, { t: 'single', letter }, handLength);
+  return checkValid(produce(cs, s => {
     s.seed = seed;
     s.energies = energies;
-    addHandTileEntity(s, { t: 'single', letter }, handLength);
   }));
 }
 
@@ -60,14 +59,9 @@ export function drawSpecific(state: CoreState, letter: AbstractLetter): { cs: Co
   if (handLength >= HAND_TILE_LIMIT)
     return undefined;
 
-  // XXX this is a gross hack, should make addHandTileEntity a pure function of cs
-  let te: TileEntity | undefined = undefined;
-  const cs = produce(state, s => {
-    te = addHandTileEntity(s, letter, handLength);
-  });
-
+  const { tile, cs } = addHandTileEntity(state, letter, handLength);
   return {
-    cs, newId: te!.id
+    cs, newId: tile.id
   };
 }
 

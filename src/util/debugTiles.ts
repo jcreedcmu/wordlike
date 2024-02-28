@@ -1,9 +1,7 @@
-import { Tile, TileOptionalId } from '../core/state-types';
-import { ensureTileId } from "../core/id-helpers";
+import { TileNoId } from '../core/state-types';
 
-
-export function debugTiles(): Tile[] {
-  const tiles: TileOptionalId[] = [
+export function debugTiles(): TileNoId[] {
+  return [
     { letter: { t: 'single', letter: "s" }, "p_in_world_int": { "x": 0, "y": 0 } },
     { letter: { t: 'single', letter: "i" }, "p_in_world_int": { "x": -5, "y": 5 } },
     { letter: { t: 'single', letter: "n" }, "p_in_world_int": { "x": -4, "y": 5 } },
@@ -62,5 +60,4 @@ export function debugTiles(): Tile[] {
     { letter: { t: 'single', letter: "s" }, "p_in_world_int": { "x": 11, "y": 5 } },
     { letter: { t: 'single', letter: "m" }, "p_in_world_int": { "x": 10, "y": 5 } }
   ];
-  return tiles.map(ensureTileId);
 }

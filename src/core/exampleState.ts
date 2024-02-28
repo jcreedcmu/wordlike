@@ -1,13 +1,12 @@
 import { PANIC_INTERVAL_MS } from '../core/clock';
-import { ensureTileId } from "../core/id-helpers";
 import { AbstractLetter } from '../core/letters';
 import { GameState } from '../core/state';
-import { TileOptionalId } from './state-types';
 import { addHandTileEntities, addWorldTiles, checkValid, resolveValid, withCoreState } from '../core/state-helpers';
 import { produce } from '../util/produce';
 import * as SE1 from '../util/se1';
 import { updateFogOfWar } from './fog-of-war';
 import { mkGameState } from './mkGameState';
+import { TileNoId } from './state-types';
 
 export function exampleState(): GameState {
   const state = mkGameState(1533311107, false, 46);
@@ -32,7 +31,7 @@ export function exampleState(): GameState {
   state.coreState.panic = { currentTime_in_game: Date.now(), lastClear_in_game: Date.now() - PANIC_INTERVAL_MS / 3 };
   state.coreState.game_from_clock = SE1.ident();
 
-  const tois: TileOptionalId[] = [
+  const tnis: TileNoId[] = [
     { letter: { t: 'single', letter: "p" }, p_in_world_int: { x: 0, y: 0 } },
     { letter: { t: 'single', letter: "i" }, p_in_world_int: { x: 2, y: 2 } },
     { letter: { t: 'single', letter: "t" }, p_in_world_int: { x: 2, y: 0 } },
@@ -79,14 +78,14 @@ export function exampleState(): GameState {
     { letter: { t: 'single', letter: "j" }, p_in_world_int: { x: 6, y: 6 } },
     { letter: { t: 'single', letter: "o" }, p_in_world_int: { x: 7, y: 6 } }
   ];
-  const tiles = tois.map(ensureTileId);
+
   const handTiles: { letter: AbstractLetter, index: number }[] = [
     { letter: { t: 'single', letter: "e" }, index: 0 },
     { letter: { t: 'single', letter: "t" }, index: 1 },
     { letter: { t: 'single', letter: "a" }, index: 2 },
   ];
   const almost = withCoreState(state, cs => {
-    const withTiles = addHandTileEntities(addWorldTiles(cs, tiles), handTiles);
+    const withTiles = addHandTileEntities(addWorldTiles(cs, tnis), handTiles);
     const resolved = resolveValid(checkValid(withTiles), new Set());
     return updateFogOfWar(resolved);
   });

@@ -38,7 +38,6 @@ export type MouseState =
   }
   ;
 
-
 export type Tile = {
   id: MobileId,
   p_in_world_int: Point,
@@ -47,6 +46,11 @@ export type Tile = {
 
 export type TileOptionalId = {
   id?: MobileId,
+  p_in_world_int: Point,
+  letter: AbstractLetter,
+};
+
+export type TileNoId = {
   p_in_world_int: Point,
   letter: AbstractLetter,
 };
