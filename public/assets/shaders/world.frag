@@ -30,7 +30,6 @@ const float CROSSHAIR_OPACITY = 0.3;
 const float CROSSHAIR_LENGTH = 2.;
 
 const float LAND_WATER_TRANSITIONS_X_OFFSET = 8.;
-const float FOG_OF_WAR_TRANSITIONS_X_OFFSET = 9.;
 
 out vec4 outputColor;
 
