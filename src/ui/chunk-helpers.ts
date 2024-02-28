@@ -118,7 +118,7 @@ export type RenderCaches = {
   mobileCache: ImageData,
 }
 
-function updateMobileCache(imdat: ImageData, _cs: CoreState, id: MobileId, mobile: RenderableMobile): void {
+function updateMobileCache(imdat: ImageData, id: MobileId, mobile: RenderableMobile): void {
   const ix = 4 * id;
   switch (mobile.t) {
     // this is in mobile_data format
@@ -138,7 +138,7 @@ function updateMobileCache(imdat: ImageData, _cs: CoreState, id: MobileId, mobil
 export function updateCache(cache: RenderCaches, cs: CoreState, cu: CacheUpdate): void {
   switch (cu.t) {
     case 'chunkUpdate': updateChunkCache(cache.chunkCache, cs, cu.p_in_world_int, cu.chunkUpdate); break;
-    case 'mobileUpdate': updateMobileCache(cache.mobileCache, cs, cu.id, cu.mobile); break;
+    case 'mobileUpdate': updateMobileCache(cache.mobileCache, cu.id, cu.mobile); break;
     default: unreachable(cu);
   }
 }

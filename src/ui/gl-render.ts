@@ -22,7 +22,7 @@ import { apply_to_rect, asMatrix } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
 import { rectPts, unreachable } from "../util/util";
 import { vadd, vdiag, vmul, vsub } from "../util/vutil";
-import { ActiveChunkInfo, activeChunks, ensureChunk, getChunk, updateCache } from "./chunk-helpers";
+import { ActiveChunkInfo, RenderCaches, activeChunks, ensureChunk, getChunk, updateCache } from "./chunk-helpers";
 import { drawGlAnimation } from "./drawGlAnimation";
 import { renderPanicBar, wordBubblePanicBounds, wordBubblePanicRect } from "./drawPanicBar";
 import { CANVAS_TEXTURE_UNIT, CELL_PREPASS_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, MOBILE_PREPASS_SIZE, MOBILE_PREPASS_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, drawOneMobile, drawOneSprite, mkBonusDrawer, mkCanvasDrawer, mkDebugQuadDrawer, mkPrepassHelper, mkRectDrawer, mkSpriteDrawer, mkTileDrawer, mkWorldDrawer } from "./gl-common";
@@ -221,8 +221,6 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
     ensureChunk(cache, state.coreState, p_in_chunk);
   }
 
-  env._cache.chunkCache = cache; // XXXLOCAL: necessary? aren't we just modifying it in place anyway?
-
   const { d: gl } = ci;
 
   const actuallyRender = () => {
@@ -371,6 +369,13 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
 
   gl.viewport(0, 0, devicePixelRatio * canvas_bds_in_canvas.sz.x, devicePixelRatio * canvas_bds_in_canvas.sz.y);
 
+  const _cache: RenderCaches = {
+    chunkCache: mkOverlay<Chunk>(), mobileCache: new ImageData(MOBILE_PREPASS_SIZE.x, MOBILE_PREPASS_SIZE.y),
+  };
+
+  if (DEBUG.stateExporter)
+    (window as any).cache = () => _cache;
+
   return {
     gl,
     tileDrawer: mkTileDrawer(gl),
@@ -381,8 +386,6 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
     canvasDrawer: mkCanvasDrawer(gl),
     prepassHelper: mkPrepassHelper(gl),
     bonusDrawer: mkBonusDrawer(gl),
-    _cache: {
-      chunkCache: mkOverlay<Chunk>(), mobileCache: new ImageData(MOBILE_PREPASS_SIZE.x, MOBILE_PREPASS_SIZE.y),
-    },
+    _cache: _cache,
   };
 }
