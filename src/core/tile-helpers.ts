@@ -87,7 +87,7 @@ export function addWorldTile(state: Draft<CoreState>, tile: TileOptionalId): voi
     letter: tile.letter, loc: { t: 'world', p_in_world_int: tile.p_in_world_int }
   });
   state.mobile_entities[newTile.id] = newTile;
-  state._cacheUpdateQueue.push(mkChunkUpdate(tile.p_in_world_int, { t: 'addMobile', mobile: { t: 'tile', letter: tile.letter } }));
+  state._cacheUpdateQueue.push(mkChunkUpdate(tile.p_in_world_int, { t: 'addMobile', id: newTile.id }));
 }
 
 export function addResourceMobile(state: CoreState, p_in_world_int: Point, res: Resource): CoreState {
@@ -100,7 +100,7 @@ export function addResourceMobile(state: CoreState, p_in_world_int: Point, res: 
   });
   return produce(state, s => {
     s.mobile_entities[mobile.id] = mobile;
-    s._cacheUpdateQueue.push(mkChunkUpdate(p_in_world_int, { t: 'addMobile', mobile: { t: 'resource', res } }));
+    s._cacheUpdateQueue.push(mkChunkUpdate(p_in_world_int, { t: 'addMobile', id: mobile.id }));
   });
 }
 
@@ -113,7 +113,7 @@ export function addHandTileEntity(state: Draft<CoreState>, letter: AbstractLette
 export function putMobileInWorld(state: CoreState, id: MobileId, p_in_world_int: Point, noclear?: 'noclear'): CoreState {
   const nowhere = putMobileNowhere(state, id, noclear);
   const mobile = getMobileId(state, id);
-  const cacheUpdate = mkChunkUpdate(p_in_world_int, { t: 'addMobile', mobile: getRenderableMobile(mobile) });
+  const cacheUpdate = mkChunkUpdate(p_in_world_int, { t: 'addMobile', id: mobile.id });
   return produce(nowhere, s => {
     setMobileLoc(s, id, { t: 'world', p_in_world_int });
     s._cacheUpdateQueue.push(cacheUpdate);
@@ -133,7 +133,7 @@ export function moveTiles(state: CoreState, moves: GenMoveTile[]): CoreState {
     const loc = move.loc;
     switch (loc.t) {
       case 'world':
-        cacheUpdate = mkChunkUpdate(loc.p_in_world_int, { t: 'addMobile', mobile: getRenderableMobile(mobile) });
+        cacheUpdate = mkChunkUpdate(loc.p_in_world_int, { t: 'addMobile', id: mobile.id });
         break;
       case 'nowhere':
         break;

@@ -1,15 +1,13 @@
-import { spriteLocOfBonus, spriteLocOfChunkValue, spriteLocOfRes } from "./sprite-sheet";
-import { world_bds_in_canvas } from "./widget-constants";
+import { bonusGenerator } from "../core/bonus";
+import { BIT_CONNECTED, BIT_SELECTED, BONUS_CHANNEL, Chunk, ChunkUpdate, METADATA_CHANNEL, MOBILE_CHANNEL_H, MOBILE_CHANNEL_L, WORLD_CHUNK_SIZE } from "../core/chunk";
+import { Overlay, getOverlay, setOverlay } from "../core/layer";
+import { CoreState } from "../core/state";
 import { ImageData } from "../util/image-data";
 import { SE2, apply, compose, inverse, scale } from "../util/se2";
 import { Point } from "../util/types";
 import { vadd, vinv, vm, vm2, vm3, vmul, vsub } from "../util/vutil";
-import { bonusGenerator } from "../core/bonus";
-import { Overlay, getOverlay, setOverlay } from "../core/layer";
-import { byteOfLetter } from "../core/letters";
-import { CoreState } from "../core/state";
-import { RenderableMobile } from '../core/state-types';
-import { Chunk, WORLD_CHUNK_SIZE, BONUS_CHANNEL, METADATA_CHANNEL, MOBILE_CHANNEL, UNUSED_CHANNEL, BIT_CONNECTED, BIT_SELECTED, ChunkUpdate } from "../core/chunk";
+import { spriteLocOfBonus, spriteLocOfChunkValue } from "./sprite-sheet";
+import { world_bds_in_canvas } from "./widget-constants";
 
 function getWorldChunkData(cs: CoreState, p_in_chunk: Point): Chunk {
   const chunk: Chunk = mkChunk(WORLD_CHUNK_SIZE);
@@ -30,16 +28,13 @@ function getWorldChunkData(cs: CoreState, p_in_chunk: Point): Chunk {
       //       bit 0: tile is selected
       //       bit 1: tile is connected to origin
       //       bit 2: cell is visible
-      // .b: which mobile we should draw here.
-      //     bit 7 set: mobile is a tile. 32 = none, 0 = A, ..., 25 = Z
-      //     bit 7 clear: mobile is a resource from the sprite sheet. Format is
-      //                  0[xxx][yyyy] just like .r field. This means we have access
-      //                  to only the left half of the sprite sheet.
-      // .a: unused
+      // .ba: which mobile we should draw here.
+      //      0: no mobile at all, let bonus show through
+      //     ≠0: show mobile with id [bbbbbbbb][aaaaaaaa], b is high bits and a is low bits.
       imdat.data[fix + BONUS_CHANNEL] = (spritePos.x << 4) + spritePos.y;
       imdat.data[fix + METADATA_CHANNEL] = 0;
-      imdat.data[fix + MOBILE_CHANNEL] = byteOfEmpty();
-      imdat.data[fix + UNUSED_CHANNEL] = 0;
+      imdat.data[fix + MOBILE_CHANNEL_H] = 0;
+      imdat.data[fix + MOBILE_CHANNEL_L] = 0;
     }
   }
 
@@ -54,25 +49,16 @@ export function ensureChunk(cache: Overlay<Chunk>, cs: CoreState, p_in_chunk: Po
 export function getChunk(cache: Overlay<Chunk>, p_in_chunk: Point): Chunk | undefined {
   return getOverlay(cache, p_in_chunk);
 }
+
 // This packs a Point in 16x16 into a single byte
 function byteOfSpriteLoc(p: Point): number {
   return (p.x << 4) + p.y;
 }
-// This computes the byte that goes in channel 1 of the four-channel
-// pixel for each tile, and is read by the fragment shader in
-// world.frag
-function byteOfMobile(m: RenderableMobile): number {
-  switch (m.t) {
-    case 'tile': return byteOfLetter(m.letter);
-    case 'resource': return byteOfSpriteLoc(spriteLocOfRes(m.res));
-  }
-}
-function byteOfEmpty(): number {
-  return 128 + 32;
-}
+
 function freshMobileFlags(oldFlags: number): number {
   return oldFlags & ~(BIT_CONNECTED | BIT_SELECTED); // leave visibility bit alone
 }
+
 function processChunkUpdate(cu: ChunkUpdate, oldVec: number[]): number[] {
   const rv = [...oldVec];
   switch (cu.t) {
@@ -81,12 +67,15 @@ function processChunkUpdate(cu: ChunkUpdate, oldVec: number[]): number[] {
       return rv;
     }
     case 'addMobile': {
-      rv[MOBILE_CHANNEL] = byteOfMobile(cu.mobile);
+      const id = cu.id;
+      rv[MOBILE_CHANNEL_H] = id >> 8;
+      rv[MOBILE_CHANNEL_L] = id & 0xff;
       rv[METADATA_CHANNEL] = freshMobileFlags(oldVec[METADATA_CHANNEL]);
       return rv;
     }
     case 'removeMobile': {
-      rv[MOBILE_CHANNEL] = byteOfEmpty();
+      rv[MOBILE_CHANNEL_H] = 0;
+      rv[MOBILE_CHANNEL_L] = 0;
       return rv;
     }
     case 'setBit': {
@@ -98,7 +87,9 @@ function processChunkUpdate(cu: ChunkUpdate, oldVec: number[]): number[] {
       return rv;
     }
     case 'restoreMobile': {
-      rv[MOBILE_CHANNEL] = byteOfMobile(cu.mobile);
+      const id = cu.id;
+      rv[MOBILE_CHANNEL_H] = id >> 8;
+      rv[MOBILE_CHANNEL_L] = id & 0xff;
       return rv;
     }
   }

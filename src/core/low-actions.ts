@@ -579,7 +579,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
           return [];
         const cu: CacheUpdate = mkChunkUpdate(
           mobile.loc.p_in_world_int,
-          { t: 'restoreMobile', mobile: getRenderableMobile(mobile) }
+          { t: 'restoreMobile', id: mobile.id }
         );
         return [cu];
       });

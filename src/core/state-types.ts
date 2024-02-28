@@ -77,6 +77,7 @@ export type MobileEntity = TileEntity | ResourceEntity;
 // This should contain enough information to render a mobile assuming we
 // already know its location.
 
+// XXX: unused?
 export type RenderableMobile =
   | { t: 'tile', letter: AbstractLetter }
   | { t: 'resource', res: Resource };
