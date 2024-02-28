@@ -7,7 +7,7 @@ import { apply_to_rect, asMatrix } from "../util/se2-extra";
 import { Point } from "../util/types";
 import { pixelSnapRect, rectPts } from "../util/util";
 import { vdiag, vscale } from "../util/vutil";
-import { RenderCache } from "./render-cache";
+import { RenderCache } from "../core/cache-types";
 import { gl_from_canvas } from "./gl-helpers";
 import { spriteLocOfRes } from "./sprite-sheet";
 import { canvas_bds_in_canvas } from "./widget-constants";

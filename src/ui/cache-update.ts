@@ -1,4 +1,4 @@
-import { CacheUpdate } from "../core/cache-types";
+import { CacheUpdate, RenderCache } from "../core/cache-types";
 import { BIT_CONNECTED, BIT_SELECTED, BONUS_CHANNEL, Chunk, ChunkUpdate, METADATA_CHANNEL, MOBILE_CHANNEL_H, MOBILE_CHANNEL_L, WORLD_CHUNK_SIZE } from "../core/chunk";
 import { Overlay, getOverlay } from "../core/layer";
 import { byteOfLetter } from "../core/letters";
@@ -7,13 +7,8 @@ import { MobileId, RenderableMobile } from "../core/state-types";
 import { Point } from "../util/types";
 import { unreachable } from "../util/util";
 import { vm2, vmul, vsub } from "../util/vutil";
-import { spriteLocOfChunkValue, spriteLocOfRes } from "./sprite-sheet";
 import { ensureChunk } from "./chunk-helpers";
-
-export type RenderCache = {
-  chunkCache: Overlay<Chunk>;
-  mobileCache: ImageData;
-};
+import { spriteLocOfChunkValue, spriteLocOfRes } from "./sprite-sheet";
 
 // This packs a Point in 16x16 into a single byte
 function byteOfSpriteLoc(p: Point): number {

@@ -1,6 +1,12 @@
 import { Point } from '../util/types';
-import { ChunkUpdate } from './chunk';
+import { Chunk, ChunkUpdate } from './chunk';
+import { Overlay } from './layer';
 import { MobileId, RenderableMobile } from './state-types';
+
+export type RenderCache = {
+  chunkCache: Overlay<Chunk>;
+  mobileCache: ImageData;
+};
 
 export type CacheUpdate =
   | { t: 'chunkUpdate'; p_in_world_int: Point; chunkUpdate: ChunkUpdate; }

@@ -9,29 +9,6 @@ import { vadd, vinv, vm, vm3 } from "../util/vutil";
 import { spriteLocOfBonus } from "./sprite-sheet";
 import { world_bds_in_canvas } from "./widget-constants";
 
-// === cell_data format ===
-//
-// .r: which bonus we should show here. [xxxx][yyyy] high 4 bits are x coord on the sprite sheet, low 4 bits are y.
-// .g: some metadata.
-//       bit 0: tile is selected
-//       bit 1: tile is connected to origin
-//       bit 2: cell is visible
-// .ba: which mobile we should draw here.
-//      0: no mobile at all, let bonus show through
-//     ≠0: show mobile with id [bbbbbbbb][aaaaaaaa], b is high bits and a is low bits.
-
-// === mobile_data format ===
-//
-// .r: mobile type
-//    0: resource
-//    1: tile
-// if resource:
-// .g: [xxxx][yyyy] coordinates on sprite sheet
-// .b: durability remaining
-//
-// if tile:
-// .g: letter index
-
 function getWorldChunkData(cs: CoreState, p_in_chunk: Point): Chunk {
   const chunk: Chunk = mkChunk(WORLD_CHUNK_SIZE);
 

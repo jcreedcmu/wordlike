@@ -1,6 +1,7 @@
 import { Dispatch } from "../core/action";
 import { Animation } from "../core/animation-types";
 import { getAssets } from "../core/assets";
+import { RenderCache } from "../core/cache-types";
 import { Chunk, WORLD_CHUNK_SIZE } from "../core/chunk";
 import { getWordBonusFraction, now_in_game } from "../core/clock";
 import { mkOverlay } from "../core/layer";
@@ -22,8 +23,8 @@ import { apply_to_rect, asMatrix } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
 import { rectPts, unreachable } from "../util/util";
 import { vadd, vdiag, vmul, vsub } from "../util/vutil";
+import { updateCache } from "./cache-update";
 import { ActiveChunkInfo, activeChunks, ensureChunk, getChunk } from "./chunk-helpers";
-import { RenderCache, updateCache } from "./render-cache";
 import { drawGlAnimation } from "./drawGlAnimation";
 import { renderPanicBar, wordBubblePanicBounds, wordBubblePanicRect } from "./drawPanicBar";
 import { CANVAS_TEXTURE_UNIT, CELL_PREPASS_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, MOBILE_PREPASS_SIZE, MOBILE_PREPASS_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, drawOneMobile, drawOneSprite, mkBonusDrawer, mkCanvasDrawer, mkDebugQuadDrawer, mkPrepassHelper, mkRectDrawer, mkSpriteDrawer, mkTileDrawer, mkWorldDrawer } from "./gl-common";
