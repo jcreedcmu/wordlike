@@ -416,6 +416,8 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
         s.slowState.inventory.copies = 15;
         s.slowState.inventory.times = 15;
         s.slowState.inventory.glasses = 15;
+        s.slowState.resource.stone = 15;
+        s.slowState.resource.wood = 15;
       })));
     }
     case 'debug2': {
@@ -427,6 +429,8 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
         s.slowState.inventory.copies = 15;
         s.slowState.inventory.times = 15;
         s.slowState.inventory.glasses = 15;
+        s.slowState.resource.stone = 15;
+        s.slowState.resource.wood = 15;
       })));
     }
     case 'incrementScore':

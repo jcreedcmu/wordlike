@@ -1,10 +1,11 @@
 import { produce } from "../util/produce";
-import { MoveSourceId, LandingMoveId } from "./landing-types";
+import { mkChunkUpdate } from "./cache-types";
 import { tryKillTileOfStateLoc } from "./kill-helpers";
 import { LandingResult, ProperLandingResult } from "./landing-result";
+import { LandingMoveId, MoveSourceId } from "./landing-types";
 import { CoreState } from "./state";
 import { MoveMobile } from './state-types';
-import { addResourceMobile, mobileAtPoint, putMobileInWorld, putMobileNowhere, removeMobile } from "./tile-helpers";
+import { addResourceMobile, getMobileId, mobileAtPoint, putMobileInWorld, putMobileNowhere, removeMobile, updateDurability } from "./tile-helpers";
 import { fillWaterIntent } from "./tool-intents";
 
 export function removeSource(state: CoreState, src: MoveSourceId): CoreState {
@@ -35,6 +36,39 @@ export function resolveLandResult(_state: CoreState, lr: ProperLandingResult, mo
       const mobile = mobileAtPoint(cs, move.p_in_world_int);
       if (mobile != undefined)
         cs = removeMobile(cs, mobile.id);
+      cs = addResourceMobile(cs, move.p_in_world_int, res);
+      return cs;
+    }
+    case 'replaceResourceMinusDur': {
+      const { res } = lr;
+      let cs = _state;
+      if (move.src.t != 'mobile')
+        throw new Error(`durability effects only make sense on resources`);
+
+      // Maybe modify or remove source
+      const srcMobile = getMobileId(_state, move.src.id);
+      if (srcMobile.t != 'resource')
+        throw new Error(`durability effects only make sense on resources`);
+      const loc = srcMobile.loc;
+      if (loc.t != 'world')
+        throw new Error(`durability effects only make sense on resources in world`);
+      const newDur = srcMobile.durability - lr.dur;
+      if (newDur <= 0) {
+        cs = removeMobile(cs, srcMobile.id);
+      }
+      else {
+        cs = updateDurability(cs, srcMobile.id, newDur);
+        cs = produce(cs, s => {
+          s._cacheUpdateQueue.push(mkChunkUpdate(loc.p_in_world_int, { t: 'restoreMobile', id: srcMobile.id }));
+        });
+      }
+
+      // Remove target
+      const tgtMobile = mobileAtPoint(cs, move.p_in_world_int);
+      if (tgtMobile != undefined)
+        cs = removeMobile(cs, tgtMobile.id);
+
+      // Add new resource
       cs = addResourceMobile(cs, move.p_in_world_int, res);
       return cs;
     }

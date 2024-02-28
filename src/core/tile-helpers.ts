@@ -8,7 +8,7 @@ import { CacheUpdate, mkChunkUpdate, mkMobileUpdate } from './cache-types';
 import { freshId } from "./id-helpers";
 import { AbstractLetter } from "./letters";
 import { CoreState, GameState } from "./state";
-import { GenMoveTile, HandTile, Location, MainTile, MobileEntity, RenderableMobile, TileEntity, TileNoId } from './state-types';
+import { GenMoveTile, HandTile, Location, MainTile, MobileEntity, RenderableMobile, ResourceEntity, TileEntity, TileNoId } from './state-types';
 import { MobileId } from './basic-types';
 import { Resource } from "./tool-types";
 
@@ -285,4 +285,15 @@ export function mobileAtPointForMobiles(p_in_world: Point, mobiles: MobileEntity
     }
   }
   return undefined;
+}
+
+export function updateDurability(cs: CoreState, id: MobileId, durability: number): CoreState {
+  const mobile = cs.mobile_entities[id];
+  if (mobile.t != 'resource')
+    throw Error(`invariant violation: expected resource in updateDurability`);
+  const newMobile: ResourceEntity = { ...mobile, durability };
+  return produce(cs, s => {
+    s.mobile_entities[id] = newMobile;
+    s._cacheUpdateQueue.push(mkMobileUpdate(mobile.id, getRenderableMobile(newMobile)));
+  });
 }

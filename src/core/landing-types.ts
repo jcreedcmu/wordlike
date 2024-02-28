@@ -14,8 +14,9 @@ export type MoveSource =
 export type LandingMove = { src: MoveSource, p_in_world_int: Point };
 
 // A thing that can be moved onto something else (with identity)
+export type MoveSourceId =
+  | { t: 'mobile', id: MobileId }
+  | { t: 'freshResource', res: ResbarResource }
+  ;
 
-export type MoveSourceId = { t: 'mobile'; id: MobileId; } |
-{ t: 'freshResource'; res: ResbarResource; };
-
-export type LandingMoveId = { src: MoveSourceId; p_in_world_int: Point; };
+export type LandingMoveId = { src: MoveSourceId, p_in_world_int: Point };

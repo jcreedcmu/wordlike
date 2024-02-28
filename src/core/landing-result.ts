@@ -27,6 +27,7 @@ export type ProperLandingResult =
   /* other things that I expect to go here include: success which transforms the B somehow */
   | { t: 'fillWater' }
   | { t: 'replaceResource', res: Resource }
+  | { t: 'replaceResourceMinusDur', res: Resource, dur: number }
   | { t: 'removeMob', id: MobileId }
   ;
 
@@ -46,6 +47,7 @@ export function disjunction(lr1: LandingResult, lr2: LandingResult): LandingResu
     case 'collision': // fallthrough intentional
     case 'fillWater': // fallthrough intentional
     case 'removeMob': // fallthrough intentional
+    case 'replaceResourceMinusDur':
     case 'replaceResource': return lr1;
     case 'place': return lr2;
   }
@@ -65,7 +67,7 @@ export function landMobileOnCell(m: MoveSource, c: CellContents): LandingResult 
           return { t: 'replaceResource', res: 'axe' };
         }
         if (m.t == 'resource' && m.res == 'axe') {
-          return { t: 'replaceResource', res: 'planks' };
+          return { t: 'replaceResourceMinusDur', res: 'planks', dur: 50 };
         }
       }
       if (c.mobile.t == 'resource' && c.mobile.res == 'stone') {
