@@ -6,10 +6,11 @@ import { produce } from "../src/util/produce";
 
 const SEED = 12345678;
 
+const mobId = 1001;
+
 function testState(): GameState {
-  const id = 1001;
   let state = mkGameState(SEED, false, SEED);
-  state = withCoreState(state, cs => addMobWithId(cs, { t: 'snail', orientation: 'E', p_in_world_int: { x: 0, y: 0 }, ticks: 0 }, id));
+  state = withCoreState(state, cs => addMobWithId(cs, { t: 'snail', orientation: 'E', p_in_world_int: { x: 0, y: 0 }, ticks: 0 }, mobId));
   return state;
 }
 
@@ -17,11 +18,11 @@ describe('advanceMob', () => {
   test('should work', () => {
 
     let cs = testState().coreState;
-    const state1 = advanceMob(cs, cs.mobsState.mobs['idmob']);
+    const state1 = advanceMob(cs, cs.mobsState.mobs[mobId]);
     expect(state1.ticks).toEqual(1);
 
-    cs = produce(cs, s => { s.mobsState.mobs['idmob'] = state1; });
-    const state2 = advanceMob(cs, cs.mobsState.mobs['idmob']);
+    cs = produce(cs, s => { s.mobsState.mobs[mobId] = state1; });
+    const state2 = advanceMob(cs, cs.mobsState.mobs[mobId]);
     expect(state2.ticks).toEqual(2);
 
   });
