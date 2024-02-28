@@ -89,6 +89,7 @@ function updateMobileCache(imdat: ImageData, id: MobileId, mobile: RenderableMob
     case 'resource': {
       imdat.data[ix + 0] = 0;
       imdat.data[ix + 1] = byteOfSpriteLoc(spriteLocOfRes(mobile.res));
+      imdat.data[ix + 2] = mobile.durability;
     } break;
     default: unreachable(mobile);
   }

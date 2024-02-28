@@ -101,14 +101,20 @@ vec4 get_origin_pixel(vec2 p_in_world_int, vec2 p_in_world_fp) {
   return mix(vec4(0.,0.,0.,0.), vec4(0.,0.,0.,0.5), oam * is_origin);
 }
 
-vec4 get_mobile_pixel(vec2 p_in_world_fp, ivec2 mobile_channel, int metadata_channel) {
-  // return vec4(vec2(mobile_channel) / 255., 0., 1.); // check that the id is coming through accurately
+vec4 with_durability_bar(vec2 p_in_world_fp, vec4 sprite_pixel, int durability) {
+  if (durability == 255)
+    return sprite_pixel;
+  float dur = float(durability) / 255.;
+  vec4 bar_pixel = mix(vec4(0.,0.,0.,1.), vec4(0.,1.,0.,1.), float(p_in_world_fp.x > 1. - dur));
+  return mix(sprite_pixel, bar_pixel, float(p_in_world_fp.y > 0.9));
+}
 
-  // Get the data of the mobile. This is in mobile_data format
+vec4 get_mobile_pixel(vec2 p_in_world_fp, ivec2 mobile_channel, int metadata_channel) {
+  // This is in mobile_data format
   ivec4 mobile_data = ivec4(round(255.0 * texture(u_mobilePrepassTexture, (vec2(mobile_channel) + vec2(0.5,0.5)) / float(MOBILE_PREPASS_BUFFER_SIZE))));
 
   if (mobile_data.r == 1) { // tile
-    int letter = mobile_data.g;
+    int letter = mobile_data.TILE_LETTER_CHANNEL;
     bool selected = (metadata_channel & 1) != 0;
     bool connected = (metadata_channel & 2) != 0;
 
@@ -119,8 +125,11 @@ vec4 get_mobile_pixel(vec2 p_in_world_fp, ivec2 mobile_channel, int metadata_cha
     return vec4(pixel, mobile_pixel.a);
   }
   else { // resource
-    int sprite_coords = mobile_data.g;
-    return get_sprite_pixel(p_in_world_fp, vec2(sprite_coords >> 4, sprite_coords & 0xf));
+    int sprite_coords = mobile_data.RESOURCE_SPRITE_CHANNEL;
+    int durability = mobile_data.RESOURCE_DURABILITY_CHANNEL;
+    vec2 sprite_coords_vec = vec2(sprite_coords >> 4, sprite_coords & 0xf);
+    vec4 sprite_pixel = get_sprite_pixel(p_in_world_fp, sprite_coords_vec);
+    return with_durability_bar(p_in_world_fp, sprite_pixel, durability);
   }
 }
 

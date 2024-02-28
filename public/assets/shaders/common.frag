@@ -3,6 +3,10 @@
 #define MOBILE_CHANNEL_H b
 #define MOBILE_CHANNEL_L a
 
+#define TILE_LETTER_CHANNEL g
+#define RESOURCE_SPRITE_CHANNEL g
+#define RESOURCE_DURABILITY_CHANNEL b
+
 // Size of the 'screen' in pixels
 uniform vec2 u_canvasSize;
 
