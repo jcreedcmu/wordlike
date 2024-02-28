@@ -84,7 +84,7 @@ export type MobileEntity = TileEntity | ResourceEntity;
 // XXX: unused?
 export type RenderableMobile =
   | { t: 'tile', letter: AbstractLetter }
-  | { t: 'resource', res: Resource };
+  | { t: 'resource', res: Resource, durability: number };
 
 export type PreTileEntity = {
   loc: Location,

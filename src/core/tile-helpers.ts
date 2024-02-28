@@ -16,7 +16,7 @@ export type TileId = string;
 export function getRenderableMobile(m: MobileEntity): RenderableMobile {
   switch (m.t) {
     case 'tile': return { t: 'tile', letter: m.letter };
-    case 'resource': return { t: 'resource', res: m.res };
+    case 'resource': return { t: 'resource', res: m.res, durability: m.durability };
   }
 }
 
@@ -102,7 +102,7 @@ export function addResourceMobile(state: CoreState, p_in_world_int: Point, res: 
     t: 'resource',
     id,
     loc: { t: 'world', p_in_world_int },
-    durability: 0,
+    durability: 15,
     res,
   });
   return produce(cs, s => {
