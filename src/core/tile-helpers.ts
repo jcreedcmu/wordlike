@@ -107,9 +107,9 @@ export function addResourceMobile(state: CoreState, p_in_world_int: Point, res: 
 }
 
 export function addHandTileEntity(state: Draft<CoreState>, letter: AbstractLetter, index: number, forceId?: MobileId): TileEntity {
-  // XXXLOCAL: do I need to do an additional cacheupdate here?
   const newTile: TileEntity = addId({ letter, loc: { t: 'hand', index } }, forceId);
   state.mobile_entities[newTile.id] = newTile;
+  state._cacheUpdateQueue.push(mkMobileUpdate(newTile.id, getRenderableMobile(newTile)));
   return newTile;
 }
 

@@ -6,7 +6,7 @@ export type AbstractLetter =
   ;
 
 export function byteOfLetter(al: AbstractLetter): number {
-  return 128 + al.letter.charCodeAt(0) - 97;
+  return al.letter.charCodeAt(0) - 97;
 }
 
 export function stringOfLetter(al: AbstractLetter): string {

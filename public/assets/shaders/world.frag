@@ -102,30 +102,26 @@ vec4 get_origin_pixel(vec2 p_in_world_int, vec2 p_in_world_fp) {
 }
 
 vec4 get_mobile_pixel(vec2 p_in_world_fp, ivec2 mobile_channel, int metadata_channel) {
+  // return vec4(vec2(mobile_channel) / 255., 0., 1.); // check that the id is coming through accurately
 
   // Get the data of the mobile. This is in mobile_data format, documented in chunk-helpers.ts.
-  vec4 mobile_data = texture(u_mobilePrepassTexture, (vec2(mobile_channel) + vec2(0.5,0.5)) / float(MOBILE_PREPASS_BUFFER_SIZE));
-  return vec4(mobile_data.rgb, 1.); // DEBUGGING
+  ivec4 mobile_data = ivec4(round(255.0 * texture(u_mobilePrepassTexture, (vec2(mobile_channel) + vec2(0.5,0.5)) / float(MOBILE_PREPASS_BUFFER_SIZE))));
 
-  // // if high bit is set, that means we're doing letter tiles
-  // if ((mobile_channel & 128) != 0) {
-  //   int letter = mobile_channel & 0x7f;
+  if (mobile_data.r == 1) { // tile
+    int letter = mobile_data.g;
+    bool selected = (metadata_channel & 1) != 0;
+    bool connected = (metadata_channel & 2) != 0;
 
-  //   // 32 is space
-  //   if (letter != 32) {
-  //     mobile_pixel = get_tile_pixel(p_in_world_fp, letter);
-
-  //     vec3 pixel = mobile_pixel.rgb;
-  //     pixel = mix(pixel, TILE_SELECTED_COLOR, float(selected) * 0.5);
-  //     pixel = mix(pixel, TILE_DISCONNECTED_COLOR, float(!connected && !selected) * 0.4);
-  //     mobile_pixel = vec4(pixel, mobile_pixel.a);
-  //   }
-  // }
-  // // if high bit is clear, that means we're doing mobile resources
-  // else {
-  //   mobile_pixel = get_sprite_pixel(p_in_world_fp, vec2(mobile_channel >> 4, mobile_channel & 0xf));
-  // }
-
+    vec4 mobile_pixel = get_tile_pixel(p_in_world_fp, letter);
+    vec3 pixel = mobile_pixel.rgb;
+    pixel = mix(pixel, TILE_SELECTED_COLOR, float(selected) * 0.5);
+    pixel = mix(pixel, TILE_DISCONNECTED_COLOR, float(!connected && !selected) * 0.4);
+    return vec4(pixel, mobile_pixel.a);
+  }
+  else { // resource
+    int sprite_coords = mobile_data.g;
+    return get_sprite_pixel(p_in_world_fp, vec2(sprite_coords >> 4, sprite_coords & 0xf));
+  }
 }
 
 
@@ -137,9 +133,6 @@ vec4 get_cell_pixel(vec2 p_in_world, vec2 p_in_world_fp, ivec4 cell_data) {
   int bonus_channel = cell_data.BONUS_CHANNEL;
   int metadata_channel = cell_data.METADATA_CHANNEL;
   ivec2 mobile_channel = ivec2(cell_data.MOBILE_CHANNEL_L, cell_data.MOBILE_CHANNEL_H);
-
-  bool selected = (metadata_channel & 1) != 0;
-  bool connected = (metadata_channel & 2) != 0;
 
   vec2 bonus_coords = vec2(bonus_channel >> 4, bonus_channel & 0xf);
 
