@@ -101,7 +101,7 @@ function glFillRect(env: GlEnv, rect_in_canvas: Rect, color: RgbColor): void {
   glFillRecta(env, rect_in_canvas, [...color, 255]);
 }
 
-function renderCellPrepass(env: GlEnv, _state: CoreState, canvas_from_world: SE2): ActiveChunkInfo {
+function renderCellPrepass(env: GlEnv, canvas_from_world: SE2): ActiveChunkInfo {
   const { gl } = env;
 
   const aci = activeChunks(canvas_from_world);
@@ -120,6 +120,14 @@ function renderCellPrepass(env: GlEnv, _state: CoreState, canvas_from_world: SE2
   return aci;
 }
 
+function renderMobilePrepass(env: GlEnv): void {
+  const { gl } = env;
+
+  gl.activeTexture(gl.TEXTURE0 + MOBILE_PREPASS_TEXTURE_UNIT);
+  const offset: Point = { x: 0, y: 0 };
+  // XXXLOCAL: MOBILE_PREPASS_SIZE should exist
+  gl.texSubImage2D(gl.TEXTURE_2D, 0, offset.x, offset.y, CELL_PREPASS_SIZE.x, CELL_PREPASS_SIZE.y, gl.RGBA, gl.UNSIGNED_BYTE, env._cache.mobileCache);
+}
 
 function drawWorld(env: GlEnv, _state: GameState, canvas_from_world: SE2, aci: ActiveChunkInfo): void {
   const { gl } = env;
@@ -242,7 +250,10 @@ export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): vo
 
     // render the cell prepass
     const canvas_from_world = pan_canvas_from_world_of_state(state);
-    const aci = renderCellPrepass(env, cs, canvas_from_world);
+    const aci = renderCellPrepass(env, canvas_from_world);
+
+    // render the mobile prepass
+    renderMobilePrepass(env);
 
     // clear canvas & initialize blending
     gl.clearColor(1.0, 1.0, 1.0, 1.0);
