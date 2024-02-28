@@ -2,6 +2,7 @@ import { bonusGenerator } from "../core/bonus";
 import { CacheUpdate } from "../core/cache-types";
 import { BIT_CONNECTED, BIT_SELECTED, BONUS_CHANNEL, Chunk, ChunkUpdate, METADATA_CHANNEL, MOBILE_CHANNEL_H, MOBILE_CHANNEL_L, WORLD_CHUNK_SIZE } from "../core/chunk";
 import { Overlay, getOverlay, setOverlay } from "../core/layer";
+import { byteOfLetter } from "../core/letters";
 import { CoreState } from "../core/state";
 import { MobileId, RenderableMobile } from "../core/state-types";
 import { ImageData } from "../util/image-data";
@@ -9,8 +10,31 @@ import { SE2, apply, compose, inverse, scale } from "../util/se2";
 import { Point } from "../util/types";
 import { unreachable } from "../util/util";
 import { vadd, vinv, vm, vm2, vm3, vmul, vsub } from "../util/vutil";
-import { spriteLocOfBonus, spriteLocOfChunkValue } from "./sprite-sheet";
+import { spriteLocOfBonus, spriteLocOfChunkValue, spriteLocOfRes } from "./sprite-sheet";
 import { world_bds_in_canvas } from "./widget-constants";
+
+// === cell_data format ===
+//
+// .r: which bonus we should show here. [xxxx][yyyy] high 4 bits are x coord on the sprite sheet, low 4 bits are y.
+// .g: some metadata.
+//       bit 0: tile is selected
+//       bit 1: tile is connected to origin
+//       bit 2: cell is visible
+// .ba: which mobile we should draw here.
+//      0: no mobile at all, let bonus show through
+//     ≠0: show mobile with id [bbbbbbbb][aaaaaaaa], b is high bits and a is low bits.
+
+// === mobile_data format ===
+//
+// .r: mobile type
+//    0: resource
+//    1: tile
+// if resource:
+// .g: [xxxx][yyyy] coordinates on sprite sheet
+// .b: durability remaining
+//
+// if tile:
+// .g: letter index
 
 function getWorldChunkData(cs: CoreState, p_in_chunk: Point): Chunk {
   const chunk: Chunk = mkChunk(WORLD_CHUNK_SIZE);
@@ -24,16 +48,7 @@ function getWorldChunkData(cs: CoreState, p_in_chunk: Point): Chunk {
       const spritePos = spriteLocOfBonus(bonus);
       const ix = x + y * chunk.size.x;
       const fix = 4 * ix;
-      // === cell_data format ===
-      //
-      // .r: which bonus we should show here. High 4 bits are x coord on the sprite sheet, low 4 bits are y.
-      // .g: some metadata.
-      //       bit 0: tile is selected
-      //       bit 1: tile is connected to origin
-      //       bit 2: cell is visible
-      // .ba: which mobile we should draw here.
-      //      0: no mobile at all, let bonus show through
-      //     ≠0: show mobile with id [bbbbbbbb][aaaaaaaa], b is high bits and a is low bits.
+      // this is in cell_data format
       imdat.data[fix + BONUS_CHANNEL] = (spritePos.x << 4) + spritePos.y;
       imdat.data[fix + METADATA_CHANNEL] = 0;
       imdat.data[fix + MOBILE_CHANNEL_H] = 0;
@@ -103,8 +118,20 @@ export type RenderCaches = {
   mobileCache: ImageData,
 }
 
-function updateMobileCache(_cache: ImageData, _cs: CoreState, _id: MobileId, _mobile: RenderableMobile): void {
-  // XXXLOCAL: implement
+function updateMobileCache(imdat: ImageData, _cs: CoreState, id: MobileId, mobile: RenderableMobile): void {
+  const ix = 4 * id;
+  switch (mobile.t) {
+    case 'tile': {
+      imdat.data[ix + 0] = 1;
+      imdat.data[ix + 1] = byteOfLetter(mobile.letter);
+    } break;
+    case 'resource': {
+      imdat.data[ix + 0] = 0;
+      imdat.data[ix + 1] = byteOfSpriteLoc(spriteLocOfRes(mobile.res));
+    } break;
+    default: unreachable(mobile);
+  }
+
 }
 
 export function updateCache(cache: RenderCaches, cs: CoreState, cu: CacheUpdate): void {
