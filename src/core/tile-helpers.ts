@@ -4,7 +4,7 @@ import { Point } from "../util/types";
 import { vequal, vm } from "../util/vutil";
 import { Bonus } from "./bonus";
 import { getBonusFromLayer } from "./bonus-helpers";
-import { CacheUpdate, mkChunkUpdate, mkTileUpdate } from './cache-types';
+import { CacheUpdate, mkChunkUpdate, mkMobileUpdate } from './cache-types';
 import { addId, ensureId, freshId } from "./id-helpers";
 import { AbstractLetter } from "./letters";
 import { CoreState, GameState } from "./state";
@@ -88,7 +88,7 @@ export function addWorldTile(state: Draft<CoreState>, tile: TileOptionalId): voi
   });
   state.mobile_entities[newTile.id] = newTile;
   state._cacheUpdateQueue.push(mkChunkUpdate(tile.p_in_world_int, { t: 'addMobile', id: newTile.id }));
-  state._cacheUpdateQueue.push(mkTileUpdate(newTile.id, getRenderableMobile(newTile)));
+  state._cacheUpdateQueue.push(mkMobileUpdate(newTile.id, getRenderableMobile(newTile)));
 }
 
 export function addResourceMobile(state: CoreState, p_in_world_int: Point, res: Resource): CoreState {
