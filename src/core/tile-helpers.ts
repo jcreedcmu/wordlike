@@ -102,7 +102,7 @@ export function addResourceMobile(state: CoreState, p_in_world_int: Point, res: 
   return produce(state, s => {
     s.mobile_entities[mobile.id] = mobile;
     s._cacheUpdateQueue.push(mkChunkUpdate(p_in_world_int, { t: 'addMobile', id: mobile.id }));
-    state._cacheUpdateQueue.push(mkMobileUpdate(mobile.id, getRenderableMobile(mobile)));
+    s._cacheUpdateQueue.push(mkMobileUpdate(mobile.id, getRenderableMobile(mobile)));
   });
 }
 

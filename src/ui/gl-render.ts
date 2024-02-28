@@ -25,7 +25,7 @@ import { vadd, vdiag, vmul, vsub } from "../util/vutil";
 import { ActiveChunkInfo, activeChunks, ensureChunk, getChunk, updateCache } from "./chunk-helpers";
 import { drawGlAnimation } from "./drawGlAnimation";
 import { renderPanicBar, wordBubblePanicBounds, wordBubblePanicRect } from "./drawPanicBar";
-import { CANVAS_TEXTURE_UNIT, CELL_PREPASS_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, SPRITE_TEXTURE_UNIT, drawOneMobile, drawOneSprite, mkBonusDrawer, mkCanvasDrawer, mkDebugQuadDrawer, mkPrepassHelper, mkRectDrawer, mkSpriteDrawer, mkTileDrawer, mkWorldDrawer } from "./gl-common";
+import { CANVAS_TEXTURE_UNIT, CELL_PREPASS_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, MOBILE_PREPASS_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, drawOneMobile, drawOneSprite, mkBonusDrawer, mkCanvasDrawer, mkDebugQuadDrawer, mkPrepassHelper, mkRectDrawer, mkSpriteDrawer, mkTileDrawer, mkWorldDrawer } from "./gl-common";
 import { gl_from_canvas } from "./gl-helpers";
 import { canvas_from_hand_tile } from "./render";
 import { spriteLocOfMob, spriteLocOfRes } from "./sprite-sheet";
@@ -142,6 +142,8 @@ function drawWorld(env: GlEnv, _state: GameState, canvas_from_world: SE2, aci: A
   gl.uniform1i(u_fontTexture, FONT_TEXTURE_UNIT);
   const u_chunkDataTexture = gl.getUniformLocation(prog, 'u_cellPrepassTexture');
   gl.uniform1i(u_chunkDataTexture, CELL_PREPASS_TEXTURE_UNIT);
+  const u_mobileDataTexture = gl.getUniformLocation(prog, 'u_mobilePrepassTexture');
+  gl.uniform1i(u_mobileDataTexture, MOBILE_PREPASS_TEXTURE_UNIT);
   const u_canvasSize = gl.getUniformLocation(prog, 'u_canvasSize');
   gl.uniform2f(u_canvasSize, devicePixelRatio * canvas_bds_in_canvas.sz.x, devicePixelRatio * canvas_bds_in_canvas.sz.y);
   const u_min_p_in_chunk = gl.getUniformLocation(prog, 'u_min_p_in_chunk');

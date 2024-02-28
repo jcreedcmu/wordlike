@@ -6,12 +6,14 @@ precision mediump float;
 
 // Prepass data
 uniform sampler2D u_cellPrepassTexture;
+uniform sampler2D u_mobilePrepassTexture;
 
 // Minimum chunk identifier that occurs in prepass framebuffer
 uniform vec2 u_min_p_in_chunk;
 
 const float CHUNK_SIZE = 8.;
 const int CELL_PREPASS_BUFFER_SIZE = 256; // XXX should be a uniform maybe?
+const int MOBILE_PREPASS_BUFFER_SIZE = 256; // XXX should be a uniform maybe?
 
 #include "fog.frag"
 
@@ -99,44 +101,57 @@ vec4 get_origin_pixel(vec2 p_in_world_int, vec2 p_in_world_fp) {
   return mix(vec4(0.,0.,0.,0.), vec4(0.,0.,0.,0.5), oam * is_origin);
 }
 
+vec4 get_mobile_pixel(vec2 p_in_world_fp, ivec2 mobile_channel, int metadata_channel) {
+
+  // Get the data of the mobile. This is in mobile_data format, documented in chunk-helpers.ts.
+  vec4 mobile_data = texture(u_mobilePrepassTexture, (vec2(mobile_channel) + vec2(0.5,0.5)) / float(MOBILE_PREPASS_BUFFER_SIZE));
+  return vec4(mobile_data.rgb, 1.); // DEBUGGING
+
+  // // if high bit is set, that means we're doing letter tiles
+  // if ((mobile_channel & 128) != 0) {
+  //   int letter = mobile_channel & 0x7f;
+
+  //   // 32 is space
+  //   if (letter != 32) {
+  //     mobile_pixel = get_tile_pixel(p_in_world_fp, letter);
+
+  //     vec3 pixel = mobile_pixel.rgb;
+  //     pixel = mix(pixel, TILE_SELECTED_COLOR, float(selected) * 0.5);
+  //     pixel = mix(pixel, TILE_DISCONNECTED_COLOR, float(!connected && !selected) * 0.4);
+  //     mobile_pixel = vec4(pixel, mobile_pixel.a);
+  //   }
+  // }
+  // // if high bit is clear, that means we're doing mobile resources
+  // else {
+  //   mobile_pixel = get_sprite_pixel(p_in_world_fp, vec2(mobile_channel >> 4, mobile_channel & 0xf));
+  // }
+
+}
+
+
 // cell_data holds cached information about this particular square world cell.
 //
 // See src/ui/chunk-helpers.ts (search "cell_data format") for documentation
 // on the format of cell_data
-vec4 get_cell_pixel(vec2 p_in_world, vec2 p_in_world_fp, ivec3 cell_data) {
+vec4 get_cell_pixel(vec2 p_in_world, vec2 p_in_world_fp, ivec4 cell_data) {
   int bonus_channel = cell_data.BONUS_CHANNEL;
   int metadata_channel = cell_data.METADATA_CHANNEL;
-  int mobile_channel = cell_data.MOBILE_CHANNEL;
+  ivec2 mobile_channel = ivec2(cell_data.MOBILE_CHANNEL_L, cell_data.MOBILE_CHANNEL_H);
 
   bool selected = (metadata_channel & 1) != 0;
   bool connected = (metadata_channel & 2) != 0;
 
   vec2 bonus_coords = vec2(bonus_channel >> 4, bonus_channel & 0xf);
 
-  vec4 base_layer_pixel = get_base_layer_sprite_pixel(p_in_world, p_in_world_fp, bonus_coords);
+  vec4 base_pixel = get_base_layer_sprite_pixel(p_in_world, p_in_world_fp, bonus_coords);
 
-  vec4 mobile_pixel = vec4(0.,0.,0.,0.);
-
-  // if high bit is set, that means we're doing letter tiles
-  if ((mobile_channel & 128) != 0) {
-    int letter = mobile_channel & 0x7f;
-
-    // 32 is space
-    if (letter != 32) {
-      mobile_pixel = get_tile_pixel(p_in_world_fp, letter);
-
-      vec3 pixel = mobile_pixel.rgb;
-      pixel = mix(pixel, TILE_SELECTED_COLOR, float(selected) * 0.5);
-      pixel = mix(pixel, TILE_DISCONNECTED_COLOR, float(!connected && !selected) * 0.4);
-      mobile_pixel = vec4(pixel, mobile_pixel.a);
-    }
-  }
-  // if high bit is clear, that means we're doing mobile resources
-  else {
-    mobile_pixel = get_sprite_pixel(p_in_world_fp, vec2(mobile_channel >> 4, mobile_channel & 0xf));
+  if (mobile_channel != ivec2(0,0)) {
+    // mobile_channel ≠ 0 means there is a mobile to render
+    vec4 mobile_pixel = get_mobile_pixel(p_in_world_fp, mobile_channel, metadata_channel);
+    base_pixel = blendOver(mobile_pixel, base_pixel);
   }
 
-  return blendOver(get_fog_pixel(p_in_world), blendOver(mobile_pixel, base_layer_pixel));
+  return blendOver(get_fog_pixel(p_in_world), base_pixel);
 }
 
 vec4 getColor() {
@@ -152,7 +167,7 @@ vec4 getColor() {
 
   vec4 cell_data = round(255.0 * texture(u_cellPrepassTexture, (p_in_cell_prepass + vec2(0.5,0.5)) / float(CELL_PREPASS_BUFFER_SIZE) ));
 
-  vec4 cell_pixel = get_cell_pixel(p_in_world, p_in_world_fp, ivec3(cell_data.rgb));
+  vec4 cell_pixel = get_cell_pixel(p_in_world, p_in_world_fp, ivec4(cell_data));
 
   // maybe render origin
   vec4 main_color = blendOver(get_origin_pixel(p_in_world_int, p_in_world_fp), cell_pixel);
