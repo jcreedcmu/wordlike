@@ -8,7 +8,7 @@ import { Intent, killableBonus } from './intent-types';
 import { tryKillTileOfState } from './kill-helpers';
 import { getOverlay } from './layer';
 import { selectionOperationOfMods } from './selection';
-import { deselect } from "./selection-operations";
+import { deselect } from "./selection-helpers";
 import { GameState } from './state';
 import { checkValid, drawSpecific, withCoreState } from './state-helpers';
 import { CellContents, getMobileLoc, mobileAtPoint } from './tile-helpers';

@@ -23,7 +23,7 @@ import { addRandomMob, advanceMob } from './mob-helpers';
 import { mobsMapVal } from "./mobs-map";
 import { reduceKey } from './reduceKey';
 import { incrementScore, setScore } from './scoring';
-import { deselect, resolveSelection, setSelected } from "./selection-operations";
+import { deselect, resolveSelection, setSelected } from "./selection-helpers";
 import { CoreState, GameState, SceneState } from './state';
 import { checkValid, drawOfState, filterExpiredAnimations, filterExpiredWordBonusState, addWorldTiles, isMobilePinned, needsRefresh, proposedHandDragOverLimit, unpauseState, withCoreState } from './state-helpers';
 import { Location, MobileId, MobsState, MoveMobile } from './state-types';

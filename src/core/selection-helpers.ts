@@ -3,15 +3,13 @@ import { inverse } from "../util/se2";
 import { apply_to_rect } from "../util/se2-extra";
 import { boundRect, pointInRect } from "../util/util";
 import { vadd, vsub } from "../util/vutil";
-import { getCacheState } from "./cache-state";
+import { CacheUpdate, mkChunkUpdate } from './cache-types';
 import { BIT_SELECTED } from "./chunk";
 import { mkOverlay, overlayForEach, setOverlay } from "./layer";
+import { SelectionState, evalSelectionOperation } from "./selection";
 import { CoreState } from "./state";
 import { MouseState } from './state-types';
-import { CacheUpdate, mkChunkUpdate } from './cache-types';
 import { getMobileId, get_main_tiles } from "./tile-helpers";
-import { evalSelectionOperation, SelectionState } from "./selection";
-
 
 export function resolveSelection(state: CoreState, ms: MouseState & { t: 'drag_selection'; }): CoreState {
   const small_rect_in_canvas = boundRect([ms.orig_p, ms.p_in_canvas]);
@@ -44,8 +42,6 @@ export function resolveSelection(state: CoreState, ms: MouseState & { t: 'drag_s
 }
 
 export function setSelected(state: CoreState, sel: SelectionState | undefined): CoreState {
-  getCacheState(state).selection.dirty = true;
-
   const cacheUpdates: CacheUpdate[] = [];
 
   if (state.selected) {
