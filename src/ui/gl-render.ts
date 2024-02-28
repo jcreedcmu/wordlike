@@ -2,16 +2,18 @@ import { Dispatch } from "../core/action";
 import { Animation } from "../core/animation-types";
 import { getAssets } from "../core/assets";
 import { Chunk, WORLD_CHUNK_SIZE } from "../core/chunk";
-import { ActiveChunkInfo, activeChunks, ensureChunk, getChunk, updateChunkCache } from "./chunk-helpers";
 import { getWordBonusFraction, now_in_game } from "../core/clock";
 import { mkOverlay } from "../core/layer";
 import { eff_mob_in_world } from "../core/mobs";
+import { mobsMap } from "../core/mobs-map";
 import { CoreState, GameState } from "../core/state";
-import { MobsState, MouseState } from '../core/state-types';
 import { pointFallForPan } from "../core/state-helpers";
+import { MobsState, MouseState } from '../core/state-types';
 import { getMobileId, getRenderableMobile, get_hand_tiles, isSelectedForDrag } from "../core/tile-helpers";
-import { BOMB_RADIUS, getCurrentTool } from "../core/tools";
 import { SPRITE_PIXEL_WIDTH } from "../core/tool-types";
+import { BOMB_RADIUS, getCurrentTool } from "../core/tools";
+import { canvas_from_drag_mobile, cell_in_canvas, pan_canvas_from_world_of_state } from "../layout/view-helpers";
+import { getWidgetPoint } from "../layout/widget-helpers";
 import { DEBUG, doOnce, doOnceEvery, logger } from "../util/debug";
 import { RgbColor, RgbaColor, imageDataOfBuffer } from "../util/dutil";
 import { bufferSetFloats } from "../util/gl-util";
@@ -20,19 +22,17 @@ import { apply_to_rect, asMatrix } from "../util/se2-extra";
 import { Point, Rect } from "../util/types";
 import { rectPts, unreachable } from "../util/util";
 import { vadd, vdiag, vmul, vsub } from "../util/vutil";
+import { ActiveChunkInfo, activeChunks, ensureChunk, getChunk, updateCache } from "./chunk-helpers";
 import { drawGlAnimation } from "./drawGlAnimation";
 import { renderPanicBar, wordBubblePanicBounds, wordBubblePanicRect } from "./drawPanicBar";
-import { CANVAS_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, CELL_PREPASS_TEXTURE_UNIT, SPRITE_TEXTURE_UNIT, drawOneSprite, drawOneMobile, mkBonusDrawer, mkCanvasDrawer, mkDebugQuadDrawer, mkPrepassHelper, mkRectDrawer, mkSpriteDrawer, mkTileDrawer, mkWorldDrawer } from "./gl-common";
+import { CANVAS_TEXTURE_UNIT, CELL_PREPASS_TEXTURE_UNIT, FONT_TEXTURE_UNIT, GlEnv, SPRITE_TEXTURE_UNIT, drawOneMobile, drawOneSprite, mkBonusDrawer, mkCanvasDrawer, mkDebugQuadDrawer, mkPrepassHelper, mkRectDrawer, mkSpriteDrawer, mkTileDrawer, mkWorldDrawer } from "./gl-common";
 import { gl_from_canvas } from "./gl-helpers";
 import { canvas_from_hand_tile } from "./render";
-import { spriteLocOfRes, spriteLocOfMob } from "./sprite-sheet";
+import { spriteLocOfMob, spriteLocOfRes } from "./sprite-sheet";
 import { resizeView } from "./ui-helpers";
 import { CanvasGlInfo } from "./use-canvas";
-import { canvas_from_drag_mobile, cell_in_canvas, pan_canvas_from_world_of_state } from "../layout/view-helpers";
-import { getWidgetPoint } from "../layout/widget-helpers";
-import { panic_bds_in_canvas } from "./widget-layout";
 import { TOOLBAR_WIDTH, canvas_bds_in_canvas, resbar_bds_in_canvas } from "./widget-constants";
-import { mobsMap } from "../core/mobs-map";
+import { panic_bds_in_canvas } from "./widget-layout";
 
 const shadowColorRgba: RgbaColor = [128, 128, 100, Math.floor(0.4 * 255)];
 
@@ -108,7 +108,7 @@ function renderCellPrepass(env: GlEnv, _state: CoreState, canvas_from_world: SE2
   gl.activeTexture(gl.TEXTURE0 + CELL_PREPASS_TEXTURE_UNIT);
 
   aci.ps_in_chunk.forEach(p => {
-    const chunk = getChunk(env._cachedTileChunkMap, p);
+    const chunk = getChunk(env._cache.chunkCache, p);
     if (chunk == undefined) {
       logger('missedChunkRendering', `missing data for debug2 chunk`);
       return;
@@ -221,16 +221,16 @@ function drawMouseStateTransients(env: GlEnv, _canvas_from_world: SE2, cs: CoreS
 export function renderGlPane(ci: CanvasGlInfo, env: GlEnv, state: GameState): void {
   // process cache update queue
   state.coreState._cacheUpdateQueue.forEach(cu => {
-    updateChunkCache(env._cachedTileChunkMap, state.coreState, cu.p_in_world_int, cu.chunkUpdate);
+    updateCache(env._cache, state.coreState, cu);
   });
   // ensure chunk cache is full enough
-  let cache = env._cachedTileChunkMap;
+  let cache = env._cache.chunkCache;
   const aci = activeChunks(pan_canvas_from_world_of_state(state));
   for (const p_in_chunk of aci.ps_in_chunk) {
     ensureChunk(cache, state.coreState, p_in_chunk);
   }
 
-  env._cachedTileChunkMap = cache;
+  env._cache.chunkCache = cache; // XXXLOCAL: necessary? aren't we just modifying it in place anyway?
 
   const { d: gl } = ci;
 
@@ -387,6 +387,8 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
     canvasDrawer: mkCanvasDrawer(gl),
     prepassHelper: mkPrepassHelper(gl, CELL_PREPASS_SIZE),
     bonusDrawer: mkBonusDrawer(gl),
-    _cachedTileChunkMap: mkOverlay<Chunk>(),
+    _cache: {
+      chunkCache: mkOverlay<Chunk>(), mobileCache: new ImageData(CELL_PREPASS_SIZE.x, CELL_PREPASS_SIZE.y),
+    },
   };
 }

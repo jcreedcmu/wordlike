@@ -1,10 +1,13 @@
 import { bonusGenerator } from "../core/bonus";
+import { CacheUpdate } from "../core/cache-types";
 import { BIT_CONNECTED, BIT_SELECTED, BONUS_CHANNEL, Chunk, ChunkUpdate, METADATA_CHANNEL, MOBILE_CHANNEL_H, MOBILE_CHANNEL_L, WORLD_CHUNK_SIZE } from "../core/chunk";
 import { Overlay, getOverlay, setOverlay } from "../core/layer";
 import { CoreState } from "../core/state";
+import { MobileId, RenderableMobile } from "../core/state-types";
 import { ImageData } from "../util/image-data";
 import { SE2, apply, compose, inverse, scale } from "../util/se2";
 import { Point } from "../util/types";
+import { unreachable } from "../util/util";
 import { vadd, vinv, vm, vm2, vm3, vmul, vsub } from "../util/vutil";
 import { spriteLocOfBonus, spriteLocOfChunkValue } from "./sprite-sheet";
 import { world_bds_in_canvas } from "./widget-constants";
@@ -95,6 +98,22 @@ function processChunkUpdate(cu: ChunkUpdate, oldVec: number[]): number[] {
   }
 }
 
+export type RenderCaches = {
+  chunkCache: Overlay<Chunk>,
+  mobileCache: ImageData,
+}
+
+function updateMobileCache(_cache: ImageData, _cs: CoreState, _id: MobileId, _mobile: RenderableMobile): void {
+  // XXXLOCAL: implement
+}
+
+export function updateCache(cache: RenderCaches, cs: CoreState, cu: CacheUpdate): void {
+  switch (cu.t) {
+    case 'chunkUpdate': updateChunkCache(cache.chunkCache, cs, cu.p_in_world_int, cu.chunkUpdate); break;
+    case 'tileUpdate': updateMobileCache(cache.mobileCache, cs, cu.id, cu.mobile); break;
+    default: unreachable(cu);
+  }
+}
 export function updateChunkCache(cache: Overlay<Chunk>, cs: CoreState, p_in_world: Point, cu: ChunkUpdate): void {
   const p_in_chunk = vm2(p_in_world, WORLD_CHUNK_SIZE, (x, wcs) => Math.floor(x / wcs));
   ensureChunk(cache, cs, p_in_chunk);

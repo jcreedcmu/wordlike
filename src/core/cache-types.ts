@@ -1,6 +1,7 @@
 import { SE2 } from '../util/se2';
 import { Point } from '../util/types';
 import { Chunk, ChunkUpdate } from './chunk';
+import { MobileId, RenderableMobile } from './state-types';
 
 export type CacheState = {
   selection: CachedSelection,
@@ -16,8 +17,15 @@ export type CachedSelection = {
   dirty: boolean,
 }
 
-export type CacheUpdate = { t: 'chunkUpdate'; p_in_world_int: Point; chunkUpdate: ChunkUpdate; };
+export type CacheUpdate =
+  | { t: 'chunkUpdate'; p_in_world_int: Point; chunkUpdate: ChunkUpdate; }
+  | { t: 'tileUpdate', id: MobileId, mobile: RenderableMobile } // XXXLOCAL rename to mobile
+  ;
 
 export function mkChunkUpdate(p_in_world_int: Point, cu: ChunkUpdate): CacheUpdate {
   return { t: 'chunkUpdate', chunkUpdate: cu, p_in_world_int };
+}
+
+export function mkTileUpdate(id: MobileId, mobile: RenderableMobile): CacheUpdate {
+  return { t: 'tileUpdate', id, mobile };
 }

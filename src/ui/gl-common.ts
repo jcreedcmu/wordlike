@@ -1,6 +1,4 @@
 import { getAssets } from "../core/assets";
-import { Chunk } from "../core/chunk";
-import { Overlay } from "../core/layer";
 import { indexOfLetter } from "../core/letters";
 import { RenderableMobile } from '../core/state-types';
 import { BufferAttr, attributeCreate, bufferSetFloats, shaderProgram } from "../util/gl-util";
@@ -9,6 +7,7 @@ import { apply_to_rect, asMatrix } from "../util/se2-extra";
 import { Point } from "../util/types";
 import { pixelSnapRect, rectPts } from "../util/util";
 import { vdiag, vscale } from "../util/vutil";
+import { RenderCaches } from "./chunk-helpers";
 import { gl_from_canvas } from "./gl-helpers";
 import { spriteLocOfRes } from "./sprite-sheet";
 import { canvas_bds_in_canvas } from "./widget-constants";
@@ -78,7 +77,7 @@ export type GlEnv = {
   canvasDrawer: CanvasDrawer,
   prepassHelper: PrepassHelper,
   bonusDrawer: BonusDrawer,
-  _cachedTileChunkMap: Overlay<Chunk>,
+  _cache: RenderCaches,
 }
 
 export function mkWorldDrawer(gl: WebGL2RenderingContext): WorldDrawer {
