@@ -121,6 +121,7 @@ export type RenderCaches = {
 function updateMobileCache(imdat: ImageData, _cs: CoreState, id: MobileId, mobile: RenderableMobile): void {
   const ix = 4 * id;
   switch (mobile.t) {
+    // this is in mobile_data format
     case 'tile': {
       imdat.data[ix + 0] = 1;
       imdat.data[ix + 1] = byteOfLetter(mobile.letter);
