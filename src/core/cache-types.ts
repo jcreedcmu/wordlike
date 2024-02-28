@@ -1,7 +1,8 @@
 import { Point } from '../util/types';
 import { Chunk, ChunkUpdate } from './chunk';
 import { Overlay } from './layer';
-import { MobileId, RenderableMobile } from './state-types';
+import { RenderableMobile } from './state-types';
+import { MobileId } from './basic-types';
 
 export type RenderCache = {
   chunkCache: Overlay<Chunk>;

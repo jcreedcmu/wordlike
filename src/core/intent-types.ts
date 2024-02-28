@@ -1,6 +1,6 @@
 import { Bonus } from './bonus';
 import { SelectionOperation } from './selection-operation';
-import { MobileId } from './state-types';
+import { MobileId } from './basic-types';
 
 export type KillIntent =
   | { t: 'kill', radius: number }

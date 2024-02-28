@@ -3,7 +3,7 @@ import { AbstractLetter } from "../src/core/letters";
 import { mkGameState } from "../src/core/mkGameState";
 import { CoreState, GameState } from "../src/core/state";
 import { withCoreState } from "../src/core/state-helpers";
-import { MobileId } from "../src/core/state-types";
+import { MobileId } from '../src/core/basic-types';
 import { addHandTileEntityWithId, addWorldTile, putMobileInWorld } from "../src/core/tile-helpers";
 import { produce } from "../src/util/produce";
 

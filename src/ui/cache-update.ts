@@ -3,7 +3,8 @@ import { BIT_CONNECTED, BIT_SELECTED, BONUS_CHANNEL, Chunk, ChunkUpdate, METADAT
 import { Overlay, getOverlay } from "../core/layer";
 import { byteOfLetter } from "../core/letters";
 import { CoreState } from "../core/state";
-import { MobileId, RenderableMobile } from "../core/state-types";
+import { RenderableMobile } from "../core/state-types";
+import { MobileId } from '../core/basic-types';
 import { Point } from "../util/types";
 import { unreachable } from "../util/util";
 import { vm2, vmul, vsub } from "../util/vutil";

@@ -1,7 +1,7 @@
 import { Point } from "../util/types";
 import { AbstractLetter } from "./letters";
 import { MobType } from "./mobs";
-import { MobileId } from './state-types';
+import { MobileId } from './basic-types';
 import { ResbarResource, Resource } from "./tool-types";
 
 // A thing that can be moved onto something else

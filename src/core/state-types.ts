@@ -1,10 +1,9 @@
 import { Point } from '../util/types';
+import { MobileId } from './basic-types';
 import { AbstractLetter } from './letters';
 import { MobState } from './mobs';
 import { SelectionOperation } from './selection-operation';
 import { ResbarResource, Resource } from "./tool-types";
-
-export type MobileId = number;
 
 export type MoveMobile = { mobile: RenderableMobile, id: MobileId, p_in_world_int: Point };
 export type MoveMobileNoId = { mobile: RenderableMobile, p_in_world_int: Point };

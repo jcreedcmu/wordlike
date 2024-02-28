@@ -8,7 +8,8 @@ import { CacheUpdate, mkChunkUpdate, mkMobileUpdate } from './cache-types';
 import { freshId } from "./id-helpers";
 import { AbstractLetter } from "./letters";
 import { CoreState, GameState } from "./state";
-import { GenMoveTile, HandTile, Location, MainTile, MobileEntity, MobileId, RenderableMobile, TileEntity, TileNoId } from './state-types';
+import { GenMoveTile, HandTile, Location, MainTile, MobileEntity, RenderableMobile, TileEntity, TileNoId } from './state-types';
+import { MobileId } from './basic-types';
 import { Resource } from "./tool-types";
 
 export type TileId = string;

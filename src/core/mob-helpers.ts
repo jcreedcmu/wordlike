@@ -5,9 +5,10 @@ import { vint, vm } from "../util/vutil";
 import { freshId } from "./id-helpers";
 import { landMoveOnState } from "./landing-result";
 import { MoveSource } from "./landing-types";
-import { MobState, Orientation, SNAIL_ADVANCE_TICKS, back_of, back_right_of, ccw_of, clockwise_of, forward_of, left_of, reverse_of, right_of, towards_origin } from "./mobs";
+import { MobState, MobStateNoId, Orientation, SNAIL_ADVANCE_TICKS, back_of, back_right_of, ccw_of, clockwise_of, forward_of, left_of, reverse_of, right_of, towards_origin } from "./mobs";
 import { CoreState } from "./state";
 import { MobsState } from "./state-types";
+import { MobileId } from './basic-types';
 
 // These are some mob-related functions that depend on landing-results or corestate or state-types
 
@@ -70,7 +71,7 @@ export function addRandomMob(state: CoreState): CoreState {
     const src: MoveSource = { t: 'mob', mobType: 'snail' };
     if (landMoveOnState({ src, p_in_world_int }, state).t == 'place') {
       const orientation = towards_origin(p_in_world_int);
-      const newMob: MobState = { t: 'snail', ticks: 0, p_in_world_int, orientation };
+      const newMob: MobStateNoId = { t: 'snail', ticks: 0, p_in_world_int, orientation };
       return produce(addMob(state, newMob), s => {
         s.seed = seed;
       });
@@ -83,16 +84,16 @@ export function addRandomMob(state: CoreState): CoreState {
 
 }
 
-export function addMob(state: CoreState, newMob: MobState): CoreState {
+export function addMob(state: CoreState, newMob: MobStateNoId): CoreState {
   const { cs, id } = freshId(state);
   return produce(cs, s => {
-    s.mobsState.mobs[id] = newMob;
+    s.mobsState.mobs[id] = { ...newMob, id };
   });
 }
 
-export function addMobWithId(state: CoreState, newMob: MobState, id: string): CoreState {
+export function addMobWithId(state: CoreState, newMob: MobStateNoId, id: MobileId): CoreState {
   return produce(state, s => {
-    s.mobsState.mobs[id] = newMob;
+    s.mobsState.mobs[id] = { ...newMob, id };
   })
 }
 

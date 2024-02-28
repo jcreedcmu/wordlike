@@ -6,6 +6,7 @@ import { MobState, collidesWithMob } from "./mobs";
 import { mobsMap } from "./mobs-map";
 import { CoreState } from "./state";
 import { MobileEntity, MoveMobile } from './state-types';
+import { MobileId } from './basic-types';
 import { CellContents, cellAtPointForMobiles, get_mobiles } from "./tile-helpers";
 import { Resource } from "./tool-types";
 
@@ -26,7 +27,7 @@ export type ProperLandingResult =
   /* other things that I expect to go here include: success which transforms the B somehow */
   | { t: 'fillWater' }
   | { t: 'replaceResource', res: Resource }
-  | { t: 'removeMob', id: string }
+  | { t: 'removeMob', id: MobileId }
   ;
 
 export type LandingResult =
@@ -95,7 +96,7 @@ export function landMobileOnCell(m: MoveSource, c: CellContents): LandingResult 
   }
 }
 
-export function landMoveOnMob(m: LandingMove, mob: MobState, id: string): LandingResult {
+export function landMoveOnMob(m: LandingMove, mob: MobState, id: MobileId): LandingResult {
   if (collidesWithMob(mob, m.p_in_world_int)) {
     switch (mob.t) {
       case 'snail':

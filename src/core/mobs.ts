@@ -1,5 +1,6 @@
 import { Point } from "../util/types";
 import { vadd, vequal, vscale } from "../util/vutil";
+import { MobileId } from './basic-types';
 
 export type Orientation = 'N' | 'W' | 'E' | 'S';
 
@@ -75,7 +76,7 @@ export type MobType =
 
 export const SNAIL_ADVANCE_TICKS = 120;
 
-export type MobState = {
+export type MobStateNoId = {
   t: MobType,
   // sort of an animation-state time variable.
   // counts how many ticks since we were really at p_in_world_int
@@ -83,6 +84,8 @@ export type MobState = {
   p_in_world_int: Point,
   orientation: Orientation,
 }
+
+export type MobState = MobStateNoId & { id: MobileId };
 
 // Effective position
 export function eff_mob_in_world(mob: MobState): Point {

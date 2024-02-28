@@ -1,6 +1,6 @@
 import { produce } from "../util/produce";
 import { CoreState } from "./state";
-import { MobileId } from "./state-types";
+import { MobileId } from './basic-types';
 
 export function freshId(state: CoreState): { id: MobileId, cs: CoreState } {
   const id = state.idCounter + 1;

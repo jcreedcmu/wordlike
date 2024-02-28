@@ -7,7 +7,7 @@ import { produce } from "../src/util/produce";
 const SEED = 12345678;
 
 function testState(): GameState {
-  const id = 'idmob';
+  const id = 1001;
   let state = mkGameState(SEED, false, SEED);
   state = withCoreState(state, cs => addMobWithId(cs, { t: 'snail', orientation: 'E', p_in_world_int: { x: 0, y: 0 }, ticks: 0 }, id));
   return state;

@@ -1,5 +1,5 @@
 import { Overlay } from "./layer";
-import { MobileId } from './state-types';
+import { MobileId } from './basic-types';
 import { SelectionOperation } from "./selection-operation";
 
 export type SelectionState = {
