@@ -9,8 +9,8 @@ import { KillIntent, killableBonus } from './intent-types';
 import { deselect } from "./selection-helpers";
 import { CoreState } from "./state";
 import { checkValid } from './state-helpers';
-import { Location, MainTile } from './state-types';
-import { get_hand_tiles, get_main_tiles, removeMobile } from "./tile-helpers";
+import { Location, MainTile, MobileEntity } from './state-types';
+import { get_hand_tiles, get_main_tiles, get_mobiles, removeMobile } from "./tile-helpers";
 import { BOMB_RADIUS } from './tools';
 
 function eligibleKillIntent(state: CoreState, intent: KillIntent): boolean {
@@ -71,14 +71,14 @@ function killTileOfStateLoc(state: CoreState, loc: Location, intent: KillIntent)
       const p_in_world_int = loc.p_in_world_int;
       const anim: Animation = mkExplosionAnimation(p_in_world_int, radius, state.game_from_clock);
 
-      function tileAt(p: Point): MainTile | undefined {
-        return get_main_tiles(state).find(tile => vequal(tile.loc.p_in_world_int, p));
+      function mobileAt(p: Point): MobileEntity | undefined {
+        return get_mobiles(state).find(mobile => mobile.loc.t == 'world' && vequal(mobile.loc.p_in_world_int, p));
       }
 
       const tilesToDestroy: Point[] = splashDamage(p_in_world_int, radius);
       // remove all tiles in radius
       tilesToDestroy.forEach(p => {
-        const tileAtP = tileAt(p);
+        const tileAtP = mobileAt(p);
         if (tileAtP !== undefined)
           state = removeMobile(state, tileAtP.id);
       });
