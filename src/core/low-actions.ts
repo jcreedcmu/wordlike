@@ -643,7 +643,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
       return produce(state, s => { s.coreState.modals = {} });
     }
     case 'bugReportButton': {
-      return produce(state, s => { s.coreState.modals = { bugReport: { data: JSON.stringify({ state, globalActionQueue }) } } });
+      return produce(state, s => { s.coreState.modals = { bugReport: { data: JSON.stringify({ state, actions: globalActionQueue }) } } });
     }
   }
 }
