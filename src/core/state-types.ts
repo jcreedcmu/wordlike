@@ -135,6 +135,11 @@ export type BugReportData = {
   data: BlobPart;
 };
 
+export type SettingsData = {
+
+};
+
 export type ModalDialogs = {
   bugReport?: BugReportData;
+  settings?: SettingsData;
 };

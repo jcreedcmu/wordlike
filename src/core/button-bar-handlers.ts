@@ -8,6 +8,6 @@ export const globalActionQueue: GameLowAction[] = [];
 export function handleButtonBarButton(state: CoreState, button: ButtonBarButton): CoreState {
   switch (button) {
     case 'bugReport': return produce(state, s => { s.modals = { bugReport: { data: JSON.stringify({ state, actions: globalActionQueue }) } } });
-    case 'settings': throw Error(`unimplemented`);
+    case 'settings': return produce(state, s => { s.modals = { settings: {} } });
   }
 }

@@ -16,6 +16,7 @@ import { useEffectfulReducer } from '../ui/use-effectful-reducer';
 import { DEBUG } from '../util/debug';
 import { relpos } from '../util/dutil';
 import { BugReport } from './bug-report';
+import { Settings } from './settings';
 import { Instructions } from './instructions';
 import { getWidgetPoint } from '../layout/widget-helpers';
 import { soundService } from '../sound/sound';
@@ -287,10 +288,13 @@ export function Game(props: GameProps): JSX.Element {
     ref={glcref} />;
   const bugReport = state.coreState.modals.bugReport;
   const bugReportModal = bugReport ? <BugReport dispatch={dispatch} {...bugReport} /> : undefined;
+  const settings = state.coreState.modals.settings;
+  const settingsModal = settings ? <Settings dispatch={dispatch} /> : undefined;
   return <div className="inner-container">
     {normalCanvas}
     {glCanvas}
     {bugReportModal}
+    {settingsModal}
   </div>;
 }
 
