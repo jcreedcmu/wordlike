@@ -108,6 +108,7 @@ button:hover {
 }
 
 .bug-report-modal {
+  max-width: 50%;
   background-color: white;
   padding: 2em;
   border: 3px solid black;

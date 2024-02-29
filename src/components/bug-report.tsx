@@ -14,8 +14,10 @@ export function BugReport(props: BugReportProps): JSX.Element {
   };
 
   return <div className="bug-report-container" onMouseDown={dismiss}>
-    <div className="bug-report-modal" onMouseDown={absorb}>Thanks for making a bug report!<br />
-      Please <a href={URL.createObjectURL(blob)} download="debug.json">download this file</a> and attach it.
+    <div className="bug-report-modal" onContextMenu={absorb} onMouseDown={absorb}>Please file issues <a target="_blank" href="https://github.com/jcreedcmu/wordlike/issues/">on the github issues page</a>.<br />
+      It might be helpful to <a href={URL.createObjectURL(blob)} download="debug.json">download this file</a> (which is a dump
+      of the current game state) and attach it.<br />
+      Thanks!
       <center>
         <button style={{ marginTop: '2em' }} onClick={dismiss}>Ok</button>
       </center>
