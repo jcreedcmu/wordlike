@@ -9,8 +9,8 @@ import { KillIntent, killableBonus } from './intent-types';
 import { deselect } from "./selection-helpers";
 import { CoreState } from "./state";
 import { checkValid } from './state-helpers';
-import { Location, MainTile, MobileEntity } from './state-types';
-import { get_hand_tiles, get_main_tiles, get_mobiles, removeMobile } from "./tile-helpers";
+import { Location, MobileEntity } from './state-types';
+import { get_hand_tiles, get_mobiles, removeMobile } from "./tile-helpers";
 import { BOMB_RADIUS } from './tools';
 
 function eligibleKillIntent(state: CoreState, intent: KillIntent): boolean {
