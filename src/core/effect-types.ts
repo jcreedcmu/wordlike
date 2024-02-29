@@ -1,6 +1,7 @@
 
 export type SoundEffect =
   | { t: 'click' }
+  | { t: 'beep' }
   ;
 
 export type Effect =

@@ -11,6 +11,7 @@ import { flatUndef, getRandomOrder } from '../util/util';
 import { vequal, vint, vm, vscale, vsub } from '../util/vutil';
 import { GameAction, GameLowAction, LowAction } from './action';
 import { isActiveCanvasAnimation } from './animation-types';
+import { MobileId } from './basic-types';
 import { CacheUpdate, mkChunkUpdate } from './cache-types';
 import { getPanicFraction, now_in_game } from './clock';
 import { WidgetPoint } from './core-ui-types';
@@ -22,13 +23,12 @@ import { mkOverlayFrom } from './layer';
 import { addRandomMob, advanceMob } from './mob-helpers';
 import { mobsMapVal } from "./mobs-map";
 import { reduceKey } from './reduceKey';
+import { SceneState } from './scene-state';
 import { incrementScore, setScore } from './scoring';
 import { deselect, resolveSelection, setSelected } from "./selection-helpers";
 import { CoreState, GameState } from './state';
-import { SceneState } from './scene-state';
-import { checkValid, drawOfState, filterExpiredAnimations, filterExpiredWordBonusState, addWorldTiles, isMobilePinned, needsRefresh, proposedHandDragOverLimit, unpauseState, withCoreState } from './state-helpers';
+import { addWorldTiles, checkValid, drawOfState, filterExpiredAnimations, filterExpiredWordBonusState, isMobilePinned, needsRefresh, proposedHandDragOverLimit, unpauseState, withCoreState } from './state-helpers';
 import { Location, MobsState, MoveMobile } from './state-types';
-import { MobileId } from './basic-types';
 import { cellAtPoint, getMobileId, getMobileLoc, getRenderableMobile, get_hand_tiles, get_mobiles, mobileAtPoint, moveTiles, moveToHandLoc, putTileInHand, putTilesInHandFromNotHand, removeAllMobiles } from "./tile-helpers";
 import { bombIntent, dynamiteIntent } from "./tool-intents";
 import { getCurrentTool, reduceToolSelect, toolPrecondition } from './tools';
@@ -178,7 +178,7 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
       const selected = state.coreState.selected;
 
       // This is what we want to return if the mouseup is "bad", in order to put the tiles back in the cache
-      const bailout: GameLowAction = { t: 'restoreMobiles', ids: selected ? selected.selectedIds : [ms.id] };
+      const bailout: GameLowAction = { t: 'errorRestoreMobiles', ids: selected ? selected.selectedIds : [ms.id] };
 
       const wp = getWidgetPoint(state.coreState, ms.p_in_canvas);
       if (wp.t == 'world') {
@@ -278,7 +278,6 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
       else if (wp.t == 'hand') {
         const mobile = getMobileId(state.coreState, ms.id);
         if (mobile.t != 'tile') {
-          console.log('bailout');
           return bailout;
         }
 
@@ -592,7 +591,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     case 'setPanic':
       return produce(state, s => { s.coreState.panic = action.panic; });
 
-    case 'restoreMobiles': {
+    case 'errorRestoreMobiles': {
       const cacheUpdates: CacheUpdate[] = action.ids.flatMap(id => {
         const mobile = getMobileId(cs, id);
         if (mobile.loc.t != 'world')
@@ -606,6 +605,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
 
       return produce(state, s => {
         s.coreState._cacheUpdateQueue.push(...cacheUpdates);
+        s.coreState.soundEffects.push({ t: 'beep' });
       });
     }
 

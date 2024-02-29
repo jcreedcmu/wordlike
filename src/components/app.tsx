@@ -297,7 +297,8 @@ export function Game(props: GameProps): JSX.Element {
 export function doSoundEffect(se: SoundEffect): void {
   switch (se.t) {
     case 'click': soundService.click(); return;
-    default: unreachable(se.t);
+    case 'beep': soundService.beep(); return;
+    default: unreachable(se);
   }
 }
 
