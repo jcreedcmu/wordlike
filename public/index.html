@@ -2,93 +2,9 @@
 <html>
   <head>
     <script src="js/bundle.js"></script>
-    <style>
-      body {
-        overflow: hidden;
-      }
-      * { margin: 0px; }
-      .container {
-        background-color: #878787;
-        position: absolute;
-        top: 0px;
-        left: 0px;
-        right: 0px;
-        bottom: 0px;
-      }
-      .game-container {
-        background-color: #878787;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        position: absolute;
-        top: 0px;
-        left: 0px;
-        right: 0px;
-        bottom: 0px;
-      }
-      .buttons-container {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        position: absolute;
-        top: 50%;
-        left: 0px;
-        right: 0px;
-        bottom: 0px;
-      }
-      button {
-        background-color: black;
-        color: white;
-        padding: 15px;
-        border: 1px solid black;
-        border-radius: 20px;
-        font-family: sans-serif;
-        font-weight: bold;
-        cursor: pointer;
-      }
-      button:hover {
-        background-color: #860099;
-      }
-     .inner-container {
-        position: relative;
-        width: 1024px;
-        height: 768px;
-      }
-      .hidden {
-        display: none;
-      }
-      * {
-        user-select: none;
-      }
-      .instrTable td:first-child {
-        text-align: right;
-        padding-right: 1em;
-      }
-      .instrTable td:nth-child(2) {
-        font-family: sans-serif;
-      }
-      .keycap {
-        display: inline-block;
-        border: 1px solid #333;
-        border-radius: 5px;
-        padding: 0.25em 0.5em;
-        box-shadow: 1px 1px 2px #333;
-        font-family: monospace;
-        background-image: linear-gradient(white, #ddd);
-      }
-      .hero {
-      position: relative;
-      width: 100%;
-      top: 50%;
-      transform: translateY(-50%);
-      }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
   </head>
   <body>
-
       <div id="render-root"></div>
-
   </body>
 </html>

@@ -1,14 +1,14 @@
 import { SE1 } from '../util/se1';
 import { SE2 } from '../util/se2';
-import { MobileEntity, WordBonusState, MobsState, MouseState, InventoryItems, ResourceItems, ScoreState } from './state-types';
-import { CacheUpdate } from './cache-types';
 import { Animation } from "./animation-types";
 import { Bonus } from './bonus';
+import { CacheUpdate } from './cache-types';
 import { PanicData, PauseData } from './clock';
 import { Energies } from './distribution';
 import { Grid, LocatedWord } from './grid';
 import { Overlay } from './layer';
 import { SelectionState } from './selection';
+import { InventoryItems, MobileEntity, MobsState, ModalDialogs, MouseState, ResourceItems, ScoreState, WordBonusState } from './state-types';
 import { Tool } from "./tool-types";
 import { WinState } from './winState';
 
@@ -49,6 +49,7 @@ export type CoreState = {
   _cacheUpdateQueue: CacheUpdate[],
 
   idCounter: number,
+  modals: ModalDialogs,
 };
 
 export type GameState = {

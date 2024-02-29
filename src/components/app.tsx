@@ -4,7 +4,8 @@ import { Action, Dispatch, Effect } from '../core/action';
 import { keyCaptured, reduce } from '../core/reduce';
 import { GameState, SceneState, mkSceneState } from '../core/state';
 import { getCurrentTool } from '../core/tools';
-import { Instructions } from './instructions';
+import { GlEnv, glCopyCanvas } from '../ui/gl-common';
+import { glInitialize, renderGlPane } from '../ui/gl-render';
 import { key } from '../ui/key';
 import { paintWithScale } from '../ui/render';
 import { resizeView } from '../ui/ui-helpers';
@@ -12,8 +13,8 @@ import { CanvasGlInfo, CanvasInfo, useCanvas, useCanvasGl, useNonreactiveCanvasG
 import { useEffectfulReducer } from '../ui/use-effectful-reducer';
 import { DEBUG } from '../util/debug';
 import { relpos } from '../util/dutil';
-import { glInitialize, renderGlPane } from '../ui/gl-render';
-import { GlEnv, glCopyCanvas } from '../ui/gl-common';
+import { BugReport } from './bug-report';
+import { Instructions } from './instructions';
 
 const ANIMATION_INTERVAL_MS = 35;
 
@@ -274,9 +275,12 @@ export function Game(props: GameProps): JSX.Element {
     key="gl"
     style={glStyle}
     ref={glcref} />;
+  const bugReport = state.coreState.modals.bugReport;
+  const bugReportModal = bugReport ? <BugReport dispatch={dispatch} {...bugReport} /> : undefined;
   return <div className="inner-container">
     {normalCanvas}
     {glCanvas}
+    {bugReportModal}
   </div>;
 }
 

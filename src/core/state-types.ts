@@ -130,3 +130,11 @@ export type ResourceItems = Record<ResbarResource, number>;
 export type MobsState = {
   mobs: Record<string, MobState>
 };
+
+export type BugReportData = {
+  data: BlobPart;
+};
+
+export type ModalDialogs = {
+  bugReport?: BugReportData;
+};
