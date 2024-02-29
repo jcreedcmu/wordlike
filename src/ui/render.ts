@@ -24,7 +24,7 @@ import { wordBubblePanicBounds, wordBubbleRect } from './drawPanicBar';
 import { formatTime } from './formatTime';
 import { CanvasInfo } from './use-canvas';
 import { pan_canvas_from_world_of_state } from '../layout/view-helpers';
-import { bug_report_bds_in_canvas, canvas_from_bug_report_button, canvas_from_hand, canvas_from_resbar, canvas_from_toolbar, effective_resbar_bds_in_canvas, effective_toolbar_bds_in_canvas, pause_button_bds_in_canvas } from '../layout/widget-helpers';
+import { bug_report_bds_in_canvas, canvas_from_hand, canvas_from_widget, effective_resbar_bds_in_canvas, effective_toolbar_bds_in_canvas, pause_button_bds_in_canvas } from '../layout/widget-helpers';
 import { hand_bds_in_canvas, inner_hand_bds_in_canvas, panic_bds_in_canvas, score_bds_in_canvas, spacer1_bds_in_canvas, spacer2_bds_in_canvas } from "./widget-layout";
 import { GLOBAL_BORDER, PANIC_THICK, canvas_bds_in_canvas, resbar_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from "./widget-constants";
 import { drawTileLetter } from './draw-tile-letter';
@@ -91,7 +91,7 @@ function drawBugReportButton(d: CanvasRenderingContext2D) {
   const ICON_SCALE = 0.7;
   const S_in_canvas = resbar_bds_in_canvas.sz.x;
   const rect_in_canvas = apply_to_rect(
-    canvas_from_bug_report_button(),
+    canvas_from_widget(bug_report_bds_in_canvas),
     { p: { x: 0, y: 0 }, sz: { x: S_in_canvas, y: S_in_canvas } },
   );
   const scaled_rect_in_canvas = scaleRectToCenter(rect_in_canvas, ICON_SCALE);
@@ -107,7 +107,7 @@ function drawResbar(d: CanvasRenderingContext2D, state: CoreState) {
     const ICON_SCALE = 0.7;
     const S_in_canvas = resbar_bds_in_canvas.sz.x;
     const rect_in_canvas = apply_to_rect(
-      canvas_from_resbar(),
+      canvas_from_widget(resbar_bds_in_canvas),
       { p: { x: 0, y: S_in_canvas * ix_in_resbar }, sz: { x: S_in_canvas, y: S_in_canvas } },
     );
     const scaled_rect_in_canvas = scaleRectToCenter(rect_in_canvas, ICON_SCALE);
@@ -127,7 +127,7 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState) {
   tools.forEach((tool, ix_in_toolbar) => {
     const S_in_canvas = toolbar_bds_in_canvas.sz.x;
     const rect_in_canvas = apply_to_rect(
-      canvas_from_toolbar(),
+      canvas_from_widget(toolbar_bds_in_canvas),
       { p: { x: 0, y: S_in_canvas * ix_in_toolbar }, sz: { x: S_in_canvas, y: S_in_canvas } },
     );
     const scaled_rect_in_canvas = scaleRectToCenter(rect_in_canvas, ICON_SCALE);

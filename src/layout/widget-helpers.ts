@@ -53,24 +53,10 @@ export function canvas_from_hand(): SE2 {
   };
 }
 
-export function canvas_from_toolbar(): SE2 {
+export function canvas_from_widget(rect: Rect): SE2 {
   return {
     scale: { x: 1, y: 1 },
-    translate: toolbar_bds_in_canvas.p,
-  };
-}
-
-export function canvas_from_resbar(): SE2 {
-  return {
-    scale: { x: 1, y: 1 },
-    translate: resbar_bds_in_canvas.p,
-  };
-}
-
-export function canvas_from_bug_report_button(): SE2 {
-  return {
-    scale: { x: 1, y: 1 },
-    translate: bug_report_bds_in_canvas.p,
+    translate: rect.p,
   };
 }
 
@@ -90,7 +76,7 @@ export function getWidgetPoint(state: CoreState, p_in_canvas: Point): WidgetPoin
     };
   }
   else if (pointInRect(p_in_canvas, toolbar_bds)) {
-    const toolbar_from_canvas = inverse(canvas_from_toolbar());
+    const toolbar_from_canvas = inverse(canvas_from_widget(toolbar_bds_in_canvas));
     const p_in_local = apply(toolbar_from_canvas, p_in_canvas);
     const tool = getCurrentTools(state)[Math.floor(p_in_local.y / toolbar_bds_in_canvas.sz.x)];
     return {
@@ -102,7 +88,7 @@ export function getWidgetPoint(state: CoreState, p_in_canvas: Point): WidgetPoin
     }
   }
   else if (pointInRect(p_in_canvas, resbar_bds)) {
-    const resbar_from_canvas = inverse(canvas_from_resbar());
+    const resbar_from_canvas = inverse(canvas_from_widget(resbar_bds_in_canvas));
     const p_in_local = apply(resbar_from_canvas, p_in_canvas);
     const res = getCurrentResources(state)[Math.floor(p_in_local.y / resbar_bds.sz.x)];
     return {
