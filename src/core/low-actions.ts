@@ -2,7 +2,7 @@ import { dropTopHandTile, tileFall } from "../layout/tile-fall";
 import { canvas_from_drag_mobile, pan_canvas_from_canvas_of_mouse_state } from '../layout/view-helpers';
 import { getWidgetPoint } from '../layout/widget-helpers';
 import { TOOLBAR_WIDTH } from "../ui/widget-constants";
-import { DEBUG } from '../util/debug';
+import { DEBUG, DEBUG_CONFIG } from '../util/debug';
 import { debugTiles } from "../util/debugTiles";
 import { produce } from '../util/produce';
 import { apply, compose, composen, inverse, scale, translate } from '../util/se2';
@@ -382,12 +382,23 @@ export function resolveGameLowActions(state: GameState, gameLowActions: GameLowA
   return state;
 }
 
+const globalActionQueue: GameLowAction[] = [];
+
 function resolveGameLowAction(state: GameState, action: GameLowAction): GameState {
   const cs = state.coreState;
 
   if (DEBUG.lowActions) {
     if (action.t != 'tick' && action.t != 'mouseMove')
       console.log(`low action: ${JSON.stringify(action)}`);
+  }
+
+  if (DEBUG_CONFIG.bugReportQueueLength > 0) {
+    if (action.t != 'tick' && action.t != 'mouseMove') {
+      globalActionQueue.push(action);
+      if (globalActionQueue.length > DEBUG_CONFIG.bugReportQueueLength) {
+        globalActionQueue.shift();
+      }
+    }
   }
 
   switch (action.t) {
@@ -632,7 +643,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
       return produce(state, s => { s.coreState.modals = {} });
     }
     case 'bugReportButton': {
-      return produce(state, s => { s.coreState.modals = { bugReport: { data: JSON.stringify(state) } } });
+      return produce(state, s => { s.coreState.modals = { bugReport: { data: JSON.stringify({ state, globalActionQueue }) } } });
     }
   }
 }

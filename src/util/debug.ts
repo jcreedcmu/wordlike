@@ -29,6 +29,10 @@ export const DEBUG = {
   fastAnimation: true,
 };
 
+export const DEBUG_CONFIG = {
+  bugReportQueueLength: 100,
+};
+
 export type DebugLevel = keyof (typeof DEBUG);
 
 export function logger(level: DebugLevel, ...args: any[]) {
