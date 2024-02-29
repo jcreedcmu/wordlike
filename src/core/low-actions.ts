@@ -370,6 +370,7 @@ export function getLowAction(state: GameState, action: GameAction): LowAction {
     case 'mouseMove': return gla({ t: 'mouseMove', p: action.p });
     case 'tick': return gla({ t: 'tick' });
     case 'popCacheUpdateQueue': return gla({ t: 'popCacheUpdateQueue', n: action.n });
+    case 'cancelModals': return gla({ t: 'cancelModals' });
   }
 }
 
@@ -625,6 +626,9 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
         cs = resolveLandResult(cs, step.lr, step.move);
       });
       return produce(state, s => { s.coreState = cs; });
+    }
+    case 'cancelModals': {
+      return produce(state, s => { s.coreState.modals = {} });
     }
   }
 }

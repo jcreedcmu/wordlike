@@ -51,6 +51,7 @@ export type GameLowAction =
   | { t: 'addMob' }
   | { t: 'startDragResource', wp: WidgetPoint, res: ResbarResource, res_ix: number } // XXX: rename to startDragResbar or something
   | { t: 'landResults', lrms: { lr: ProperLandingResult, move: LandingMoveId }[] }
+  | { t: 'cancelModals' }
   ;
 
 export type LowAction =
@@ -68,6 +69,7 @@ export type GameAction =
   | { t: 'wheel', p: Point, delta: number }
   | { t: 'tick' }
   | { t: 'popCacheUpdateQueue', n: number }
+  | { t: 'cancelModals' }
   ;
 
 export type Action =
