@@ -24,6 +24,9 @@ function effectOfSoundEffect(se: SoundEffect): Effect {
 function extractEffects(state: SceneState): { cleanState: SceneState, effects: Effect[] } {
   switch (state.t) {
     case 'game': {
+      if (state.gameState.coreState.soundEffects.length == 0) {
+        return { cleanState: state, effects: [] };
+      }
       const effects: Effect[] = state.gameState.coreState.soundEffects.map(effectOfSoundEffect);
       return { cleanState: { t: 'game', revision: 0, gameState: produce(state.gameState, s => { s.coreState.soundEffects = []; }) }, effects }
     }

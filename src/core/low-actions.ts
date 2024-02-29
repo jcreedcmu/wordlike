@@ -537,7 +537,6 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
       return resolveGameLowAction(vacuous_down(state, action.wp), action.action);
     case 'andMouseUp': {
       return produce(resolveGameLowAction(state, action.action), s => {
-        s.coreState.soundEffects.push({ t: 'click' });
         s.coreState.slowState.generation++;
         s.mouseState = { t: 'up', p_in_canvas: action.p_in_canvas };
       });

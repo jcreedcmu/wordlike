@@ -1,3 +1,4 @@
+import { makeSound } from "../sound/sound-helpers";
 import { produce } from "../util/produce";
 import { mkChunkUpdate } from "./cache-types";
 import { tryKillTileOfStateLoc } from "./kill-helpers";
@@ -24,8 +25,8 @@ export function resolveLandResult(_state: CoreState, lr: ProperLandingResult, mo
   switch (lr.t) {
     case 'place': {
       switch (src.t) {
-        case 'mobile': return putMobileInWorld(state, src.id, move.p_in_world_int, 'noclear');
-        case 'freshResource': return addResourceMobile(state, move.p_in_world_int, src.res);
+        case 'mobile': return makeSound(putMobileInWorld(state, src.id, move.p_in_world_int, 'noclear'), { t: 'click' });
+        case 'freshResource': return makeSound(addResourceMobile(state, move.p_in_world_int, src.res), { t: 'click' });
       }
     }
     case 'replaceResource': {
