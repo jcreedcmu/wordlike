@@ -2,9 +2,21 @@ const RATE = 44100;
 
 export class Sound {
   readonly audio_context: AudioContext;
+  gainNode: GainNode;
+  dest: AudioNode;
+
+  setGain(gain: number) {
+    this.gainNode.gain.value = gain;
+  }
 
   constructor() {
-    this.audio_context = new AudioContext();
+    const d = new AudioContext();
+    this.audio_context = d;
+    const gainNode = d.createGain();
+    gainNode.gain.value = 1;
+    gainNode.connect(d.destination);
+    this.gainNode = gainNode;
+    this.dest = gainNode;
   }
 
   make_sound<T>(len_sec: number, initial_state: T, sample: (state: T, ix: number, buf: Float32Array) => number): void {
@@ -17,7 +29,7 @@ export class Sound {
     }
     const src = d.createBufferSource();
     src.buffer = buf;
-    src.connect(d.destination);
+    src.connect(this.dest);
     src.start();
   }
 

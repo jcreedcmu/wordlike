@@ -302,6 +302,7 @@ export function doSoundEffect(se: SoundEffect): void {
   switch (se.t) {
     case 'click': soundService.click(); return;
     case 'beep': soundService.beep(); return;
+    case 'setGain': soundService.setGain(se.gain); return;
     default: unreachable(se);
   }
 }

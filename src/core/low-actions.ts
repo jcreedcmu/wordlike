@@ -659,7 +659,10 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
       return withCoreState(state, cs => handleButtonBarButton(cs, action.button));
     }
     case 'setAudioVolume': {
-      return produce(state, s => { s.coreState.settings.audioVolume = action.volume; });
+      return produce(state, s => {
+        s.coreState.settings.audioVolume = action.volume;
+        s.coreState.soundEffects.push({ t: 'setGain', gain: action.volume });
+      });
     }
   }
 }
