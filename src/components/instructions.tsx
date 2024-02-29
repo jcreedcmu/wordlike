@@ -4,12 +4,12 @@ import { Dispatch } from '../core/action';
 import { GameState } from '../core/state';
 import { DEBUG } from '../util/debug';
 import { relpos } from '../util/dutil';
-import { GlEnv, glCopyCanvas } from './gl-common';
-import { glInitialize, renderGlPane } from './gl-render';
-import { rawPaint } from './render';
-import { resizeView } from './ui-helpers';
-import { CanvasInfo, useCanvas, useNonreactiveCanvasGl } from './use-canvas';
-import { drawBubble } from './bubble-helpers';
+import { GlEnv, glCopyCanvas } from '../ui/gl-common';
+import { glInitialize, renderGlPane } from '../ui/gl-render';
+import { rawPaint } from '../ui/render';
+import { resizeView } from '../ui/ui-helpers';
+import { CanvasInfo, useCanvas, useNonreactiveCanvasGl } from '../ui/use-canvas';
+import { drawBubble } from '../ui/bubble-helpers';
 import { exampleState } from '../core/exampleState';
 
 export const NUM_PAGES = 2;

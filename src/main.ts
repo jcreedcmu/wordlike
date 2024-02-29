@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom/client';
-import { App } from './app';
+import { App } from './components/app';
 import { initAssets } from "./core/assets";
 import { getPrerenderers } from "./ui/prerender";
 
