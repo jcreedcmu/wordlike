@@ -146,6 +146,7 @@ function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number, mods
     case 'toolbar': return reduceMouseDownInToolbar(state, wp, button, mods);
     case 'resbar': return reduceMouseDownInResbar(state, wp, button, mods);
     case 'pauseButton': return { t: 'vacuousDownAnd', wp, action: { t: 'pause' } };
+    case 'bugReportButton': return { t: 'vacuousDownAnd', wp, action: { t: 'bugReportButton' } };
     case 'nowhere': return { t: 'vacuousDown', wp };
   }
 }
@@ -629,6 +630,9 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     }
     case 'cancelModals': {
       return produce(state, s => { s.coreState.modals = {} });
+    }
+    case 'bugReportButton': {
+      return produce(state, s => { s.coreState.modals = { bugReport: { data: JSON.stringify(state) } } });
     }
   }
 }

@@ -7,6 +7,7 @@ import { lerp, pointInRect } from "../util/util";
 import { vint } from "../util/vutil";
 import { DEFAULT_TILE_SCALE, PANIC_THICK, TOOLBAR_WIDTH, canvas_bds_in_canvas, resbar_bds_in_canvas, toolbar_bds_in_canvas } from "../ui/widget-constants";
 import { hand_bds_in_canvas, hand_tile_bds_in_canvas, panic_bds_in_canvas, rects } from "../ui/widget-layout";
+import { DEBUG } from "../util/debug";
 
 export function rectOfPanic_in_canvas(panic_fraction: number): Rect {
   return {
@@ -79,6 +80,12 @@ export function getWidgetPoint(state: CoreState, p_in_canvas: Point): WidgetPoin
   if (pointInRect(p_in_canvas, pause_button_bds_in_canvas)) {
     return {
       t: 'pauseButton',
+      p_in_canvas,
+    };
+  }
+  else if (DEBUG.bugReportButton && pointInRect(p_in_canvas, bug_report_bds_in_canvas)) {
+    return {
+      t: 'bugReportButton',
       p_in_canvas,
     };
   }

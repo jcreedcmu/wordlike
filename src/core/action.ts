@@ -30,6 +30,7 @@ export type GameLowAction =
   | { t: 'vacuousDown', wp: WidgetPoint }
   | { t: 'shuffle' }
   | { t: 'pause' }
+  | { t: 'bugReportButton' }
   | { t: 'multiple', actions: GameLowAction[] }
   | { t: 'startDragHandTile', wp: WidgetPoint, index: number }
   | { t: 'unpause', paused: PauseData }

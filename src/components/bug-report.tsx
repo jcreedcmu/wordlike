@@ -5,16 +5,19 @@ export function BugReport(props: BugReportProps): JSX.Element {
   const { data, dispatch } = props;
   const blob = new Blob([data], { type: 'application/octet-stream' });
 
-  const onclick: React.MouseEventHandler = (_e) => {
+  const dismiss: React.MouseEventHandler = (_e) => {
     dispatch({ t: 'cancelModals' });
   };
 
-  return <div className="bug-report-container">
-    <div className="bug-report-modal">Thanks for making a bug report!<br />
+  const absorb: React.MouseEventHandler = (e) => {
+    e.stopPropagation();
+  };
+
+  return <div className="bug-report-container" onMouseDown={dismiss}>
+    <div className="bug-report-modal" onMouseDown={absorb}>Thanks for making a bug report!<br />
       Please <a href={URL.createObjectURL(blob)} download="debug.json">download this file</a> and attach it.
-      <br /><br />
       <center>
-        <button onClick={onclick}>Ok</button>
+        <button style={{ marginTop: '2em' }} onClick={dismiss}>Ok</button>
       </center>
     </div>
   </div>;
