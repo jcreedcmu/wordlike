@@ -38,6 +38,11 @@ export function effective_resbar_bds_in_canvas(state: CoreState): Rect {
   }
 }
 
+export const bug_report_bds_in_canvas: Rect = {
+  p: { x: canvas_bds_in_canvas.sz.x - TOOLBAR_WIDTH, y: canvas_bds_in_canvas.sz.y - TOOLBAR_WIDTH },
+  sz: { x: TOOLBAR_WIDTH, y: TOOLBAR_WIDTH }
+};
+
 export const pause_button_bds_in_canvas: Rect = rects['pause'];
 
 export function canvas_from_hand(): SE2 {
@@ -58,6 +63,13 @@ export function canvas_from_resbar(): SE2 {
   return {
     scale: { x: 1, y: 1 },
     translate: resbar_bds_in_canvas.p,
+  };
+}
+
+export function canvas_from_bug_report_button(): SE2 {
+  return {
+    scale: { x: 1, y: 1 },
+    translate: bug_report_bds_in_canvas.p,
   };
 }
 

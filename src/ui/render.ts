@@ -9,7 +9,7 @@ import { TileEntity } from '../core/state-types';
 import { lostState } from '../core/state-helpers';
 import { get_main_tiles, isSelectedForDrag } from '../core/tile-helpers';
 import { getCurrentResources, getCurrentTool, getCurrentTools } from '../core/tools';
-import { largeRectOf } from "./tool-rects";
+import { largeRectOf, largeRectOfBugIcon } from "./tool-rects";
 import { shouldDisplayBackButton } from '../core/winState';
 import { DEBUG, doOnceEvery } from '../util/debug';
 import { clearRect, drawImage, fillRect, fillRoundRect, fillText, lineTo, moveTo, pathRect, pathRectCircle, roundedPath, strokeRect } from '../util/dutil';
@@ -24,7 +24,7 @@ import { wordBubblePanicBounds, wordBubbleRect } from './drawPanicBar';
 import { formatTime } from './formatTime';
 import { CanvasInfo } from './use-canvas';
 import { pan_canvas_from_world_of_state } from '../layout/view-helpers';
-import { canvas_from_hand, canvas_from_resbar, canvas_from_toolbar, effective_resbar_bds_in_canvas, effective_toolbar_bds_in_canvas, pause_button_bds_in_canvas } from '../layout/widget-helpers';
+import { bug_report_bds_in_canvas, canvas_from_bug_report_button, canvas_from_hand, canvas_from_resbar, canvas_from_toolbar, effective_resbar_bds_in_canvas, effective_toolbar_bds_in_canvas, pause_button_bds_in_canvas } from '../layout/widget-helpers';
 import { hand_bds_in_canvas, inner_hand_bds_in_canvas, panic_bds_in_canvas, score_bds_in_canvas, spacer1_bds_in_canvas, spacer2_bds_in_canvas } from "./widget-layout";
 import { GLOBAL_BORDER, PANIC_THICK, canvas_bds_in_canvas, resbar_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from "./widget-constants";
 import { drawTileLetter } from './draw-tile-letter';
@@ -70,7 +70,7 @@ export function drawPausedScreen(ci: CanvasInfo) {
   fillText(d, 'paused', midpointOfRect(canvas_bds_in_canvas), 'black', '48px sans-serif');
 }
 
-function drawToolbarCount(d: CanvasRenderingContext2D, rect: Rect, count: number): void {
+function drawIconCount(d: CanvasRenderingContext2D, rect: Rect, count: number): void {
   d.textAlign = 'center';
   d.textBaseline = 'middle';
   const newRect: Rect = scaleRectToCenter({ p: vadd(rect.p, vdiv(rect.sz, 2)), sz: vdiv(rect.sz, 2) }, 0.8);
@@ -82,6 +82,20 @@ function drawToolbarCount(d: CanvasRenderingContext2D, rect: Rect, count: number
   const countTxt = `${count}`;
   const fontSize = countTxt.length > 1 ? 12 : 16;
   fillText(d, countTxt, vadd(midpointOfRect(newRect), { x: 0, y: 1 }), 'white', `bold ${fontSize}px sans-serif`);
+}
+
+function drawBugReportButton(d: CanvasRenderingContext2D) {
+  const largeSprites = getAssets().largeSpritesBuf.c;
+  d.imageSmoothingEnabled = true;
+
+  const ICON_SCALE = 0.7;
+  const S_in_canvas = resbar_bds_in_canvas.sz.x;
+  const rect_in_canvas = apply_to_rect(
+    canvas_from_bug_report_button(),
+    { p: { x: 0, y: 0 }, sz: { x: S_in_canvas, y: S_in_canvas } },
+  );
+  const scaled_rect_in_canvas = scaleRectToCenter(rect_in_canvas, ICON_SCALE);
+  drawImage(d, largeSprites, largeRectOfBugIcon(), scaled_rect_in_canvas);
 }
 
 function drawResbar(d: CanvasRenderingContext2D, state: CoreState) {
@@ -98,7 +112,7 @@ function drawResbar(d: CanvasRenderingContext2D, state: CoreState) {
     );
     const scaled_rect_in_canvas = scaleRectToCenter(rect_in_canvas, ICON_SCALE);
     drawImage(d, largeSprites, largeRectOf(res), scaled_rect_in_canvas);
-    drawToolbarCount(d, rect_in_canvas, state.slowState.resource[res]);
+    drawIconCount(d, rect_in_canvas, state.slowState.resource[res]);
   });
 
 }
@@ -126,25 +140,25 @@ function drawToolbar(d: CanvasRenderingContext2D, state: CoreState) {
     drawImage(d, largeSprites, largeRectOf(tool), scaled_rect_in_canvas);
 
     if (tool == 'dynamite') {
-      drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.dynamites);
+      drawIconCount(d, rect_in_canvas, state.slowState.inventory.dynamites);
     }
     if (tool == 'bomb') {
-      drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.bombs);
+      drawIconCount(d, rect_in_canvas, state.slowState.inventory.bombs);
     }
     else if (tool == 'vowel') {
-      drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.vowels);
+      drawIconCount(d, rect_in_canvas, state.slowState.inventory.vowels);
     }
     else if (tool == 'consonant') {
-      drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.consonants);
+      drawIconCount(d, rect_in_canvas, state.slowState.inventory.consonants);
     }
     else if (tool == 'copy') {
-      drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.copies);
+      drawIconCount(d, rect_in_canvas, state.slowState.inventory.copies);
     }
     else if (tool == 'time') {
-      drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.times);
+      drawIconCount(d, rect_in_canvas, state.slowState.inventory.times);
     }
     else if (tool == 'magnifying-glass') {
-      drawToolbarCount(d, rect_in_canvas, state.slowState.inventory.glasses);
+      drawIconCount(d, rect_in_canvas, state.slowState.inventory.glasses);
     }
   });
 }
@@ -154,6 +168,8 @@ function drawUiFrame(d: CanvasRenderingContext2D, state: CoreState): void {
 
   const { p: tp, sz: ts } = effective_toolbar_bds_in_canvas(state);
   const { p: rp, sz: rs } = effective_resbar_bds_in_canvas(state);
+  const { p: brp, sz: brs } = bug_report_bds_in_canvas;
+
   const tq = vadd(tp, ts);
   const rq = vadd(rp, rs);
 
@@ -171,6 +187,17 @@ function drawUiFrame(d: CanvasRenderingContext2D, state: CoreState): void {
     ]
     : [{ x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x - GLOBAL_BORDER, y: tp.y + GLOBAL_BORDER }];
 
+  const bugReportButtonPts: Point[] = DEBUG.bugReportButton
+    ? [
+      { x: brp.x + brs.x - GLOBAL_BORDER, y: brp.y },
+      { x: brp.x, y: brp.y },
+      { x: brp.x, y: brp.y + brs.y - GLOBAL_BORDER },
+    ]
+    : [{
+      x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x - GLOBAL_BORDER,
+      y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - GLOBAL_BORDER
+    }];
+
   // Subtract a rounded path
   roundedPath(d, [
     // top left, just to the bottom left of toolbar
@@ -178,8 +205,10 @@ function drawUiFrame(d: CanvasRenderingContext2D, state: CoreState): void {
     { x: tq.x, y: tq.y },
     { x: tq.x, y: tp.y + GLOBAL_BORDER },
     ...resbarPts,
-    // bottom right
-    { x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x - GLOBAL_BORDER, y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - GLOBAL_BORDER },
+
+    // bottom right section
+    ...bugReportButtonPts,
+
     // bottom right of rack etc.
     { x: hand_bds_in_canvas.p.x + hand_bds_in_canvas.sz.x, y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - GLOBAL_BORDER },
     { x: hand_bds_in_canvas.p.x + hand_bds_in_canvas.sz.x, y: hand_bds_in_canvas.p.y },
@@ -239,6 +268,10 @@ function drawUiFrame(d: CanvasRenderingContext2D, state: CoreState): void {
 
   // Draw resbar
   drawResbar(d, state);
+
+  // Draw bug report button
+  if (DEBUG.bugReportButton)
+    drawBugReportButton(d);
 }
 
 export function canvas_from_hand_tile(index: number): SE2 {

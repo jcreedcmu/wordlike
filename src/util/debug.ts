@@ -22,6 +22,7 @@ export const DEBUG = {
   noRenderSlowState: false,
   rawPaint: false,
   cacheUpdate: false,
+  bugReportButton: true,
 
   // if true, every string of letters is considered a word, and required-letter bonuses admit any letter
   allWords: false,

@@ -9,3 +9,7 @@ export function rectOfTool(tool: Tool): Rect {
 export function largeRectOf(tool: Tool | ResbarResource): Rect {
   return largeSpriteRectOfPos(largeSpriteLoc(tool));
 }
+
+export function largeRectOfBugIcon(): Rect {
+  return largeSpriteRectOfPos({ y: 0, x: 11 });
+}
