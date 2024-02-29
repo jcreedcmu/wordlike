@@ -10,6 +10,7 @@ export function keyCaptured(keyCode: string): boolean {
     case 'C-S-i': return false;
     case 'C-S-r': return false;
     case 'C-r': return false;
+    case 'C-l': return false;
     default: return true;
   }
 }
