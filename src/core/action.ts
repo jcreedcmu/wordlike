@@ -80,6 +80,9 @@ export type Action =
   | GameAction
   ;
 
-export type Effect = { t: 'none' };
+export type Effect =
+  | { t: 'none' }
+  | { t: 'click' }
+  ;
 
 export type Dispatch = (action: Action) => void;

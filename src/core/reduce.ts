@@ -1,6 +1,6 @@
 import * as effectful from '../ui/use-effectful-reducer';
 import { Action, Effect } from './action';
-import { getLowAction, resolveLowAction } from './low-actions';
+import { getLowAction, resolveLowActionWithEffects } from './low-actions';
 import { mkGameSceneState } from './mkGameState';
 import { SceneState } from './state';
 
@@ -26,8 +26,9 @@ export function reduce(scState: SceneState, action: Action): effectful.Result<Sc
       return { state: action.state, effects: [] };
     default:
       if (scState.t == 'game') {
-        const state = resolveLowAction(scState, getLowAction(scState.gameState, action));
-        return { state, effects: [] };
+        const effects: Effect[] = [];
+        const state = resolveLowActionWithEffects(scState, getLowAction(scState.gameState, action), effects);
+        return { state, effects };
       }
       else {
         return { state: scState, effects: [] };

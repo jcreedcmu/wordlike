@@ -9,7 +9,7 @@ import { apply, compose, composen, inverse, scale, translate } from '../util/se2
 import { Point } from '../util/types';
 import { flatUndef, getRandomOrder } from '../util/util';
 import { vequal, vint, vm, vscale, vsub } from '../util/vutil';
-import { GameAction, GameLowAction, LowAction } from './action';
+import { Effect, GameAction, GameLowAction, LowAction } from './action';
 import { isActiveCanvasAnimation } from './animation-types';
 import { CacheUpdate, mkChunkUpdate } from './cache-types';
 import { getPanicFraction, now_in_game } from './clock';
@@ -375,16 +375,21 @@ export function getLowAction(state: GameState, action: GameAction): LowAction {
   }
 }
 
-export function resolveGameLowActions(state: GameState, gameLowActions: GameLowAction[]): GameState {
+// Used in testing
+export function resolveGameLowActionsIgnoreEffects(state: GameState, gameLowActions: GameLowAction[]): GameState {
+  return resolveGameLowActions(state, gameLowActions, []);
+}
+
+export function resolveGameLowActions(state: GameState, gameLowActions: GameLowAction[], effects: Effect[]): GameState {
   for (const action of gameLowActions) {
-    state = resolveGameLowAction(state, action);
+    state = resolveGameLowAction(state, action, effects);
   }
   return state;
 }
 
 const globalActionQueue: GameLowAction[] = [];
 
-function resolveGameLowAction(state: GameState, action: GameLowAction): GameState {
+function resolveGameLowAction(state: GameState, action: GameLowAction, effects: Effect[]): GameState {
   const cs = state.coreState;
 
   if (DEBUG.lowActions) {
@@ -514,7 +519,7 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     case 'vacuousDown': return vacuous_down(state, action.wp);
     case 'shuffle': return withCoreState(state, reduceShuffle);
     case 'pause': return withCoreState(state, reducePauseButton);
-    case 'multiple': return resolveGameLowActions(state, action.actions);
+    case 'multiple': return resolveGameLowActions(state, action.actions, effects);
     case 'deselect': return withCoreState(state, deselect);
     case 'startDragHandTile': {
       const tiles = get_hand_tiles(cs);
@@ -533,12 +538,14 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     case 'unpause':
       return withCoreState(state, cs => unpauseState(cs, action.paused))
     case 'vacuousDownAnd':
-      return resolveGameLowAction(vacuous_down(state, action.wp), action.action);
-    case 'andMouseUp':
-      return produce(resolveGameLowAction(state, action.action), s => {
+      return resolveGameLowAction(vacuous_down(state, action.wp), action.action, effects);
+    case 'andMouseUp': {
+      effects.push({ t: 'click' });
+      return produce(resolveGameLowAction(state, action.action, effects), s => {
         s.coreState.slowState.generation++;
         s.mouseState = { t: 'up', p_in_canvas: action.p_in_canvas };
       });
+    }
     case 'dragSelectionEnd': {
       const newCs = resolveSelection(cs, action.ms);
       return produce(state, s => { s.coreState = newCs; });
@@ -648,12 +655,12 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
   }
 }
 
-export function resolveLowAction(state: SceneState, action: LowAction): SceneState {
+export function resolveLowActionWithEffects(state: SceneState, action: LowAction, effects: Effect[]): SceneState {
   switch (action.t) {
     case 'returnToMenu': return { t: 'menu' }
     case 'gameLowAction':
       if (state.t == 'game') {
-        return { t: 'game', gameState: resolveGameLowAction(state.gameState, action.action), revision: 0 };
+        return { t: 'game', gameState: resolveGameLowAction(state.gameState, action.action, effects), revision: 0 };
       }
       else
         return state;

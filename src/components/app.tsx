@@ -16,6 +16,8 @@ import { relpos } from '../util/dutil';
 import { BugReport } from './bug-report';
 import { Instructions } from './instructions';
 import { getWidgetPoint } from '../layout/widget-helpers';
+import { soundService } from '../sound/sound';
+import { unreachable } from '../util/util';
 
 const ANIMATION_INTERVAL_MS = 35;
 
@@ -291,8 +293,10 @@ export function Game(props: GameProps): JSX.Element {
 }
 
 
-export function doEffect(_state: SceneState, _dispatch: (action: Action) => void, _effect: Effect): void {
-  return;
-  // switch (effect.t) {
-  // }
+export function doEffect(_state: SceneState, _dispatch: (action: Action) => void, effect: Effect): void {
+  switch (effect.t) {
+    case 'none': return;
+    case 'click': soundService.click(); return;
+    default: unreachable(effect);
+  }
 }
