@@ -5,12 +5,14 @@ import { LocatedWord, getGrid } from '../core/grid';
 import { getOverlay } from '../core/layer';
 import { getScore } from '../core/scoring';
 import { CoreState, GameState } from '../core/state';
-import { TileEntity } from '../core/state-types';
 import { lostState } from '../core/state-helpers';
+import { TileEntity } from '../core/state-types';
 import { get_main_tiles, isSelectedForDrag } from '../core/tile-helpers';
 import { getCurrentResources, getCurrentTool, getCurrentTools } from '../core/tools';
-import { largeRectOf, largeRectOfBugIcon } from "./tool-rects";
 import { shouldDisplayBackButton } from '../core/winState';
+import { activeButtonBarButtons } from '../layout/button-bar';
+import { pan_canvas_from_world_of_state } from '../layout/view-helpers';
+import { button_bar_bds_in_canvas, canvas_from_hand, canvas_from_widget, effective_resbar_bds_in_canvas, effective_toolbar_bds_in_canvas, pause_button_bds_in_canvas } from '../layout/widget-helpers';
 import { DEBUG, doOnceEvery } from '../util/debug';
 import { clearRect, drawImage, fillRect, fillRoundRect, fillText, lineTo, moveTo, pathRect, pathRectCircle, roundedPath, strokeRect } from '../util/dutil';
 import { SE2, apply, compose, inverse, translate } from '../util/se2';
@@ -18,16 +20,15 @@ import { apply_to_rect } from '../util/se2-extra';
 import { Point, Rect } from '../util/types';
 import { allRectPts, boundRect, insetRect, invertRect, midpointOfRect, scaleRectToCenter, scaleRectToCenterPoint } from '../util/util';
 import { vadd, vdiv, vequal, vm, vscale, vtrans } from '../util/vutil';
+import { drawTileLetter } from './draw-tile-letter';
 import { drawAnimation } from './drawAnimation';
 import { drawBonus } from './drawBonus';
 import { wordBubblePanicBounds, wordBubbleRect } from './drawPanicBar';
 import { formatTime } from './formatTime';
+import { largeRectOf, largeRectOfButtonBarButton } from "./tool-rects";
 import { CanvasInfo } from './use-canvas';
-import { pan_canvas_from_world_of_state } from '../layout/view-helpers';
-import { bug_report_bds_in_canvas, canvas_from_hand, canvas_from_widget, effective_resbar_bds_in_canvas, effective_toolbar_bds_in_canvas, pause_button_bds_in_canvas } from '../layout/widget-helpers';
-import { hand_bds_in_canvas, inner_hand_bds_in_canvas, panic_bds_in_canvas, score_bds_in_canvas, spacer1_bds_in_canvas, spacer2_bds_in_canvas } from "./widget-layout";
 import { GLOBAL_BORDER, PANIC_THICK, canvas_bds_in_canvas, resbar_bds_in_canvas, toolbar_bds_in_canvas, world_bds_in_canvas } from "./widget-constants";
-import { drawTileLetter } from './draw-tile-letter';
+import { hand_bds_in_canvas, inner_hand_bds_in_canvas, panic_bds_in_canvas, score_bds_in_canvas, spacer1_bds_in_canvas, spacer2_bds_in_canvas } from "./widget-layout";
 
 const INTERFACE_RADIUS = 2 * GLOBAL_BORDER;
 const PANIC_RADIUS = Math.min(INTERFACE_RADIUS, PANIC_THICK / 2);
@@ -84,18 +85,21 @@ function drawIconCount(d: CanvasRenderingContext2D, rect: Rect, count: number): 
   fillText(d, countTxt, vadd(midpointOfRect(newRect), { x: 0, y: 1 }), 'white', `bold ${fontSize}px sans-serif`);
 }
 
-function drawBugReportButton(d: CanvasRenderingContext2D) {
+function drawButtonBar(d: CanvasRenderingContext2D) {
   const largeSprites = getAssets().largeSpritesBuf.c;
   d.imageSmoothingEnabled = true;
 
-  const ICON_SCALE = 0.7;
-  const S_in_canvas = resbar_bds_in_canvas.sz.x;
-  const rect_in_canvas = apply_to_rect(
-    canvas_from_widget(bug_report_bds_in_canvas),
-    { p: { x: 0, y: 0 }, sz: { x: S_in_canvas, y: S_in_canvas } },
-  );
-  const scaled_rect_in_canvas = scaleRectToCenter(rect_in_canvas, ICON_SCALE);
-  drawImage(d, largeSprites, largeRectOfBugIcon(), scaled_rect_in_canvas);
+  activeButtonBarButtons.forEach((button, ix_in_button_bar) => {
+
+    const ICON_SCALE = 0.7;
+    const S_in_canvas = resbar_bds_in_canvas.sz.x;
+    const rect_in_canvas = apply_to_rect(
+      canvas_from_widget(button_bar_bds_in_canvas),
+      { p: { x: 0, y: S_in_canvas * ix_in_button_bar }, sz: { x: S_in_canvas, y: S_in_canvas } },
+    );
+    const scaled_rect_in_canvas = scaleRectToCenter(rect_in_canvas, ICON_SCALE);
+    drawImage(d, largeSprites, largeRectOfButtonBarButton(button), scaled_rect_in_canvas);
+  });
 }
 
 function drawResbar(d: CanvasRenderingContext2D, state: CoreState) {
@@ -168,7 +172,7 @@ function drawUiFrame(d: CanvasRenderingContext2D, state: CoreState): void {
 
   const { p: tp, sz: ts } = effective_toolbar_bds_in_canvas(state);
   const { p: rp, sz: rs } = effective_resbar_bds_in_canvas(state);
-  const { p: brp, sz: brs } = bug_report_bds_in_canvas;
+  const { p: bbp, sz: bbs } = button_bar_bds_in_canvas;
 
   const tq = vadd(tp, ts);
   const rq = vadd(rp, rs);
@@ -187,16 +191,11 @@ function drawUiFrame(d: CanvasRenderingContext2D, state: CoreState): void {
     ]
     : [{ x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x - GLOBAL_BORDER, y: tp.y + GLOBAL_BORDER }];
 
-  const bugReportButtonPts: Point[] = DEBUG.bugReportButton
-    ? [
-      { x: brp.x + brs.x - GLOBAL_BORDER, y: brp.y },
-      { x: brp.x, y: brp.y },
-      { x: brp.x, y: brp.y + brs.y - GLOBAL_BORDER },
-    ]
-    : [{
-      x: canvas_bds_in_canvas.p.x + canvas_bds_in_canvas.sz.x - GLOBAL_BORDER,
-      y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - GLOBAL_BORDER
-    }];
+  const buttonBarPts: Point[] = [
+    { x: bbp.x + bbs.x - GLOBAL_BORDER, y: bbp.y },
+    { x: bbp.x, y: bbp.y },
+    { x: bbp.x, y: bbp.y + bbs.y - GLOBAL_BORDER },
+  ];
 
   // Subtract a rounded path
   roundedPath(d, [
@@ -206,8 +205,8 @@ function drawUiFrame(d: CanvasRenderingContext2D, state: CoreState): void {
     { x: tq.x, y: tp.y + GLOBAL_BORDER },
     ...resbarPts,
 
-    // bottom right section
-    ...bugReportButtonPts,
+    // Button bar
+    ...buttonBarPts,
 
     // bottom right of rack etc.
     { x: hand_bds_in_canvas.p.x + hand_bds_in_canvas.sz.x, y: canvas_bds_in_canvas.p.y + canvas_bds_in_canvas.sz.y - GLOBAL_BORDER },
@@ -269,9 +268,8 @@ function drawUiFrame(d: CanvasRenderingContext2D, state: CoreState): void {
   // Draw resbar
   drawResbar(d, state);
 
-  // Draw bug report button
-  if (DEBUG.bugReportButton)
-    drawBugReportButton(d);
+  // Draw button bar
+  drawButtonBar(d);
 }
 
 export function canvas_from_hand_tile(index: number): SE2 {

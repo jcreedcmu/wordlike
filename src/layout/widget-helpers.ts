@@ -7,7 +7,7 @@ import { lerp, pointInRect } from "../util/util";
 import { vint } from "../util/vutil";
 import { DEFAULT_TILE_SCALE, PANIC_THICK, TOOLBAR_WIDTH, canvas_bds_in_canvas, resbar_bds_in_canvas, toolbar_bds_in_canvas } from "../ui/widget-constants";
 import { hand_bds_in_canvas, hand_tile_bds_in_canvas, panic_bds_in_canvas, rects } from "../ui/widget-layout";
-import { DEBUG } from "../util/debug";
+import { activeButtonBarButtons } from "./button-bar";
 
 export function rectOfPanic_in_canvas(panic_fraction: number): Rect {
   return {
@@ -39,9 +39,9 @@ export function effective_resbar_bds_in_canvas(state: CoreState): Rect {
   }
 }
 
-export const bug_report_bds_in_canvas: Rect = {
-  p: { x: canvas_bds_in_canvas.sz.x - TOOLBAR_WIDTH, y: canvas_bds_in_canvas.sz.y - TOOLBAR_WIDTH },
-  sz: { x: TOOLBAR_WIDTH, y: TOOLBAR_WIDTH }
+export const button_bar_bds_in_canvas: Rect = {
+  p: { x: canvas_bds_in_canvas.sz.x - TOOLBAR_WIDTH, y: canvas_bds_in_canvas.sz.y - TOOLBAR_WIDTH * activeButtonBarButtons.length },
+  sz: { x: TOOLBAR_WIDTH, y: TOOLBAR_WIDTH * activeButtonBarButtons.length }
 };
 
 export const pause_button_bds_in_canvas: Rect = rects['pause'];
@@ -69,10 +69,14 @@ export function getWidgetPoint(state: CoreState, p_in_canvas: Point): WidgetPoin
       p_in_canvas,
     };
   }
-  else if (DEBUG.bugReportButton && pointInRect(p_in_canvas, bug_report_bds_in_canvas)) {
+  else if (pointInRect(p_in_canvas, button_bar_bds_in_canvas)) {
+    const buttonbar_from_canvas = inverse(canvas_from_widget(button_bar_bds_in_canvas));
+    const p_in_local = apply(buttonbar_from_canvas, p_in_canvas);
     return {
-      t: 'bugReportButton',
+      t: 'buttonBar',
+      p_in_local,
       p_in_canvas,
+      button: activeButtonBarButtons[Math.floor(p_in_local.y / button_bar_bds_in_canvas.sz.x)],
     };
   }
   else if (pointInRect(p_in_canvas, toolbar_bds)) {

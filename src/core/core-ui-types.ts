@@ -1,3 +1,4 @@
+import { ButtonBarButton } from "../layout/button-bar";
 import { SE2 } from "../util/se2";
 import { Point } from "../util/types";
 import { vint } from "../util/vutil";
@@ -32,8 +33,8 @@ export type WidgetPoint =
   | DragWidgetPoint
   | { t: 'toolbar', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2, tool: Tool }
   | { t: 'resbar', p_in_local: Point, p_in_canvas: Point, local_from_canvas: SE2, res: ResbarResource }
+  | { t: 'buttonBar', p_in_local: Point, p_in_canvas: Point, button: ButtonBarButton }
   | { t: 'pauseButton', p_in_canvas: Point }
-  | { t: 'bugReportButton', p_in_canvas: Point }
   | { t: 'nowhere', p_in_canvas: Point } // outside canvas bounds
   ;
 
@@ -44,7 +45,7 @@ export function locationOfWidgetPoint(wp: WidgetPoint): Location {
     case 'toolbar': return { t: 'nowhere' };
     case 'resbar': return { t: 'nowhere' };
     case 'pauseButton': return { t: 'nowhere' };
-    case 'bugReportButton': return { t: 'nowhere' };
+    case 'buttonBar': return { t: 'nowhere' };
     case 'nowhere': return { t: 'nowhere' };
   }
 }

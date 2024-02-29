@@ -10,6 +10,7 @@ import { SceneState } from './scene-state';
 import { InventoryItems, Location, MouseState } from './state-types';
 import { MobileId } from './basic-types';
 import { ResbarResource, Tool } from "./tool-types";
+import { ButtonBarButton } from '../layout/button-bar';
 
 export type GameLowAction =
   | { t: 'zoom', center: Point, amount: number }
@@ -30,7 +31,7 @@ export type GameLowAction =
   | { t: 'vacuousDown', wp: WidgetPoint }
   | { t: 'shuffle' }
   | { t: 'pause' }
-  | { t: 'bugReportButton' }
+  | { t: 'buttonBar', button: ButtonBarButton }
   | { t: 'multiple', actions: GameLowAction[] }
   | { t: 'startDragHandTile', wp: WidgetPoint, index: number }
   | { t: 'unpause', paused: PauseData }

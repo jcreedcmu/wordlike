@@ -12,6 +12,7 @@ import { vequal, vint, vm, vscale, vsub } from '../util/vutil';
 import { GameAction, GameLowAction, LowAction } from './action';
 import { isActiveCanvasAnimation } from './animation-types';
 import { MobileId } from './basic-types';
+import { globalActionQueue, handleButtonBarButton } from "./button-bar-handlers";
 import { CacheUpdate, mkChunkUpdate } from './cache-types';
 import { getPanicFraction, now_in_game } from './clock';
 import { WidgetPoint } from './core-ui-types';
@@ -116,6 +117,16 @@ function reduceMouseDownInResbar(_state: GameState, wp: WidgetPoint & { t: 'resb
   }
 }
 
+function reduceMouseDownInButtonBar(_state: GameState, wp: WidgetPoint & { t: 'buttonBar' }, _button: number, _mods: Set<string>): GameLowAction {
+  const which = wp.button;
+  if (which !== undefined) {
+    return { t: 'buttonBar', button: which };
+  }
+  else {
+    return { t: 'vacuousDown', wp };
+  }
+}
+
 function reducePauseButton(state: CoreState): CoreState {
   return produce(state, s => { s.slowState.paused = { pauseTime_in_clock: Date.now() }; });
 }
@@ -146,8 +157,8 @@ function reduceMouseDown(state: GameState, wp: WidgetPoint, button: number, mods
     case 'hand': return reduceMouseDownInHand(state, wp, button, mods);
     case 'toolbar': return reduceMouseDownInToolbar(state, wp, button, mods);
     case 'resbar': return reduceMouseDownInResbar(state, wp, button, mods);
+    case 'buttonBar': return reduceMouseDownInButtonBar(state, wp, button, mods);
     case 'pauseButton': return { t: 'vacuousDownAnd', wp, action: { t: 'pause' } };
-    case 'bugReportButton': return { t: 'vacuousDownAnd', wp, action: { t: 'bugReportButton' } };
     case 'nowhere': return { t: 'vacuousDown', wp };
   }
 }
@@ -382,7 +393,6 @@ export function resolveGameLowActions(state: GameState, gameLowActions: GameLowA
   return state;
 }
 
-const globalActionQueue: GameLowAction[] = [];
 
 function resolveGameLowAction(state: GameState, action: GameLowAction): GameState {
   const cs = state.coreState;
@@ -644,8 +654,8 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     case 'cancelModals': {
       return produce(state, s => { s.coreState.modals = {} });
     }
-    case 'bugReportButton': {
-      return produce(state, s => { s.coreState.modals = { bugReport: { data: JSON.stringify({ state, actions: globalActionQueue }) } } });
+    case 'buttonBar': {
+      return withCoreState(state, cs => handleButtonBarButton(cs, action.button));
     }
   }
 }
