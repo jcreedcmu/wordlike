@@ -15,6 +15,7 @@ import { DEBUG } from '../util/debug';
 import { relpos } from '../util/dutil';
 import { BugReport } from './bug-report';
 import { Instructions } from './instructions';
+import { getWidgetPoint } from '../layout/widget-helpers';
 
 const ANIMATION_INTERVAL_MS = 35;
 
@@ -219,6 +220,11 @@ export function Game(props: GameProps): JSX.Element {
 
   type CursorType = React.CSSProperties['cursor'];
   function cursorOfState(state: GameState): CursorType {
+
+    const wp = getWidgetPoint(state.coreState, state.mouseState.p_in_canvas);
+    if (wp.t != 'world' && wp.t != 'toolbar' && wp.t != 'hand')
+      return 'pointer';
+
     const tool = getCurrentTool(state.coreState);
     if (tool == 'dynamite') {
       return 'url(assets/dynamite-cursor.png) 16 16, pointer';
