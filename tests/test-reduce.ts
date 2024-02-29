@@ -1,7 +1,7 @@
 import { GameLowAction } from '../src/core/action';
 import { BIT_CONNECTED, BIT_SELECTED } from '../src/core/chunk';
 import { mkOverlayFrom } from '../src/core/layer';
-import { resolveGameLowActionsIgnoreEffects } from '../src/core/low-actions';
+import { resolveGameLowActions } from '../src/core/low-actions';
 import { mkGameState } from '../src/core/mkGameState';
 import { GameState } from '../src/core/state';
 import { withCoreState } from '../src/core/state-helpers';
@@ -24,13 +24,13 @@ describe('kill', () => {
     let state = threeTileState();
     state = produce(state, s => { s.coreState.slowState.inventory.dynamites = 100; });
 
-    state = resolveGameLowActionsIgnoreEffects(state, [{
+    state = resolveGameLowActions(state, [{
       t: 'setSelected', sel: {
         overlay: mkOverlayFrom([{ x: 0, y: 0 }, { x: 1, y: 0 }]),
         selectedIds: [1, 2]
       }
     }]);
-    state = resolveGameLowActionsIgnoreEffects(state, [{ t: 'popCacheUpdateQueue', n: state.coreState._cacheUpdateQueue.length }]);
+    state = resolveGameLowActions(state, [{ t: 'popCacheUpdateQueue', n: state.coreState._cacheUpdateQueue.length }]);
     const action: GameLowAction = {
       t: 'mouseDownIntent', intent: { t: 'kill', radius: 0 }, wp: {
         t: 'world',
@@ -45,7 +45,7 @@ describe('kill', () => {
 
     expect(state.coreState.selected?.selectedIds).toEqual([1, 2]);
 
-    state = resolveGameLowActionsIgnoreEffects(state, [action]);
+    state = resolveGameLowActions(state, [action]);
     expect(state.coreState._cacheUpdateQueue).toEqual(
       [
         {

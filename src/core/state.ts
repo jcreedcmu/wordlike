@@ -1,5 +1,6 @@
 import { SE1 } from '../util/se1';
 import { SE2 } from '../util/se2';
+import { SoundEffect } from './effect-types';
 import { Animation } from "./animation-types";
 import { Bonus } from './bonus';
 import { CacheUpdate } from './cache-types';
@@ -29,6 +30,7 @@ export type SlowState = {
 export type CoreState = {
   slowState: SlowState,
   animations: Animation[],
+  soundEffects: SoundEffect[],
 
   // indexed by position
   mobile_entities: Record<string, MobileEntity>,
@@ -56,25 +58,3 @@ export type GameState = {
   coreState: CoreState,
   mouseState: MouseState,
 };
-
-// If I need to add more state around settings, menus, saving, etc.,
-// it might go here.
-export type SceneState =
-  | {
-    t: 'game', gameState: GameState,
-    // NOTE: this is sort of unused for now, but I'm leaving it here
-    // in case I need a finer-grained equality check on SceneState.
-    // It's updated in reduce.ts.
-    revision: number,
-  }
-  | { t: 'menu' }
-  | { t: 'instructions', page: number }
-  ;
-
-export type State = {
-  sceneState: SceneState,
-};
-
-export function mkSceneState(): SceneState {
-  return { t: 'menu' };
-}

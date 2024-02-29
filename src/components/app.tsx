@@ -1,8 +1,10 @@
 import * as React from 'react';
 import { useEffect } from 'react';
-import { Action, Dispatch, Effect } from '../core/action';
+import { Action, Dispatch } from '../core/action';
+import { Effect, SoundEffect } from '../core/effect-types';
 import { keyCaptured, reduce } from '../core/reduce';
-import { GameState, SceneState, mkSceneState } from '../core/state';
+import { GameState } from '../core/state';
+import { SceneState, mkSceneState } from '../core/scene-state';
 import { getCurrentTool } from '../core/tools';
 import { GlEnv, glCopyCanvas } from '../ui/gl-common';
 import { glInitialize, renderGlPane } from '../ui/gl-render';
@@ -292,11 +294,17 @@ export function Game(props: GameProps): JSX.Element {
   </div>;
 }
 
+export function doSoundEffect(se: SoundEffect): void {
+  switch (se.t) {
+    case 'click': soundService.click(); return;
+    default: unreachable(se.t);
+  }
+}
 
 export function doEffect(_state: SceneState, _dispatch: (action: Action) => void, effect: Effect): void {
   switch (effect.t) {
     case 'none': return;
-    case 'click': soundService.click(); return;
+    case 'soundEffect': doSoundEffect(effect.sound); return;
     default: unreachable(effect);
   }
 }

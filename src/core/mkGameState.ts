@@ -6,7 +6,8 @@ import { BIT_VISIBLE } from './chunk';
 import { initialEnergies } from './distribution';
 import { mkGridOf } from './grid';
 import { Overlay, mkOverlay, setOverlay } from './layer';
-import { GameState, SceneState } from './state';
+import { GameState } from './state';
+import { SceneState } from './scene-state';
 import { CacheUpdate, mkChunkUpdate } from './cache-types';
 
 const DEFAULT_SCALE = 48.001;
@@ -57,6 +58,7 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
         numAllocated: 0,
       },
       animations: [],
+      soundEffects: [],
       mobile_entities: {},
       seen_cells,
       bonusOverlay: mkOverlay<Bonus>(),

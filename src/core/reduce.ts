@@ -1,8 +1,10 @@
 import * as effectful from '../ui/use-effectful-reducer';
-import { Action, Effect } from './action';
-import { getLowAction, resolveLowActionWithEffects } from './low-actions';
+import { produce } from '../util/produce';
+import { Action } from './action';
+import { Effect, SoundEffect } from './effect-types';
+import { getLowAction, resolveLowAction } from './low-actions';
 import { mkGameSceneState } from './mkGameState';
-import { SceneState } from './state';
+import { SceneState } from './scene-state';
 
 
 export function keyCaptured(keyCode: string): boolean {
@@ -12,6 +14,22 @@ export function keyCaptured(keyCode: string): boolean {
     case 'C-r': return false;
     case 'C-l': return false;
     default: return true;
+  }
+}
+
+function effectOfSoundEffect(se: SoundEffect): Effect {
+  return { t: 'soundEffect', sound: se };
+}
+
+function extractEffects(state: SceneState): { cleanState: SceneState, effects: Effect[] } {
+  switch (state.t) {
+    case 'game': {
+      const effects: Effect[] = state.gameState.coreState.soundEffects.map(effectOfSoundEffect);
+      return { cleanState: { t: 'game', revision: 0, gameState: produce(state.gameState, s => { s.coreState.soundEffects = []; }) }, effects }
+    }
+    case 'menu': // fallthrough intentional
+    case 'instructions':
+      return { cleanState: state, effects: [] };
   }
 }
 
@@ -26,9 +44,10 @@ export function reduce(scState: SceneState, action: Action): effectful.Result<Sc
       return { state: action.state, effects: [] };
     default:
       if (scState.t == 'game') {
-        const effects: Effect[] = [];
-        const state = resolveLowActionWithEffects(scState, getLowAction(scState.gameState, action), effects);
-        return { state, effects };
+
+        const state = resolveLowAction(scState, getLowAction(scState.gameState, action));
+        const { cleanState, effects } = extractEffects(state);
+        return { state: cleanState, effects };
       }
       else {
         return { state: scState, effects: [] };

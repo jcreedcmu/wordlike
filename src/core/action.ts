@@ -6,7 +6,7 @@ import { Intent } from './intent-types';
 import { LandingMoveId } from "./landing-types";
 import { ProperLandingResult } from './landing-result';
 import { SelectionState } from './selection';
-import { SceneState } from './state';
+import { SceneState } from './scene-state';
 import { InventoryItems, Location, MouseState } from './state-types';
 import { MobileId } from './basic-types';
 import { ResbarResource, Tool } from "./tool-types";
@@ -78,11 +78,6 @@ export type Action =
   | { t: 'newGame', creative?: boolean }
   | { t: 'setSceneState', state: SceneState }
   | GameAction
-  ;
-
-export type Effect =
-  | { t: 'none' }
-  | { t: 'click' }
   ;
 
 export type Dispatch = (action: Action) => void;
