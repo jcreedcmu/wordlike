@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { Dispatch } from "../core/action";
+import { SettingsState } from "../core/settings-types";
 
-export type SettingsProps = { dispatch: Dispatch };
+export type SettingsProps = { dispatch: Dispatch, settings: SettingsState };
 
 export function Settings(props: SettingsProps): JSX.Element {
   const { dispatch } = props;
@@ -15,10 +16,17 @@ export function Settings(props: SettingsProps): JSX.Element {
     e.stopPropagation();
   };
 
+  const onChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+    dispatch({ t: 'setAudioVolume', volume: parseFloat(e.target.value) / 100 });
+  };
+
   return <div className="bug-report-container" onMouseDown={dismiss}>
     <div className="bug-report-modal" onContextMenu={absorb} onMouseDown={absorb}>
 
-      Test
+      <label htmlFor="audio_volume">Audio Volume:</label>
+      <input type="range" id="audio_volume" min="0" max="100" value={Math.floor(100 * props.settings.audioVolume)}
+        onChange={onChange} />
+
       <center>
         <button style={{ marginTop: '2em' }} onClick={dismiss}>Ok</button>
       </center>

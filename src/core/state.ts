@@ -12,6 +12,7 @@ import { SelectionState } from './selection';
 import { InventoryItems, MobileEntity, MobsState, ModalDialogs, MouseState, ResourceItems, ScoreState, WordBonusState } from './state-types';
 import { Tool } from "./tool-types";
 import { WinState } from './winState';
+import { SettingsState } from './settings-types';
 
 // state such that, if it updates, should induce redraw of Canvas2d content
 export type SlowState = {
@@ -52,6 +53,7 @@ export type CoreState = {
 
   idCounter: number,
   modals: ModalDialogs,
+  settings: SettingsState,
 };
 
 export type GameState = {

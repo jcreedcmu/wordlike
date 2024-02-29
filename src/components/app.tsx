@@ -289,7 +289,7 @@ export function Game(props: GameProps): JSX.Element {
   const bugReport = state.coreState.modals.bugReport;
   const bugReportModal = bugReport ? <BugReport dispatch={dispatch} {...bugReport} /> : undefined;
   const settings = state.coreState.modals.settings;
-  const settingsModal = settings ? <Settings dispatch={dispatch} /> : undefined;
+  const settingsModal = settings ? <Settings dispatch={dispatch} settings={state.coreState.settings} /> : undefined;
   return <div className="inner-container">
     {normalCanvas}
     {glCanvas}

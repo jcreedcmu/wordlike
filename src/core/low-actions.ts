@@ -383,6 +383,7 @@ export function getLowAction(state: GameState, action: GameAction): LowAction {
     case 'tick': return gla({ t: 'tick' });
     case 'popCacheUpdateQueue': return gla({ t: 'popCacheUpdateQueue', n: action.n });
     case 'cancelModals': return gla({ t: 'cancelModals' });
+    case 'setAudioVolume': return gla({ t: 'setAudioVolume', volume: action.volume });
   }
 }
 
@@ -656,6 +657,9 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
     }
     case 'buttonBar': {
       return withCoreState(state, cs => handleButtonBarButton(cs, action.button));
+    }
+    case 'setAudioVolume': {
+      return produce(state, s => { s.coreState.settings.audioVolume = action.volume; });
     }
   }
 }

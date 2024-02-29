@@ -54,6 +54,7 @@ export type GameLowAction =
   | { t: 'startDragResource', wp: WidgetPoint, res: ResbarResource, res_ix: number } // XXX: rename to startDragResbar or something
   | { t: 'landResults', lrms: { lr: ProperLandingResult, move: LandingMoveId }[] }
   | { t: 'cancelModals' }
+  | { t: 'setAudioVolume', volume: number }
   ;
 
 export type LowAction =
@@ -72,6 +73,7 @@ export type GameAction =
   | { t: 'tick' }
   | { t: 'popCacheUpdateQueue', n: number }
   | { t: 'cancelModals' }
+  | { t: 'setAudioVolume', volume: number }
   ;
 
 export type Action =

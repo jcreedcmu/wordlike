@@ -79,6 +79,9 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
       _cacheUpdateQueue,
       idCounter: 1, // important that this starts at 1 not 0, since 0 is used to indicate "no mobile here"
       modals: {},
+      settings: {
+        audioVolume: 1,
+      },
     },
     mouseState: { t: 'up', p_in_canvas: { x: 0, y: 0 } },
   };
