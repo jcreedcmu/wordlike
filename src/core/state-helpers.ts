@@ -21,7 +21,7 @@ import { AbstractLetter } from "./letters";
 import { addRandomMob } from "./mob-helpers";
 import { PROGRESS_ANIMATION_POINTS, getHighWaterMark, getScore, setHighWaterMark } from "./scoring";
 import { CoreState, GameState } from "./state";
-import { HAND_TILE_LIMIT, MainLoc, MouseState, TileNoId, WordBonusState } from './state-types';
+import { HAND_TILE_LIMIT, MainLoc, MainTile, MouseState, TileNoId, WordBonusState } from './state-types';
 import { MobileId } from './basic-types';
 import { addHandTileEntity, addWorldTile, get_hand_tiles, get_main_tiles as get_world_tiles } from "./tile-helpers";
 import { getCurrentTool } from "./tools";
@@ -139,7 +139,19 @@ function resolveHighWaterMark(state: CoreState): CoreState {
 
 export function checkValid(state: CoreState): CoreState {
   const tiles = get_world_tiles(state);
-  const grid = mkGridOfMainTiles(tiles);
+
+  const realTiles: MainTile[] = [];
+  const safeTiles: MainTile[] = [];
+  tiles.forEach(tile => {
+    const bonus = getBonusFromLayer(state, tile.loc.p_in_world_int);
+    if (bonus.t == 'safe-storage') {
+      safeTiles.push(tile);
+    }
+    else {
+      realTiles.push(tile);
+    }
+  });
+  const grid = mkGridOfMainTiles(realTiles);
 
   const oldConnectedSet = state.connectedSet;
 

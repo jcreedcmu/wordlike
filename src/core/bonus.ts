@@ -73,6 +73,9 @@ export function bonusGenerator(p: Point, seed: number): Bonus {
     else if (ph < 0.4) {
       return { t: 'dynamite' };
     }
+    else if (ph < 0.45) {
+      return { t: 'safe-storage' };
+    }
     else if (ph < 0.5) {
       return { t: 'mountain' };
     }

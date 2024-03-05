@@ -19,6 +19,7 @@ const int MOBILE_PREPASS_BUFFER_SIZE = 256; // XXX should be a uniform maybe?
 
 const vec2 EMPTY_SPRITE = vec2(0.,7.);
 const ivec2 WATER_SPRITE = ivec2(1,0);
+const ivec2 SAFE_STORAGE_SPRITE = ivec2(1,14);
 const int WATER_SPRITE_BYTE = (WATER_SPRITE.x << 4) + WATER_SPRITE.y;
 
 const vec3 TILE_SELECTED_COLOR = vec3(.06, .25, .68);
@@ -109,8 +110,12 @@ vec4 with_durability_bar(vec2 p_in_world_fp, vec4 sprite_pixel, int durability) 
 }
 
 vec4 get_tile_pixel_over_bonus(vec2 p_in_tile, int letter, ivec2 bonus_coords) {
-  // FIXME(bonus): use bonus_coords
-  return get_tile_pixel(p_in_tile, letter);
+  vec4 tile_pixel = get_tile_pixel(p_in_tile, letter);
+  if (bonus_coords == SAFE_STORAGE_SPRITE) {
+    float average = (0.3 * ( tile_pixel.r +  tile_pixel.g +  tile_pixel.b));
+    tile_pixel.rgb = vec3(average);
+  }
+  return tile_pixel;
 }
 
 // bonus_coords is the sprite sheet coordinates of the underlying bonus.
