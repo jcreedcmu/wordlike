@@ -37,7 +37,7 @@ Directory Structure
 | [precompute](precompute) | Scripts to precompute assets
 | [public](public) | Static assets for browser version |
 | [src/core](src/core) | State and state update code |
-| [src/core](src/layout) | Code for ui computations |
+| [src/layout](src/layout) | Code for ui computations |
 | [src/core](src/components) | React components  |
 | [src/ui](src/ui) | Rendering code |
 | [src/util](src/util) | Utilities |
