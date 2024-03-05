@@ -29,6 +29,7 @@ export type Bonus =
   | ScoringBonus
   | { t: 'empty' }
   | { t: 'water' }
+  | { t: 'safe-storage' }
   ;
 
 const BLOCK_SIZE = 5;
@@ -129,6 +130,7 @@ export function adjacentScoringOfBonus(bonus: Bonus, p_in_world_int: Point): Sco
     case 'water': return [];
     case 'mountain': return [{ bonus, p_in_world_int, destroy: true }];
     case 'magnifying-glass': return [{ bonus, p_in_world_int, destroy: true }];
+    case 'safe-storage': return [];
   }
 }
 

@@ -77,7 +77,7 @@ export function landMobileOnCell(m: MoveSource, c: CellContents): LandingResult 
       }
       return { t: 'collision' };
     }
-    case 'bonus': {
+    case 'bonus': { // landing on bonus
       const bonus = c.bonus;
       switch (bonus.t) {
         case 'empty': return { t: 'place' };
@@ -93,6 +93,7 @@ export function landMobileOnCell(m: MoveSource, c: CellContents): LandingResult 
         case 'water': return (m.t == 'resource' && m.res == 'planks') ? { t: 'fillWater' } : { t: 'collision' };
         case 'mountain': return { t: 'collision' };
         case 'magnifying-glass': return { t: 'collision' };
+        case 'safe-storage': return { t: 'place' };
       }
     }
   }

@@ -108,7 +108,14 @@ vec4 with_durability_bar(vec2 p_in_world_fp, vec4 sprite_pixel, int durability) 
   return mix(sprite_pixel, bar_pixel, float(p_in_world_fp.y > 0.9));
 }
 
-vec4 get_mobile_pixel(vec2 p_in_world_fp, ivec2 mobile_channel, int metadata_channel) {
+vec4 get_tile_pixel_over_bonus(vec2 p_in_tile, int letter, ivec2 bonus_coords) {
+  // FIXME(bonus): use bonus_coords
+  return get_tile_pixel(p_in_tile, letter);
+}
+
+// bonus_coords is the sprite sheet coordinates of the underlying bonus.
+// this may be used to modify the rendering of the mobile.
+vec4 get_mobile_pixel(vec2 p_in_world_fp, ivec2 mobile_channel, int metadata_channel, ivec2 bonus_coords) {
   // This is in mobile_data format
   ivec4 mobile_data = ivec4(round(255.0 * texture(u_mobilePrepassTexture, (vec2(mobile_channel) + vec2(0.5,0.5)) / float(MOBILE_PREPASS_BUFFER_SIZE))));
 
@@ -117,7 +124,7 @@ vec4 get_mobile_pixel(vec2 p_in_world_fp, ivec2 mobile_channel, int metadata_cha
     bool selected = (metadata_channel & 1) != 0;
     bool connected = (metadata_channel & 2) != 0;
 
-    vec4 mobile_pixel = get_tile_pixel(p_in_world_fp, letter);
+    vec4 mobile_pixel = get_tile_pixel_over_bonus(p_in_world_fp, letter, bonus_coords);
     vec3 pixel = mobile_pixel.rgb;
     pixel = mix(pixel, TILE_SELECTED_COLOR, float(selected) * 0.5);
     pixel = mix(pixel, TILE_DISCONNECTED_COLOR, float(!connected && !selected) * 0.4);
@@ -138,13 +145,13 @@ vec4 get_cell_pixel(vec2 p_in_world, vec2 p_in_world_fp, ivec4 cell_data) {
   int metadata_channel = cell_data.METADATA_CHANNEL;
   ivec2 mobile_channel = ivec2(cell_data.MOBILE_CHANNEL_L, cell_data.MOBILE_CHANNEL_H);
 
-  vec2 bonus_coords = vec2(bonus_channel >> 4, bonus_channel & 0xf);
+  ivec2 bonus_coords = ivec2(bonus_channel >> 4, bonus_channel & 0xf);
 
-  vec4 base_pixel = get_base_layer_sprite_pixel(p_in_world, p_in_world_fp, bonus_coords);
+  vec4 base_pixel = get_base_layer_sprite_pixel(p_in_world, p_in_world_fp, vec2(bonus_coords));
 
   if (mobile_channel != ivec2(0,0)) {
     // mobile_channel ≠ 0 means there is a mobile to render
-    vec4 mobile_pixel = get_mobile_pixel(p_in_world_fp, mobile_channel, metadata_channel);
+    vec4 mobile_pixel = get_mobile_pixel(p_in_world_fp, mobile_channel, metadata_channel, bonus_coords);
     base_pixel = blendOver(mobile_pixel, base_pixel);
   }
 

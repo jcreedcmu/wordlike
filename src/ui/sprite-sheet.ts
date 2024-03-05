@@ -66,6 +66,7 @@ export function spriteLocOfBonus(bonus: Bonus): Point {
     case 'dynamite': return { x: 0, y: 2 };
     case 'mountain': return { x: 1, y: 10 };
     case 'magnifying-glass': return { x: 1, y: 11 };
+    case 'safe-storage': return { x: 1, y: 14 };
   }
 }
 
