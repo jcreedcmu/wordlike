@@ -1,6 +1,6 @@
 import { DEBUG } from "../util/debug";
 import { Point, Rect } from "../util/types";
-import { boundRect } from "../util/util";
+import { boundRect, mapval } from "../util/util";
 import { vtrans } from "../util/vutil";
 import { AbstractLetter, stringOfLetter } from "./letters";
 import { MainTile, TileNoId } from './state-types';
@@ -230,4 +230,8 @@ export function gridKeys<T>(x: UbGrid<T>): Point[] {
 
 export function unionGrids<T>(x: UbGrid<T>, y: UbGrid<T>): UbGrid<T> {
   return { elems: { ...x.elems, ...y.elems } };
+}
+
+export function mapGrid<T, U>(x: UbGrid<T>, f: (x: T) => U): UbGrid<U> {
+  return { elems: mapval(x.elems, f) };
 }

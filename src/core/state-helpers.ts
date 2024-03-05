@@ -15,7 +15,7 @@ import { PauseData, WORD_BONUS_INTERVAL_MS, now_in_game } from "./clock";
 import { DrawForce, getLetterSample } from "./distribution";
 import { updateFogOfWar } from "./fog-of-war";
 import { freshPanic } from "./fresh-panic";
-import { checkConnected, checkGridWords, gridKeys, mkGridOfMainTiles } from "./grid";
+import { checkConnected, checkGridWords, gridKeys, mapGrid, mkGridOfMainTiles, unionGrids } from "./grid";
 import { mkOverlayFrom, overlayAny, overlayPoints, setOverlay } from "./layer";
 import { AbstractLetter } from "./letters";
 import { addRandomMob } from "./mob-helpers";
@@ -156,7 +156,9 @@ export function checkValid(state: CoreState): CoreState {
   const oldConnectedSet = state.connectedSet;
 
   const { validWords, invalidWords } = checkGridWords(grid, word => getAssets().dictionary[word] || DEBUG.allWords);
-  const { allConnected, connectedSet } = checkConnected(grid);
+  const { allConnected, connectedSet: realConnectedSet } = checkConnected(grid);
+  const connectedSet = unionGrids(realConnectedSet, mapGrid(mkGridOfMainTiles(safeTiles), _ => true));
+
   let allValid = false;
   if (invalidWords.length == 0 && allConnected && get_hand_tiles(state).length == 0) {
     state = resolveValid(state, new Set(validWords.map(x => x.word)));
