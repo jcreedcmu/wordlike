@@ -12,6 +12,11 @@ export type Grid<T> = {
   elems: Record<string, T>
 };
 
+// grid that doesn't need bounds
+export type UbGrid<T> = {
+  elems: Record<string, T>
+};
+
 function parseCoord(x: string): Point {
   const parts = x.split(',');
   return { x: parseInt(parts[0]), y: parseInt(parts[1]) };
@@ -21,16 +26,16 @@ function unparseCoord(p: Point): string {
   return `${p.x},${p.y}`;
 }
 
-export function getGrid<T>(grid: Grid<T>, p: Point): T {
+export function getGrid<T>(grid: UbGrid<T>, p: Point): T {
   return grid.elems[unparseCoord(p)];
 }
 
 // XXX: doesn't update bounds
-function setGrid<T>(grid: Grid<T>, p: Point, v: T): void {
+function setGrid<T>(grid: UbGrid<T>, p: Point, v: T): void {
   grid.elems[unparseCoord(p)] = v;
 }
 
-function isSetGrid<T>(grid: Grid<T>, p: Point): boolean {
+function isSetGrid<T>(grid: UbGrid<T>, p: Point): boolean {
   return getGrid(grid, p) !== undefined;
 }
 
@@ -187,7 +192,7 @@ export function checkGridWords(grid: Grid<AbstractLetter>, isWord: (x: string) =
 
 export type ConnectedResult = {
   allConnected: boolean,
-  connectedSet: Grid<boolean>,
+  connectedSet: UbGrid<boolean>,
 };
 
 // returns true if all the elements of grid are orthogonally connected
@@ -219,6 +224,10 @@ export function checkConnected<T>(grid: Grid<T>, startFrom: Point = { x: 0, y: 0
   return { allConnected: numSetRemaining == 0, connectedSet: seen };
 }
 
-export function gridKeys<T>(x: Grid<T>): Point[] {
+export function gridKeys<T>(x: UbGrid<T>): Point[] {
   return Object.keys(x.elems).map(k => parseCoord(k));
+}
+
+export function unionGrids<T>(x: UbGrid<T>, y: UbGrid<T>): UbGrid<T> {
+  return { elems: { ...x.elems, ...y.elems } };
 }
