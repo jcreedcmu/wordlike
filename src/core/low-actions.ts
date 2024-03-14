@@ -9,7 +9,7 @@ import { apply, compose, composen, inverse, scale, translate } from '../util/se2
 import { Point } from '../util/types';
 import { flatUndef, getRandomOrder } from '../util/util';
 import { vequal, vint, vm, vscale, vsub } from '../util/vutil';
-import { GameAction, GameLowAction, LowAction } from './action';
+import { GameAction, GameLowAction, GamePresAction, LowAction } from './action';
 import { isActiveCanvasAnimation } from './animation-types';
 import { MobileId } from './basic-types';
 import { globalActionQueue, handleButtonBarButton } from "./button-bar-handlers";
@@ -358,6 +358,25 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
   }
 }
 
+function getGamePresLowAction(state: GameState, action: GamePresAction): GameLowAction {
+  switch (action.t) {
+    case 'key': return reduceKey(state, action.code);
+    case 'none': return { t: 'none' };
+    case 'wheel':
+      return { t: 'zoom', amount: action.delta, center: action.p };
+
+    case 'mouseUp': return resolveMouseup(state, action.p);
+    case 'mouseMove': return { t: 'mouseMove', p: action.p };
+    case 'tick': return { t: 'tick' };
+    case 'popCacheUpdateQueue': return { t: 'popCacheUpdateQueue', n: action.n };
+    case 'cancelModals': return { t: 'cancelModals' };
+    case 'setAudioVolume': return { t: 'setAudioVolume', volume: action.volume };
+    case 'multiple': {
+      return { t: 'multiple', actions: action.actions.map(a => getGamePresLowAction(state, a)) }
+    }
+  }
+}
+
 export function getLowAction(state: GameState, action: GameAction): LowAction {
   if (DEBUG.actions) {
     if (action.t != 'tick' && action.t != 'mouseMove')
@@ -368,22 +387,15 @@ export function getLowAction(state: GameState, action: GameAction): LowAction {
     return { t: 'gameLowAction', action };
   }
   switch (action.t) {
-    case 'key': return gla(reduceKey(state, action.code));
-    case 'none': return gla({ t: 'none' });
-    case 'wheel':
-      return { t: 'gameLowAction', action: { t: 'zoom', amount: action.delta, center: action.p } };
+
     case 'mouseDown': {
       const wp = getWidgetPoint(state.coreState, action.p);
       if (wp.t == 'pauseButton' && shouldDisplayBackButton(state.coreState.slowState.winState))
         return { t: 'returnToMenu' };
       return gla(reduceMouseDown(state, wp, action.button, action.mods));
     }
-    case 'mouseUp': return gla(resolveMouseup(state, action.p));
-    case 'mouseMove': return gla({ t: 'mouseMove', p: action.p });
-    case 'tick': return gla({ t: 'tick' });
-    case 'popCacheUpdateQueue': return gla({ t: 'popCacheUpdateQueue', n: action.n });
-    case 'cancelModals': return gla({ t: 'cancelModals' });
-    case 'setAudioVolume': return gla({ t: 'setAudioVolume', volume: action.volume });
+    default:
+      return gla(getGamePresLowAction(state, action));
   }
 }
 

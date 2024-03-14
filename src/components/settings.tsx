@@ -8,6 +8,10 @@ export function Settings(props: SettingsProps): JSX.Element {
   const { dispatch } = props;
 
 
+  const success: React.MouseEventHandler = (_e) => {
+    dispatch({ t: 'multiple', actions: [{ t: 'cancelModals' }] });
+  };
+
   const dismiss: React.MouseEventHandler = (_e) => {
     dispatch({ t: 'cancelModals' });
   };
@@ -28,7 +32,7 @@ export function Settings(props: SettingsProps): JSX.Element {
         onChange={onChange} />
 
       <center>
-        <button style={{ marginTop: '2em' }} onClick={dismiss}>Ok</button>
+        <button style={{ marginTop: '2em' }} onClick={success}>Ok</button>
       </center>
     </div>
   </div>;

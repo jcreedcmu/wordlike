@@ -63,10 +63,9 @@ export type LowAction =
   ;
 
 // All of these p are p_in_canvas
-export type GameAction =
+export type GamePresAction =
   | { t: 'none' }
   | { t: 'key', code: string }
-  | { t: 'mouseDown', button: number, p: Point, mods: Set<string> }
   | { t: 'mouseUp', p: Point }
   | { t: 'mouseMove', p: Point }
   | { t: 'wheel', p: Point, delta: number }
@@ -74,6 +73,12 @@ export type GameAction =
   | { t: 'popCacheUpdateQueue', n: number }
   | { t: 'cancelModals' }
   | { t: 'setAudioVolume', volume: number }
+  | { t: 'multiple', actions: GamePresAction[] }
+  ;
+
+export type GameAction =
+  | GamePresAction
+  | { t: 'mouseDown', button: number, p: Point, mods: Set<string> }
   ;
 
 export type Action =
