@@ -27,6 +27,7 @@ import { reduceKey } from './reduceKey';
 import { SceneState } from './scene-state';
 import { incrementScore, setScore } from './scoring';
 import { deselect, resolveSelection, setSelected } from "./selection-helpers";
+import { SETTINGS_LOCAL_STORAGE_KEY } from "./settings-types";
 import { CoreState, GameState } from './state';
 import { addWorldTiles, checkValid, drawOfState, filterExpiredAnimations, filterExpiredWordBonusState, isMobilePinned, needsRefresh, proposedHandDragOverLimit, unpauseState, withCoreState } from './state-helpers';
 import { Location, MobsState, MoveMobile } from './state-types';
@@ -371,6 +372,7 @@ function getGamePresLowAction(state: GameState, action: GamePresAction): GameLow
     case 'popCacheUpdateQueue': return { t: 'popCacheUpdateQueue', n: action.n };
     case 'cancelModals': return { t: 'cancelModals' };
     case 'setAudioVolume': return { t: 'setAudioVolume', volume: action.volume };
+    case 'saveSettings': return action;
     case 'multiple': {
       return { t: 'multiple', actions: action.actions.map(a => getGamePresLowAction(state, a)) }
     }
@@ -675,6 +677,11 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
         s.coreState.settings.audioVolume = action.volume;
         s.coreState.soundEffects.push({ t: 'setGain', gain: action.volume });
       });
+    }
+    case 'saveSettings': {
+      // XXX side effect!
+      localStorage[SETTINGS_LOCAL_STORAGE_KEY] = JSON.stringify(state.coreState.settings);
+      return state;
     }
   }
 }

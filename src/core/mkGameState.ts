@@ -9,6 +9,7 @@ import { Overlay, mkOverlay, setOverlay } from './layer';
 import { GameState } from './state';
 import { SceneState } from './scene-state';
 import { CacheUpdate, mkChunkUpdate } from './cache-types';
+import { SETTINGS_LOCAL_STORAGE_KEY, SettingsState } from "./settings-types";
 
 const DEFAULT_SCALE = 48.001;
 const epsilon = 0.0001;
@@ -29,6 +30,22 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
       }
     }
   }
+
+  let settings: SettingsState = {
+    audioVolume: 1,
+  };
+
+  const storedSettings = localStorage[SETTINGS_LOCAL_STORAGE_KEY];
+  if (storedSettings) {
+    try {
+      settings = JSON.parse(storedSettings) as SettingsState;
+    }
+    catch (e) {
+      delete localStorage[SETTINGS_LOCAL_STORAGE_KEY];
+      console.log(e);
+    }
+  }
+
   return {
     coreState: {
       slowState: {
@@ -79,9 +96,7 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
       _cacheUpdateQueue,
       idCounter: 1, // important that this starts at 1 not 0, since 0 is used to indicate "no mobile here"
       modals: {},
-      settings: {
-        audioVolume: 1,
-      },
+      settings,
     },
     mouseState: { t: 'up', p_in_canvas: { x: 0, y: 0 } },
   };

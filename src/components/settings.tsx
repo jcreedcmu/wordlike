@@ -9,7 +9,7 @@ export function Settings(props: SettingsProps): JSX.Element {
 
 
   const success: React.MouseEventHandler = (_e) => {
-    dispatch({ t: 'multiple', actions: [{ t: 'cancelModals' }] });
+    dispatch({ t: 'multiple', actions: [{ t: 'saveSettings' }, { t: 'cancelModals' }] });
   };
 
   const dismiss: React.MouseEventHandler = (_e) => {
