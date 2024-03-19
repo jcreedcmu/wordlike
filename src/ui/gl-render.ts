@@ -376,7 +376,7 @@ export function glInitialize(ci: CanvasGlInfo, dispatch: Dispatch): GlEnv {
   };
 
   if (DEBUG.stateExporter)
-    (window as any).renderCache = () => _cache;
+    (window as any).cache = () => _cache;
 
   return {
     gl,
