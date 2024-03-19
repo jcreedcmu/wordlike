@@ -1,9 +1,13 @@
+import { DEBUG } from "../util/debug";
 import { Point } from "../util/types";
 
 // Implements a lazily-evaluated, cached, immutable sparse map from coordinates to T
 
 // This is global
 const cache: Record<string, any> = {};
+if (DEBUG.stateExporter) {
+  (window as any).layerCache = cache;
+}
 
 export type Layer<T> = {
   name: string,
@@ -24,7 +28,7 @@ function unparseNamedCoord(name: string, p: Point): string {
 }
 
 function unparseCoord(p: Point): string {
-  return `,${p.x},${p.y}`;
+  return `${p.x},${p.y}`;
 }
 
 export function mkLayer<T>(name: string, func: (p: Point) => T): Layer<T> {
