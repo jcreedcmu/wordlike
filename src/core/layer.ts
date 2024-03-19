@@ -5,7 +5,7 @@ import { Point } from "../util/types";
 
 // This is global
 const cache: Record<string, any> = {};
-if (DEBUG.stateExporter) {
+if (DEBUG.cacheExporter) {
   (window as any).layerCache = cache;
 }
 

@@ -8,6 +8,7 @@ export const DEBUG = {
   letterSample: false,
   words: false,
   stateExporter: true,
+  cacheExporter: false,
   stateImporter: true,
   instructions: false,
   skipAheadPanic: false,

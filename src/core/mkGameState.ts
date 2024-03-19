@@ -10,10 +10,29 @@ import { GameState } from './state';
 import { SceneState } from './scene-state';
 import { CacheUpdate, mkChunkUpdate } from './cache-types';
 import { SETTINGS_LOCAL_STORAGE_KEY, SettingsState } from "./settings-types";
+import { produce } from "../util/produce";
 
 const DEFAULT_SCALE = 48.001;
 const epsilon = 0.0001;
 const INITIAL_SEEN_CELLS_RADIUS = 5.5;
+
+export function mkGameStateWithSettings(seed: number, creative: boolean, bonusLayerSeed: number): GameState {
+  let state = mkGameState(seed, creative, bonusLayerSeed);
+
+  let settings = state.coreState.settings;
+  const storedSettings = localStorage[SETTINGS_LOCAL_STORAGE_KEY];
+  if (storedSettings) {
+    try {
+      settings = JSON.parse(storedSettings) as SettingsState;
+    }
+    catch (e) {
+      delete localStorage[SETTINGS_LOCAL_STORAGE_KEY];
+      console.log(e);
+    }
+  }
+
+  return produce(state, s => { s.coreState.settings = settings; });
+}
 
 export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: number): GameState {
   const rad = INITIAL_SEEN_CELLS_RADIUS;
@@ -28,21 +47,6 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
         setOverlay(seen_cells, p_in_world_int, true);
         _cacheUpdateQueue.push(mkChunkUpdate(p_in_world_int, { t: 'setBit', bit: BIT_VISIBLE }));
       }
-    }
-  }
-
-  let settings: SettingsState = {
-    audioVolume: 1,
-  };
-
-  const storedSettings = localStorage[SETTINGS_LOCAL_STORAGE_KEY];
-  if (storedSettings) {
-    try {
-      settings = JSON.parse(storedSettings) as SettingsState;
-    }
-    catch (e) {
-      delete localStorage[SETTINGS_LOCAL_STORAGE_KEY];
-      console.log(e);
     }
   }
 
@@ -96,7 +100,9 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
       _cacheUpdateQueue,
       idCounter: 1, // important that this starts at 1 not 0, since 0 is used to indicate "no mobile here"
       modals: {},
-      settings,
+      settings: {
+        audioVolume: 1,
+      },
     },
     mouseState: { t: 'up', p_in_canvas: { x: 0, y: 0 } },
   };
@@ -105,6 +111,6 @@ export function mkGameState(seed: number, creative: boolean, bonusLayerSeed: num
 export function mkGameSceneState(seed: number, creative: boolean, bonusLayerSeed: number): SceneState {
   return {
     t: 'game',
-    gameState: mkGameState(seed, creative, bonusLayerSeed), revision: 0
+    gameState: mkGameStateWithSettings(seed, creative, bonusLayerSeed), revision: 0
   };
 }
