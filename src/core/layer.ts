@@ -16,7 +16,7 @@ export type Overlay<T> = {
 
 function parseCoord(x: string): Point {
   const parts = x.split(',');
-  return { x: parseInt(parts[1]), y: parseInt(parts[2]) };
+  return { x: parseInt(parts[0]), y: parseInt(parts[1]) };
 }
 
 function unparseNamedCoord(name: string, p: Point): string {
@@ -24,7 +24,7 @@ function unparseNamedCoord(name: string, p: Point): string {
 }
 
 function unparseCoord(p: Point): string {
-  return `,${p.x},${p.y}`;
+  return `${p.x},${p.y}`;
 }
 
 export function mkLayer<T>(name: string, func: (p: Point) => T): Layer<T> {
