@@ -7,6 +7,7 @@ import * as SE1 from '../util/se1';
 import { updateFogOfWar } from './fog-of-war';
 import { mkGameState } from './mkGameState';
 import { TileNoId } from './state-types';
+import { get_main_tiles } from './tile-helpers';
 
 export function exampleState(): GameState {
   const state = mkGameState(1533311107, false, 46);
@@ -86,7 +87,13 @@ export function exampleState(): GameState {
   ];
   const almost = withCoreState(state, cs => {
     const withTiles = addHandTileEntities(addWorldTiles(cs, tnis), handTiles);
-    const resolved = resolveValid(checkValid(withTiles), new Set());
+    const tiles = get_main_tiles(withTiles);
+    // force a resolve valid even though the state won't be "safe"
+    // because hand is nonempty. It's also kind of incorrect to supply
+    // *all* main tiles, but we don't mind if we incorrectly erase a
+    // bonus due to a safe-storage tile, for this state is only meant
+    // as an example in the instructions.
+    const resolved = resolveValid(checkValid(withTiles), tiles, new Set());
     return updateFogOfWar(resolved);
   });
 

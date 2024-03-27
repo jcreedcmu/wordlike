@@ -68,8 +68,12 @@ export function drawSpecific(state: CoreState, letter: AbstractLetter): { cs: Co
 
 const directions: Point[] = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([x, y]) => ({ x, y }));
 
-export function resolveValid(state: CoreState, validWords: Set<string>): CoreState {
-  const tiles = get_world_tiles(state);
+// The reason we take in tiles rather than fetching
+//   const tiles = get_world_tiles(state);
+// is that not all tiles are eligible to trigger bonuses. Principally,
+// tiles in "safe storage". So we expect the caller to tell us what
+// the legitimate bonus-triggering tiles are.
+export function resolveValid(state: CoreState, tiles: MainTile[], validWords: Set<string>): CoreState {
   logger('words', 'grid valid');
   const layer = mkOverlayFrom([]);
 
@@ -161,7 +165,7 @@ export function checkValid(state: CoreState): CoreState {
 
   let allValid = false;
   if (invalidWords.length == 0 && allConnected && get_hand_tiles(state).length == 0) {
-    state = resolveValid(state, new Set(validWords.map(x => x.word)));
+    state = resolveValid(state, realTiles, new Set(validWords.map(x => x.word)));
     allValid = true;
   }
 
