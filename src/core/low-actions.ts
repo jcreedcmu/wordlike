@@ -364,12 +364,18 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
       const lr = landMoveOnState({ p_in_world_int, src: { t: 'resource', res: ms.res } }, state.coreState);
       if (lr.t == 'collision') return {
         t: 'errorRestoreBonuses', restore: [{
+          // XXX this is a weird special case, where I'm taking
+          // advantage of my knowledge that the only
+          // drag_world_resource I'm doing is safeStorage
           bonus: { t: 'safe-storage' }, p_in_world_int: ms.orig_loc.p_in_world_int
         }]
       };
 
       return {
         t: 'landResults', lrms: [
+          // XXX this is a weird special case, where I'm taking
+          // advantage of my knowledge that the only
+          // drag_world_resource I'm doing is safeStorage
           { lr, move: { p_in_world_int, src: { t: 'safeStorage', p_in_world_int: ms.orig_loc.p_in_world_int } } }
         ]
       };
