@@ -94,7 +94,7 @@ export function exampleState(): GameState {
     // bonus due to a safe-storage tile, for this state is only meant
     // as an example in the instructions.
     const resolved = resolveValid(checkValid(withTiles), tiles, new Set());
-    return updateFogOfWar(resolved);
+    return updateFogOfWar(resolved, get_main_tiles(resolved));
   });
 
   return produce(almost, s => {

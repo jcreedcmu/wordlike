@@ -5,7 +5,7 @@ import { BIT_VISIBLE } from "./chunk";
 import { Overlay, combineOverlay, getOverlay, mkOverlay, overlayPoints, setOverlay } from "./layer";
 import { CoreState } from "./state";
 import { CacheUpdate, mkChunkUpdate } from './cache-types';
-import { get_main_tiles as get_world_tiles } from "./tile-helpers";
+import { MainTile } from "./state-types";
 
 export const PLACED_MOBILE_SEEN_CELLS_RADIUS = 2.5;
 
@@ -40,10 +40,14 @@ export function updateFogOfWarAtPoint(state: CoreState, center: Point, radius: n
   return updateFogOfWarApply(state, recentlySeen);
 }
 
-// updates for all world tiles
-export function updateFogOfWar(state: CoreState): CoreState {
+// The reason we take in tiles rather than fetching
+//   const tiles = get_world_tiles(state);
+// is that not all tiles are eligible to trigger bonuses. Principally,
+// tiles in "safe storage". So we expect the caller to tell us what
+// the legitimate bonus-triggering tiles are.
+export function updateFogOfWar(state: CoreState, tiles: MainTile[]): CoreState {
   const recentlySeen: Overlay<boolean> = mkOverlay();
-  get_world_tiles(state).forEach(({ loc: { p_in_world_int: center } }) => {
+  tiles.forEach(({ loc: { p_in_world_int: center } }) => {
     updateFogOfWarAtPointAux(state, recentlySeen, center, PLACED_MOBILE_SEEN_CELLS_RADIUS);
   });
   return updateFogOfWarApply(state, recentlySeen);

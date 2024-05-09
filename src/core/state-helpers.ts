@@ -211,7 +211,7 @@ export function checkValid(state: CoreState): CoreState {
   });
 
   if (allValid)
-    state = updateFogOfWar(state);
+    state = updateFogOfWar(state, realTiles);
 
   return state;
 }
