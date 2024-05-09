@@ -24,5 +24,6 @@ export type ResbarResource = (typeof resbarResources)[number];
 export type WorldOnlyResource =
   | 'planks'
   | 'axe'
+  | 'safe-storage'
   ;
 export type Resource = ResbarResource | WorldOnlyResource;

@@ -11,6 +11,7 @@ import { InventoryItems, Location, MouseState } from './state-types';
 import { MobileId } from './basic-types';
 import { ResbarResource, Tool } from "./tool-types";
 import { ButtonBarButton } from '../layout/button-bar';
+import { Bonus } from './bonus';
 
 export type GameLowAction =
   | { t: 'zoom', center: Point, amount: number }
@@ -49,6 +50,7 @@ export type GameLowAction =
   | { t: 'drawVowel' }
   | { t: 'setPanic', panic: PanicData }
   | { t: 'errorRestoreMobiles', ids: MobileId[] } // put held mobiles back in cache
+  | { t: 'errorRestoreBonuses', restore: { bonus: Bonus, p_in_world_int: Point }[] } // put held mobiles back in cache
   | { t: 'popCacheUpdateQueue', n: number }
   | { t: 'addMob' }
   | { t: 'startDragResource', wp: WidgetPoint, res: ResbarResource, res_ix: number } // XXX: rename to startDragResbar or something

@@ -39,7 +39,8 @@ export function pan_canvas_from_world_of_state(state: GameState): SE2 {
 // drag_mobile is synonymous with mobile1: it's the coordinate system of the mobile being dragged
 export function canvas_from_drag_mobile(state: CoreState, ms: MouseState): SE2 {
   switch (ms.t) {
-    case 'drag_mobile':
+    case 'drag_mobile': // fallthrough intentional
+    case 'drag_world_resource':
       const wp0 = getDragWidgetPoint(state, ms.orig_p_in_canvas);
       const wp1 = getDragWidgetPoint(state, ms.p_in_canvas);
       const local1_from_canvas = wp1.local_from_canvas;

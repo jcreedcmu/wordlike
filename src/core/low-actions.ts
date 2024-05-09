@@ -354,6 +354,27 @@ function resolveMouseupInner(state: GameState, p_in_canvas: Point): GameLowActio
       };
 
     }
+
+    case 'drag_world_resource': {
+      const wp = getWidgetPoint(state.coreState, ms.p_in_canvas);
+      if (wp.t != 'world')
+        return { t: 'none' };
+
+      const p_in_world_int: Point = vint(wp.p_in_local);
+      const lr = landMoveOnState({ p_in_world_int, src: { t: 'resource', res: ms.res } }, state.coreState);
+      if (lr.t == 'collision') return {
+        t: 'errorRestoreBonuses', restore: [{
+          bonus: { t: 'safe-storage' }, p_in_world_int: ms.orig_loc.p_in_world_int
+        }]
+      };
+
+      return {
+        t: 'landResults', lrms: [
+          { lr, move: { p_in_world_int, src: { t: 'safeStorage', p_in_world_int: ms.orig_loc.p_in_world_int } } }
+        ]
+      };
+    }
+
     case 'up': return { t: 'none' }; // no drag to resolve
     case 'down': return { t: 'none' };
   }
@@ -628,6 +649,15 @@ function resolveGameLowAction(state: GameState, action: GameLowAction): GameStat
         return [cu];
       });
 
+      return produce(state, s => {
+        s.coreState._cacheUpdateQueue.push(...cacheUpdates);
+        s.coreState.soundEffects.push({ t: 'beep' });
+      });
+    }
+
+    case 'errorRestoreBonuses': {
+      const cacheUpdates: CacheUpdate[] = action.restore.map(({ bonus, p_in_world_int }) =>
+        mkChunkUpdate(p_in_world_int, { t: 'bonus', bonus }));
       return produce(state, s => {
         s.coreState._cacheUpdateQueue.push(...cacheUpdates);
         s.coreState.soundEffects.push({ t: 'beep' });

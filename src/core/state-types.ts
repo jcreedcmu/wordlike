@@ -35,6 +35,14 @@ export type MouseState =
     res: ResbarResource,
     res_ix: number,
   }
+  // drag_world_resource means we're dragging an anonymous resource starting from a position in the world
+  | {
+    t: 'drag_world_resource',
+    orig_loc: MainLoc,
+    p_in_canvas: Point,
+    orig_p_in_canvas: Point,
+    res: Resource,
+  }
   ;
 
 export type Tile = {

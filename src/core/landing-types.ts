@@ -17,6 +17,7 @@ export type LandingMove = { src: MoveSource, p_in_world_int: Point };
 export type MoveSourceId =
   | { t: 'mobile', id: MobileId }
   | { t: 'freshResource', res: ResbarResource }
+  | { t: 'safeStorage', p_in_world_int: Point }
   ;
 
 export type LandingMoveId = { src: MoveSourceId, p_in_world_int: Point };

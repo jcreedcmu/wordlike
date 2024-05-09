@@ -90,6 +90,7 @@ export function spriteLocOfRes(res: Resource): Point {
     case 'axe': return { x: 1, y: 7 };
     case 'planks': return { x: 1, y: 8 };
     case 'stone': return { x: 1, y: 9 };
+    case 'safe-storage': return { x: 1, y: 14 };
   }
 }
 

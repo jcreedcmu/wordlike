@@ -1,6 +1,7 @@
 import { produce } from '../util/produce';
 import { Point } from '../util/types';
 import { vm } from '../util/vutil';
+import { Bonus } from './bonus';
 import { CacheUpdate, mkChunkUpdate } from './cache-types';
 import { WidgetPoint } from './core-ui-types';
 import { updateFogOfWarAtPoint } from './fog-of-war';
@@ -13,10 +14,17 @@ import { GameState } from './state';
 import { checkValid, drawSpecific, withCoreState } from './state-helpers';
 import { CellContents, getMobileLoc, mobileAtPoint } from './tile-helpers';
 import { bombIntent, copyIntent, dynamiteIntent, magnifyIntent } from "./tool-intents";
-import { Tool } from "./tool-types";
+import { Resource, Tool } from "./tool-types";
 
 function dynamiteableCell(cell: CellContents): boolean {
   return cell.t == 'mobile' || (cell.t == 'bonus' && killableBonus(dynamiteIntent, cell.bonus));
+}
+
+function bonusCreatesResource(b: Bonus): Resource | undefined {
+  if (b.t == 'safe-storage') {
+    return 'safe-storage';
+  }
+  return undefined;
 }
 
 export function getIntentOfMouseDown(tool: Tool, button: number, mods: Set<string>, hoverCell: CellContents, pinned: boolean): Intent {
@@ -36,7 +44,14 @@ export function getIntentOfMouseDown(tool: Tool, button: number, mods: Set<strin
           return { t: 'dragMobile', id: hoverMobile.id };
         }
       }
-      return { t: 'startSelection', opn: selectionOperationOfMods(mods) };
+      else {
+        let res = bonusCreatesResource(hoverCell.bonus);
+        if (res !== undefined) {
+          return { t: 'dragNewResource', res };
+        }
+        else
+          return { t: 'startSelection', opn: selectionOperationOfMods(mods) };
+      }
     case 'hand': return { t: 'panWorld' };
     case 'dynamite':
       if (dynamiteableCell(hoverCell)) {
@@ -94,6 +109,25 @@ export function reduceIntent(state: GameState, intent: Intent, wp: WidgetPoint):
           orig_p_in_canvas: wp.p_in_canvas,
           p_in_canvas: wp.p_in_canvas,
           flipped: false,
+        };
+      });
+    }
+    case 'dragNewResource': {
+
+      if (wp.t != 'world') return vacuous_down(state, wp);
+      const p_in_world_int = vm(wp.p_in_local, Math.floor);
+      let state2 = state;
+      state2 = withCoreState(state, cs => deselect(cs));
+      const cacheUpdates = [mkChunkUpdate(p_in_world_int, { t: 'bonus', bonus: { t: 'empty' } })];
+
+      return produce(state2, s => {
+        s.coreState._cacheUpdateQueue.push(...cacheUpdates);
+        s.mouseState = {
+          t: 'drag_world_resource',
+          orig_loc: { t: 'world', p_in_world_int },
+          orig_p_in_canvas: wp.p_in_canvas,
+          p_in_canvas: wp.p_in_canvas,
+          res: intent.res,
         };
       });
     }

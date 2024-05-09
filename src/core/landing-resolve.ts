@@ -1,5 +1,6 @@
 import { makeSound } from "../sound/sound-helpers";
 import { produce } from "../util/produce";
+import { updateBonusLayer } from "./bonus-helpers";
 import { mkChunkUpdate } from "./cache-types";
 import { tryKillTileOfStateLoc } from "./kill-helpers";
 import { LandingResult, ProperLandingResult } from "./landing-result";
@@ -15,6 +16,7 @@ export function removeSource(state: CoreState, src: MoveSourceId): CoreState {
     case 'freshResource': return produce(state, cs => {
       cs.slowState.resource[src.res]--;
     });
+    case 'safeStorage': return updateBonusLayer(state, src.p_in_world_int, { t: 'empty' });
   }
 }
 
@@ -27,6 +29,7 @@ export function resolveLandResult(_state: CoreState, lr: ProperLandingResult, mo
       switch (src.t) {
         case 'mobile': return makeSound(putMobileInWorld(state, src.id, move.p_in_world_int, 'noclear'), { t: 'click' });
         case 'freshResource': return makeSound(addResourceMobile(state, move.p_in_world_int, src.res), { t: 'click' });
+        case 'safeStorage': return makeSound(updateBonusLayer(state, move.p_in_world_int, { t: 'safe-storage' }), { t: 'click' });
       }
     }
     case 'replaceResource': {

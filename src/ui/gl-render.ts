@@ -202,6 +202,9 @@ function drawMouseStateTransients(env: GlEnv, _canvas_from_world: SE2, cs: CoreS
       const canvas_from_sprite = mkSE2(vdiag(SPRITE_PIXEL_WIDTH), vadd(initial_pos, vsub(ms.p_in_canvas, ms.orig_p_in_canvas)));
       drawOneSprite(env, spriteLocOfRes(ms.res), canvas_from_sprite);
     } return;
+    case 'drag_world_resource': {
+      drawOneSprite(env, spriteLocOfRes(ms.res), canvas_from_drag_mobile(cs, ms));
+    } return;
     case 'up': return;
     case 'down': return;
     case 'drag_world': return;

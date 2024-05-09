@@ -1,6 +1,7 @@
 import { Bonus } from './bonus';
 import { SelectionOperation } from './selection-operation';
 import { MobileId } from './basic-types';
+import { Resource } from './tool-types';
 
 export type KillIntent =
   | { t: 'kill', radius: number }
@@ -10,6 +11,7 @@ export type KillIntent =
 
 export type Intent =
   | { t: 'dragMobile', id: MobileId }
+  | { t: 'dragNewResource', res: Resource }
   | { t: 'vacuous' }
   | { t: 'panWorld' }
   | { t: 'exchangeMobiles', id: MobileId }
